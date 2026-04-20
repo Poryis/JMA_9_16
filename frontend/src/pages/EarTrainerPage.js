@@ -139,7 +139,7 @@ function EarTrainerPage() {
       <div 
         className="min-h-screen flex flex-col items-center justify-center p-4"
         data-testid="ear-trainer-menu"
-        style={{ backgroundImage: 'url(/assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+        style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader showHomeButton={true} />
         <FullscreenButton />
@@ -206,7 +206,7 @@ function EarTrainerPage() {
     <div 
       className="min-h-screen flex flex-col"
       data-testid="ear-trainer-playing"
-      style={{ backgroundImage: 'url(/assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <GameHeader title={`Round ${round} / ${totalRounds}`} score={score} streak={streak} showHomeButton={true} />
 

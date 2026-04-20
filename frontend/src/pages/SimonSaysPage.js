@@ -165,7 +165,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         className="min-h-screen flex flex-col items-center justify-center p-4" 
         data-testid="simon-says-menu"
         style={{
-          backgroundImage: 'url(/assets/backgrounds/underwater.png)',
+          backgroundImage: 'url(assets/backgrounds/underwater.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
@@ -224,7 +224,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
       className="min-h-screen flex flex-col" 
       data-testid="simon-says-playing"
       style={{
-        backgroundImage: 'url(/assets/backgrounds/underwater.png)',
+        backgroundImage: 'url(assets/backgrounds/underwater.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}

@@ -325,7 +325,7 @@ function LoopStudioPage() {
 
   return (
     <div className="min-h-screen flex flex-col" data-testid="loop-studio-page"
-      style={{ backgroundImage: 'url(/assets/backgrounds/playground.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      style={{ backgroundImage: 'url(assets/backgrounds/playground.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <GameHeader title="Loop Studio" showHomeButton={true} />
       <FullscreenButton />
 

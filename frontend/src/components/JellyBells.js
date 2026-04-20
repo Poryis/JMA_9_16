@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useImperativeHandle, useRef, forwardRef } from 'react';
 
 export const BELLS = [
-  { note: 'C', solfege: 'Do', color: '#FF3B30', image1: '/assets/bells/C 1.png', image2: '/assets/bells/C 2.png', key: '1' },
-  { note: 'D', solfege: 'Re', color: '#FF9500', image1: '/assets/bells/D 1.png', image2: '/assets/bells/D 2.png', key: '2' },
-  { note: 'E', solfege: 'Mi', color: '#FFCC00', image1: '/assets/bells/E 1.png', image2: '/assets/bells/E 2.png', key: '3' },
-  { note: 'F', solfege: 'Fa', color: '#4CD964', image1: '/assets/bells/F 1.png', image2: '/assets/bells/F 2.png', key: '4' },
-  { note: 'G', solfege: 'So', color: '#34A853', image1: '/assets/bells/G 1.png', image2: '/assets/bells/G 2.png', key: '5' },
-  { note: 'A', solfege: 'La', color: '#4285F4', image1: '/assets/bells/A 1.png', image2: '/assets/bells/A 2.png', key: '6' },
-  { note: 'B', solfege: 'Ti', color: '#AF52DE', image1: '/assets/bells/B 1.png', image2: '/assets/bells/B 2.png', key: '7' },
-  { note: 'High C', solfege: 'Do', color: '#FF2D55', image1: '/assets/bells/C 1.png', image2: '/assets/bells/C 2.png', key: '8' }
+  { note: 'C', solfege: 'Do', color: '#FF3B30', image1: 'assets/bells/C 1.png', image2: 'assets/bells/C 2.png', key: '1' },
+  { note: 'D', solfege: 'Re', color: '#FF9500', image1: 'assets/bells/D 1.png', image2: 'assets/bells/D 2.png', key: '2' },
+  { note: 'E', solfege: 'Mi', color: '#FFCC00', image1: 'assets/bells/E 1.png', image2: 'assets/bells/E 2.png', key: '3' },
+  { note: 'F', solfege: 'Fa', color: '#4CD964', image1: 'assets/bells/F 1.png', image2: 'assets/bells/F 2.png', key: '4' },
+  { note: 'G', solfege: 'So', color: '#34A853', image1: 'assets/bells/G 1.png', image2: 'assets/bells/G 2.png', key: '5' },
+  { note: 'A', solfege: 'La', color: '#4285F4', image1: 'assets/bells/A 1.png', image2: 'assets/bells/A 2.png', key: '6' },
+  { note: 'B', solfege: 'Ti', color: '#AF52DE', image1: 'assets/bells/B 1.png', image2: 'assets/bells/B 2.png', key: '7' },
+  { note: 'High C', solfege: 'Do', color: '#FF2D55', image1: 'assets/bells/C 1.png', image2: 'assets/bells/C 2.png', key: '8' }
 ];
 
 const KEY_TO_NOTE = {

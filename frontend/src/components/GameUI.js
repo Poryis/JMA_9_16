@@ -62,13 +62,13 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
 
 function CharacterMascot({ character, position = 'left', message }) {
   const characterImages = {
-    finn: '/assets/characters/finn-danger.png',
-    charlie: '/assets/characters/charlie-polliwog.png',
-    chunk: '/assets/characters/chunk.png',
-    jazzy: '/assets/characters/jazzy.png',
+    finn: 'assets/characters/finn-danger.png',
+    charlie: 'assets/characters/charlie-polliwog.png',
+    chunk: 'assets/characters/chunk.png',
+    jazzy: 'assets/characters/jazzy.png',
     // Legacy aliases
-    shark: '/assets/characters/finn-danger.png',
-    catfish: '/assets/characters/charlie-polliwog.png'
+    shark: 'assets/characters/finn-danger.png',
+    catfish: 'assets/characters/charlie-polliwog.png'
   };
 
   return (

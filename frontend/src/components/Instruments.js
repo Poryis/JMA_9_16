@@ -179,13 +179,13 @@ export const PianoInstrument = forwardRef(function PianoInstrument({ onPlayNote,
 // --- DRUM KIT (used by Loop Studio as visual-only display) -------------------
 // Exposes imperative .flash(id) that swaps img1->img2 for ~100ms then back.
 const DRUM_FRAMES = {
-  crash:  { img1: '/assets/drums/Crash 1.png',  img2: '/assets/drums/Crash 2.png',  style: { left: '55px',  bottom: '125px', height: '110px', zIndex: 1 } },
-  ride:   { img1: '/assets/drums/Ride 1.png',   img2: '/assets/drums/Ride 2.png',   style: { left: '245px', bottom: '95px',  height: '140px', zIndex: 1 } },
-  hihat:  { img1: '/assets/drums/Hi hat 1.png', img2: '/assets/drums/Hi hat 2.png', style: { left: '0px',   bottom: '20px',  height: '160px', zIndex: 3 } },
-  kick:   { img1: '/assets/drums/kICK 1.png',   img2: '/assets/drums/kICK 2.png',   style: { left: '120px', bottom: '0px',   width:  '140px', zIndex: 3 } },
-  lowTom: { img1: '/assets/drums/tOM 2 1.png',  img2: '/assets/drums/tOM 2 2.png',  style: { left: '115px', bottom: '128px', width:  '70px',  zIndex: 3 } },
-  tom:    { img1: '/assets/drums/tOM 1 1.png',  img2: '/assets/drums/tOM 1 2.png',  style: { left: '200px', bottom: '130px', width:  '60px',  zIndex: 5 } },
-  snare:  { img1: '/assets/drums/Snare 1.png',  img2: '/assets/drums/Snare 2.png',  style: { left: '60px',  bottom: '10px',  width:  '85px',  zIndex: 6 } },
+  crash:  { img1: 'assets/drums/Crash 1.png',  img2: 'assets/drums/Crash 2.png',  style: { left: '55px',  bottom: '125px', height: '110px', zIndex: 1 } },
+  ride:   { img1: 'assets/drums/Ride 1.png',   img2: 'assets/drums/Ride 2.png',   style: { left: '245px', bottom: '95px',  height: '140px', zIndex: 1 } },
+  hihat:  { img1: 'assets/drums/Hi hat 1.png', img2: 'assets/drums/Hi hat 2.png', style: { left: '0px',   bottom: '20px',  height: '160px', zIndex: 3 } },
+  kick:   { img1: 'assets/drums/kICK 1.png',   img2: 'assets/drums/kICK 2.png',   style: { left: '120px', bottom: '0px',   width:  '140px', zIndex: 3 } },
+  lowTom: { img1: 'assets/drums/tOM 2 1.png',  img2: 'assets/drums/tOM 2 2.png',  style: { left: '115px', bottom: '128px', width:  '70px',  zIndex: 3 } },
+  tom:    { img1: 'assets/drums/tOM 1 1.png',  img2: 'assets/drums/tOM 1 2.png',  style: { left: '200px', bottom: '130px', width:  '60px',  zIndex: 5 } },
+  snare:  { img1: 'assets/drums/Snare 1.png',  img2: 'assets/drums/Snare 2.png',  style: { left: '60px',  bottom: '10px',  width:  '85px',  zIndex: 6 } },
 };
 
 export const DrumKitVisual = forwardRef(function DrumKitVisual(_props, ref) {
@@ -239,7 +239,7 @@ export const DrumKitVisual = forwardRef(function DrumKitVisual(_props, ref) {
         </div>
       ))}
       {/* Toms base - static decoration */}
-      <img src="/assets/drums/toms-base.png" alt="Toms base" className="absolute object-contain"
+      <img src="assets/drums/toms-base.png" alt="Toms base" className="absolute object-contain"
         style={{ left: '172px', bottom: '118px', width: '38px', zIndex: 4 }} />
     </div>
   );
@@ -252,14 +252,14 @@ export function TurntableVisual({ activeHits }) {
 
   return (
     <div className="relative mx-auto" style={{ width: '260px', height: '180px' }}>
-      <img src="/assets/turntable/bg.png" alt="Turntable" className="absolute inset-0 w-full h-full object-contain" style={{ zIndex: 1 }} />
-      <motion.img src="/assets/turntable/record-left.png" alt="Record L"
+      <img src="assets/turntable/bg.png" alt="Turntable" className="absolute inset-0 w-full h-full object-contain" style={{ zIndex: 1 }} />
+      <motion.img src="assets/turntable/record-left.png" alt="Record L"
         className="absolute object-contain"
         style={{ left: '10%', top: '22%', width: '34%', zIndex: 2 }}
         animate={isScratchLeft ? { rotate: 0 } : { rotate: 360 }}
         transition={isScratchLeft ? { duration: 0.1 } : { repeat: Infinity, duration: 2, ease: 'linear' }}
       />
-      <motion.img src="/assets/turntable/record-right.png" alt="Record R"
+      <motion.img src="assets/turntable/record-right.png" alt="Record R"
         className="absolute object-contain"
         style={{ right: '10%', top: '22%', width: '34%', zIndex: 2 }}
         animate={isScratchRight ? { rotate: 0 } : { rotate: 360 }}

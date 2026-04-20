@@ -2,13 +2,13 @@ import { motion } from 'framer-motion';
 
 // Character pool
 const ALL_CHARACTERS = [
-  { name: 'Finn', image: '/assets/characters/finn-danger.png' },
-  { name: 'Charlie', image: '/assets/characters/charlie-polliwog.png' },
-  { name: 'Chunk', image: '/assets/characters/chunk.png' },
-  { name: 'Jazzy', image: '/assets/characters/jazzy.png' },
-  { name: 'Dr. Jellybone', image: '/assets/characters/dr-jellybone.png' },
-  { name: 'Lou & Stew', image: '/assets/characters/llama-lou-stew.png' },
-  { name: 'Stew', image: '/assets/characters/stew.png' },
+  { name: 'Finn', image: 'assets/characters/finn-danger.png' },
+  { name: 'Charlie', image: 'assets/characters/charlie-polliwog.png' },
+  { name: 'Chunk', image: 'assets/characters/chunk.png' },
+  { name: 'Jazzy', image: 'assets/characters/jazzy.png' },
+  { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png' },
+  { name: 'Lou & Stew', image: 'assets/characters/llama-lou-stew.png' },
+  { name: 'Stew', image: 'assets/characters/stew.png' },
 ];
 
 // Picks characters based on a seed (page name) so each page gets consistent but different characters

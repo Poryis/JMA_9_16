@@ -40,7 +40,7 @@ function ResultsPage({ score, gameStats, resetGame }) {
       className="min-h-screen flex flex-col items-center justify-center p-4" 
       data-testid="results-page"
       style={{
-        backgroundImage: 'url(/assets/backgrounds/circus.png)',
+        backgroundImage: 'url(assets/backgrounds/circus.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
@@ -167,7 +167,7 @@ function ResultsPage({ score, gameStats, resetGame }) {
         transition={{ delay: 1 }}
       >
         <motion.img
-          src="/assets/characters/finn-danger.png"
+          src="assets/characters/finn-danger.png"
           alt="Finn Danger"
           className="w-28 h-auto"
           animate={{ y: [0, -20, 0], rotate: [-5, 5, -5] }}
@@ -182,7 +182,7 @@ function ResultsPage({ score, gameStats, resetGame }) {
         transition={{ delay: 1.2 }}
       >
         <motion.img
-          src="/assets/characters/charlie-polliwog.png"
+          src="assets/characters/charlie-polliwog.png"
           alt="Charlie the Polliwog"
           className="w-28 h-auto"
           animate={{ y: [0, -20, 0], rotate: [5, -5, 5] }}

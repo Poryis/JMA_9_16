@@ -53,6 +53,14 @@ Build a rhythm game for a music education platform using the user's custom artwo
 - Click character → cartoon speech bubble modal → "Tell me another!" or "Cool!" button
 - Facts hardcoded in `/app/frontend/src/data/musicFacts.js` (no LLM calls, no credit usage)
 
+### Deployment
+- **GitHub Pages ready (Feb 2026)**:
+  - `HashRouter` replaces `BrowserRouter` — no server-side routing tricks needed, URLs become `/#/free-play` etc.
+  - All asset paths made relative (`/assets/...` → `assets/...`) across all JS files (115 replacements) so the app works under any GitHub Pages sub-path.
+  - `package.json` has `"homepage": "."` (relative bundle paths) and `predeploy` + `deploy` scripts wired to the `gh-pages` package.
+  - To deploy: `cd frontend && yarn deploy` (pushes to a `gh-pages` branch on origin).
+  - Live URL pattern: `https://USERNAME.github.io/REPO-NAME/`
+
 ## Tech Stack
 - React, Tailwind CSS, Framer Motion, React Router
 - HTML5 AudioContext (custom `useAudio.js`)

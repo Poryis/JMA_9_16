@@ -15,28 +15,28 @@ const NOTE_FREQUENCIES = {
 
 // Bell audio file mapping
 const BELL_AUDIO_FILES = {
-  C: '/assets/audio/C - Do.mp3',
-  D: '/assets/audio/D - Re.mp3',
-  E: '/assets/audio/E - Mi.mp3',
-  F: '/assets/audio/F - Fa.mp3',
-  G: '/assets/audio/G - So.mp3',
-  A: '/assets/audio/A - La.mp3',
-  B: '/assets/audio/B - ti.mp3',
-  'High C': '/assets/audio/High C - High Do.mp3'
+  C: 'assets/audio/C - Do.mp3',
+  D: 'assets/audio/D - Re.mp3',
+  E: 'assets/audio/E - Mi.mp3',
+  F: 'assets/audio/F - Fa.mp3',
+  G: 'assets/audio/G - So.mp3',
+  A: 'assets/audio/A - La.mp3',
+  B: 'assets/audio/B - ti.mp3',
+  'High C': 'assets/audio/High C - High Do.mp3'
 };
 
 // Drum audio file mapping  
 const DRUM_AUDIO_FILES = {
-  kick: '/assets/audio/Bass drum - kick.mp3',
-  snare: '/assets/audio/Snare.mp3',
-  hihat: '/assets/audio/Hi Hat closed.mp3',
-  crash: '/assets/audio/Crash cymbal.mp3',
-  ride: '/assets/audio/Ride.mp3',
-  tom: '/assets/audio/Tom.mp3',
-  lowTom: '/assets/audio/Low Tom.mp3',
-  scratchPull: '/assets/audio/scratch-pull.mp3',
-  scratchPush: '/assets/audio/scratch-push.mp3',
-  scratchPushPull: '/assets/audio/scratch-push-pull.mp3'
+  kick: 'assets/audio/Bass drum - kick.mp3',
+  snare: 'assets/audio/Snare.mp3',
+  hihat: 'assets/audio/Hi Hat closed.mp3',
+  crash: 'assets/audio/Crash cymbal.mp3',
+  ride: 'assets/audio/Ride.mp3',
+  tom: 'assets/audio/Tom.mp3',
+  lowTom: 'assets/audio/Low Tom.mp3',
+  scratchPull: 'assets/audio/scratch-pull.mp3',
+  scratchPush: 'assets/audio/scratch-push.mp3',
+  scratchPushPull: 'assets/audio/scratch-push-pull.mp3'
 };
 
 export function useAudio() {

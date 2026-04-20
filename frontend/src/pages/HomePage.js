@@ -103,12 +103,12 @@ function HomePage() {
   ];
 
   const characters = [
-    { name: 'Finn', image: '/assets/characters/finn-danger.png', delay: 0.5 },
-    { name: 'Chunk', image: '/assets/characters/chunk.png', delay: 0.6 },
-    { name: 'Dr. Jellybone', image: '/assets/characters/dr-jellybone.png', delay: 0.7 },
-    { name: 'Jazzy', image: '/assets/characters/jazzy.png', delay: 0.75 },
-    { name: 'Lou & Stew', image: '/assets/characters/llama-lou-stew.png', delay: 0.8 },
-    { name: 'Charlie', image: '/assets/characters/charlie-polliwog.png', delay: 0.9 },
+    { name: 'Finn', image: 'assets/characters/finn-danger.png', delay: 0.5 },
+    { name: 'Chunk', image: 'assets/characters/chunk.png', delay: 0.6 },
+    { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png', delay: 0.7 },
+    { name: 'Jazzy', image: 'assets/characters/jazzy.png', delay: 0.75 },
+    { name: 'Lou & Stew', image: 'assets/characters/llama-lou-stew.png', delay: 0.8 },
+    { name: 'Charlie', image: 'assets/characters/charlie-polliwog.png', delay: 0.9 },
   ];
 
   return (
@@ -128,7 +128,7 @@ function HomePage() {
         transition={{ type: 'spring', stiffness: 200 }}
         className="mb-2 z-10"
       >
-        <img src="/assets/ui/logo.png" alt="JMA" className="w-20 h-20 md:w-28 md:h-28 object-contain" data-testid="jma-logo" />
+        <img src="assets/ui/logo.png" alt="JMA" className="w-20 h-20 md:w-28 md:h-28 object-contain" data-testid="jma-logo" />
       </motion.div>
 
       {/* Title */}

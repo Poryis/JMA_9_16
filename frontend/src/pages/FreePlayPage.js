@@ -22,19 +22,19 @@ const INSTRUMENT_TABS = [
   { id: 'drums', label: 'Drums' },
 ];
 
-const XYLO_AUDIO = { C: '/assets/audio/xylo low c.mp3', D: '/assets/audio/xylo D.mp3', E: '/assets/audio/xylo E.mp3', F: '/assets/audio/xylo F.mp3', G: '/assets/audio/xylo G.mp3', A: '/assets/audio/xylo a.mp3', B: '/assets/audio/xylo b.mp3', 'High C': '/assets/audio/xylo High c.mp3' };
-const PIANO_AUDIO = { C: '/assets/audio/C4.mp3', D: '/assets/audio/D4.mp3', E: '/assets/audio/E4.mp3', F: '/assets/audio/F4.mp3', G: '/assets/audio/G4.mp3', A: '/assets/audio/A4.mp3', B: '/assets/audio/B4.mp3', 'High C': '/assets/audio/C5.mp3' };
+const XYLO_AUDIO = { C: 'assets/audio/xylo low c.mp3', D: 'assets/audio/xylo D.mp3', E: 'assets/audio/xylo E.mp3', F: 'assets/audio/xylo F.mp3', G: 'assets/audio/xylo G.mp3', A: 'assets/audio/xylo a.mp3', B: 'assets/audio/xylo b.mp3', 'High C': 'assets/audio/xylo High c.mp3' };
+const PIANO_AUDIO = { C: 'assets/audio/C4.mp3', D: 'assets/audio/D4.mp3', E: 'assets/audio/E4.mp3', F: 'assets/audio/F4.mp3', G: 'assets/audio/G4.mp3', A: 'assets/audio/A4.mp3', B: 'assets/audio/B4.mp3', 'High C': 'assets/audio/C5.mp3' };
 
 const DRUM_KEY_MAP = { q: 'hihat', w: 'crash', e: 'ride', a: 'snare', s: 'tom', d: 'lowTom', x: 'kick' };
 
 const DRUM_INFO = {
-  hihat:  { label: 'Hi-Hat', key: 'Q', color: '#F1C40F', img1: '/assets/drums/Hi hat 1.png', img2: '/assets/drums/Hi hat 2.png' },
-  crash:  { label: 'Crash',  key: 'W', color: '#E67E22', img1: '/assets/drums/Crash 1.png',  img2: '/assets/drums/Crash 2.png'  },
-  ride:   { label: 'Ride',   key: 'E', color: '#E74C3C', img1: '/assets/drums/Ride 2.png',   img2: '/assets/drums/Ride 1.png'   },
-  snare:  { label: 'Snare',  key: 'A', color: '#3498DB', img1: '/assets/drums/Snare 1.png',  img2: '/assets/drums/Snare 2.png'  },
-  tom:    { label: 'Tom 1',  key: 'S', color: '#9B59B6', img1: '/assets/drums/tOM 1 1.png',  img2: '/assets/drums/tOM 1 2.png'  },
-  lowTom: { label: 'Tom 2',  key: 'D', color: '#1ABC9C', img1: '/assets/drums/tOM 2 1.png',  img2: '/assets/drums/tOM 2 2.png'  },
-  kick:   { label: 'Kick',   key: 'X', color: '#E74C3C', img1: '/assets/drums/kICK 1.png',   img2: '/assets/drums/kICK 2.png'   },
+  hihat:  { label: 'Hi-Hat', key: 'Q', color: '#F1C40F', img1: 'assets/drums/Hi hat 1.png', img2: 'assets/drums/Hi hat 2.png' },
+  crash:  { label: 'Crash',  key: 'W', color: '#E67E22', img1: 'assets/drums/Crash 1.png',  img2: 'assets/drums/Crash 2.png'  },
+  ride:   { label: 'Ride',   key: 'E', color: '#E74C3C', img1: 'assets/drums/Ride 2.png',   img2: 'assets/drums/Ride 1.png'   },
+  snare:  { label: 'Snare',  key: 'A', color: '#3498DB', img1: 'assets/drums/Snare 1.png',  img2: 'assets/drums/Snare 2.png'  },
+  tom:    { label: 'Tom 1',  key: 'S', color: '#9B59B6', img1: 'assets/drums/tOM 1 1.png',  img2: 'assets/drums/tOM 1 2.png'  },
+  lowTom: { label: 'Tom 2',  key: 'D', color: '#1ABC9C', img1: 'assets/drums/tOM 2 1.png',  img2: 'assets/drums/tOM 2 2.png'  },
+  kick:   { label: 'Kick',   key: 'X', color: '#E74C3C', img1: 'assets/drums/kICK 1.png',   img2: 'assets/drums/kICK 2.png'   },
 };
 
 const noteToSolfege = { C: 'Do', D: 'Re', E: 'Mi', F: 'Fa', G: 'So', A: 'La', B: 'Ti', 'High C': 'Do' };
@@ -62,11 +62,11 @@ function ParticleBurst({ color }) {
 
 function CharacterReaction({ streak }) {
   const reactions = [
-    { min: 0, src: '/assets/characters/finn-danger.png', msg: '' },
-    { min: 3, src: '/assets/characters/finn-danger.png', msg: 'Nice!' },
-    { min: 6, src: '/assets/characters/chunk.png', msg: 'Keep going!' },
-    { min: 10, src: '/assets/characters/jazzy.png', msg: 'Amazing!' },
-    { min: 15, src: '/assets/characters/dr-jellybone.png', msg: 'SUPERSTAR!' },
+    { min: 0, src: 'assets/characters/finn-danger.png', msg: '' },
+    { min: 3, src: 'assets/characters/finn-danger.png', msg: 'Nice!' },
+    { min: 6, src: 'assets/characters/chunk.png', msg: 'Keep going!' },
+    { min: 10, src: 'assets/characters/jazzy.png', msg: 'Amazing!' },
+    { min: 15, src: 'assets/characters/dr-jellybone.png', msg: 'SUPERSTAR!' },
   ];
   const reaction = [...reactions].reverse().find(r => streak >= r.min) || reactions[0];
   return (
@@ -105,7 +105,7 @@ function BellCircle({ onDown, onUp, nextGuidedNote, registerRef }) {
         style={{ width: '28%', height: '28%' }}
       >
         <div className="w-full h-full rounded-full border-4 border-[var(--jma-dark)] bg-white/70 backdrop-blur-sm flex items-center justify-center shadow-[0_6px_0_0_var(--jma-dark)]">
-          <img src="/assets/ui/logo.png" alt="" className="w-[70%] h-[70%] object-contain" draggable={false} />
+          <img src="assets/ui/logo.png" alt="" className="w-[70%] h-[70%] object-contain" draggable={false} />
         </div>
       </div>
       {/* Decorative ring path - true circle */}
@@ -357,7 +357,7 @@ function DrumKitPlayable({ onDrumDown, onDrumUp, registerDrumRef }) {
       {/* Toms group: moved way up and slightly right, sit on top of kick */}
       <PlayableDrumPiece drumId="lowTom" info={DRUM_INFO.lowTom} onDown={onDrumDown} onUp={onDrumUp} registerRef={registerDrumRef}
         style={{ left: L(140 + TOMS_DX), bottom: px(155 + TOMS_DY * -1), width: px(90), zIndex: 5, badgeLeft: L(178 + TOMS_DX), badgeBottom: px(153 + TOMS_DY * -1) }} />
-      <img src="/assets/drums/toms-base.png" alt="Toms base" className="absolute object-contain pointer-events-none"
+      <img src="assets/drums/toms-base.png" alt="Toms base" className="absolute object-contain pointer-events-none"
         style={{ left: L(215 + TOMS_DX), bottom: px(143 + TOMS_DY * -1), width: px(50), zIndex: 6 }} />
       <PlayableDrumPiece drumId="tom"    info={DRUM_INFO.tom}    onDown={onDrumDown} onUp={onDrumUp} registerRef={registerDrumRef}
         style={{ left: L(252 + TOMS_DX), bottom: px(158 + TOMS_DY * -1), width: px(78), zIndex: 7, badgeLeft: L(284 + TOMS_DX), badgeBottom: px(156 + TOMS_DY * -1) }} />
@@ -624,7 +624,7 @@ function FreePlayPage() {
       <CharacterReaction streak={streak} />
       <motion.div className="fixed bottom-3 left-3 hidden md:block z-20"
         initial={{ x: -80, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-        <motion.img src="/assets/characters/charlie-polliwog.png" alt="Charlie" className="w-16 h-20 object-contain"
+        <motion.img src="assets/characters/charlie-polliwog.png" alt="Charlie" className="w-16 h-20 object-contain"
           animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }} />
       </motion.div>
 

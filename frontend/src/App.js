@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import HomePage from "./pages/HomePage";
 import FreePlayPage from "./pages/FreePlayPage";
@@ -24,7 +24,7 @@ function App() {
 
   return (
     <div className="App min-h-screen">
-      <BrowserRouter>
+      <HashRouter>
         <StickerToast />
         <AnimatePresence mode="wait">
           <Routes>
@@ -41,7 +41,7 @@ function App() {
             <Route path="/sticker-book" element={<StickerBookPage />} />
           </Routes>
         </AnimatePresence>
-      </BrowserRouter>
+      </HashRouter>
     </div>
   );
 }
