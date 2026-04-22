@@ -35,6 +35,15 @@ Build a rhythm game for a music education platform using the user's custom artwo
 - Fun multi-color radial gradient game-board background (replaces white)
 - **Mobile responsive (Feb 2026)**: removed the `.game-board` bounding box; gradient applied directly to the page bg. Bells shrink on narrow viewports (`w-20 sm:w-28 md:w-40 lg:w-48`). Drum kit and xylo/piano wrapped in a `ResponsiveScaler` that JS-measures available width and scales uniformly (never up-scales past 1 — desktop stays full-size).
 
+### JMA Originals (Feb 2026)
+- 5 of the user's own songs (Brand New Friend, The Magic Is in the Music, Faster As We Go, Play One Skip One, Goody Bag) pitch-shifted to either C or G (whichever was closer within ±3 semitones) using ffmpeg's rubberband filter.
+- Each song trimmed to ~60s with 2s fade-in and 3s fade-out; 128kbps MP3 output.
+- Stored in `/app/frontend/public/assets/audio/songs/` (relative URLs for GH Pages compatibility).
+- Rhythm Game now plays the backing track during gameplay, with note-spawn interval derived from each song's BPM:
+  - chill = 3 beats per note, normal = 2 beats per note, turbo = 1 beat per note
+- Audio is delayed by `fallSpeed` ms so the first falling note hits the target line as beat 1 plays.
+- "G Mode" / "A Minor" hint badge shown at top of playing screen for non-C-major originals.
+
 ### Rhythm Game
 - Bells live AT the target line; falling notes land directly on matching bell
 - Long runway (~788px) for generous reaction time

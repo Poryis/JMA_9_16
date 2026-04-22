@@ -3,6 +3,85 @@
 // Speed is controlled by difficulty setting, not note count
 
 export const SONG_LIBRARY = [
+  // JMA Originals - the user's own songs, pitch-shifted to C or G to fit the 8-bell scale
+  {
+    id: 'jma_play_one_skip_one',
+    name: 'Play One, Skip One',
+    category: 'JMA Originals',
+    audioUrl: 'assets/audio/songs/play_one_skip_one.mp3',
+    bpm: 76,
+    mode: 'C-major',
+    originalKey: 'C major',
+    shift: 0,
+    // 40 notes over ~60s of backing @ 76bpm half-note cadence.
+    // Simple C-major scale patterns perfect for first-time players.
+    notes: ['C','D','E','F','G','F','E','D','C','E','G','E','C','E','G','E',
+            'G','F','E','D','C','D','E','F','G','A','G','F','E','D','C','C',
+            'C','E','G','High C','G','E','C','D']
+  },
+  {
+    id: 'jma_magic_in_music',
+    name: 'The Magic Is in the Music',
+    category: 'JMA Originals',
+    audioUrl: 'assets/audio/songs/magic_in_music.mp3',
+    bpm: 152,
+    mode: 'A-minor',
+    originalKey: 'A minor',
+    shift: 0,
+    // A minor natural = all white keys, so every bell is in play.
+    // Pentatonic-leaning mysterious minor vibe. 76 notes.
+    notes: ['A','C','E','A','G','E','C','A','A','C','E','A','G','E','C','A',
+            'E','G','A','E','D','C','A','G','E','G','A','E','D','C','B','A',
+            'A','E','A','E','C','E','C','E','A','E','A','G','E','D','C','A',
+            'A','C','E','A','G','E','C','A','A','G','E','D','C','E','G','A',
+            'A','E','G','A','E','D','C','A','A','C','E','A']
+  },
+  {
+    id: 'jma_brand_new_friend',
+    name: 'Brand New Friend',
+    category: 'JMA Originals',
+    audioUrl: 'assets/audio/songs/brand_new_friend.mp3',
+    bpm: 136,
+    mode: 'G-mixolydian',
+    originalKey: 'F# major',
+    shift: 1,
+    // G-mixolydian (G-A-B-C-D-E-F) melody. 68 notes, catchy pop vibe.
+    notes: ['G','A','B','G','D','E','D','B','G','A','B','G','D','E','D','B',
+            'A','B','G','A','D','E','D','C','A','B','G','A','D','E','D','C',
+            'G','B','D','G','E','D','B','G','A','B','D','E','D','B','G','D',
+            'G','A','B','D','E','D','B','A','G','A','B','G','D','C','B','G',
+            'G','B','D','G']
+  },
+  {
+    id: 'jma_faster_as_we_go',
+    name: 'Faster As We Go',
+    category: 'JMA Originals',
+    audioUrl: 'assets/audio/songs/faster_as_we_go.mp3',
+    bpm: 103,
+    mode: 'G-mixolydian',
+    originalKey: 'F# minor',
+    shift: 1,
+    // G-mode, emphasizing pentatonic (G-A-D-E-HiG style) with occasional passing Bs/Fs. 52 notes.
+    notes: ['G','A','D','G','F','D','A','G','G','A','D','F','D','A','G','G',
+            'D','F','A','D','C','A','D','F','D','A','D','G','D','A','G','G',
+            'A','G','A','D','F','E','D','C','G','A','B','D','E','D','B','G',
+            'G','D','F','A']
+  },
+  {
+    id: 'jma_goody_bag',
+    name: 'Goody Bag',
+    category: 'JMA Originals',
+    audioUrl: 'assets/audio/songs/goody_bag.mp3',
+    bpm: 123,
+    mode: 'G-mixolydian',
+    originalKey: 'A major',
+    shift: -2,
+    // G-mixolydian, bouncy upbeat pop. 62 notes.
+    notes: ['G','A','B','G','B','A','G','E','G','A','B','D','B','A','G','E',
+            'A','B','D','B','G','E','D','C','A','B','D','B','G','E','D','C',
+            'G','B','D','G','E','D','B','G','A','B','D','E','D','B','G','D',
+            'G','A','B','G','E','D','B','G','A','B','G','B','D','E']
+  },
   // Classic & Fun
   {
     id: 'ode_to_joy',

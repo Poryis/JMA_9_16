@@ -60,11 +60,23 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   const gameLoopRef = useRef(null);
   const noteIdRef = useRef(0);
   const fallingNotesRef = useRef([]);
+  const audioRef = useRef(null); // Backing track <audio> element for JMA Originals
   // Imperative refs for instant bell frame swap (no React render involved)
   const bellImgRefs = useRef({});
   const pressedKeysRef = useRef(new Set()); // dedup keyboard repeats
 
   const speedConfig = SPEED_SETTINGS[speed];
+  // If the selected song has a bpm, override spawn interval to sync to the music.
+  // chill = 3 beats per note (slow/easy), normal = 2 beats (default for kids),
+  // turbo = 1 beat per note (challenging).
+  const effectiveSpawnMs = useMemo(() => {
+    if (selectedSong.bpm) {
+      const msPerBeat = 60000 / selectedSong.bpm;
+      const beatsPerNote = { chill: 3, normal: 2, turbo: 1 }[speed] || 2;
+      return Math.round(msPerBeat * beatsPerNote);
+    }
+    return speedConfig.ms;
+  }, [selectedSong.bpm, speed, speedConfig.ms]);
   const songCategories = useMemo(() => getSongsByCategory(), []);
   const categories = ['All', ...Object.keys(songCategories)];
 
@@ -88,6 +100,25 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     noteIdRef.current = 0;
     setIsNewRecord(false);
   }, [initAudioContext, resetGame]);
+
+  // Play / stop backing track tied to game state. Audio starts ~fallSpeed delayed
+  // so the first falling note hits the target line roughly when beat 1 plays.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !selectedSong.audioUrl) return;
+    if (gameState === 'playing') {
+      audio.currentTime = 0;
+      audio.volume = 0.7;
+      const delayMs = (speedConfig.fallSpeed || 2500);
+      const t = setTimeout(() => {
+        audio.play().catch(() => {});
+      }, delayMs);
+      return () => { clearTimeout(t); audio.pause(); };
+    } else {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }, [gameState, selectedSong.audioUrl, speedConfig.fallSpeed]);
 
   const handlePlayNote = useCallback((tappedNote) => {
     playBellNote(tappedNote);
@@ -154,9 +185,9 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       setFallingNotes(prev => [...prev, { id: noteIdRef.current++, note, laneIndex, hit: false, spawnedAt: Date.now() }]);
       setCurrentNoteIndex(prev => prev + 1);
     };
-    gameLoopRef.current = setInterval(spawnNote, speedConfig.ms);
+    gameLoopRef.current = setInterval(spawnNote, effectiveSpawnMs);
     return () => { if (gameLoopRef.current) clearInterval(gameLoopRef.current); };
-  }, [gameState, currentNoteIndex, selectedSong, activeBells, speedConfig.ms]);
+  }, [gameState, currentNoteIndex, selectedSong, activeBells, effectiveSpawnMs]);
 
   // Handle missed notes
   const handleNoteMiss = useCallback((noteId) => {
@@ -314,10 +345,20 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   // PLAYING screen - with Jelly Bell images!
   return (
     <div className="min-h-screen sunburst-cool flex flex-col" data-testid="rhythm-game-playing">
+      {selectedSong.audioUrl && (
+        <audio ref={audioRef} src={selectedSong.audioUrl} preload="auto" data-testid="backing-track" />
+      )}
       <GameHeader title={selectedSong.name} score={score} streak={gameStats.streak} showHomeButton={true} />
       <div className="fixed top-16 left-0 right-0 px-4 py-1 z-40">
         <ProgressBar current={currentNoteIndex} total={selectedSong.notes.length} color={speedConfig.color} />
       </div>
+      {selectedSong.mode && selectedSong.mode !== 'C-major' && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-40 bg-[var(--jma-yellow)] border-2 border-[var(--jma-dark)] rounded-full px-3 py-0.5 shadow-[0_2px_0_0_var(--jma-dark)]">
+          <span className="text-xs font-bold font-display" style={{ color: 'var(--jma-dark)' }}>
+            {selectedSong.mode === 'G-mixolydian' ? 'G Mode - Start on So (5)' : 'A Minor - Start on La (6)'}
+          </span>
+        </div>
+      )}
       <AnimatePresence>{feedback && <FeedbackPopup feedback={feedback} />}</AnimatePresence>
       <main className="flex-1 flex flex-col pt-20 pb-2 px-2 md:px-4">
         <div className="game-board relative overflow-hidden" style={{ height: 'calc(100vh - 100px)' }}>
