@@ -633,27 +633,27 @@ function FreePlayPage() {
           <div className="game-card px-2 py-1 flex items-center gap-1">
             {INSTRUMENT_TABS.map(tab => (
               <button key={tab.id} data-testid={`sound-mode-${tab.id}`}
-                className={`px-2 py-1 rounded-lg text-xs font-bold border-2 transition-all ${activeTab === tab.id ? 'bg-[var(--jma-dark)] text-white border-[var(--jma-dark)]' : 'bg-white border-gray-300'}`}
+                className={`px-3 py-2 md:px-3 md:py-1.5 min-h-[44px] md:min-h-0 rounded-lg text-sm md:text-xs font-bold border-2 transition-all touch-manipulation ${activeTab === tab.id ? 'bg-[var(--jma-dark)] text-white border-[var(--jma-dark)]' : 'bg-white border-gray-300'}`}
                 onClick={() => setActiveTab(tab.id)}>{tab.label}</button>
             ))}
           </div>
           <div className="game-card px-2 py-1 flex items-center gap-2">
             {!isRecording ? (
-              <button data-testid="record-btn" className="chunky-btn bg-[var(--jma-red)] text-white px-3 py-1 flex items-center gap-1 text-xs font-bold" onClick={startRecording}>
+              <button data-testid="record-btn" className="chunky-btn bg-[var(--jma-red)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation" onClick={startRecording}>
                 <Circle className="w-3 h-3 fill-current" /> REC</button>
             ) : (
-              <button data-testid="stop-record-btn" className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-1 flex items-center gap-1 text-xs font-bold" onClick={stopRecording}>
+              <button data-testid="stop-record-btn" className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation" onClick={stopRecording}>
                 <Square className="w-3 h-3 fill-current" /> STOP</button>
             )}
             {recording.length > 0 && !isRecording && (
-              <button data-testid="playback-btn" className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-1 flex items-center gap-1 text-xs font-bold"
+              <button data-testid="playback-btn" className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
                 onClick={playBack} disabled={isPlayingBack}>
                 <Play className="w-3 h-3" /> {isPlayingBack ? 'Playing...' : `Play (${recording.length})`}</button>
             )}
           </div>
           {!isDrumTab && (
             <div className="game-card px-2 py-1">
-              <button data-testid="guided-toggle" className={`chunky-btn px-3 py-1 text-xs font-bold ${guidedMode ? 'bg-[var(--jma-blue)] text-white' : 'bg-white'}`}
+              <button data-testid="guided-toggle" className={`chunky-btn px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 text-sm md:text-xs font-bold touch-manipulation ${guidedMode ? 'bg-[var(--jma-blue)] text-white' : 'bg-white'}`}
                 onClick={() => setGuidedMode(!guidedMode)}>
                 <Music className="inline w-3 h-3 mr-1" /> {guidedMode ? 'Guided ON' : 'Learn a Song'}</button>
             </div>

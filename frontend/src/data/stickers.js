@@ -18,7 +18,7 @@ export const STICKERS = [
   { id: 'char_chunk',     name: 'Chunk',           category: 'characters', icon: 'assets/characters/chunk.png',           color: '#9B59B6', hint: 'Meet Chunk on the home page' },
   { id: 'char_jazzy',     name: 'Jazzy',           category: 'characters', icon: 'assets/characters/jazzy.png',            color: '#FF9500', hint: 'Meet Jazzy on the home page' },
   { id: 'char_doctor',    name: 'Dr. Jellybone',   category: 'characters', icon: 'assets/characters/dr-jellybone.png',     color: '#4285F4', hint: 'Meet Dr. Jellybone on the home page' },
-  { id: 'char_loustew',   name: 'Lou & Stew',      category: 'characters', icon: 'assets/characters/lou-stew.png',         color: '#AF52DE', hint: 'Meet Lou & Stew on the home page' },
+  { id: 'char_loustew',   name: 'Lou & Stew',      category: 'characters', icon: 'assets/characters/llama-lou-stew.png',         color: '#AF52DE', hint: 'Meet Lou & Stew on the home page' },
 
   // ---- Instruments (earned by playing each one in Free Play) ----
   { id: 'inst_bells',     name: 'Jelly Bells',     category: 'instruments', icon: 'assets/bells/C 1.png',       color: '#FF3B30', hint: 'Play the Jelly Bells in Free Play' },
