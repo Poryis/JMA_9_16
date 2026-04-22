@@ -67,16 +67,17 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
 
   const speedConfig = SPEED_SETTINGS[speed];
   // If the selected song has a bpm, override spawn interval to sync to the music.
-  // chill = 3 beats per note (slow/easy), normal = 2 beats (default for kids),
-  // turbo = 1 beat per note (challenging).
+  // Each song has its own `beatsPerNote` base rate (default 2 = half notes).
+  // Difficulty speeds scale this: chill = 2x (slower), normal = 1x, turbo = 0.5x (faster).
   const effectiveSpawnMs = useMemo(() => {
     if (selectedSong.bpm) {
       const msPerBeat = 60000 / selectedSong.bpm;
-      const beatsPerNote = { chill: 3, normal: 2, turbo: 1 }[speed] || 2;
-      return Math.round(msPerBeat * beatsPerNote);
+      const baseBeats = selectedSong.beatsPerNote ?? 2;
+      const difficultyMult = { chill: 2, normal: 1, turbo: 0.5 }[speed] || 1;
+      return Math.round(msPerBeat * baseBeats * difficultyMult);
     }
     return speedConfig.ms;
-  }, [selectedSong.bpm, speed, speedConfig.ms]);
+  }, [selectedSong.bpm, selectedSong.beatsPerNote, speed, speedConfig.ms]);
   const songCategories = useMemo(() => getSongsByCategory(), []);
   const categories = ['All', ...Object.keys(songCategories)];
 
@@ -85,7 +86,8 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     : SONG_LIBRARY.filter(s => s.category === categoryFilter);
 
   const activeBells = useMemo(() => {
-    const uniqueNotes = [...new Set(selectedSong.notes)];
+    // Filter out nulls (rests) before computing unique bells needed.
+    const uniqueNotes = [...new Set(selectedSong.notes.filter(n => n != null))];
     return uniqueNotes.sort((a, b) => NOTE_ORDER.indexOf(a) - NOTE_ORDER.indexOf(b));
   }, [selectedSong.notes]);
 
@@ -101,19 +103,17 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     setIsNewRecord(false);
   }, [initAudioContext, resetGame]);
 
-  // Play / stop backing track tied to game state. Audio starts ~fallSpeed delayed
-  // so the first falling note hits the target line roughly when beat 1 plays.
+  // Play / stop backing track. Audio starts IMMEDIATELY (fading in while notes are
+  // delayed). The note-spawn effect below waits FADE_IN_MS before starting so the
+  // first note lands after the fade-in completes.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !selectedSong.audioUrl) return;
     if (gameState === 'playing') {
       audio.currentTime = 0;
       audio.volume = 0.7;
-      const delayMs = (speedConfig.fallSpeed || 2500);
-      const t = setTimeout(() => {
-        audio.play().catch(() => {});
-      }, delayMs);
-      return () => { clearTimeout(t); audio.pause(); };
+      audio.play().catch(() => {});
+      return () => { audio.pause(); };
     } else {
       audio.pause();
       audio.currentTime = 0;
@@ -172,21 +172,30 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
   }, [gameState, activeBells, handlePlayNote]);
 
-  // Spawn notes
+  // Spawn notes. First note is delayed FADE_IN_MS so audio fade-in completes
+  // before it lands. Subsequent notes cadence at effectiveSpawnMs.
+  // `null` entries in notes[] are RESTS - tick forward but don't spawn a visual note.
   useEffect(() => {
     if (gameState !== 'playing') return;
+    const FADE_IN_MS = selectedSong.audioUrl ? 2000 : 0;
+    const delay = currentNoteIndex === 0 ? FADE_IN_MS : effectiveSpawnMs;
     const spawnNote = () => {
       if (currentNoteIndex >= selectedSong.notes.length) {
         setTimeout(() => setGameState('finished'), 2000);
         return;
       }
       const note = selectedSong.notes[currentNoteIndex];
+      if (note == null) {
+        // Rest - just advance the index, no visual note spawns
+        setCurrentNoteIndex(prev => prev + 1);
+        return;
+      }
       const laneIndex = activeBells.indexOf(note);
       setFallingNotes(prev => [...prev, { id: noteIdRef.current++, note, laneIndex, hit: false, spawnedAt: Date.now() }]);
       setCurrentNoteIndex(prev => prev + 1);
     };
-    gameLoopRef.current = setInterval(spawnNote, effectiveSpawnMs);
-    return () => { if (gameLoopRef.current) clearInterval(gameLoopRef.current); };
+    const t = setTimeout(spawnNote, delay);
+    return () => clearTimeout(t);
   }, [gameState, currentNoteIndex, selectedSong, activeBells, effectiveSpawnMs]);
 
   // Handle missed notes

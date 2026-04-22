@@ -3,21 +3,35 @@
 // Speed is controlled by difficulty setting, not note count
 
 export const SONG_LIBRARY = [
-  // JMA Originals - the user's own songs, pitch-shifted to C or G to fit the 8-bell scale
+  // JMA Originals - the user's own songs, pitch-shifted to C or G to fit the 8-bell scale.
+  // `null` in notes = REST (no note spawns, creating rhythmic variance).
+  // `beatsPerNote` is the spawn cadence at normal speed (1 = quarter note, 2 = half, 0.5 = eighth).
   {
     id: 'jma_play_one_skip_one',
     name: 'Play One, Skip One',
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/play_one_skip_one.mp3',
     bpm: 76,
+    beatsPerNote: 1, // quarter notes
     mode: 'C-major',
     originalKey: 'C major',
     shift: 0,
-    // 40 notes over ~60s of backing @ 76bpm half-note cadence.
-    // Simple C-major scale patterns perfect for first-time players.
-    notes: ['C','D','E','F','G','F','E','D','C','E','G','E','C','E','G','E',
-            'G','F','E','D','C','D','E','F','G','A','G','F','E','D','C','C',
-            'C','E','G','High C','G','E','C','D']
+    // Chord prog: 2 bars Cmaj | 2 bars Dmin, repeating.
+    // Melody = arpeggios of the current chord. 16 bars / 4 cycles.
+    notes: [
+      // Cycle 1 - sparse intro
+      'C',null,'E',null, 'G',null,'E','C',   // Cmaj 2 bars
+      'D',null,'F',null, 'A',null,'F','D',   // Dmin 2 bars
+      // Cycle 2 - full arpeggios
+      'C','E','G','High C', 'G','E','C','E',
+      'D','F','A','D',     'F','A','D','F',
+      // Cycle 3 - syncopated
+      null,'C','E','G', null,'G','E','C',
+      null,'D','F','A', null,'A','F','D',
+      // Cycle 4 - ending
+      'C','E','G',null, 'E','G','C',null,
+      'D','F','A',null, 'D','F','A',null,
+    ]
   },
   {
     id: 'jma_magic_in_music',
@@ -25,16 +39,30 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/magic_in_music.mp3',
     bpm: 152,
+    beatsPerNote: 1, // quarter notes
     mode: 'A-minor',
     originalKey: 'A minor',
     shift: 0,
-    // A minor natural = all white keys, so every bell is in play.
-    // Pentatonic-leaning mysterious minor vibe. 76 notes.
-    notes: ['A','C','E','A','G','E','C','A','A','C','E','A','G','E','C','A',
-            'E','G','A','E','D','C','A','G','E','G','A','E','D','C','B','A',
-            'A','E','A','E','C','E','C','E','A','E','A','G','E','D','C','A',
-            'A','C','E','A','G','E','C','A','A','G','E','D','C','E','G','A',
-            'A','E','G','A','E','D','C','A','A','C','E','A']
+    // Chord prog per user: La (1 bar) | Do (1 bar) | Re (2 bars), stay on each note.
+    // 8 cycles × 4 bars each.
+    notes: [
+      // C1 simple
+      'A','A','A','A',  'C','C','C','C',  'D','D','D','D',  'D','D','D','D',
+      // C2 syncopated
+      'A',null,'A','A', 'C','C',null,'C', 'D',null,'D','D', null,'D','D','D',
+      // C3
+      'A','A',null,'A', null,'C','C','C', 'D','D','D',null, 'D',null,'D','D',
+      // C4 sparse
+      null,'A',null,'A', 'C',null,null,'C', 'D',null,'D',null, null,'D',null,'D',
+      // C5
+      'A','A','A',null, 'C',null,'C','C', null,'D','D','D', 'D','D',null,'D',
+      // C6
+      'A',null,'A','A', 'C','C','C',null, 'D','D',null,'D', 'D',null,'D','D',
+      // C7 climax
+      'A','A','A','A',  'C','C','C','C',  'D','D','D','D',  'D','D','D','D',
+      // C8 ending
+      'A',null,'A',null, 'C',null,null,'C', 'D',null,'D',null, null,'D',null,'D',
+    ]
   },
   {
     id: 'jma_brand_new_friend',
@@ -42,15 +70,28 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/brand_new_friend.mp3',
     bpm: 136,
+    beatsPerNote: 1, // quarter notes - lots of rests create the rhythmic variance
     mode: 'G-mixolydian',
     originalKey: 'F# major',
     shift: 1,
-    // G-mixolydian (G-A-B-C-D-E-F) melody. 68 notes, catchy pop vibe.
-    notes: ['G','A','B','G','D','E','D','B','G','A','B','G','D','E','D','B',
-            'A','B','G','A','D','E','D','C','A','B','G','A','D','E','D','C',
-            'G','B','D','G','E','D','B','G','A','B','D','E','D','B','G','D',
-            'G','A','B','D','E','D','B','A','G','A','B','G','D','C','B','G',
-            'G','B','D','G']
+    // Chord prog I-V-vi-IV in G: G | D | Em | C (4-bar cycle × 7)
+    // Heavy rhythmic variance - syncopation, rests, arpeggio-chord-tones-only melody.
+    notes: [
+      // C1 sparse intro (8 hits)
+      'G',null,null,'G',  null,'D',null,'A',  'E',null,null,'E',  null,'C',null,'G',
+      // C2 growing (12)
+      'G',null,'B','G',   'D',null,'A','D',   'E',null,'G','E',   'C',null,'E','C',
+      // C3 syncopated (11)
+      'G','G',null,'G',   null,'D','D',null,  'E','E',null,'G',   null,'C','C','E',
+      // C4 arpeggios (16)
+      'G','B','D','G',    'D','A','D','A',    'E','G','B','E',    'C','E','G','E',
+      // C5 hooky (10)
+      'G',null,'B','D',   'A',null,'D',null,  'E',null,'G','B',   'E',null,'C',null,
+      // C6 finale (16)
+      'D','B','G','B',    'D','A','F','A',    'E','G','B','G',    'C','E','G','High C',
+      // C7 outro (5)
+      'G',null,null,'G',  null,'D',null,null, 'E',null,null,null, 'C',null,null,null,
+    ]
   },
   {
     id: 'jma_faster_as_we_go',
@@ -58,14 +99,24 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/faster_as_we_go.mp3',
     bpm: 103,
+    beatsPerNote: 1, // quarter notes
     mode: 'G-mixolydian',
     originalKey: 'F# minor',
     shift: 1,
-    // G-mode, emphasizing pentatonic (G-A-D-E-HiG style) with occasional passing Bs/Fs. 52 notes.
-    notes: ['G','A','D','G','F','D','A','G','G','A','D','F','D','A','G','G',
-            'D','F','A','D','C','A','D','F','D','A','D','G','D','A','G','G',
-            'A','G','A','D','F','E','D','C','G','A','B','D','E','D','B','G',
-            'G','D','F','A']
+    // Chord prog: G - Em - C - D (i-relative-IV-V folk feel in G minor key).
+    // 5 cycles × 4 bars.
+    notes: [
+      // C1 mellow (8 hits)
+      'G',null,'G',null,  'E',null,'E',null,  'C',null,'C',null,  'D',null,'D',null,
+      // C2 rhythm in (12)
+      'G',null,'B','G',   'E',null,'G','E',   'C',null,'E','C',   'D',null,'A','D',
+      // C3 driving (12)
+      'G','G','D',null,   'E','E','G',null,   'C','C','G',null,   'D','D','A',null,
+      // C4 climactic (16)
+      'G','B','D','G',    'E','G','B','E',    'C','E','G','E',    'D','A','D','A',
+      // C5 outro (5)
+      'G',null,null,'G',  null,'E',null,null, null,null,'C',null, 'D',null,null,null,
+    ]
   },
   {
     id: 'jma_goody_bag',
@@ -73,14 +124,25 @@ export const SONG_LIBRARY = [
     category: 'JMA Originals',
     audioUrl: 'assets/audio/songs/goody_bag.mp3',
     bpm: 123,
+    beatsPerNote: 1, // quarter notes
     mode: 'G-mixolydian',
     originalKey: 'A major',
     shift: -2,
-    // G-mixolydian, bouncy upbeat pop. 62 notes.
-    notes: ['G','A','B','G','B','A','G','E','G','A','B','D','B','A','G','E',
-            'A','B','D','B','G','E','D','C','A','B','D','B','G','E','D','C',
-            'G','B','D','G','E','D','B','G','A','B','D','E','D','B','G','D',
-            'G','A','B','G','E','D','B','G','A','B','G','B','D','E']
+    // Chord prog: G - C - G - D (boogie feel). 6 cycles × 4 bars.
+    notes: [
+      // C1 warm open (8)
+      'G',null,'B',null,  'C',null,'E',null,  'G',null,'D',null,  'D',null,'A',null,
+      // C2 arpeggios (16)
+      'G','B','D','G',    'C','E','G','E',    'G','D','B','G',    'D','A','D','A',
+      // C3 bouncy (10)
+      'G',null,'G','B',   null,'C',null,'E',  'G',null,'D',null,  'D','D',null,'A',
+      // C4 riff (16)
+      'G','B','G','B',    'C','E','C','E',    'G','B','D','B',    'D','A','D','A',
+      // C5 syncopated (10)
+      'G',null,'B','G',   null,'E','C',null,  'G','B',null,'D',   null,'A',null,'D',
+      // C6 outro (5)
+      'G',null,'B',null,  null,'C',null,null, null,null,'G',null, 'D',null,null,null,
+    ]
   },
   // Classic & Fun
   {

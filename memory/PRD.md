@@ -39,10 +39,16 @@ Build a rhythm game for a music education platform using the user's custom artwo
 - 5 of the user's own songs (Brand New Friend, The Magic Is in the Music, Faster As We Go, Play One Skip One, Goody Bag) pitch-shifted to either C or G (whichever was closer within ±3 semitones) using ffmpeg's rubberband filter.
 - Each song trimmed to ~60s with 2s fade-in and 3s fade-out; 128kbps MP3 output.
 - Stored in `/app/frontend/public/assets/audio/songs/` (relative URLs for GH Pages compatibility).
-- Rhythm Game now plays the backing track during gameplay, with note-spawn interval derived from each song's BPM:
-  - chill = 3 beats per note, normal = 2 beats per note, turbo = 1 beat per note
-- Audio is delayed by `fallSpeed` ms so the first falling note hits the target line as beat 1 plays.
-- "G Mode" / "A Minor" hint badge shown at top of playing screen for non-C-major originals.
+- Rhythm Game now plays the backing track during gameplay. Audio starts immediately (fading in); note spawning is delayed by 2000ms so the first note lands AFTER fade-in. Last note lands ~3s before fade-out begins (verified per-song buffer +2.4s to +6.5s).
+- Melodies **follow the chord progression** of each song (per user direction Feb 2026):
+  - Play One Skip One: Cmaj / Dmin arpeggios, 2 bars each
+  - Magic Is in Music: La (1 bar) / Do (1 bar) / Re (2 bars) — stay on each chord root
+  - Brand New Friend: I-V-vi-IV chord tones (G-D-Em-C) with rhythmic variance via rests
+  - Faster As We Go: G-Em-C-D chord tones
+  - Goody Bag: G-C-G-D (boogie prog) chord tones
+- **Rests supported** via `null` in notes arrays (spawn effect skips null entries). This is what gives songs rhythmic variance instead of 1-note-per-beat monotony.
+- `beatsPerNote` per-song field controls base spawn rate. Difficulty scales it: chill=2x, normal=1x, turbo=0.5x.
+- "G Mode - Start on So (5)" / "A Minor - Start on La (6)" hint badge shown at top of play screen for non-C-major songs.
 
 ### Rhythm Game
 - Bells live AT the target line; falling notes land directly on matching bell
