@@ -458,6 +458,9 @@ function FreePlayPage() {
     if (bellStickerMap[note]) earnSticker(bellStickerMap[note]);
     const tabStickerMap = { 'bells': 'inst_bells', 'xylophone': 'inst_xylo', 'piano': 'inst_piano' };
     if (tabStickerMap[activeTab]) earnSticker(tabStickerMap[activeTab]);
+    // Outfit stickers tied to instrument tabs
+    if (activeTab === 'xylophone') earnSticker('fit_charlie_zoot');
+    if (activeTab === 'piano') earnSticker('fit_sharky_zoot');
     // One-Kid Band: played all 4 instruments
     try {
       const played = JSON.parse(localStorage.getItem('jma_instruments_played_v1') || '[]');
@@ -481,6 +484,7 @@ function FreePlayPage() {
     // Stickers
     earnSticker('ach_first_note');
     earnSticker('inst_drums');
+    earnSticker('fit_charlie_drum_major');
     try {
       const played = JSON.parse(localStorage.getItem('jma_instruments_played_v1') || '[]');
       if (!played.includes('drums')) {
@@ -598,6 +602,8 @@ function FreePlayPage() {
   const playBack = useCallback(() => {
     if (recording.length === 0 || isPlayingBack) return;
     setIsPlayingBack(true);
+    // Steampunk Chunk: played back a recording of 10+ notes
+    if (recording.length >= 10) earnSticker('fit_chunk_steampunk');
     playbackTimeouts.current.forEach(t => clearTimeout(t));
     playbackTimeouts.current = [];
     recording.forEach(({ note, type, time }) => {

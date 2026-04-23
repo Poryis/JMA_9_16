@@ -35,6 +35,18 @@ Build a rhythm game for a music education platform using the user's custom artwo
 - Fun multi-color radial gradient game-board background (replaces white)
 - **Mobile responsive (Feb 2026)**: removed the `.game-board` bounding box; gradient applied directly to the page bg. Bells shrink on narrow viewports (`w-20 sm:w-28 md:w-40 lg:w-48`). Drum kit and xylo/piano wrapped in a `ResponsiveScaler` that JS-measures available width and scales uniformly (never up-scales past 1 — desktop stays full-size).
 
+### Sticker Book (Feb 2026)
+- **59 unlockable stickers** across 6 categories: Meet the Band (6), **Outfit Collection (17)**, Instruments, Jellybells, Song Champion, Achievements
+- **Outfit stickers** unlock via specific gameplay milestones:
+  - Zoot Charlie = play xylophone, Punk Charlie = 15 streak, Ragu Charlie = turbo win, Surf Charlie = 3 loops, Grad Charlie = Simon Says lvl 8, DMC Charlie = 3+ drum tracks in loop, Disco Charlie = 140+ BPM loop, Drum Major Charlie = play drums, Steampunk Charlie = all 5 JMA Originals, Zoot Sharky = play piano, Hip-Hop Sharky = 1000 pts, Snorkel Sharky = 10 ear trainer sessions, Disco Chunk = 30s loop play, Steampunk Chunk = playback 10+ notes, Disco Jazzy = 10 songs completed, Disco Lou = Goody Bag, Swing Stew = Faster As We Go
+- Backed by `localStorage`; `useStickers.js` tracks earned timestamps so Sticker Spotlight can identify newest earn
+
+### Sticker Spotlight (Feb 2026)
+- New widget on home page (`/app/frontend/src/components/StickerSpotlight.js`)
+- Shows kid's most recently earned sticker with "NEWEST STICKER" label, count, and gentle bouncing animation
+- Tapping opens the Sticker Book
+- Empty state: encourages first-sticker play with "Play any game to earn your first sticker!"
+
 ### JMA Originals (Feb 2026)
 - 5 of the user's own songs (Brand New Friend, The Magic Is in the Music, Faster As We Go, Play One Skip One, Goody Bag) pitch-shifted to either C or G (whichever was closer within ±3 semitones) using ffmpeg's rubberband filter.
 - Each song trimmed to ~60s with 2s fade-in and 3s fade-out; 128kbps MP3 output.

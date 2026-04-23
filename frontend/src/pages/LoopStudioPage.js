@@ -220,6 +220,24 @@ function LoopStudioPage() {
       setIsPlaying(true);
       // Sticker: kid played a loop
       earnSticker('ach_beat_maker');
+      // Track play count for Surf Charlie (3 loops played)
+      try {
+        const n = parseInt(localStorage.getItem('jma_loops_played_v1') || '0', 10) + 1;
+        localStorage.setItem('jma_loops_played_v1', String(n));
+        if (n >= 3) earnSticker('fit_charlie_surf');
+      } catch (_) {}
+      // Disco Charlie for fast loops
+      if (bpm >= 140) earnSticker('fit_charlie_disco');
+      // DMC Charlie for drum-heavy loops (3+ drum tracks with at least one hit each)
+      const drumTracksActive = Object.entries(gridRef.current).filter(([tid, steps]) =>
+        tid.startsWith('drum_') && steps.some(s => s)
+      ).length;
+      if (drumTracksActive >= 3) earnSticker('fit_charlie_rundmc');
+      // Start tracking for Disco Chunk (30s of playing)
+      const startTs = Date.now();
+      setTimeout(() => {
+        if (Date.now() - startTs >= 30000) earnSticker('fit_chunk_disco');
+      }, 30000);
       let step = 0;
       const msPerStep = (60 / bpm / 4) * 1000;
       playStep(0);

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Music, Drum, Brain, Layers, Ear, X, Sparkles } from 'lucide-react';
 import { getRandomFact } from '../data/musicFacts';
 import { earnSticker, noteFactSeen } from '../hooks/useStickers';
+import StickerSpotlight from '../components/StickerSpotlight';
 
 // SVG cartoony music notes - colorful, thick-stroked, fun
 const NOTES = [
@@ -173,6 +174,11 @@ function HomePage() {
           </motion.button>
         ))}
       </motion.div>
+
+      {/* Sticker Spotlight - shows newest earned sticker or a play nudge */}
+      <div className="relative z-10 mb-4 md:mb-6 w-full flex justify-center px-4">
+        <StickerSpotlight />
+      </div>
 
       {/* Music Fact Modal */}
       <AnimatePresence>

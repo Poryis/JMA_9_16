@@ -5,6 +5,7 @@
 
 export const STICKER_CATEGORIES = [
   { id: 'characters', label: 'Meet the Band' },
+  { id: 'outfits',    label: 'Outfit Collection' },
   { id: 'instruments', label: 'Instruments' },
   { id: 'bells', label: 'Jellybells' },
   { id: 'songs', label: 'Song Champion' },
@@ -19,6 +20,30 @@ export const STICKERS = [
   { id: 'char_jazzy',     name: 'Jazzy',           category: 'characters', icon: 'assets/characters/jazzy.png',            color: '#FF9500', hint: 'Meet Jazzy on the home page' },
   { id: 'char_doctor',    name: 'Dr. Jellybone',   category: 'characters', icon: 'assets/characters/dr-jellybone.png',     color: '#4285F4', hint: 'Meet Dr. Jellybone on the home page' },
   { id: 'char_loustew',   name: 'Lou & Stew',      category: 'characters', icon: 'assets/characters/llama-lou-stew.png',         color: '#AF52DE', hint: 'Meet Lou & Stew on the home page' },
+
+  // ---- Outfits (alternate looks of the characters, unlocked via gameplay milestones) ----
+  // CHARLIE looks
+  { id: 'fit_charlie_zoot',       name: 'Zoot Charlie',        category: 'outfits', icon: 'assets/characters/charlie-zoot.png',        color: '#C0392B', hint: 'Play the Xylophone in Free Play' },
+  { id: 'fit_charlie_punk',       name: 'Punk Charlie',        category: 'outfits', icon: 'assets/characters/charlie-punk.png',        color: '#E91E63', hint: 'Hit a streak of 15 in Rhythm Game' },
+  { id: 'fit_charlie_ragu',       name: 'Ragu Charlie',        category: 'outfits', icon: 'assets/characters/charlie-ragu.png',        color: '#E67E22', hint: 'Complete any song in Turbo speed' },
+  { id: 'fit_charlie_surf',       name: 'Surf Charlie',        category: 'outfits', icon: 'assets/characters/charlie-surf.png',        color: '#3498DB', hint: 'Play 3 loops in Loop Studio' },
+  { id: 'fit_charlie_grad',       name: 'Grad Charlie',        category: 'outfits', icon: 'assets/characters/charlie-grad.png',        color: '#2C3E50', hint: 'Beat Simon Says level 8' },
+  { id: 'fit_charlie_rundmc',     name: 'DMC Charlie',         category: 'outfits', icon: 'assets/characters/charlie-rundmc.png',     color: '#F1C40F', hint: 'Make a loop with 3+ drum tracks' },
+  { id: 'fit_charlie_disco',      name: 'Disco Charlie',       category: 'outfits', icon: 'assets/characters/charlie-disco.png',       color: '#FF6B9D', hint: 'Play a loop at 140+ BPM' },
+  { id: 'fit_charlie_drum_major', name: 'Drum Major Charlie',  category: 'outfits', icon: 'assets/characters/charlie-drum-major.png',  color: '#4285F4', hint: 'Play the drum kit in Free Play' },
+  { id: 'fit_charlie_steampunk',  name: 'Steampunk Charlie',   category: 'outfits', icon: 'assets/characters/charlie-steampunk.png',   color: '#8B4513', hint: 'Complete all 5 JMA Originals' },
+  // CHUNK looks
+  { id: 'fit_chunk_disco',        name: 'Disco Chunk',         category: 'outfits', icon: 'assets/characters/chunk-disco.png',         color: '#FF6B9D', hint: 'Play a loop for 30 seconds' },
+  { id: 'fit_chunk_steampunk',    name: 'Steampunk Chunk',     category: 'outfits', icon: 'assets/characters/chunk-steampunk.png',     color: '#654321', hint: 'Record and play back 10 notes in Free Play' },
+  // SHARKY looks
+  { id: 'fit_sharky_hiphop',      name: 'Hip-Hop Sharky',      category: 'outfits', icon: 'assets/characters/sharky-hiphop.png',      color: '#F39C12', hint: 'Score 1000 points in Rhythm Game' },
+  { id: 'fit_sharky_snorkel',     name: 'Snorkel Sharky',      category: 'outfits', icon: 'assets/characters/sharky-snorkel.png',     color: '#1ABC9C', hint: 'Play Ear Trainer 10 times' },
+  { id: 'fit_sharky_zoot',        name: 'Zoot Sharky',         category: 'outfits', icon: 'assets/characters/sharky-zoot.png',        color: '#27AE60', hint: 'Play the Piano in Free Play' },
+  // JAZZY looks
+  { id: 'fit_jazzy_disco',        name: 'Disco Jazzy',         category: 'outfits', icon: 'assets/characters/jazzy-disco.png',        color: '#FF1493', hint: 'Complete 10 songs total' },
+  // LOU & STEW looks
+  { id: 'fit_lou_disco',          name: 'Disco Lou',           category: 'outfits', icon: 'assets/characters/lou-disco.png',          color: '#D35400', hint: 'Complete Goody Bag in the Rhythm Game' },
+  { id: 'fit_stew_swing',         name: 'Swing Stew',          category: 'outfits', icon: 'assets/characters/stew-swing.png',         color: '#16A085', hint: 'Complete Faster As We Go in the Rhythm Game' },
 
   // ---- Instruments (earned by playing each one in Free Play) ----
   { id: 'inst_bells',     name: 'Jelly Bells',     category: 'instruments', icon: 'assets/bells/C 1.png',       color: '#FF3B30', hint: 'Play the Jelly Bells in Free Play' },

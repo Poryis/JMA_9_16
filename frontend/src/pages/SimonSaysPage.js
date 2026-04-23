@@ -120,6 +120,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           // Sticker: completed a level — level 5+ earns Super Ear
           if (level >= 5) earnSticker('ach_simon_5');
           if (level >= 8) {
+            earnSticker('fit_charlie_grad');
             setGameState('finished');
             navigate('/results');
           } else {

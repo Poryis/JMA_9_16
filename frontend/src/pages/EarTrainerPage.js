@@ -111,6 +111,12 @@ function EarTrainerPage() {
           attempts: totalRounds,
           streak
         });
+        // Snorkel Sharky: played 10 Ear Trainer sessions
+        try {
+          const n = parseInt(localStorage.getItem('jma_ear_sessions_v1') || '0', 10) + 1;
+          localStorage.setItem('jma_ear_sessions_v1', String(n));
+          if (n >= 10) earnSticker('fit_sharky_snorkel');
+        } catch (_) {}
         setStats(getEarTrainerStats());
         setGameState('menu');
       } else {

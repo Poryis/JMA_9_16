@@ -223,16 +223,28 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     if (accuracy >= 70) {
       const id = `song_${selectedSong.id}`;
       earnSticker(id);
-      // Track cumulative completions for Song Collector
+      // Turbo speed wins earn the Ragu Charlie outfit
+      if (speed === 'turbo') earnSticker('fit_charlie_ragu');
+      // Specific JMA Original outfit tie-ins
+      if (selectedSong.id === 'jma_goody_bag') earnSticker('fit_lou_disco');
+      if (selectedSong.id === 'jma_faster_as_we_go') earnSticker('fit_stew_swing');
+      // Track cumulative completions for Song Collector & 10-song outfit
       try {
         const set = new Set(JSON.parse(localStorage.getItem('jma_songs_completed_v1') || '[]'));
         set.add(selectedSong.id);
         localStorage.setItem('jma_songs_completed_v1', JSON.stringify([...set]));
         if (set.size >= 5) earnSticker('ach_song_5');
+        if (set.size >= 10) earnSticker('fit_jazzy_disco');
+        // Steampunk Charlie = all 5 JMA Originals cleared with 70%+ accuracy
+        const jmaIds = ['jma_play_one_skip_one','jma_magic_in_music','jma_brand_new_friend','jma_faster_as_we_go','jma_goody_bag'];
+        if (jmaIds.every(x => set.has(x))) earnSticker('fit_charlie_steampunk');
       } catch (_) {}
     }
+    // Score milestone
+    if (score >= 1000) earnSticker('fit_sharky_hiphop');
     // Streak stickers
     if (gameStats.maxStreak >= 10) earnSticker('ach_streak_10');
+    if (gameStats.maxStreak >= 15) earnSticker('fit_charlie_punk');
     if (gameStats.maxStreak >= 25) earnSticker('ach_streak_25');
   }, [gameState, selectedSong.id, speed, score, gameStats]);
 
