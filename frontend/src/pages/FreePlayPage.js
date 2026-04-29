@@ -1,11 +1,12 @@
 import { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Music, Circle, Square, Play, RotateCcw, ChevronRight } from 'lucide-react';
+import { Music, Circle, Square, Play, RotateCcw, ChevronRight, Headphones } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader, NotationDisplay } from '../components/GameUI';
 import { XylophoneInstrument, PianoInstrument } from '../components/Instruments';
 import { FullscreenButton } from '../components/FullscreenButton';
 import { earnSticker } from '../hooks/useStickers';
+import { SONG_LIBRARY } from '../data/songs';
 import useAudio from '../hooks/useAudio';
 
 const GUIDED_SONGS = [
@@ -189,7 +190,7 @@ function PlayableBell({ bell, onDown, onUp, isHighlighted, registerRef, rotation
     <div className="bell-container flex flex-col items-center">
       <div
         data-testid={`bell-${bell.note.replace(' ', '-')}`}
-        className={`bell-instrument relative cursor-pointer select-none flex items-center justify-center w-20 h-20 sm:w-28 sm:h-28 md:w-40 md:h-40 lg:w-48 lg:h-48 ${isHighlighted ? 'bell-highlight' : ''}`}
+        className={`bell-instrument relative cursor-pointer select-none flex items-center justify-center w-14 h-14 sm:w-24 sm:h-24 md:w-36 md:h-36 lg:w-44 lg:h-44 ${isHighlighted ? 'bell-highlight' : ''}`}
         onPointerDown={doDown}
         onPointerUp={doUp}
         onPointerLeave={doUp}
@@ -369,6 +370,100 @@ function DrumKitPlayable({ onDrumDown, onDrumUp, registerDrumRef }) {
   );
 }
 
+// ============================================================================
+// JamAlongControls: tiny dropdown to pick a JMA Original backing track to jam to.
+// Plays the song while the kid plays any instrument on top.
+// ============================================================================
+function JamAlongControls({ jamTrackId, onPick, audioRef }) {
+  const [open, setOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const jamSongs = SONG_LIBRARY.filter(s => s.category === 'JMA Originals');
+
+  // Sync isPlaying with the audio element
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    const onEnded = () => setIsPlaying(false);
+    a.addEventListener('play', onPlay);
+    a.addEventListener('pause', onPause);
+    a.addEventListener('ended', onEnded);
+    return () => {
+      a.removeEventListener('play', onPlay);
+      a.removeEventListener('pause', onPause);
+      a.removeEventListener('ended', onEnded);
+    };
+  }, [audioRef, jamTrackId]);
+
+  const handlePick = (id) => {
+    onPick(id);
+    setOpen(false);
+    setTimeout(() => {
+      const a = audioRef.current;
+      if (a) {
+        a.currentTime = 0;
+        a.volume = 0.55;
+        a.play().catch(() => {});
+      }
+    }, 50);
+  };
+
+  const handleStop = () => {
+    const a = audioRef.current;
+    if (a) { a.pause(); a.currentTime = 0; }
+    onPick(null);
+  };
+
+  const current = jamSongs.find(s => s.id === jamTrackId);
+
+  return (
+    <div className="game-card px-2 py-1 relative">
+      {!current ? (
+        <button
+          data-testid="jam-along-toggle"
+          className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
+          onClick={() => setOpen(o => !o)}
+        >
+          <Headphones className="w-3 h-3" /> Jam Along
+        </button>
+      ) : (
+        <div className="flex items-center gap-1">
+          <button
+            data-testid="jam-along-stop"
+            className="chunky-btn bg-[var(--jma-red)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
+            onClick={handleStop}
+          >
+            <Square className="w-3 h-3 fill-current" /> Stop
+          </button>
+          <span className="text-xs font-bold max-w-[120px] truncate" style={{ color: 'var(--jma-dark)' }}>
+            {isPlaying ? '🎶 ' : ''}{current.name}
+          </span>
+        </div>
+      )}
+      {open && !current && (
+        <div
+          data-testid="jam-along-menu"
+          className="absolute top-full left-0 mt-1 z-50 bg-white border-2 border-[var(--jma-dark)] rounded-xl shadow-[0_4px_0_0_var(--jma-dark)] p-2 min-w-[180px]"
+        >
+          <p className="text-[10px] font-bold uppercase tracking-wide opacity-60 mb-1 px-1">Pick a track</p>
+          {jamSongs.map(s => (
+            <button
+              key={s.id}
+              data-testid={`jam-pick-${s.id}`}
+              onClick={() => handlePick(s.id)}
+              className="block w-full text-left px-2 py-1.5 rounded-lg text-sm font-bold hover:bg-[var(--jma-yellow)]/30 touch-manipulation"
+              style={{ color: 'var(--jma-dark)' }}
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FreePlayPage() {
   const { playBellNote, playDrumSound, initAudioContext } = useAudio();
 
@@ -387,6 +482,17 @@ function FreePlayPage() {
   const [guidedMode, setGuidedMode] = useState(false);
   const [guidedSongIdx, setGuidedSongIdx] = useState(0);
   const [guidedStep, setGuidedStep] = useState(0);
+
+  // Jam-along: play a JMA Original backing track while jamming on any instrument
+  const [jamTrackId, setJamTrackId] = useState(null);
+  const jamAudioRef = useRef(null);
+  // Stop jam-along audio when this page unmounts
+  useEffect(() => {
+    return () => {
+      const a = jamAudioRef.current;
+      if (a) { try { a.pause(); } catch (_) {} }
+    };
+  }, []);
 
   // Refs for imperative image swaps (keyboard access)
   const bellRefsRef = useRef({});
@@ -624,7 +730,7 @@ function FreePlayPage() {
       style={{
         background: 'radial-gradient(circle at 15% 20%, rgba(255, 204, 0, 0.28) 0%, transparent 35%), radial-gradient(circle at 85% 25%, rgba(76, 217, 100, 0.28) 0%, transparent 40%), radial-gradient(circle at 50% 90%, rgba(66, 133, 244, 0.28) 0%, transparent 45%), radial-gradient(circle at 25% 80%, rgba(255, 59, 48, 0.22) 0%, transparent 40%), radial-gradient(circle at 75% 75%, rgba(175, 82, 222, 0.22) 0%, transparent 38%), linear-gradient(135deg, #FFF9E6 0%, #FFF4F4 50%, #F0F9FF 100%)'
       }}>
-      <GameHeader title="Free Play" showHomeButton={true} />
+      <GameHeader title="Jam Time" showHomeButton={true} />
       <FullscreenButton />
       <AnimatePresence>{particles.map(p => <ParticleBurst key={p.id} color={p.color} />)}</AnimatePresence>
       <CharacterReaction streak={streak} />
@@ -664,6 +770,17 @@ function FreePlayPage() {
                 <Music className="inline w-3 h-3 mr-1" /> {guidedMode ? 'Guided ON' : 'Learn a Song'}</button>
             </div>
           )}
+          <JamAlongControls
+            jamTrackId={jamTrackId}
+            onPick={(id) => setJamTrackId(id)}
+            audioRef={jamAudioRef}
+          />
+          <audio
+            ref={jamAudioRef}
+            src={jamTrackId ? (SONG_LIBRARY.find(s => s.id === jamTrackId)?.audioUrl || '') : ''}
+            preload="auto"
+            data-testid="jam-along-audio"
+          />
         </div>
 
         {guidedMode && !isDrumTab && (

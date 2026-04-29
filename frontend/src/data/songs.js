@@ -144,6 +144,63 @@ export const SONG_LIBRARY = [
       'G',null,'B',null,  null,'C',null,null, null,null,'G',null, 'D',null,null,null,
     ]
   },
+  // Drums-only versions - same audio, kid plays the drum kit instead of bells
+  {
+    id: 'jma_play_one_drums',
+    name: 'Play One, Skip One (Drums)',
+    category: 'JMA Originals',
+    audioUrl: 'assets/audio/songs/play_one_skip_one.mp3',
+    bpm: 76,
+    beatsPerNote: 1,
+    instrumentMode: 'drums',
+    // Standard rock pattern: kick/snare backbeat with a hihat ride
+    // 64 slots. kick = beat 1 & 3, snare = beat 2 & 4, hihat = on every quarter
+    notes: [
+      // bar 1-2 (Cmaj) kick-snare with hihat
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
+      // bar 3-4 (Dmin) sparser
+      'kick',null,'snare','hihat',     'kick','hihat','snare',null,
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
+      // bar 5-6 build
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
+      // bar 7-8 ending
+      'kick',null,'snare',null,        'kick','hihat','snare','crash',
+      'kick',null,'snare',null,        'kick',null,'snare','crash',
+    ]
+  },
+  {
+    id: 'jma_goody_bag_drums',
+    name: 'Goody Bag (Drums)',
+    category: 'JMA Originals',
+    audioUrl: 'assets/audio/songs/goody_bag.mp3',
+    bpm: 123,
+    beatsPerNote: 1,
+    instrumentMode: 'drums',
+    // Bouncy boogie pattern with crash accents
+    // 96 slots
+    notes: [
+      // C1 simple
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
+      // C2 arpeggios (rhythmic version)
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
+      // C3 bouncy
+      'kick',null,'snare','hihat',     'kick','hihat','snare',null,
+      'kick','hihat','snare','hihat',  'kick',null,'snare','crash',
+      // C4 riff
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','hihat',
+      'kick','hihat','snare','hihat',  'kick','hihat','snare','crash',
+      // C5 syncopated
+      'kick',null,'snare','hihat',     null,'hihat','snare',null,
+      'kick','hihat',null,'snare',     null,'hihat',null,'snare',
+      // C6 outro
+      'kick',null,'snare',null,        null,'hihat',null,null,
+      null,null,'snare',null,          'crash',null,null,null,
+    ]
+  },
   // Classic & Fun
   {
     id: 'ode_to_joy',

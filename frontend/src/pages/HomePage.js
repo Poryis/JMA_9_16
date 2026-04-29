@@ -1,9 +1,7 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, Drum, Brain, Layers, Ear, X, Sparkles } from 'lucide-react';
-import { getRandomFact } from '../data/musicFacts';
-import { earnSticker, noteFactSeen } from '../hooks/useStickers';
+import { Music, Drum, Brain, Layers, Ear, Sparkles, BookOpen } from 'lucide-react';
 import StickerSpotlight from '../components/StickerSpotlight';
 
 // SVG cartoony music notes - colorful, thick-stroked, fun
@@ -76,41 +74,20 @@ function CartoonNote({ note }) {
 
 function HomePage() {
   const navigate = useNavigate();
-  const [activeFact, setActiveFact] = useState(null); // { character, text, color, topic }
-
-  const showFact = useCallback((characterName) => {
-    const fact = getRandomFact(characterName);
-    if (fact) {
-      setActiveFact({ character: characterName, ...fact });
-      // Earn character sticker the first time this character is clicked
-      const charStickerMap = {
-        'Finn': 'char_finn', 'Charlie': 'char_charlie', 'Chunk': 'char_chunk',
-        'Jazzy': 'char_jazzy', 'Dr. Jellybone': 'char_doctor', 'Lou & Stew': 'char_loustew',
-      };
-      const sid = charStickerMap[characterName];
-      if (sid) earnSticker(sid);
-      noteFactSeen();
-    }
-  }, []);
-
-  const closeFact = useCallback(() => setActiveFact(null), []);
+  const [shieldSpins, setShieldSpins] = useState(0);
 
   const gameModes = [
-    { id: 'free-play', title: 'Free Play', description: 'Tap the Jelly Bells!', icon: Music, color: '#4CD964', path: '/free-play' },
-    { id: 'rhythm-game', title: 'Rhythm Game', description: 'Hit notes as they fall!', icon: Drum, color: '#FF3B30', path: '/rhythm-game' },
-    { id: 'simon-says', title: 'Simon Says', description: 'Watch, listen, repeat!', icon: Brain, color: '#4285F4', path: '/simon-says' },
-    { id: 'ear-trainer', title: 'Ear Trainer', description: 'Name that note!', icon: Ear, color: '#FF9500', path: '/ear-trainer' },
-    { id: 'loop-studio', title: 'Loop Studio', description: 'Build beats & layers!', icon: Layers, color: '#AF52DE', path: '/loop-studio' },
+    { id: 'free-play',   title: 'Jam Time',          description: 'Tap any instrument!',  icon: Music,  color: '#4CD964', path: '/free-play' },
+    { id: 'rhythm-game', title: "Who's Got Rhythm",  description: 'Hit notes as they fall!', icon: Drum,   color: '#FF3B30', path: '/rhythm-game' },
+    { id: 'simon-says',  title: 'Simon Says',        description: 'Watch, listen, repeat!',  icon: Brain,  color: '#4285F4', path: '/simon-says' },
+    { id: 'ear-trainer', title: 'Ear Trainer',       description: 'Name that note!',          icon: Ear,    color: '#FF9500', path: '/ear-trainer' },
+    { id: 'loop-studio', title: 'Loop Studio',       description: 'Build beats & layers!',    icon: Layers, color: '#AF52DE', path: '/loop-studio' },
+    { id: 'fun-facts',   title: 'Fun Facts',         description: 'Music facts for kids!',    icon: BookOpen, color: '#FFCC00', path: '/fun-facts' },
   ];
 
-  const characters = [
-    { name: 'Finn', image: 'assets/characters/finn-danger.png', delay: 0.5 },
-    { name: 'Chunk', image: 'assets/characters/chunk.png', delay: 0.6 },
-    { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png', delay: 0.7 },
-    { name: 'Jazzy', image: 'assets/characters/jazzy.png', delay: 0.75 },
-    { name: 'Lou & Stew', image: 'assets/characters/llama-lou-stew.png', delay: 0.8 },
-    { name: 'Charlie', image: 'assets/characters/charlie-polliwog.png', delay: 0.9 },
-  ];
+  // Only Finn (left) and Charlie (right) on the home page
+  const finn    = { name: 'Finn',    image: 'assets/characters/finn-danger.png' };
+  const charlie = { name: 'Charlie', image: 'assets/characters/charlie-polliwog.png' };
 
   return (
     <div
@@ -122,142 +99,82 @@ function HomePage() {
         <CartoonNote key={i} note={note} />
       ))}
 
-      {/* Logo */}
+      {/* Hero row: Finn — Shield — Charlie */}
       <motion.div
-        initial={{ y: -40, opacity: 0, rotate: -5 }}
-        animate={{ y: 0, opacity: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 200 }}
-        className="mb-2 z-10"
+        className="flex items-center justify-center gap-3 md:gap-6 mb-1 z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
       >
-        <img src="assets/ui/logo.png" alt="JMA" className="w-20 h-20 md:w-28 md:h-28 object-contain" data-testid="jma-logo" />
+        <motion.img
+          src={finn.image}
+          alt="Finn"
+          data-testid="home-finn"
+          className="w-20 h-24 md:w-32 md:h-36 object-contain drop-shadow-lg cursor-pointer"
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
+          transition={{ x: { delay: 0.2, type: 'spring' }, opacity: { delay: 0.2 }, y: { repeat: Infinity, duration: 2.2, ease: 'easeInOut' } }}
+          whileHover={{ scale: 1.1, rotate: -5 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/fun-facts')}
+        />
+
+        <motion.button
+          data-testid="jma-logo"
+          aria-label="JMA Shield - tap me!"
+          onClick={() => setShieldSpins((n) => n + 1)}
+          className="bg-transparent border-0 p-0 cursor-pointer"
+          initial={{ y: -40, opacity: 0, rotate: -5 }}
+          animate={{ y: 0, opacity: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+        >
+          <motion.img
+            src="assets/ui/logo.png"
+            alt="JMA"
+            className="w-24 h-24 md:w-36 md:h-36 object-contain"
+            animate={{ rotate: shieldSpins * 360 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+        </motion.button>
+
+        <motion.img
+          src={charlie.image}
+          alt="Charlie"
+          data-testid="home-charlie"
+          className="w-20 h-24 md:w-32 md:h-36 object-contain drop-shadow-lg cursor-pointer"
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
+          transition={{ x: { delay: 0.3, type: 'spring' }, opacity: { delay: 0.3 }, y: { repeat: Infinity, duration: 2.4, ease: 'easeInOut', delay: 0.4 } }}
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/fun-facts')}
+        />
       </motion.div>
 
-      {/* Title */}
+      {/* Title - ALL CAPS */}
       <motion.h1
-        className="text-5xl md:text-6xl font-black text-center font-display mb-0 z-10"
+        className="text-4xl md:text-6xl font-black text-center font-display mb-0 z-10 tracking-wide"
         style={{ color: 'var(--jma-dark)', textShadow: '3px 3px 0 #FFD54F, 5px 5px 0 rgba(10,37,64,0.15)' }}
         initial={{ scale: 0 }} animate={{ scale: 1 }}
         transition={{ type: 'spring', delay: 0.15, stiffness: 200 }}
         data-testid="game-title"
       >
-        Jelly Jam Box
+        JELLY JAM BOX
       </motion.h1>
       <motion.p className="text-sm md:text-base font-bold mb-3 z-10" style={{ color: 'white', textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
         Music is FUN!
       </motion.p>
 
-      {/* Character band lineup */}
-      <motion.div className="flex items-end justify-center gap-2 md:gap-4 mb-5 md:mb-6 z-10 flex-wrap"
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
-        {characters.map((char, i) => (
-          <motion.button key={char.name}
-            data-testid={`home-character-${char.name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`}
-            type="button"
-            initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: char.delay, type: 'spring', stiffness: 250 }}
-            onClick={() => showFact(char.name)}
-            className="flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer"
-            aria-label={`Click ${char.name} for a music fact`}
-          >
-            <motion.img src={char.image} alt={char.name}
-              className="w-14 h-18 md:w-20 md:h-24 object-contain drop-shadow-lg"
-              animate={{ y: [0, -8, 0] }}
-              transition={{ repeat: Infinity, duration: 1.8 + i * 0.3, ease: 'easeInOut', delay: i * 0.15 }}
-              whileHover={{ scale: 1.15, rotate: [0, -5, 5, 0] }}
-              whileTap={{ scale: 0.95 }}
-            />
-            <span className="text-[8px] md:text-[10px] font-bold mt-1 px-1.5 py-0.5 rounded-full whitespace-nowrap"
-              style={{ color: 'white', backgroundColor: 'var(--jma-dark)' }}>
-              {char.name}
-            </span>
-          </motion.button>
-        ))}
-      </motion.div>
-
-      {/* Sticker Spotlight - shows newest earned sticker or a play nudge */}
+      {/* Sticker Spotlight */}
       <div className="relative z-10 mb-4 md:mb-6 w-full flex justify-center px-4">
         <StickerSpotlight />
       </div>
 
-      {/* Music Fact Modal */}
-      <AnimatePresence>
-        {activeFact && (
-          <motion.div
-            data-testid="fact-modal-backdrop"
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={closeFact}
-          >
-            <motion.div
-              data-testid="fact-modal"
-              className="relative bg-white rounded-3xl border-4 max-w-md w-full p-6 md:p-8 shadow-2xl"
-              style={{ borderColor: activeFact.color, boxShadow: `0 10px 0 0 ${activeFact.color}` }}
-              initial={{ scale: 0.7, y: 40, opacity: 0, rotate: -3 }}
-              animate={{ scale: 1, y: 0, opacity: 1, rotate: 0 }}
-              exit={{ scale: 0.7, y: 40, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                data-testid="fact-modal-close"
-                onClick={closeFact}
-                className="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-white border-3 border-[var(--jma-dark)] flex items-center justify-center shadow-md hover:scale-110 transition-transform"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" style={{ color: 'var(--jma-dark)' }} />
-              </button>
-              <div className="flex items-start gap-4">
-                <motion.img
-                  src={characters.find(c => c.name === activeFact.character)?.image}
-                  alt={activeFact.character}
-                  className="w-20 h-24 md:w-24 md:h-28 object-contain flex-shrink-0"
-                  initial={{ rotate: -10 }}
-                  animate={{ rotate: [0, -5, 5, 0] }}
-                  transition={{ duration: 0.6 }}
-                />
-                <div className="flex-1 pt-1">
-                  <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: activeFact.color }}>
-                    {activeFact.character} says:
-                  </p>
-                  <p className="text-base md:text-lg font-bold leading-snug" style={{ color: 'var(--jma-dark)' }}>
-                    {activeFact.text}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between mt-5 pt-4 border-t-2 border-dashed border-gray-200">
-                <button
-                  data-testid="fact-modal-another"
-                  onClick={() => showFact(activeFact.character)}
-                  className="chunky-btn text-white px-4 py-1.5 text-sm font-bold"
-                  style={{ backgroundColor: activeFact.color }}
-                >
-                  Tell me another!
-                </button>
-                <button
-                  data-testid="fact-modal-got-it"
-                  onClick={closeFact}
-                  className="chunky-btn bg-white px-4 py-1.5 text-sm font-bold border-[var(--jma-dark)]"
-                  style={{ color: 'var(--jma-dark)' }}
-                >
-                  Cool!
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Game Mode Cards */}
+      {/* Game Mode Cards - 6 modes in 3-col grid */}
       <div className="w-full max-w-3xl z-10">
-        <div className="grid grid-cols-3 gap-3 md:gap-4 mb-3 md:mb-4">
-          {gameModes.slice(0, 3).map((mode, index) => (
+        <div className="grid grid-cols-3 gap-3 md:gap-4">
+          {gameModes.map((mode, index) => (
             <GameModeCard key={mode.id} mode={mode} index={index} navigate={navigate} />
-          ))}
-        </div>
-        <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-[66%] md:max-w-[67%] mx-auto">
-          {gameModes.slice(3).map((mode, index) => (
-            <GameModeCard key={mode.id} mode={mode} index={index + 3} navigate={navigate} />
           ))}
         </div>
       </div>

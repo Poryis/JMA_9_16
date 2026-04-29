@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Home, Volume2 } from 'lucide-react';
+import { Volume2 } from 'lucide-react';
 
 function GameHeader({ title, score, streak, showHomeButton = true }) {
   const navigate = useNavigate();
@@ -8,16 +8,17 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Home button */}
+        {/* Home button - JMA shield */}
         {showHomeButton && (
           <motion.button
             data-testid="home-button"
+            aria-label="Home"
             onClick={() => navigate('/')}
-            className="chunky-btn bg-white p-3 flex items-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="bg-white rounded-full p-1 border-2 border-[var(--jma-dark)] shadow-[0_4px_0_0_var(--jma-dark)] hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow"
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95, y: 2 }}
           >
-            <Home className="w-6 h-6" style={{ color: 'var(--jma-dark)' }} />
+            <img src="assets/ui/logo.png" alt="JMA Home" className="w-12 h-12 md:w-14 md:h-14 object-contain" draggable={false} />
           </motion.button>
         )}
 

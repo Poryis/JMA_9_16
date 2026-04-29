@@ -267,6 +267,19 @@ function LoopStudioPage() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, []);
 
+  // Spacebar = play/stop, ignored when typing in inputs
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.code !== 'Space') return;
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+      e.preventDefault();
+      togglePlay();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [togglePlay]);
+
   const loadPreset = useCallback((presetName) => {
     const preset = LOOP_PRESETS[presetName];
     if (!preset) return;
@@ -488,8 +501,8 @@ function LoopStudioPage() {
           </div>
         </div>
 
-        {/* Instruments in the scene - drums left, turntable right */}
-        <div className="max-w-5xl mx-auto mt-3 flex items-end justify-between px-12">
+        {/* Instruments in the scene - desktop: drums left + turntable right; mobile: stacked vertically */}
+        <div className="max-w-5xl mx-auto mt-3 flex flex-col md:flex-row md:items-end md:justify-between md:px-12 gap-6 md:gap-0 items-center">
           {/* Drum kit */}
           <div className="flex-shrink-0">
             <DrumKitVisual ref={drumKitRef} />

@@ -88,6 +88,44 @@ Build a rhythm game for a music education platform using the user's custom artwo
   - To deploy: `cd frontend && yarn deploy` (pushes to a `gh-pages` branch on origin).
   - Live URL pattern: `https://USERNAME.github.io/REPO-NAME/`
 
+### Home Page Restructure (Feb 2026 - partner feedback)
+- Title is now ALL CAPS: **JELLY JAM BOX**
+- Only Finn (left) and Charlie (right) flank the central shield logo. Shield spins on click for playful feedback.
+- Replaced character lineup with new **Fun Facts** mode tile (yellow, BookOpen icon).
+- 6 mode tiles in a clean 3×2 grid: Jam Time / Who's Got Rhythm / Simon Says / Ear Trainer / Loop Studio / Fun Facts.
+
+### Fun Facts Page (Feb 2026)
+- New `/fun-facts` route with clubhouse background.
+- All 6 characters as cards in a 2-col (mobile) / 3-col (desktop) grid; tap opens fact modal.
+- `noteFactSeen()` trigger moved here from HomePage; "fact_finder" sticker now unlocks via the Fun Facts page.
+- Finn's facts rewritten to properly distinguish BEAT (steady pulse), TEMPO (how fast/slow), and RHYTHM (pattern of long/short sounds).
+
+### Renames (Feb 2026)
+- **"Free Play"** → **"Jam Time"** (in title, home tile; route stays `/free-play`)
+- **"Rhythm Game"** → **"Who's Got the Rhythm"** (menu screen title; home tile reads "Who's Got Rhythm")
+
+### Shield as Home Button
+- `GameHeader` replaced lucide `Home` icon with the JMA shield logo (`assets/ui/logo.png`) on every page; tapping returns to home.
+
+### Loop Studio (Feb 2026)
+- **Mobile layout**: drums + turntable now stack vertically below the loop grid (`flex-col` on mobile, `flex-row` on `md+`). Eliminates horizontal scroll issues.
+- **Spacebar** = play/stop toggle, ignored when typing in inputs.
+
+### Jam-Along (Feb 2026 - Jam Time / Free Play)
+- New "Jam Along" dropdown lets kids pick any of the 5 JMA Originals as a backing track to jam to with any instrument.
+- Audio volume reduced to 0.55 so the kid's playing is clearly audible above the track.
+- Auto-stops when leaving the page.
+
+### Drums-Only Rhythm Songs (Feb 2026)
+- 2 new entries in the rhythm game with `instrumentMode: 'drums'`, reusing the existing JMA Originals audio:
+  - 🥁 **Play One, Skip One (Drums)** — basic kick/snare/hihat backbeat
+  - 🥁 **Goody Bag (Drums)** — bouncy boogie pattern with crash accents
+- Drum mode swaps the 8 bell lanes for 4 drum lanes (kick/snare/hihat/crash), keyboard maps to Z/X/C/V.
+- Falling notes show drum images. `playDrumSound` triggered on hit instead of `playBellNote`.
+
+### Bell Sizing (Feb 2026)
+- Mobile bell instrument size reduced from `w-20 h-20` (80px) to `w-14 h-14` (56px) so 8 bells fit nicely around the circle on a 390px phone without overflow.
+
 ## Tech Stack
 - React, Tailwind CSS, Framer Motion, React Router
 - HTML5 AudioContext (custom `useAudio.js`)

@@ -13,9 +13,29 @@ import { getHighScore, saveHighScore, getTopScores } from '../hooks/useScores';
 
 const NOTE_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
 
-// Falling bell image note
-function FallingBellNote({ note, laneIndex, totalLanes, speed }) {
-  const bell = BELLS.find(b => b.note === note);
+// Drum-mode lanes: same falling-note machinery, but the targets at the bottom
+// are drum images, kid plays drum sounds, and the keyboard map uses simpler keys.
+const DRUM_LANES = {
+  kick:  { label: 'Kick',   short: 'KICK',  key: 'Z', color: '#3498DB', img1: 'assets/drums/kICK 1.png',   img2: 'assets/drums/kICK 2.png' },
+  snare: { label: 'Snare',  short: 'SNARE', key: 'X', color: '#FFCC00', img1: 'assets/drums/Snare 1.png',  img2: 'assets/drums/Snare 2.png' },
+  hihat: { label: 'Hi-Hat', short: 'HAT',   key: 'C', color: '#34A853', img1: 'assets/drums/Hi hat 1.png', img2: 'assets/drums/Hi hat 2.png' },
+  crash: { label: 'Crash',  short: 'CRASH', key: 'V', color: '#FF3B30', img1: 'assets/drums/Crash 1.png',  img2: 'assets/drums/Crash 2.png' },
+};
+const DRUM_ORDER = ['kick', 'snare', 'hihat', 'crash'];
+const DRUM_KEY_TO_NOTE = Object.fromEntries(
+  Object.entries(DRUM_LANES).flatMap(([id, info]) => [
+    [info.key.toLowerCase(), id],
+    [info.key.toUpperCase(), id],
+  ])
+);
+
+// Falling note - works for both bell (note string like 'C') and drum (id like 'kick')
+function FallingBellNote({ note, laneIndex, totalLanes, speed, isDrum }) {
+  const lane = isDrum ? DRUM_LANES[note] : null;
+  const bell = isDrum ? null : BELLS.find(b => b.note === note);
+  const img = isDrum ? lane?.img1 : bell?.image1;
+  const label = isDrum ? lane?.short : bell?.solfege;
+  const color = isDrum ? lane?.color : bell?.color;
   const laneWidth = 100 / totalLanes;
 
   return (
@@ -30,14 +50,14 @@ function FallingBellNote({ note, laneIndex, totalLanes, speed }) {
       transition={{ duration: speed / 1000, ease: 'linear' }}
     >
       <img
-        src={bell?.image1}
-        alt={bell?.solfege}
+        src={img}
+        alt={label}
         className="w-10 h-12 md:w-12 md:h-14 object-contain drop-shadow-md"
         draggable={false}
       />
       <span className="text-xs font-bold mt-0.5 px-1.5 rounded-full text-white"
-        style={{ backgroundColor: bell?.color, textShadow: '1px 1px 0 rgba(0,0,0,0.3)' }}>
-        {bell?.solfege}
+        style={{ backgroundColor: color, textShadow: '1px 1px 0 rgba(0,0,0,0.3)' }}>
+        {label}
       </span>
     </motion.div>
   );
@@ -45,7 +65,7 @@ function FallingBellNote({ note, laneIndex, totalLanes, speed }) {
 
 function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame }) {
   const navigate = useNavigate();
-  const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
+  const { playBellNote, playDrumSound, playFeedbackSound, initAudioContext } = useAudio();
 
   const [gameState, setGameState] = useState('menu');
   const [selectedSong, setSelectedSong] = useState(SONG_LIBRARY[0]);
@@ -85,11 +105,16 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     ? SONG_LIBRARY
     : SONG_LIBRARY.filter(s => s.category === categoryFilter);
 
+  const isDrumMode = selectedSong.instrumentMode === 'drums';
+
   const activeBells = useMemo(() => {
-    // Filter out nulls (rests) before computing unique bells needed.
-    const uniqueNotes = [...new Set(selectedSong.notes.filter(n => n != null))];
-    return uniqueNotes.sort((a, b) => NOTE_ORDER.indexOf(a) - NOTE_ORDER.indexOf(b));
-  }, [selectedSong.notes]);
+    // Filter out nulls (rests) before computing unique notes/drums needed.
+    const unique = [...new Set(selectedSong.notes.filter(n => n != null))];
+    if (isDrumMode) {
+      return unique.sort((a, b) => DRUM_ORDER.indexOf(a) - DRUM_ORDER.indexOf(b));
+    }
+    return unique.sort((a, b) => NOTE_ORDER.indexOf(a) - NOTE_ORDER.indexOf(b));
+  }, [selectedSong.notes, isDrumMode]);
 
   useEffect(() => { fallingNotesRef.current = fallingNotes; }, [fallingNotes]);
 
@@ -121,7 +146,11 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   }, [gameState, selectedSong.audioUrl, speedConfig.fallSpeed]);
 
   const handlePlayNote = useCallback((tappedNote) => {
-    playBellNote(tappedNote);
+    if (isDrumMode) {
+      playDrumSound(tappedNote);
+    } else {
+      playBellNote(tappedNote);
+    }
     const currentNotes = fallingNotesRef.current;
     // Super forgiving: any un-hit note of the matching pitch on screen counts as a hit.
     const matchingNote = currentNotes.find(n => n.note === tappedNote && !n.hit);
@@ -137,13 +166,14 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       setFallingNotes(prev => prev.filter(n => n.id !== matchingNote.id));
     }
     setTimeout(() => setFeedback(null), 400);
-  }, [playBellNote, playFeedbackSound, setScore, setGameStats]);
+  }, [isDrumMode, playBellNote, playDrumSound, playFeedbackSound, setScore, setGameStats]);
 
   // Keyboard controls - imperative image swap via ref (no React render)
   useEffect(() => {
     if (gameState !== 'playing') return;
+    const keyMap = isDrumMode ? DRUM_KEY_TO_NOTE : KEY_TO_NOTE;
     const handleKeyDown = (e) => {
-      const note = KEY_TO_NOTE[e.key];
+      const note = keyMap[e.key];
       if (note && activeBells.includes(note) && !pressedKeysRef.current.has(e.key)) {
         pressedKeysRef.current.add(e.key);
         const refs = bellImgRefs.current[note];
@@ -156,7 +186,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       }
     };
     const handleKeyUp = (e) => {
-      const note = KEY_TO_NOTE[e.key];
+      const note = keyMap[e.key];
       if (note) {
         pressedKeysRef.current.delete(e.key);
         const refs = bellImgRefs.current[note];
@@ -170,7 +200,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
-  }, [gameState, activeBells, handlePlayNote]);
+  }, [gameState, isDrumMode, activeBells, handlePlayNote]);
 
   // Spawn notes. First note is delayed FADE_IN_MS so audio fade-in completes
   // before it lands. Subsequent notes cadence at effectiveSpawnMs.
@@ -307,7 +337,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     return (
       <div className="min-h-screen sunburst-bg flex flex-col items-center p-4 pt-20 pb-8" data-testid="rhythm-game-menu">
         <GameHeader showHomeButton={true} />
-        <motion.h1 className="text-3xl md:text-5xl font-black mb-2 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>Rhythm Game</motion.h1>
+        <motion.h1 className="text-3xl md:text-5xl font-black mb-2 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>Who's Got the Rhythm</motion.h1>
         <p className="text-sm mb-2 bg-white rounded-xl border-2 border-[var(--jma-dark)] px-4 py-1" style={{ color: 'var(--jma-dark)' }}><strong>Controls:</strong> Keys 1-8, click, or tap</p>
         <button data-testid="toggle-high-scores" className="text-sm font-bold mb-4 underline" style={{ color: 'var(--jma-blue)' }} onClick={() => setShowHighScores(!showHighScores)}>
           {showHighScores ? 'Hide' : 'Show'} High Scores <Trophy className="inline w-4 h-4" />
@@ -348,8 +378,14 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}>
                 <div className="flex-1">
-                  <h3 className="text-base font-bold font-display">{song.name}</h3>
-                  <p className="text-xs opacity-60">{song.category} - {song.notes.length} notes</p>
+                  <h3 className="text-base font-bold font-display">
+                    {song.instrumentMode === 'drums' && <span className="mr-1">🥁</span>}
+                    {song.name}
+                  </h3>
+                  <p className="text-xs opacity-60">
+                    {song.category} - {song.notes.filter(n => n != null).length} hits
+                    {song.instrumentMode === 'drums' && ' - Drums Only'}
+                  </p>
                 </div>
                 {highScore && (<div className="text-right"><p className="text-xs font-bold" style={{ color: 'var(--jma-orange)' }}><Trophy className="inline w-3 h-3" /> {highScore.score}</p></div>)}
                 <Play className="w-5 h-5 text-[var(--jma-green)] flex-shrink-0" />
@@ -370,11 +406,11 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         <audio ref={audioRef} src={selectedSong.audioUrl} preload="auto" data-testid="backing-track" />
       )}
       <GameHeader title={selectedSong.name} score={score} streak={gameStats.streak} showHomeButton={true} />
-      <div className="fixed top-16 left-0 right-0 px-4 py-1 z-40">
+      <div className="fixed top-20 left-0 right-0 px-4 py-1 z-40">
         <ProgressBar current={currentNoteIndex} total={selectedSong.notes.length} color={speedConfig.color} />
       </div>
       {selectedSong.mode && selectedSong.mode !== 'C-major' && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-40 bg-[var(--jma-yellow)] border-2 border-[var(--jma-dark)] rounded-full px-3 py-0.5 shadow-[0_2px_0_0_var(--jma-dark)]">
+        <div className="fixed top-28 left-1/2 -translate-x-1/2 z-40 bg-[var(--jma-yellow)] border-2 border-[var(--jma-dark)] rounded-full px-3 py-0.5 shadow-[0_2px_0_0_var(--jma-dark)]">
           <span className="text-xs font-bold font-display" style={{ color: 'var(--jma-dark)' }}>
             {selectedSong.mode === 'G-mixolydian' ? 'G Mode - Start on So (5)' : 'A Minor - Start on La (6)'}
           </span>
@@ -383,10 +419,15 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       <AnimatePresence>{feedback && <FeedbackPopup feedback={feedback} />}</AnimatePresence>
       <main className="flex-1 flex flex-col pt-20 pb-2 px-2 md:px-4">
         <div className="game-board relative overflow-hidden" style={{ height: 'calc(100vh - 100px)' }}>
-          {/* Lanes - each lane has its bell at the target line */}
+          {/* Lanes - each lane has its instrument target at the bottom */}
           <div className="rhythm-lanes" style={{ height: '100%' }}>
             {activeBells.map((note) => {
-              const bell = BELLS.find(b => b.note === note);
+              const bell = isDrumMode ? DRUM_LANES[note] : BELLS.find(b => b.note === note);
+              const idleSrc = isDrumMode ? bell?.img1 : bell?.image1;
+              const pressedSrc = isDrumMode ? bell?.img2 : bell?.image2;
+              const labelText = isDrumMode ? bell?.short : bell?.solfege;
+              const keyHint = bell?.key;
+              const tintColor = bell?.color;
               if (!bellImgRefs.current[note]) bellImgRefs.current[note] = { current: null, pressedEl: null };
               const setIdleRef = (el) => { bellImgRefs.current[note].current = el; };
               const setPressedRef = (el) => { bellImgRefs.current[note].pressedEl = el; };
@@ -413,11 +454,11 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                 if (idle) idle.style.opacity = '';
               };
               return (
-                <div key={note} className="rhythm-lane" style={{ backgroundColor: `${bell?.color}10` }}>
+                <div key={note} className="rhythm-lane" style={{ backgroundColor: `${tintColor}10` }}>
                   <div className="lane-target" />
-                  {/* Bell at the target line - notes land ON this bell */}
+                  {/* Target instrument at the bottom - notes land ON this */}
                   <button
-                    data-testid={`game-bell-${note}`}
+                    data-testid={`game-${isDrumMode ? 'drum' : 'bell'}-${note}`}
                     type="button"
                     onPointerDown={doDown}
                     onPointerUp={doUp}
@@ -429,33 +470,33 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                     <div className="relative">
                       <img
                         ref={setIdleRef}
-                        src={bell?.image1}
-                        alt={bell?.solfege}
+                        src={idleSrc}
+                        alt={labelText}
                         className="instrument-frame-idle w-20 h-24 md:w-28 md:h-32 lg:w-32 lg:h-36 object-contain pointer-events-none"
                         draggable={false}
                       />
                       <img
                         ref={setPressedRef}
-                        src={bell?.image2}
+                        src={pressedSrc}
                         alt=""
                         aria-hidden="true"
                         className="instrument-frame-pressed w-20 h-24 md:w-28 md:h-32 lg:w-32 lg:h-36 object-contain pointer-events-none absolute top-0 left-0"
                         draggable={false}
                       />
                       <span className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-white border border-[var(--jma-dark)] text-sm font-bold flex items-center justify-center pointer-events-none"
-                        style={{ color: bell?.color }}>{bell?.key}</span>
+                        style={{ color: tintColor }}>{keyHint}</span>
                     </div>
-                    <span className="text-sm md:text-base font-bold pointer-events-none mt-1" style={{ color: bell?.color }}>
-                      {bell?.solfege}
+                    <span className="text-sm md:text-base font-bold pointer-events-none mt-1" style={{ color: tintColor }}>
+                      {labelText}
                     </span>
                   </button>
                 </div>
               );
             })}
-            {/* Falling bell images */}
+            {/* Falling notes (bells or drums) */}
             <AnimatePresence>
               {fallingNotes.map(note => (
-                <FallingBellNote key={note.id} note={note.note} laneIndex={note.laneIndex} totalLanes={activeBells.length} speed={speedConfig.fallSpeed} />
+                <FallingBellNote key={note.id} note={note.note} laneIndex={note.laneIndex} totalLanes={activeBells.length} speed={speedConfig.fallSpeed} isDrum={isDrumMode} />
               ))}
             </AnimatePresence>
           </div>
