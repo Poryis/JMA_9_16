@@ -22,7 +22,7 @@ const SCENE_CHARS = [
   { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           stickerId: 'char_jazzy',
     leftPct: 22, topPct: 63, widthPct: 8, anim: 'bob' },
   { name: 'Charlie',       image: 'assets/characters/charlie-polliwog.png', stickerId: 'char_charlie',
-    leftPct: 50, topPct: 70, widthPct: 19, anim: 'bob' },
+    leftPct: 50, topPct: 65, widthPct: 19, anim: 'bob' },
   { name: 'Lou & Stew',    image: 'assets/characters/llama-lou-stew.png',  stickerId: 'char_loustew',
     leftPct: 78, topPct: 65, widthPct: 12, anim: 'bob' },
 ];
