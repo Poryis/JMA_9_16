@@ -14,15 +14,15 @@ import { GameHeader } from '../components/GameUI';
 //   - Charlie / Lou&Stew / Jazzy on the floor → standing bob
 const SCENE_CHARS = [
   { name: 'Chunk',         image: 'assets/characters/chunk.png',           stickerId: 'char_chunk',
-    leftPct: 30, topPct: 20, widthPct: 13, anim: 'swing' },
+    leftPct: 32, topPct: 20, widthPct: 13, anim: 'swing' },
   { name: 'Finn',          image: 'assets/characters/finn-danger.png',     stickerId: 'char_finn',
     leftPct: 8, topPct: 35, widthPct: 11, anim: 'bob' },
   { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    stickerId: 'char_doctor',
-    leftPct: 65, topPct: 27, widthPct: 9.9, anim: 'peek' },
+    leftPct: 65, topPct: 27, widthPct: 8.9, anim: 'peek' },
   { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           stickerId: 'char_jazzy',
     leftPct: 22, topPct: 63, widthPct: 8, anim: 'bob' },
   { name: 'Charlie',       image: 'assets/characters/charlie-polliwog.png', stickerId: 'char_charlie',
-    leftPct: 50, topPct: 70, widthPct: 15.8, anim: 'bob' },
+    leftPct: 50, topPct: 70, widthPct: 19, anim: 'bob' },
   { name: 'Lou & Stew',    image: 'assets/characters/llama-lou-stew.png',  stickerId: 'char_loustew',
     leftPct: 78, topPct: 65, widthPct: 12, anim: 'bob' },
 ];
@@ -30,7 +30,7 @@ const SCENE_CHARS = [
 const ANIM_VARIANTS = {
   bob:   { y: [0, -6, 0] },
   swing: { rotate: [-4, 4, -4], y: [0, -2, 0] },
-  peek:  { y: [0, -8, 0] },
+  peek:  { y: [0, -3, 0], rotate: [-3, 3, -3] },
 };
 
 function FunFactsPage() {
