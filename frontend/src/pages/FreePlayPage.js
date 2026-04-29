@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Music, Circle, Square, Play, RotateCcw, ChevronRight, Headphones } from 'lucide-react';
+import { Music, Circle, Square, Play, RotateCcw, ChevronRight, Headphones, Download } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader, NotationDisplay } from '../components/GameUI';
 import { XylophoneInstrument, PianoInstrument } from '../components/Instruments';
@@ -8,6 +8,7 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import { earnSticker } from '../hooks/useStickers';
 import { SONG_LIBRARY } from '../data/songs';
 import useAudio from '../hooks/useAudio';
+import useMp3Recorder from '../hooks/useMp3Recorder';
 
 const GUIDED_SONGS = [
   { name: 'Do Re Mi', notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'] },
@@ -374,10 +375,26 @@ function DrumKitPlayable({ onDrumDown, onDrumUp, registerDrumRef }) {
 // JamAlongControls: tiny dropdown to pick a JMA Original backing track to jam to.
 // Plays the song while the kid plays any instrument on top.
 // ============================================================================
-function JamAlongControls({ jamTrackId, onPick, audioRef }) {
+function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph }) {
   const [open, setOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const sourceWiredRef = useRef(false);
   const jamSongs = SONG_LIBRARY.filter(s => s.category === 'JMA Originals');
+
+  // Pipe the <audio> element through the Web Audio master gain so the backing
+  // track is captured by the MP3 recorder. Once wired (first time), the audio
+  // element is tied to the AudioContext until page unmount.
+  const wireSourceIfNeeded = useCallback(() => {
+    if (sourceWiredRef.current) return;
+    const el = audioRef.current;
+    if (!el || !getAudioGraph) return;
+    try {
+      const { ctx, masterNode } = getAudioGraph();
+      const src = ctx.createMediaElementSource(el);
+      src.connect(masterNode);
+      sourceWiredRef.current = true;
+    } catch (_) { /* element may already be wired or context unavailable */ }
+  }, [audioRef, getAudioGraph]);
 
   // Sync isPlaying with the audio element
   useEffect(() => {
@@ -397,6 +414,7 @@ function JamAlongControls({ jamTrackId, onPick, audioRef }) {
   }, [audioRef, jamTrackId]);
 
   const handlePick = (id) => {
+    wireSourceIfNeeded();
     onPick(id);
     setOpen(false);
     setTimeout(() => {
@@ -465,7 +483,8 @@ function JamAlongControls({ jamTrackId, onPick, audioRef }) {
 }
 
 function FreePlayPage() {
-  const { playBellNote, playDrumSound, initAudioContext } = useAudio();
+  const { playBellNote, playDrumSound, initAudioContext, getAudioGraph } = useAudio();
+  const recorder = useMp3Recorder(getAudioGraph);
 
   const [lastNote, setLastNote] = useState(null);
   const [playedNotes, setPlayedNotes] = useState([]);
@@ -740,7 +759,7 @@ function FreePlayPage() {
           animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }} />
       </motion.div>
 
-      <main className="flex-1 flex flex-col items-center justify-start pt-14 pb-2 px-2">
+      <main className="flex-1 flex flex-col items-center justify-start pt-24 pb-2 px-2">
         <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
           <div className="game-card px-2 py-1 flex items-center gap-1">
             {INSTRUMENT_TABS.map(tab => (
@@ -774,7 +793,40 @@ function FreePlayPage() {
             jamTrackId={jamTrackId}
             onPick={(id) => setJamTrackId(id)}
             audioRef={jamAudioRef}
+            getAudioGraph={getAudioGraph}
           />
+          {/* MP3 capture - records anything you play (bells, drums, plus jam-along backing) */}
+          <div className="game-card px-2 py-1 flex items-center gap-1">
+            {!recorder.isRecording ? (
+              <button
+                data-testid="mp3-record-btn"
+                className="chunky-btn bg-[var(--jma-purple)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
+                style={{ backgroundColor: '#AF52DE' }}
+                onClick={() => { initAudioContext(); recorder.start(); }}
+                disabled={recorder.isProcessing}
+              >
+                <Circle className="w-3 h-3 fill-current" /> Save
+              </button>
+            ) : (
+              <button
+                data-testid="mp3-stop-rec-btn"
+                className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold animate-pulse touch-manipulation"
+                onClick={async () => { await recorder.stop(); }}
+              >
+                <Square className="w-3 h-3 fill-current" /> Stop
+              </button>
+            )}
+            {recorder.isProcessing && <span className="text-xs font-bold opacity-70">...</span>}
+            {recorder.lastMp3Url && !recorder.isRecording && !recorder.isProcessing && (
+              <button
+                data-testid="mp3-download-btn"
+                className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
+                onClick={() => recorder.download(`my-jam-${Date.now()}.mp3`)}
+              >
+                <Download className="w-3 h-3" /> MP3
+              </button>
+            )}
+          </div>
           <audio
             ref={jamAudioRef}
             src={jamTrackId ? (SONG_LIBRARY.find(s => s.id === jamTrackId)?.audioUrl || '') : ''}

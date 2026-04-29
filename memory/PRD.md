@@ -116,7 +116,19 @@ Build a rhythm game for a music education platform using the user's custom artwo
 - Audio volume reduced to 0.55 so the kid's playing is clearly audible above the track.
 - Auto-stops when leaving the page.
 
+### Bug Fixes (Feb 2026 - partner round 2)
+- **Rhythm Game weird sound**: removed `playFeedbackSound('perfect')` synth chirp on every successful hit - the bell/drum sound is enough.
+- **Jam Time mobile hit boxes**: increased main `pt-14` → `pt-24` so the GameHeader (now using a chunky shield icon) doesn't overlap the controls row. All buttons now properly tappable.
+
 ### Drums-Only Rhythm Songs (Feb 2026)
+
+### MP3 Recording (Feb 2026)
+- New `useMp3Recorder` hook: taps the Web Audio master gain via `MediaStreamDestinationNode`, captures via `MediaRecorder` (webm/opus), decodes, then encodes to MP3 with `@breezystack/lamejs` (pure-JS, no native deps - GH Pages compatible).
+- `useAudio` refactored to route ALL sounds through a single `masterGain` node so the recorder can tap a single point.
+- **Loop Studio**: REC + Stop Rec + Save MP3 buttons in the controls bar. Records the live loop output (drums, bells, scratches).
+- **Jam Time**: Save (record) + Stop + MP3 download buttons. Captures both the kid's instrument playing AND the Jam-Along backing track (the `<audio>` element is piped through `createMediaElementSource` into the master gain).
+- Output: 128kbps MP3 with timestamp filename (`my-loop-{ts}.mp3`, `my-jam-{ts}.mp3`).
+- Verified end-to-end: load preset → play loop → REC → Stop → encode → Save MP3 download appears.
 - 2 new entries in the rhythm game with `instrumentMode: 'drums'`, reusing the existing JMA Originals audio:
   - 🥁 **Play One, Skip One (Drums)** — basic kick/snare/hihat backbeat
   - 🥁 **Goody Bag (Drums)** — bouncy boogie pattern with crash accents

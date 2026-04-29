@@ -162,11 +162,11 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         maxStreak: Math.max(prev.maxStreak, prev.streak + 1)
       }));
       setFeedback('perfect');
-      playFeedbackSound('perfect');
+      // Removed playFeedbackSound('perfect') - the synth chirp clashed with the bell/drum sound
       setFallingNotes(prev => prev.filter(n => n.id !== matchingNote.id));
     }
     setTimeout(() => setFeedback(null), 400);
-  }, [isDrumMode, playBellNote, playDrumSound, playFeedbackSound, setScore, setGameStats]);
+  }, [isDrumMode, playBellNote, playDrumSound, setScore, setGameStats]);
 
   // Keyboard controls - imperative image swap via ref (no React render)
   useEffect(() => {

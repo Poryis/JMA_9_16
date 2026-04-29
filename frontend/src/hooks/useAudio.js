@@ -43,11 +43,16 @@ export function useAudio() {
   const audioContextRef = useRef(null);
   const audioBuffersRef = useRef({});
   const loadedRef = useRef(false);
+  const masterGainRef = useRef(null);
 
   // Initialize audio context
   const initAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      // Master gain - all sounds route through this so a recorder can tap a single node
+      masterGainRef.current = audioContextRef.current.createGain();
+      masterGainRef.current.gain.value = 1;
+      masterGainRef.current.connect(audioContextRef.current.destination);
     }
     // Resume if suspended (for autoplay policies)
     if (audioContextRef.current.state === 'suspended') {
@@ -55,6 +60,12 @@ export function useAudio() {
     }
     return audioContextRef.current;
   }, []);
+
+  // Returns { ctx, masterNode } - useful for recording. Initializes context lazily.
+  const getAudioGraph = useCallback(() => {
+    const ctx = initAudioContext();
+    return { ctx, masterNode: masterGainRef.current };
+  }, [initAudioContext]);
 
   // Preload audio files
   const preloadAudio = useCallback(async () => {
@@ -93,7 +104,7 @@ export function useAudio() {
       gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
       
       source.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      gainNode.connect(masterGainRef.current);
       source.start(0);
       return;
     }
@@ -113,7 +124,7 @@ export function useAudio() {
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
 
     oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(masterGainRef.current);
 
     oscillator.start(ctx.currentTime);
     oscillator.stop(ctx.currentTime + 0.8);
@@ -132,7 +143,7 @@ export function useAudio() {
       gainNode.gain.setValueAtTime(0.8, ctx.currentTime);
       
       source.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      gainNode.connect(masterGainRef.current);
       source.start(0);
     }
   }, [initAudioContext]);
@@ -157,7 +168,7 @@ export function useAudio() {
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
 
     oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(masterGainRef.current);
 
     oscillator.start(ctx.currentTime);
     oscillator.stop(ctx.currentTime + 0.3);
@@ -173,7 +184,8 @@ export function useAudio() {
     playDrumSound,
     playFeedbackSound,
     preloadAudio,
-    initAudioContext
+    initAudioContext,
+    getAudioGraph,
   };
 }
 

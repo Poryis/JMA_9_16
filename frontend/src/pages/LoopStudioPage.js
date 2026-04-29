@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Play, Square, Trash2, Plus, Minus, Volume2 } from 'lucide-react';
+import { Play, Square, Trash2, Plus, Minus, Volume2, Circle, Download } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { PageCharacters } from '../components/PageCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import { DrumKitVisual, TurntableVisual } from '../components/Instruments';
 import useAudio from '../hooks/useAudio';
+import useMp3Recorder from '../hooks/useMp3Recorder';
 import { earnSticker } from '../hooks/useStickers';
 
 const DEFAULT_BPM = 100;
@@ -115,7 +116,8 @@ const MEASURE_OPTIONS = [
 
 function LoopStudioPage() {
   const navigate = useNavigate();
-  const { playBellNote, playDrumSound, initAudioContext } = useAudio();
+  const { playBellNote, playDrumSound, initAudioContext, getAudioGraph } = useAudio();
+  const recorder = useMp3Recorder(getAudioGraph);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
@@ -394,6 +396,40 @@ function LoopStudioPage() {
             <button className="chunky-btn bg-white p-1.5" onClick={clearAll} data-testid="clear-all">
               <Trash2 className="w-4 h-4" style={{ color: 'var(--jma-red)' }} />
             </button>
+
+            {/* Record / Download MP3 */}
+            <div className="flex items-center gap-1">
+              {!recorder.isRecording ? (
+                <button
+                  data-testid="loop-record-btn"
+                  className="chunky-btn bg-[var(--jma-red)] text-white px-3 py-1.5 flex items-center gap-1 text-xs md:text-sm font-bold"
+                  onClick={() => { initAudioContext(); recorder.start(); }}
+                  disabled={recorder.isProcessing}
+                >
+                  <Circle className="w-3 h-3 fill-current" /> REC
+                </button>
+              ) : (
+                <button
+                  data-testid="loop-stop-rec-btn"
+                  className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-1.5 flex items-center gap-1 text-xs md:text-sm font-bold animate-pulse"
+                  onClick={async () => { await recorder.stop(); }}
+                >
+                  <Square className="w-3 h-3 fill-current" /> Stop Rec
+                </button>
+              )}
+              {recorder.isProcessing && (
+                <span className="text-xs font-bold opacity-70">Saving...</span>
+              )}
+              {recorder.lastMp3Url && !recorder.isRecording && !recorder.isProcessing && (
+                <button
+                  data-testid="loop-download-mp3"
+                  className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-1.5 flex items-center gap-1 text-xs md:text-sm font-bold"
+                  onClick={() => recorder.download(`my-loop-${Date.now()}.mp3`)}
+                >
+                  <Download className="w-3 h-3" /> Save MP3
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
