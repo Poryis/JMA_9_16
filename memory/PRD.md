@@ -125,10 +125,14 @@ Build a rhythm game for a music education platform using the user's custom artwo
 ### MP3 Recording (Feb 2026)
 - New `useMp3Recorder` hook: taps the Web Audio master gain via `MediaStreamDestinationNode`, captures via `MediaRecorder` (webm/opus), decodes, then encodes to MP3 with `@breezystack/lamejs` (pure-JS, no native deps - GH Pages compatible).
 - `useAudio` refactored to route ALL sounds through a single `masterGain` node so the recorder can tap a single point.
+- **60-second auto-stop** to keep file sizes reasonable. Stop button shows live countdown (e.g., "Stop 47s").
 - **Loop Studio**: REC + Stop Rec + Save MP3 buttons in the controls bar. Records the live loop output (drums, bells, scratches).
 - **Jam Time**: Save (record) + Stop + MP3 download buttons. Captures both the kid's instrument playing AND the Jam-Along backing track (the `<audio>` element is piped through `createMediaElementSource` into the master gain).
 - Output: 128kbps MP3 with timestamp filename (`my-loop-{ts}.mp3`, `my-jam-{ts}.mp3`).
-- Verified end-to-end: load preset → play loop → REC → Stop → encode → Save MP3 download appears.
+
+### Bug Fixes (Feb 2026 - partner round 3)
+- **Rhythm Game scoring**: -5 points and streak reset on any wrong key press (with score clamped at 0 so kids can never go negative). Hit window kept super forgiving — penalty makes random mashing less viable without making timing harder.
+- **Fun Facts in-scene layout**: characters now placed AT specific spots in the clubhouse (Chunk on swing, Finn near the ladder, Dr. Jellybone peeking out the picture frame, Charlie/Lou&Stew/Jazzy on the floor) instead of generic cards. Each has its own idle animation tied to its spot (swing rocks, jellybone peeks, floor characters bob).
 - 2 new entries in the rhythm game with `instrumentMode: 'drums'`, reusing the existing JMA Originals audio:
   - 🥁 **Play One, Skip One (Drums)** — basic kick/snare/hihat backbeat
   - 🥁 **Goody Bag (Drums)** — bouncy boogie pattern with crash accents

@@ -813,7 +813,7 @@ function FreePlayPage() {
                 className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold animate-pulse touch-manipulation"
                 onClick={async () => { await recorder.stop(); }}
               >
-                <Square className="w-3 h-3 fill-current" /> Stop
+                <Square className="w-3 h-3 fill-current" /> {recorder.secondsLeft}s
               </button>
             )}
             {recorder.isProcessing && <span className="text-xs font-bold opacity-70">...</span>}

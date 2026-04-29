@@ -66,15 +66,24 @@ function audioBufferToMp3(audioBuffer) {
 /**
  * Hook returning recorder controls for an existing audio graph.
  * Pass `getAudioGraph()` from useAudio to get { ctx, masterNode }.
+ *
+ * Recording auto-stops at MAX_RECORDING_SECONDS (default 60s) to keep file
+ * sizes reasonable - especially important for younger kids who might press
+ * Record and walk away.
  */
+const MAX_RECORDING_SECONDS = 60;
+
 export default function useMp3Recorder(getAudioGraph) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastMp3Url, setLastMp3Url] = useState(null);
+  const [secondsLeft, setSecondsLeft] = useState(MAX_RECORDING_SECONDS);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
   const destRef = useRef(null);
   const mimeRef = useRef('');
+  const tickerRef = useRef(null);
+  const autoStopRef = useRef(null);
 
   const start = useCallback(() => {
     const { ctx, masterNode } = getAudioGraph();
@@ -97,12 +106,24 @@ export default function useMp3Recorder(getAudioGraph) {
     mr.start(250);
     recorderRef.current = mr;
     setIsRecording(true);
-  }, [getAudioGraph]);
+    setSecondsLeft(MAX_RECORDING_SECONDS);
+
+    // Visual countdown
+    tickerRef.current = setInterval(() => {
+      setSecondsLeft(prev => Math.max(0, prev - 1));
+    }, 1000);
+    // Auto-stop at the cap
+    autoStopRef.current = setTimeout(() => {
+      stop();
+    }, MAX_RECORDING_SECONDS * 1000);
+  }, [getAudioGraph]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const stop = useCallback(async () => {
     const mr = recorderRef.current;
     const dest = destRef.current;
     if (!mr) return null;
+    if (tickerRef.current) { clearInterval(tickerRef.current); tickerRef.current = null; }
+    if (autoStopRef.current) { clearTimeout(autoStopRef.current); autoStopRef.current = null; }
     setIsRecording(false);
     setIsProcessing(true);
 
@@ -146,5 +167,5 @@ export default function useMp3Recorder(getAudioGraph) {
     setLastMp3Url((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
   }, []);
 
-  return { isRecording, isProcessing, lastMp3Url, start, stop, download, clear };
+  return { isRecording, isProcessing, lastMp3Url, secondsLeft, maxSeconds: MAX_RECORDING_SECONDS, start, stop, download, clear };
 }

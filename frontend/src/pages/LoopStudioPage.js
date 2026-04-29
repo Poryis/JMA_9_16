@@ -414,7 +414,7 @@ function LoopStudioPage() {
                   className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-1.5 flex items-center gap-1 text-xs md:text-sm font-bold animate-pulse"
                   onClick={async () => { await recorder.stop(); }}
                 >
-                  <Square className="w-3 h-3 fill-current" /> Stop Rec
+                  <Square className="w-3 h-3 fill-current" /> Stop {recorder.secondsLeft}s
                 </button>
               )}
               {recorder.isProcessing && (

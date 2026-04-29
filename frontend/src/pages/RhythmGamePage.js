@@ -164,6 +164,12 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       setFeedback('perfect');
       // Removed playFeedbackSound('perfect') - the synth chirp clashed with the bell/drum sound
       setFallingNotes(prev => prev.filter(n => n.id !== matchingNote.id));
+    } else {
+      // Wrong note (no falling note of this pitch on screen) - tiny penalty + reset streak.
+      // Score is clamped at 0 so kids can't go negative.
+      setScore(prev => Math.max(0, prev - 5));
+      setGameStats(prev => ({ ...prev, streak: 0 }));
+      setFeedback('miss');
     }
     setTimeout(() => setFeedback(null), 400);
   }, [isDrumMode, playBellNote, playDrumSound, setScore, setGameStats]);

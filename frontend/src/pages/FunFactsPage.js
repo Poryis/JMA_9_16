@@ -5,14 +5,33 @@ import { getRandomFact } from '../data/musicFacts';
 import { earnSticker, noteFactSeen } from '../hooks/useStickers';
 import { GameHeader } from '../components/GameUI';
 
-const characters = [
-  { name: 'Finn',         image: 'assets/characters/finn-danger.png',     stickerId: 'char_finn' },
-  { name: 'Charlie',      image: 'assets/characters/charlie-polliwog.png', stickerId: 'char_charlie' },
-  { name: 'Chunk',        image: 'assets/characters/chunk.png',           stickerId: 'char_chunk' },
-  { name: 'Jazzy',        image: 'assets/characters/jazzy.png',           stickerId: 'char_jazzy' },
-  { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',   stickerId: 'char_doctor' },
-  { name: 'Lou & Stew',   image: 'assets/characters/llama-lou-stew.png',  stickerId: 'char_loustew' },
+// Characters placed IN the clubhouse scene at specific spots.
+// Coordinates are % of the 16:9 scene container (origin top-left).
+// Idle animation per location:
+//   - Chunk on the swing → swings side to side
+//   - Finn near the ladder → climbing bob
+//   - Dr. Jellybone in the window → peeks up & down
+//   - Charlie / Lou&Stew / Jazzy on the floor → standing bob
+const SCENE_CHARS = [
+  { name: 'Chunk',         image: 'assets/characters/chunk.png',           stickerId: 'char_chunk',
+    leftPct: 41, topPct: 42, widthPct: 13, anim: 'swing' },
+  { name: 'Finn',          image: 'assets/characters/finn-danger.png',     stickerId: 'char_finn',
+    leftPct: 14, topPct: 70, widthPct: 11, anim: 'bob' },
+  { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    stickerId: 'char_doctor',
+    leftPct: 74, topPct: 36, widthPct: 11, anim: 'peek' },
+  { name: 'Charlie',       image: 'assets/characters/charlie-polliwog.png', stickerId: 'char_charlie',
+    leftPct: 28, topPct: 84, widthPct: 12, anim: 'bob' },
+  { name: 'Lou & Stew',    image: 'assets/characters/llama-lou-stew.png',  stickerId: 'char_loustew',
+    leftPct: 54, topPct: 84, widthPct: 14, anim: 'bob' },
+  { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           stickerId: 'char_jazzy',
+    leftPct: 84, topPct: 84, widthPct: 12, anim: 'bob' },
 ];
+
+const ANIM_VARIANTS = {
+  bob:   { y: [0, -6, 0] },
+  swing: { rotate: [-4, 4, -4], y: [0, -2, 0] },
+  peek:  { y: [0, -8, 0] },
+};
 
 function FunFactsPage() {
   const [activeFact, setActiveFact] = useState(null);
@@ -21,7 +40,7 @@ function FunFactsPage() {
     const fact = getRandomFact(characterName);
     if (!fact) return;
     setActiveFact({ character: characterName, ...fact });
-    const charObj = characters.find(c => c.name === characterName);
+    const charObj = SCENE_CHARS.find(c => c.name === characterName);
     if (charObj?.stickerId) earnSticker(charObj.stickerId);
     noteFactSeen();
   }, []);
@@ -32,17 +51,13 @@ function FunFactsPage() {
     <div
       className="min-h-screen flex flex-col"
       data-testid="fun-facts-page"
-      style={{
-        backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
+      style={{ backgroundColor: '#3D2E1F' }}
     >
       <GameHeader title="Fun Facts" showHomeButton={true} />
 
-      <main className="flex-1 pt-24 pb-8 px-4 flex flex-col items-center">
+      <main className="flex-1 pt-24 pb-6 px-3 flex flex-col items-center justify-center">
         <motion.p
-          className="text-base md:text-lg font-display mb-6 px-4 py-2 rounded-full"
+          className="text-base md:text-lg font-display mb-4 px-4 py-2 rounded-full"
           style={{ color: 'white', backgroundColor: 'rgba(10,37,64,0.85)' }}
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -50,29 +65,48 @@ function FunFactsPage() {
           <Sparkles className="inline w-4 h-4 mr-1" /> Tap a friend for a music fact!
         </motion.p>
 
-        <div className="w-full max-w-3xl grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6">
-          {characters.map((char, i) => (
+        {/* The clubhouse scene - 16:9 aspect ratio, characters placed at fixed % positions */}
+        <div
+          className="relative w-full max-w-[1200px] rounded-2xl overflow-hidden border-4 border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)]"
+          style={{
+            aspectRatio: '16 / 9',
+            backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {SCENE_CHARS.map((char, i) => (
             <motion.button
               key={char.name}
               data-testid={`funfacts-character-${char.name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`}
               type="button"
               onClick={() => showFact(char.name)}
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.15 + i * 0.06, type: 'spring', stiffness: 250 }}
-              whileHover={{ scale: 1.05, y: -4 }}
-              whileTap={{ scale: 0.95 }}
-              className="game-card flex flex-col items-center p-3 md:p-4 cursor-pointer bg-white/85 backdrop-blur-sm"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 + i * 0.08, type: 'spring', stiffness: 220 }}
+              whileHover={{ scale: 1.12 }}
+              whileTap={{ scale: 0.92 }}
+              className="absolute bg-transparent border-0 p-0 cursor-pointer flex flex-col items-center"
+              style={{
+                left: `${char.leftPct}%`,
+                top: `${char.topPct}%`,
+                width: `${char.widthPct}%`,
+                transform: 'translate(-50%, -50%)',
+                filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.45))',
+              }}
+              aria-label={`Tap ${char.name} for a music fact`}
             >
               <motion.img
                 src={char.image}
                 alt={char.name}
-                className="w-20 h-24 md:w-28 md:h-32 object-contain drop-shadow-lg"
-                animate={{ y: [0, -6, 0] }}
-                transition={{ repeat: Infinity, duration: 1.8 + i * 0.25, ease: 'easeInOut', delay: i * 0.12 }}
+                className="w-full h-auto object-contain"
+                draggable={false}
+                animate={ANIM_VARIANTS[char.anim] || ANIM_VARIANTS.bob}
+                transition={{ duration: 2 + i * 0.25, repeat: Infinity, ease: 'easeInOut', delay: i * 0.15 }}
               />
+              {/* Tiny name tag - only visible on hover for a clean scene */}
               <span
-                className="text-xs md:text-sm font-bold mt-2 px-2 py-0.5 rounded-full whitespace-nowrap"
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[10px] md:text-xs font-bold whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ color: 'white', backgroundColor: 'var(--jma-dark)' }}
               >
                 {char.name}
@@ -80,6 +114,10 @@ function FunFactsPage() {
             </motion.button>
           ))}
         </div>
+
+        <p className="mt-3 text-xs md:text-sm font-bold opacity-80" style={{ color: '#FFE9C4' }}>
+          {SCENE_CHARS.length} friends in the clubhouse - find them all!
+        </p>
       </main>
 
       <AnimatePresence>
@@ -112,7 +150,7 @@ function FunFactsPage() {
               </button>
               <div className="flex items-start gap-4">
                 <motion.img
-                  src={characters.find(c => c.name === activeFact.character)?.image}
+                  src={SCENE_CHARS.find(c => c.name === activeFact.character)?.image}
                   alt={activeFact.character}
                   className="w-20 h-24 md:w-24 md:h-28 object-contain flex-shrink-0"
                   animate={{ rotate: [0, -5, 5, 0] }}
