@@ -14,17 +14,17 @@ import { GameHeader } from '../components/GameUI';
 //   - Charlie / Lou&Stew / Jazzy on the floor → standing bob
 const SCENE_CHARS = [
   { name: 'Chunk',         image: 'assets/characters/chunk.png',           stickerId: 'char_chunk',
-    leftPct: 40, topPct: 38, widthPct: 13, anim: 'swing' },
+    leftPct: 27, topPct: 20, widthPct: 13, anim: 'swing' },
   { name: 'Finn',          image: 'assets/characters/finn-danger.png',     stickerId: 'char_finn',
-    leftPct: 22, topPct: 55, widthPct: 11, anim: 'bob' },
+    leftPct: 8, topPct: 44, widthPct: 11, anim: 'bob' },
   { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    stickerId: 'char_doctor',
-    leftPct: 65, topPct: 30, widthPct: 11, anim: 'peek' },
+    leftPct: 65, topPct: 27, widthPct: 9.9, anim: 'peek' },
   { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           stickerId: 'char_jazzy',
-    leftPct: 22, topPct: 70, widthPct: 9.6, anim: 'bob' },
+    leftPct: 22, topPct: 67, widthPct: 8, anim: 'bob' },
   { name: 'Charlie',       image: 'assets/characters/charlie-polliwog.png', stickerId: 'char_charlie',
-    leftPct: 50, topPct: 70, widthPct: 12, anim: 'bob' },
+    leftPct: 50, topPct: 70, widthPct: 13.2, anim: 'bob' },
   { name: 'Lou & Stew',    image: 'assets/characters/llama-lou-stew.png',  stickerId: 'char_loustew',
-    leftPct: 78, topPct: 70, widthPct: 13.3, anim: 'bob' },
+    leftPct: 78, topPct: 67, widthPct: 12, anim: 'bob' },
 ];
 
 const ANIM_VARIANTS = {
