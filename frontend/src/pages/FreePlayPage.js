@@ -508,6 +508,7 @@ function FreePlayPage() {
   // Stop jam-along audio when this page unmounts
   useEffect(() => {
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       const a = jamAudioRef.current;
       if (a) { try { a.pause(); } catch (_) {} }
     };
