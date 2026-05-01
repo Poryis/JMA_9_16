@@ -7,11 +7,10 @@ export const KAZOOS = [
   { note: 'D',      solfege: 'Re', color: '#FF9500', image1: 'assets/kazoos/kazoo-D-idle.png',     image2: 'assets/kazoos/kazoo-D-pressed.png',     key: '2' },
   { note: 'E',      solfege: 'Mi', color: '#FFCC00', image1: 'assets/kazoos/kazoo-E-idle.png',     image2: 'assets/kazoos/kazoo-E-pressed.png',     key: '3' },
   { note: 'F',      solfege: 'Fa', color: '#4CD964', image1: 'assets/kazoos/kazoo-F-idle.png',     image2: 'assets/kazoos/kazoo-F-pressed.png',     key: '4' },
-  { note: 'G',      solfege: 'So', color: '#34A853', image1: 'assets/kazoos/kazoo-G-idle.png',     image2: 'assets/kazoos/kazoo-G-pressed.png',     key: '5' },
-  { note: 'A',      solfege: 'La', color: '#4285F4', image1: 'assets/kazoos/kazoo-A-idle.png',     image2: 'assets/kazoos/kazoo-A-pressed.png',     key: '6' },
-  { note: 'B',      solfege: 'Ti', color: '#AF52DE', image1: 'assets/kazoos/kazoo-B-idle.png',     image2: 'assets/kazoos/kazoo-B-pressed.png',     key: '7' },
-  // High C - sprite has cut-off pressed art, so we reuse the idle for both states (no swap on press)
-  { note: 'High C', solfege: 'Do', color: '#FF2D55', image1: 'assets/kazoos/kazoo-HighC-idle.png', image2: 'assets/kazoos/kazoo-HighC-idle.png',    key: '8' }
+  { note: 'G',      solfege: 'So', color: '#4285F4', image1: 'assets/kazoos/kazoo-G-idle.png',     image2: 'assets/kazoos/kazoo-G-pressed.png',     key: '5' },
+  { note: 'A',      solfege: 'La', color: '#AF52DE', image1: 'assets/kazoos/kazoo-A-idle.png',     image2: 'assets/kazoos/kazoo-A-pressed.png',     key: '6' },
+  { note: 'B',      solfege: 'Ti', color: '#FF2D85', image1: 'assets/kazoos/kazoo-B-idle.png',     image2: 'assets/kazoos/kazoo-B-pressed.png',     key: '7' },
+  { note: 'High C', solfege: 'Do', color: '#C71F1F', image1: 'assets/kazoos/kazoo-HighC-idle.png', image2: 'assets/kazoos/kazoo-HighC-pressed.png', key: '8' }
 ];
 
 const KEY_TO_NOTE = {

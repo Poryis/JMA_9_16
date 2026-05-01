@@ -42,23 +42,36 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
   const timeoutRef = useRef(null);
   const bellsRowRef = useRef(null); // Imperative handle to flash kazoos instantly
+  const stewFrameRefs = useRef([null, null, null, null]); // 4 stew frame <img> elements
   const stewTimerRef = useRef(null);
-  const [stewFrame, setStewFrame] = useState(0); // 0=neutral, 1-3=playing
   const currentPattern = PATTERNS[level] || PATTERNS[8];
 
-  // Cycles Stew through frames 1→2→3→0(neutral) over ~280ms
-  // Called each time a kazoo is played (by Stu OR by the kid).
-  const cycleStew = useCallback(() => {
-    if (stewTimerRef.current) clearTimeout(stewTimerRef.current);
-    setStewFrame(1);
-    stewTimerRef.current = setTimeout(() => {
-      setStewFrame(2);
-      stewTimerRef.current = setTimeout(() => {
-        setStewFrame(3);
-        stewTimerRef.current = setTimeout(() => setStewFrame(0), 90);
-      }, 90);
-    }, 90);
+  // Cycles Stew through frames 1→2→3→0(neutral) using direct DOM swaps so it
+  // works even when fired rapidly during Stu's demo phase. All 4 frames are
+  // mounted simultaneously; we just toggle which one is `display: block`.
+  const showStewFrame = useCallback((i) => {
+    stewFrameRefs.current.forEach((el, idx) => {
+      if (el) el.style.display = idx === i ? 'block' : 'none';
+    });
   }, []);
+
+  const cycleStew = useCallback(() => {
+    if (stewTimerRef.current) {
+      clearTimeout(stewTimerRef.current);
+      stewTimerRef.current = null;
+    }
+    showStewFrame(1);
+    stewTimerRef.current = setTimeout(() => {
+      showStewFrame(2);
+      stewTimerRef.current = setTimeout(() => {
+        showStewFrame(3);
+        stewTimerRef.current = setTimeout(() => {
+          showStewFrame(0); // back to neutral
+          stewTimerRef.current = null;
+        }, 110);
+      }, 110);
+    }, 110);
+  }, [showStewFrame]);
 
   // Clean up timeouts
   useEffect(() => {
@@ -326,18 +339,25 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           </div>
         )}
 
-        {/* Stew - cycles through frames each time a kazoo plays. AnimatePresence
-            on key={stewFrame} would be heavy; just swap the src directly. */}
-        <motion.img
+        {/* Stew - cycles through frames each time a kazoo plays.
+            All 4 frames are mounted at once; we toggle `display` directly via
+            refs so swaps fire instantly without React render delay. */}
+        <div
           data-testid="stew-mascot"
-          src={STEW_FRAMES[stewFrame]}
-          alt="Stew the parrot playing kazoo"
-          className="w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-xl mb-2"
-          animate={{ y: gameState === 'showing' ? [0, -4, 0] : 0 }}
-          transition={{ repeat: gameState === 'showing' ? Infinity : 0, duration: 0.6 }}
-        />
-
-        {/* Kazoos */}
+          className="relative w-32 h-32 md:w-44 md:h-44 mb-2"
+        >
+          {STEW_FRAMES.map((src, idx) => (
+            <img
+              key={idx}
+              ref={(el) => { stewFrameRefs.current[idx] = el; }}
+              src={src}
+              alt={idx === 0 ? 'Stew' : ''}
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-contain drop-shadow-xl pointer-events-none"
+              style={{ display: idx === 0 ? 'block' : 'none' }}
+            />
+          ))}
+        </div>
         <motion.div
           className="game-board p-4 md:p-8"
           initial={{ y: 30, opacity: 0 }}
