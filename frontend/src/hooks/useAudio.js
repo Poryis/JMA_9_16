@@ -39,6 +39,19 @@ const DRUM_AUDIO_FILES = {
   scratchPushPull: 'assets/audio/scratch-push-pull.mp3'
 };
 
+// Kazoo audio file mapping. Keys are prefixed with `kazoo:` to avoid colliding
+// with bell-note buffer keys (which use just 'C', 'D', etc.).
+const KAZOO_AUDIO_FILES = {
+  'kazoo:C':      'assets/audio/kazoos/kazoo-C.mp3',
+  'kazoo:D':      'assets/audio/kazoos/kazoo-D.mp3',
+  'kazoo:E':      'assets/audio/kazoos/kazoo-E.mp3',
+  'kazoo:F':      'assets/audio/kazoos/kazoo-F.mp3',
+  'kazoo:G':      'assets/audio/kazoos/kazoo-G.mp3',
+  'kazoo:A':      'assets/audio/kazoos/kazoo-A.mp3',
+  'kazoo:B':      'assets/audio/kazoos/kazoo-B.mp3',
+  'kazoo:High C': 'assets/audio/kazoos/kazoo-HighC.mp3'
+};
+
 export function useAudio() {
   const audioContextRef = useRef(null);
   const audioBuffersRef = useRef({});
@@ -72,7 +85,7 @@ export function useAudio() {
     if (loadedRef.current) return;
     
     const ctx = initAudioContext();
-    const allFiles = { ...BELL_AUDIO_FILES, ...DRUM_AUDIO_FILES };
+    const allFiles = { ...BELL_AUDIO_FILES, ...DRUM_AUDIO_FILES, ...KAZOO_AUDIO_FILES };
     
     const loadPromises = Object.entries(allFiles).map(async ([note, url]) => {
       try {
@@ -148,6 +161,39 @@ export function useAudio() {
     }
   }, [initAudioContext]);
 
+  // Play a kazoo note - same polyphonic pattern as bells, just different buffers.
+  // Falls back to a slightly buzzier oscillator if the sample failed to load.
+  const playKazooNote = useCallback((note) => {
+    const ctx = initAudioContext();
+    const buffer = audioBuffersRef.current[`kazoo:${note}`];
+    if (buffer) {
+      const source = ctx.createBufferSource();
+      const gainNode = ctx.createGain();
+      source.buffer = buffer;
+      gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
+      // Brief release after ~0.6s so notes don't all stack up
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
+      source.connect(gainNode);
+      gainNode.connect(masterGainRef.current);
+      source.start(0);
+      source.stop(ctx.currentTime + 0.75);
+      return;
+    }
+    // Fallback - sawtooth (kazoo-ish buzz)
+    const freq = NOTE_FREQUENCIES[note];
+    if (!freq) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(masterGainRef.current);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  }, [initAudioContext]);
+
   // Play success/feedback sound
   const playFeedbackSound = useCallback((type) => {
     const ctx = initAudioContext();
@@ -182,6 +228,7 @@ export function useAudio() {
   return {
     playBellNote,
     playDrumSound,
+    playKazooNote,
     playFeedbackSound,
     preloadAudio,
     initAudioContext,

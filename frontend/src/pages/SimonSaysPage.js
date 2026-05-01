@@ -2,14 +2,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Play, Eye, RotateCcw } from 'lucide-react';
-import { JellyBellsRow, BELLS } from '../components/JellyBells';
+import { KazoosRow, KAZOOS } from '../components/Kazoos';
 import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
-import { PageCharacters } from '../components/PageCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker } from '../hooks/useStickers';
 
-// Patterns for Simon Says (progressively harder)
+// Patterns for Stu Kazoo Says (progressively harder)
 const PATTERNS = {
   1: ['C', 'E', 'G'],
   2: ['C', 'D', 'E', 'F'],
@@ -21,9 +20,17 @@ const PATTERNS = {
   8: ['C', 'C', 'G', 'G', 'A', 'A', 'G', 'F', 'F', 'E']
 };
 
+// Stew animation frames - cycles through 0,1,2,3,0 quickly on each note play
+const STEW_FRAMES = [
+  'assets/stew/stew-neutral.png',
+  'assets/stew/stew-plays-1.png',
+  'assets/stew/stew-plays-2.png',
+  'assets/stew/stew-plays-3.png',
+];
+
 function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) {
   const navigate = useNavigate();
-  const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
+  const { playKazooNote, playFeedbackSound, initAudioContext } = useAudio();
 
   const [gameState, setGameState] = useState('ready');
   const [level, setLevel] = useState(1);
@@ -34,13 +41,30 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
   const [message, setMessage] = useState('Watch and listen!');
 
   const timeoutRef = useRef(null);
-  const bellsRowRef = useRef(null); // Imperative handle to flash bells instantly
+  const bellsRowRef = useRef(null); // Imperative handle to flash kazoos instantly
+  const stewTimerRef = useRef(null);
+  const [stewFrame, setStewFrame] = useState(0); // 0=neutral, 1-3=playing
   const currentPattern = PATTERNS[level] || PATTERNS[8];
+
+  // Cycles Stew through frames 1→2→3→0(neutral) over ~280ms
+  // Called each time a kazoo is played (by Stu OR by the kid).
+  const cycleStew = useCallback(() => {
+    if (stewTimerRef.current) clearTimeout(stewTimerRef.current);
+    setStewFrame(1);
+    stewTimerRef.current = setTimeout(() => {
+      setStewFrame(2);
+      stewTimerRef.current = setTimeout(() => {
+        setStewFrame(3);
+        stewTimerRef.current = setTimeout(() => setStewFrame(0), 90);
+      }, 90);
+    }, 90);
+  }, []);
 
   // Clean up timeouts
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (stewTimerRef.current) clearTimeout(stewTimerRef.current);
     };
   }, []);
 
@@ -69,8 +93,9 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
     const note = currentPattern[showingIndex];
     setHighlightedNote(note);
-    playBellNote(note);
-    // Imperative visual swap for Simon's demo - bypasses React state delay
+    playKazooNote(note);
+    cycleStew();
+    // Imperative visual swap for Stu's demo - bypasses React state delay
     if (bellsRowRef.current) bellsRowRef.current.flashNote(note, 500);
 
     timeoutRef.current = setTimeout(() => {
@@ -83,13 +108,14 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [gameState, showingIndex, currentPattern, playBellNote]);
+  }, [gameState, showingIndex, currentPattern, playKazooNote, cycleStew]);
 
   // Handle player input
   const handlePlayNote = useCallback((note) => {
     if (gameState !== 'playing') return;
 
-    playBellNote(note);
+    playKazooNote(note);
+    cycleStew();
     setHighlightedNote(note);
     setTimeout(() => setHighlightedNote(null), 200);
 
@@ -153,7 +179,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         setFeedback(null);
       }, 1500);
     }
-  }, [gameState, playerIndex, currentPattern, level, playBellNote, playFeedbackSound, setScore, setGameStats, navigate]);
+  }, [gameState, playerIndex, currentPattern, level, playKazooNote, cycleStew, playFeedbackSound, setScore, setGameStats, navigate]);
 
   // NOTE: Keyboard is handled inside <JellyBellsRow> itself (with imperative
   // visual swap + dedup of key-repeat). Adding another keydown listener here
@@ -180,7 +206,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
-          Simon Says
+          Stu Kazoo Says
         </motion.h1>
 
         <motion.div
@@ -194,9 +220,9 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
             How to Play
           </h2>
           <p className="text-base" style={{ color: 'var(--jma-dark)' }}>
-            1. Watch the bells light up<br />
+            1. Watch Stu play his kazoos<br />
             2. Listen to the melody<br />
-            3. Repeat the pattern!
+            3. Play it back yourself!
           </p>
         </motion.div>
 
@@ -214,7 +240,15 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           <span className="text-xl font-bold">START!</span>
         </motion.button>
 
-        <PageCharacters page="simon-menu" />
+        {/* Stew on the menu - waving */}
+        <motion.img
+          src="assets/stew/stew-neutral.png"
+          alt="Stew"
+          className="mt-8 w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-xl"
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: [0, -10, 0], opacity: 1 }}
+          transition={{ y: { repeat: Infinity, duration: 2.4, ease: 'easeInOut' }, opacity: { delay: 0.5 } }}
+        />
       </div>
     );
   }
@@ -273,7 +307,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         {gameState === 'playing' && (
           <div className="flex gap-2 mb-6">
             {currentPattern.map((note, idx) => {
-              const bell = BELLS.find(b => b.note === note);
+              const kazoo = KAZOOS.find(k => k.note === note);
               const isCompleted = idx < playerIndex;
               const isCurrent = idx === playerIndex;
               
@@ -283,7 +317,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
                   className={`w-8 h-8 rounded-full border-3 border-[var(--jma-dark)] ${
                     isCompleted ? '' : 'opacity-30'
                   } ${isCurrent ? 'ring-4 ring-[var(--jma-yellow)]' : ''}`}
-                  style={{ backgroundColor: bell?.color }}
+                  style={{ backgroundColor: kazoo?.color }}
                   animate={isCurrent ? { scale: [1, 1.1, 1] } : {}}
                   transition={{ repeat: Infinity, duration: 0.5 }}
                 />
@@ -292,18 +326,28 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           </div>
         )}
 
-        {/* Jelly Bells */}
+        {/* Stew - cycles through frames each time a kazoo plays. AnimatePresence
+            on key={stewFrame} would be heavy; just swap the src directly. */}
+        <motion.img
+          data-testid="stew-mascot"
+          src={STEW_FRAMES[stewFrame]}
+          alt="Stew the parrot playing kazoo"
+          className="w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-xl mb-2"
+          animate={{ y: gameState === 'showing' ? [0, -4, 0] : 0 }}
+          transition={{ repeat: gameState === 'showing' ? Infinity : 0, duration: 0.6 }}
+        />
+
+        {/* Kazoos */}
         <motion.div
           className="game-board p-4 md:p-8"
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
-          <JellyBellsRow 
+          <KazoosRow 
             ref={bellsRowRef}
             onPlayNote={handlePlayNote}
             onNoteUp={() => {}}
             highlightedNote={highlightedNote}
-            showNotation={true}
           />
         </motion.div>
 
@@ -315,11 +359,10 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
           >
-            Showing note {showingIndex + 1} of {currentPattern.length}...
+            Stu is playing note {showingIndex + 1} of {currentPattern.length}...
           </motion.p>
         )}
       </main>
-      <PageCharacters page="simon-play" />
     </div>
   );
 }

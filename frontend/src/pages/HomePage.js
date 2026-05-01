@@ -79,7 +79,7 @@ function HomePage() {
   const gameModes = [
     { id: 'free-play',   title: 'Jam Time',          description: 'Tap any instrument!',  icon: Music,  color: '#4CD964', path: '/free-play' },
     { id: 'rhythm-game', title: "Who's Got Rhythm",  description: 'Hit notes as they fall!', icon: Drum,   color: '#FF3B30', path: '/rhythm-game' },
-    { id: 'simon-says',  title: 'Simon Says',        description: 'Watch, listen, repeat!',  icon: Brain,  color: '#4285F4', path: '/simon-says' },
+    { id: 'simon-says',  title: 'Stu Kazoo Says',    description: 'Watch, listen, play kazoos!',  icon: Brain,  color: '#4285F4', path: '/simon-says' },
     { id: 'ear-trainer', title: 'Ear Trainer',       description: 'Name that note!',          icon: Ear,    color: '#FF9500', path: '/ear-trainer' },
     { id: 'loop-studio', title: 'Loop Studio',       description: 'Build beats & layers!',    icon: Layers, color: '#AF52DE', path: '/loop-studio' },
     { id: 'fun-facts',   title: 'Fun Facts',         description: 'Music facts for kids!',    icon: BookOpen, color: '#FFCC00', path: '/fun-facts' },

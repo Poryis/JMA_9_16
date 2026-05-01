@@ -130,6 +130,15 @@ Build a rhythm game for a music education platform using the user's custom artwo
 - **Jam Time**: Save (record) + Stop + MP3 download buttons. Captures both the kid's instrument playing AND the Jam-Along backing track (the `<audio>` element is piped through `createMediaElementSource` into the master gain).
 - Output: 128kbps MP3 with timestamp filename (`my-loop-{ts}.mp3`, `my-jam-{ts}.mp3`).
 
+### Stu Kazoo Says (Feb 2026)
+- Renamed "Simon Says" → "Stu Kazoo Says" (route, page logic, and SimonSaysPage internal title all updated)
+- New `KazoosRow` component (`/app/frontend/src/components/Kazoos.js`) - same imperative-DOM swap pattern as JellyBells but with kazoo art
+- 16 kazoo sprites cut from user's sprite sheet (8 idle + 8 pressed); High C pressed art was truncated in source so reuses idle for both states (no swap on that one)
+- 8 kazoo audio samples (C/D/E/F/G/A/B/HighC, A=441 tuning) re-encoded to 96kbps MP3 in `assets/audio/kazoos/`
+- New `playKazooNote(note)` in `useAudio.js` with prefixed buffer keys (`kazoo:C`) to avoid collision with bell notes
+- **Stew animation cycles** through 4 frames (neutral → plays 1 → plays 2 → plays 3 → neutral) every time a kazoo plays - both during Stu's demo AND when the kid plays back. ~270ms total cycle so it feels snappy
+- All Sticker Book hints referring to "Simon Says" updated to "Stu Kazoo Says"
+
 ### Bug Fixes (Feb 2026 - partner round 3)
 - **Rhythm Game scoring**: -5 points and streak reset on any wrong key press (with score clamped at 0 so kids can never go negative). Hit window kept super forgiving — penalty makes random mashing less viable without making timing harder.
 - **Fun Facts in-scene layout**: characters now placed AT specific spots in the clubhouse (Chunk on swing, Finn near the ladder, Dr. Jellybone peeking out the picture frame, Charlie/Lou&Stew/Jazzy on the floor) instead of generic cards. Each has its own idle animation tied to its spot (swing rocks, jellybone peeks, floor characters bob).
