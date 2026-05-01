@@ -165,9 +165,10 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       // Removed playFeedbackSound('perfect') - the synth chirp clashed with the bell/drum sound
       setFallingNotes(prev => prev.filter(n => n.id !== matchingNote.id));
     } else {
-      // Wrong note (no falling note of this pitch on screen) - tiny penalty + reset streak.
+      // Wrong note (no falling note of this pitch on screen).
+      // Penalty is half the value of a correct hit (-50, since correct = +100).
       // Score is clamped at 0 so kids can't go negative.
-      setScore(prev => Math.max(0, prev - 5));
+      setScore(prev => Math.max(0, prev - 50));
       setGameStats(prev => ({ ...prev, streak: 0 }));
       setFeedback('miss');
     }

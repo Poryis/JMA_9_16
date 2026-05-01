@@ -226,6 +226,9 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
       }
     } else {
       // Wrong!
+      // Penalty is half the value of a correct hit (correct = +10*level, wrong = -5*level).
+      // Score is clamped at 0 so kids can't go negative.
+      setScore(prev => Math.max(0, prev - 5 * level));
       setGameStats(prev => ({
         ...prev,
         miss: prev.miss + 1,
