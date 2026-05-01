@@ -43,7 +43,10 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
   const timeoutRef = useRef(null);
   const bellsRowRef = useRef(null); // Imperative handle to flash kazoos instantly
   const stewFrameRefs = useRef([null, null, null, null]); // 4 stew frame <img> elements
+  const stewContainerRef = useRef(null); // For head-tilt rotation
   const stewTimerRef = useRef(null);
+  const [musicalNotes, setMusicalNotes] = useState([]); // Floating note emojis from Stew's beak
+  const noteIdRef = useRef(0);
   const currentPattern = PATTERNS[level] || PATTERNS[8];
 
   // Cycles Stew through frames 1→2→3→0(neutral) using direct DOM swaps so it
@@ -72,6 +75,31 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
       }, 110);
     }, 110);
   }, [showStewFrame]);
+
+  // Tilt Stew based on the note pitch: low notes (C/D/E) → left, high (A/B/HighC) → right.
+  // Direct CSS transform via ref so it's instant (no React render delay).
+  const tiltStewForNote = useCallback((note) => {
+    if (!stewContainerRef.current) return;
+    const lowNotes  = ['C', 'D', 'E'];
+    const highNotes = ['A', 'B', 'High C'];
+    let deg = 0;
+    if (lowNotes.includes(note)) deg = -8;
+    else if (highNotes.includes(note)) deg = 8;
+    stewContainerRef.current.style.transform = `rotate(${deg}deg)`;
+  }, []);
+
+  // Float a tiny musical note emoji up from Stew's beak. Auto-cleans after 1.4s.
+  const emitFloatingNote = useCallback((noteName) => {
+    const id = noteIdRef.current++;
+    const symbols = ['♪', '♫', '♬', '♩'];
+    const sym = symbols[id % symbols.length];
+    const kazoo = KAZOOS.find(k => k.note === noteName);
+    const color = kazoo?.color || 'var(--jma-yellow)';
+    setMusicalNotes(prev => [...prev, { id, sym, color, drift: (Math.random() - 0.5) * 60 }]);
+    setTimeout(() => {
+      setMusicalNotes(prev => prev.filter(n => n.id !== id));
+    }, 1400);
+  }, []);
 
   // Clean up timeouts
   useEffect(() => {
@@ -108,6 +136,8 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     setHighlightedNote(note);
     playKazooNote(note);
     cycleStew();
+    tiltStewForNote(note);
+    emitFloatingNote(note);
     // Imperative visual swap for Stu's demo - bypasses React state delay
     if (bellsRowRef.current) bellsRowRef.current.flashNote(note, 500);
 
@@ -121,7 +151,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [gameState, showingIndex, currentPattern, playKazooNote, cycleStew]);
+  }, [gameState, showingIndex, currentPattern, playKazooNote, cycleStew, tiltStewForNote, emitFloatingNote]);
 
   // Handle player input
   const handlePlayNote = useCallback((note) => {
@@ -129,6 +159,8 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
     playKazooNote(note);
     cycleStew();
+    tiltStewForNote(note);
+    emitFloatingNote(note);
     setHighlightedNote(note);
     setTimeout(() => setHighlightedNote(null), 200);
 
@@ -192,7 +224,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         setFeedback(null);
       }, 1500);
     }
-  }, [gameState, playerIndex, currentPattern, level, playKazooNote, cycleStew, playFeedbackSound, setScore, setGameStats, navigate]);
+  }, [gameState, playerIndex, currentPattern, level, playKazooNote, cycleStew, tiltStewForNote, emitFloatingNote, playFeedbackSound, setScore, setGameStats, navigate]);
 
   // NOTE: Keyboard is handled inside <JellyBellsRow> itself (with imperative
   // visual swap + dedup of key-repeat). Adding another keydown listener here
@@ -341,22 +373,50 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
         {/* Stew - cycles through frames each time a kazoo plays.
             All 4 frames are mounted at once; we toggle `display` directly via
-            refs so swaps fire instantly without React render delay. */}
-        <div
-          data-testid="stew-mascot"
-          className="relative w-32 h-32 md:w-44 md:h-44 mb-2"
-        >
-          {STEW_FRAMES.map((src, idx) => (
-            <img
-              key={idx}
-              ref={(el) => { stewFrameRefs.current[idx] = el; }}
-              src={src}
-              alt={idx === 0 ? 'Stew' : ''}
-              draggable={false}
-              className="absolute inset-0 w-full h-full object-contain drop-shadow-xl pointer-events-none"
-              style={{ display: idx === 0 ? 'block' : 'none' }}
-            />
-          ))}
+            refs so swaps fire instantly without React render delay.
+            Container rotates on each note for a head-tilt effect.
+            Floating ♪ ♫ notes pop up from the beak area on each note. */}
+        <div className="relative w-32 h-32 md:w-44 md:h-44 mb-2">
+          <div
+            ref={stewContainerRef}
+            data-testid="stew-mascot"
+            className="w-full h-full relative"
+            style={{ transition: 'transform 0.18s ease-out', transformOrigin: 'center bottom' }}
+          >
+            {STEW_FRAMES.map((src, idx) => (
+              <img
+                key={idx}
+                ref={(el) => { stewFrameRefs.current[idx] = el; }}
+                src={src}
+                alt={idx === 0 ? 'Stew' : ''}
+                draggable={false}
+                className="absolute inset-0 w-full h-full object-contain drop-shadow-xl pointer-events-none"
+                style={{ display: idx === 0 ? 'block' : 'none' }}
+              />
+            ))}
+          </div>
+          {/* Floating musical notes from Stew's beak */}
+          <AnimatePresence>
+            {musicalNotes.map((mn) => (
+              <motion.div
+                key={mn.id}
+                initial={{ opacity: 0, y: 0, x: 0, scale: 0.5 }}
+                animate={{ opacity: [0, 1, 1, 0], y: -90, x: mn.drift, scale: 1.2 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.3, ease: 'easeOut' }}
+                className="absolute font-bold pointer-events-none"
+                style={{
+                  top: '20%', left: '50%', transform: 'translateX(-50%)',
+                  fontSize: '2rem',
+                  color: mn.color,
+                  textShadow: '2px 2px 0 rgba(10,37,64,0.4)',
+                  zIndex: 20,
+                }}
+              >
+                {mn.sym}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
         <motion.div
           className="game-board p-4 md:p-8"
