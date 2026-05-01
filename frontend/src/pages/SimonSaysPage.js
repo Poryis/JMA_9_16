@@ -7,6 +7,7 @@ import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker } from '../hooks/useStickers';
+import Confetti from '../components/Confetti';
 
 // Patterns for Stu Kazoo Says (progressively harder)
 const PATTERNS = {
@@ -47,7 +48,27 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
   const stewTimerRef = useRef(null);
   const [musicalNotes, setMusicalNotes] = useState([]); // Floating note emojis from Stew's beak
   const noteIdRef = useRef(0);
+  const [showConfetti, setShowConfetti] = useState({ on: false, mega: false, key: 0 });
   const currentPattern = PATTERNS[level] || PATTERNS[8];
+
+  // Plays an ascending kazoo arpeggio Do-Mi-So-HighDo for level-clear celebration.
+  const playFanfare = useCallback(() => {
+    const ctx = initAudioContext();
+    if (!ctx) return;
+    const notes = ['C', 'E', 'G', 'High C'];
+    notes.forEach((n, i) => setTimeout(() => playKazooNote(n), i * 90));
+  }, [initAudioContext, playKazooNote]);
+
+  // Triggers confetti + fanfare. `mega=true` for milestone levels (5 and 8).
+  const celebrate = useCallback((mega = false) => {
+    setShowConfetti(prev => ({ on: true, mega, key: prev.key + 1 }));
+    playFanfare();
+    if (mega) {
+      // Second wave for extra-big moments
+      setTimeout(() => setShowConfetti(prev => ({ on: true, mega: true, key: prev.key + 1 })), 400);
+    }
+    setTimeout(() => setShowConfetti(prev => ({ ...prev, on: false })), 2000);
+  }, [playFanfare]);
 
   // Cycles Stew through frames 1→2→3→0(neutral) using direct DOM swaps so it
   // works even when fired rapidly during Stu's demo phase. All 4 frames are
