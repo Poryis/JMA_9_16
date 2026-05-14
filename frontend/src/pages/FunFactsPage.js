@@ -250,28 +250,41 @@ function FunFactsPage() {
             ))}
           </div>
 
-          {/* ============ DESKTOP: WOODEN PICTURE-FRAME TRIM ============ */}
-          {/* Decorative gold inner trim line + brass corner bolts.
-              Lives ABOVE the scene but doesn't intercept clicks. */}
+          {/* ============ DESKTOP: PORTHOLE THAT OPENS WHEN ALL FOUND ============ */}
+          {/* Same warm wood + gold rivet vibe as the mobile porthole, sized
+              for desktop. Once every character has been found the gradient
+              fades to transparent, revealing the whole scene — the room
+              "opens up" as a reward for finishing the hunt. */}
           <div
-            className="hidden md:block absolute inset-2 pointer-events-none rounded-2xl z-30"
-            data-testid="desktop-frame"
+            className="hidden md:block absolute inset-0 pointer-events-none rounded-2xl overflow-hidden z-30"
+            data-testid="desktop-porthole"
             style={{
-              boxShadow:
-                'inset 0 0 0 3px #FFCC00, inset 0 0 0 4px #C99528, inset 0 0 0 7px #3D2E1F',
+              background: allFound
+                ? 'transparent'
+                : `radial-gradient(circle at 50% 50%,
+                    transparent 0,
+                    transparent calc(min(34vw, 60vh) - 2px),
+                    #C99528 calc(min(34vw, 60vh)),
+                    #FFCC00 calc(min(34vw, 60vh) + 10px),
+                    #C99528 calc(min(34vw, 60vh) + 20px),
+                    #3D2E1F calc(min(34vw, 60vh) + 22px))`,
+              transition: 'background 1.1s ease-out, opacity 1.1s ease-out',
+              opacity: allFound ? 0 : 1,
             }}
           >
-            {[
-              { top: '12px',    left: '12px' },
-              { top: '12px',    right: '12px' },
-              { bottom: '12px', left: '12px' },
-              { bottom: '12px', right: '12px' },
+            {/* Brass rivets at compass points - hidden when porthole is open */}
+            {!allFound && [
+              { top: '12px',    left: '50%',  tx: '-50%', ty: '0' },
+              { bottom: '12px', left: '50%',  tx: '-50%', ty: '0' },
+              { left: '12px',   top: '50%',   tx: '0',    ty: '-50%' },
+              { right: '12px',  top: '50%',   tx: '0',    ty: '-50%' },
             ].map((p, idx) => (
               <span
                 key={idx}
                 className="absolute w-3.5 h-3.5 rounded-full"
                 style={{
                   ...p,
+                  transform: `translate(${p.tx}, ${p.ty})`,
                   background: 'radial-gradient(circle at 30% 30%, #FFE57A, #B8860B 70%)',
                   boxShadow: 'inset 0 -1px 1px rgba(0,0,0,0.4), 0 1px 1px rgba(0,0,0,0.35)',
                   border: '1px solid #3D2E1F',
