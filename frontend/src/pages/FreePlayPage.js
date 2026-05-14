@@ -755,7 +755,7 @@ function FreePlayPage() {
       <RoomCharacters room="jam-hall" />
 
       <main className="flex-1 flex flex-col items-center justify-start pt-16 md:pt-24 pb-2 px-2">
-        <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2 mb-1 md:mb-2">
+        <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2 mb-4 md:mb-2">
           <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-1">
             {INSTRUMENT_TABS.map(tab => (
               <button key={tab.id} data-testid={`sound-mode-${tab.id}`}
@@ -777,13 +777,9 @@ function FreePlayPage() {
                 <Play className="w-3 h-3" /> {isPlayingBack ? 'Playing...' : `Play (${recording.length})`}</button>
             )}
           </div>
-          {!isDrumTab && (
-            <div className="game-card px-1 py-0.5 md:px-2 md:py-1">
-              <button data-testid="guided-toggle" className={`chunky-btn px-2 py-0.5 md:py-1 text-[10px] md:text-xs font-bold touch-manipulation ${guidedMode ? 'bg-[var(--jma-blue)] text-white' : 'bg-white'}`}
-                onClick={() => setGuidedMode(!guidedMode)}>
-                <Music className="inline w-3 h-3 mr-1" /> {guidedMode ? 'Guided ON' : 'Learn a Song'}</button>
-            </div>
-          )}
+          {/* "Learn a Song" removed from Jam Hall to declutter the top
+              toolbar on mobile. Guided mode is still wired up under the hood
+              if it's ever re-introduced. */}
           <JamAlongControls
             jamTrackId={jamTrackId}
             onPick={(id) => setJamTrackId(id)}
@@ -852,7 +848,7 @@ function FreePlayPage() {
           </motion.div>
         ) : (
           <>
-            <motion.div className="w-full max-w-[1400px] flex items-center justify-center px-2" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+            <motion.div className="w-full max-w-[1400px] flex items-center justify-center px-2 mt-6 md:mt-2" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
               {activeTab === 'bells' && <BellCircle onDown={onBellDown} onUp={onBellUp} nextGuidedNote={nextGuidedNote} registerRef={registerBellRef} />}
               {activeTab === 'xylophone' && (
                 <ResponsiveScaler nativeWidth={840} nativeHeight={440}>

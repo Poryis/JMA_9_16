@@ -131,9 +131,17 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     };
   }, []);
 
-  // Start the game
-  const startGame = useCallback(() => {
-    initAudioContext();
+  // Start the game.
+  // We AWAIT the audio context resume before transitioning to 'showing' so
+  // Stew's first demo note doesn't fire alongside any queued/late sources
+  // (the cause of the "first note plays a bunch at once" bug on iOS).
+  const startGame = useCallback(async () => {
+    const ctx = initAudioContext();
+    if (ctx && ctx.state === 'suspended') {
+      try { await ctx.resume(); } catch (_) {}
+    }
+    // Small extra tick to let the audio graph settle on slower devices.
+    await new Promise((r) => setTimeout(r, 60));
     resetGame();
     setLevel(1);
     setGameState('showing');

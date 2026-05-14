@@ -26,16 +26,16 @@ export function FullscreenButton() {
   return (
     <motion.button
       data-testid="fullscreen-button"
-      className="fixed top-3 right-3 z-50 chunky-btn bg-white p-2.5"
+      className="fixed top-2 right-2 md:top-3 md:right-3 z-50 chunky-btn bg-white p-1 md:p-2"
       onClick={toggleFullscreen}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
       title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
     >
       {isFullscreen ? (
-        <Minimize className="w-5 h-5" style={{ color: 'var(--jma-dark)' }} />
+        <Minimize className="w-3.5 h-3.5 md:w-5 md:h-5" style={{ color: 'var(--jma-dark)' }} />
       ) : (
-        <Maximize className="w-5 h-5" style={{ color: 'var(--jma-dark)' }} />
+        <Maximize className="w-3.5 h-3.5 md:w-5 md:h-5" style={{ color: 'var(--jma-dark)' }} />
       )}
     </motion.button>
   );
