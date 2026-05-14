@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Play, Trophy, Zap } from 'lucide-react';
+import { Play, Trophy, Zap, Drum } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
 import { PageCharacters } from '../components/PageCharacters';
@@ -343,66 +343,116 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   if (gameState === 'menu') {
     const topScores = getTopScores(5);
     return (
-      <div className="min-h-screen sunburst-bg flex flex-col items-center p-4 pt-20 pb-8 relative" data-testid="rhythm-game-menu">
+      <div className="min-h-screen sunburst-bg flex flex-col items-center px-3 pt-16 md:pt-20 pb-6 relative" data-testid="rhythm-game-menu">
         <GameHeader showHomeButton={true} />
-        <motion.h1 className="text-3xl md:text-5xl font-black mb-2 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>Rhythm Arcade</motion.h1>
-        <p className="text-xs md:text-sm mb-1 opacity-70 font-bold" style={{ color: 'var(--jma-dark)' }}>Catch the notes as they fall</p>
-        <p className="text-sm mb-2 bg-white rounded-xl border-2 border-[var(--jma-dark)] px-4 py-1" style={{ color: 'var(--jma-dark)' }}><strong>Controls:</strong> Keys 1-8, click, or tap</p>
-        <button data-testid="toggle-high-scores" className="text-sm font-bold mb-4 underline" style={{ color: 'var(--jma-blue)' }} onClick={() => setShowHighScores(!showHighScores)}>
-          {showHighScores ? 'Hide' : 'Show'} High Scores <Trophy className="inline w-4 h-4" />
-        </button>
-        {showHighScores && topScores.length > 0 && (
-          <motion.div className="game-card p-4 mb-4 w-full max-w-lg" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}>
-            <h3 className="font-bold text-center mb-2 font-display">Top Scores</h3>
-            <div className="space-y-1">
-              {topScores.map((s, i) => {
-                const song = SONG_LIBRARY.find(sl => sl.id === s.songId);
-                return (<div key={i} className="flex justify-between text-sm px-2 py-1 rounded bg-[var(--jma-bg)]"><span className="font-bold">{i+1}. {song?.name || s.songId}</span><span>{s.score.toLocaleString()} ({s.speed})</span></div>);
-              })}
-            </div>
-          </motion.div>
-        )}
-        <div className="flex gap-2 mb-4">
+
+        {/* Title block */}
+        <motion.div
+          className="text-center mb-3"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <h1 className="text-3xl md:text-5xl font-black font-display leading-none" style={{ color: 'var(--jma-dark)' }}>
+            Rhythm Arcade
+          </h1>
+          <p className="text-xs md:text-sm mt-1 opacity-70 font-bold" style={{ color: 'var(--jma-dark)' }}>
+            Catch the notes as they fall — tap a song to play!
+          </p>
+        </motion.div>
+
+        {/* Speed selector */}
+        <div className="flex gap-2 mb-3 flex-wrap justify-center">
           {Object.entries(SPEED_SETTINGS).map(([key, cfg]) => (
-            <motion.button key={key} data-testid={`speed-${key}`}
-              className={`chunky-btn px-4 py-2 text-sm font-bold ${speed === key ? 'ring-4 ring-[var(--jma-yellow)]' : ''}`}
+            <motion.button
+              key={key}
+              data-testid={`speed-${key}`}
+              className={`chunky-btn px-3 py-1.5 text-xs md:text-sm font-bold ${speed === key ? 'ring-4 ring-[var(--jma-yellow)]' : ''}`}
               style={{ backgroundColor: cfg.color, color: key === 'normal' ? 'var(--jma-dark)' : 'white' }}
-              onClick={() => setSpeed(key)} whileTap={{ scale: 0.95 }}>
-              <Zap className="inline w-4 h-4 mr-1" />{cfg.label}
+              onClick={() => setSpeed(key)}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Zap className="inline w-3.5 h-3.5 mr-1" />{cfg.label}
             </motion.button>
           ))}
         </div>
-        <div className="flex gap-2 mb-3 flex-wrap justify-center">
+
+        {/* Category filter */}
+        <div className="flex gap-1.5 mb-3 flex-wrap justify-center max-w-2xl">
           {categories.map(cat => (
-            <button key={cat} className={`px-3 py-1 rounded-full text-sm font-bold border-2 border-[var(--jma-dark)] transition-all ${categoryFilter === cat ? 'bg-[var(--jma-dark)] text-white' : 'bg-white'}`} onClick={() => setCategoryFilter(cat)}>{cat}</button>
+            <button
+              key={cat}
+              className={`px-2.5 py-0.5 rounded-full text-[11px] md:text-xs font-bold border-2 border-[var(--jma-dark)] transition-all ${categoryFilter === cat ? 'bg-[var(--jma-dark)] text-white' : 'bg-white/85'}`}
+              onClick={() => setCategoryFilter(cat)}
+            >
+              {cat}
+            </button>
           ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-2xl mb-4 max-h-[50vh] overflow-y-auto pr-1">
+
+        {/* Song grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-2xl mb-3 max-h-[55vh] overflow-y-auto px-1">
           {filteredSongs.map((song) => {
             const highScore = getHighScore(song.id, speed);
+            const isDrums = song.instrumentMode === 'drums';
             return (
-              <motion.button key={song.id} data-testid={`song-${song.id}`}
-                className={`level-card p-3 text-left flex items-center gap-3 ${selectedSong.id === song.id ? 'ring-4 ring-[var(--jma-blue)]' : ''}`}
+              <motion.button
+                key={song.id}
+                data-testid={`song-${song.id}`}
+                className="level-card p-3 text-left flex items-center gap-3"
                 onClick={() => { setSelectedSong(song); startGame(); }}
                 whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}>
-                <div className="flex-1">
-                  <h3 className="text-base font-bold font-display">
-                    {song.instrumentMode === 'drums' && <span className="mr-1">🥁</span>}
-                    {song.name}
-                  </h3>
-                  <p className="text-xs opacity-60">
-                    {song.category} - {song.notes.filter(n => n != null).length} hits
-                    {song.instrumentMode === 'drums' && ' - Drums Only'}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-[var(--jma-dark)] flex items-center justify-center"
+                  style={{ backgroundColor: isDrums ? 'var(--jma-purple)' : 'var(--jma-blue)' }}>
+                  {isDrums
+                    ? <Drum className="w-4 h-4 text-white" />
+                    : <Play className="w-4 h-4 text-white" fill="white" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm md:text-base font-bold font-display truncate">{song.name}</h3>
+                  <p className="text-[10px] md:text-xs opacity-60 truncate">
+                    {song.category} · {song.notes.filter(n => n != null).length} hits
+                    {isDrums && ' · Drums'}
                   </p>
                 </div>
-                {highScore && (<div className="text-right"><p className="text-xs font-bold" style={{ color: 'var(--jma-orange)' }}><Trophy className="inline w-3 h-3" /> {highScore.score}</p></div>)}
-                <Play className="w-5 h-5 text-[var(--jma-green)] flex-shrink-0" />
+                {highScore && (
+                  <div className="flex-shrink-0 text-right">
+                    <p className="text-[11px] font-bold flex items-center gap-1" style={{ color: 'var(--jma-orange)' }}>
+                      <Trophy className="w-3 h-3" /> {highScore.score.toLocaleString()}
+                    </p>
+                  </div>
+                )}
               </motion.button>
             );
           })}
         </div>
-        <p className="text-xs opacity-70 mb-3">Tap a song to start!</p>
+
+        {/* Compact "View Top Scores" toggle - moved to the bottom and small */}
+        <button
+          data-testid="toggle-high-scores"
+          className="text-[11px] md:text-xs font-bold underline mb-1"
+          style={{ color: 'var(--jma-blue)' }}
+          onClick={() => setShowHighScores(!showHighScores)}
+        >
+          {showHighScores ? 'Hide' : 'View'} Top Scores Across All Songs
+        </button>
+        {showHighScores && topScores.length > 0 && (
+          <motion.div className="game-card p-3 mb-2 w-full max-w-md" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}>
+            <div className="space-y-1">
+              {topScores.map((s, i) => {
+                const song = SONG_LIBRARY.find(sl => sl.id === s.songId);
+                return (
+                  <div key={i} className="flex justify-between text-xs px-2 py-1 rounded bg-[var(--jma-bg)]">
+                    <span className="font-bold truncate">{i + 1}. {song?.name || s.songId}</span>
+                    <span className="flex-shrink-0 ml-2">{s.score.toLocaleString()} ({s.speed})</span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
         <RoomCharacters room="rhythm-arcade" />
       </div>
     );
