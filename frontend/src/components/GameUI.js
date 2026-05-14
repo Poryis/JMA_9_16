@@ -20,10 +20,15 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
             whileTap={{ scale: 0.95, y: 2 }}
           >
             <div
-              className="rounded-2xl bg-white border-3 border-[var(--jma-dark)] shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow p-1.5"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              className="rounded-2xl border-3 border-[var(--jma-dark)] shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow p-1.5"
+              style={{
+                backgroundColor: 'var(--jma-dark)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <HarpIcon size={36} />
+              <HarpIcon size={48} />
             </div>
             <span
               className="text-[10px] md:text-xs font-black uppercase tracking-wide mt-0.5 px-2 rounded-full"

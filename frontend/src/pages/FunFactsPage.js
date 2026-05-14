@@ -145,7 +145,7 @@ function FunFactsPage() {
           <div
             className="relative mx-auto"
             style={{
-              minWidth: '1100px',
+              minWidth: '1600px',
               width: '100%',
               aspectRatio: '16 / 9',
               backgroundImage: 'url(assets/backgrounds/clubhouse.png)',

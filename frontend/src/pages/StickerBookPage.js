@@ -118,8 +118,11 @@ export default function StickerBookPage() {
         <button data-testid="sticker-home-btn" onClick={() => navigate('/')}
           aria-label="Home"
           className="flex flex-col items-center group cursor-pointer bg-transparent border-0 p-0">
-          <div className="rounded-2xl bg-white border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] group-hover:shadow-[0_5px_0_0_var(--jma-dark)] transition-shadow p-1">
-            <HarpIcon size={26} />
+          <div
+            className="rounded-2xl border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] group-hover:shadow-[0_5px_0_0_var(--jma-dark)] transition-shadow p-1"
+            style={{ backgroundColor: 'var(--jma-dark)' }}
+          >
+            <HarpIcon size={34} />
           </div>
           <span className="text-[9px] font-black uppercase tracking-wide mt-0.5 px-1.5 rounded-full"
             style={{ color: 'white', backgroundColor: 'var(--jma-dark)' }}>
