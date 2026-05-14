@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react
 import { motion, AnimatePresence } from 'framer-motion';
 import { Music, Circle, Square, Play, RotateCcw, ChevronRight, Headphones, Download } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
-import { GameHeader, NotationDisplay } from '../components/GameUI';
+import { GameHeader } from '../components/GameUI';
 import RoomCharacters from '../components/RoomCharacters';
 import { XylophoneInstrument, PianoInstrument } from '../components/Instruments';
 import { FullscreenButton } from '../components/FullscreenButton';
@@ -488,8 +488,6 @@ function FreePlayPage() {
   const { playBellNote, playDrumSound, initAudioContext, getAudioGraph } = useAudio();
   const recorder = useMp3Recorder(getAudioGraph);
 
-  const [lastNote, setLastNote] = useState(null);
-  const [playedNotes, setPlayedNotes] = useState([]);
   const [particles, setParticles] = useState([]);
   const [streak, setStreak] = useState(0);
   const [activeTab, setActiveTab] = useState('bells');
@@ -571,8 +569,6 @@ function FreePlayPage() {
   const onBellDown = useCallback((note) => {
     initAudioContext();
     playModeSound(note);
-    setLastNote(note);
-    setPlayedNotes(prev => [...prev.slice(-11), note]);
     setStreak(prev => prev + 1);
     spawnParticles(BELLS.find(b => b.note === note)?.color || '#FFD700');
     if (isRecording) setRecording(prev => [...prev, { note, type: 'bell', time: Date.now() - recordStartRef.current }]);
@@ -846,11 +842,8 @@ function FreePlayPage() {
           </motion.div>
         )}
 
-        {lastNote && !isDrumTab && (
-          <motion.div key={lastNote + streak} initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="mb-1">
-            <NotationDisplay currentNote={`${lastNote} (${noteToSolfege[lastNote] || lastNote})`} />
-          </motion.div>
-        )}
+        {/* Note feedback (NotationDisplay + played-notes pills) removed
+            to give the Jelly Bells circle more breathing room on the page. */}
 
         {isDrumTab ? (
           <motion.div className="w-full max-w-[1200px] flex items-center justify-center px-2"
@@ -859,15 +852,6 @@ function FreePlayPage() {
           </motion.div>
         ) : (
           <>
-            {playedNotes.length > 0 && (
-              <div className="flex gap-1 mb-2 flex-wrap justify-center max-w-xl">
-                {playedNotes.map((note, idx) => (
-                  <motion.span key={`${note}-${idx}`} initial={{ scale: 0, y: -10 }} animate={{ scale: 1, y: 0 }}
-                    className="px-2 py-0.5 rounded-full text-xs font-bold text-white border-2 border-[var(--jma-dark)]"
-                    style={{ backgroundColor: BELLS.find(b => b.note === note)?.color || '#ccc' }}>{noteToSolfege[note]}</motion.span>
-                ))}
-              </div>
-            )}
             <motion.div className="w-full max-w-[1400px] flex items-center justify-center px-2" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
               {activeTab === 'bells' && <BellCircle onDown={onBellDown} onUp={onBellUp} nextGuidedNote={nextGuidedNote} registerRef={registerBellRef} />}
               {activeTab === 'xylophone' && (
