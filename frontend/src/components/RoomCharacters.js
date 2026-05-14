@@ -127,10 +127,15 @@ function CharacterImp({ id, pos, line }) {
   const idleDuration = useRef(2.2 + Math.random() * 0.8);
 
   const handleTap = useCallback(() => {
+    // Outfit changes IMMEDIATELY so kids see it. The speech bubble is
+    // delayed by ~450ms and positioned to the side (not over the head) so
+    // the outfit swap reads clearly first.
     setOutfitIdx((n) => (n + 1) % outfits.length);
-    setBubble(true);
     if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
-    bubbleTimer.current = setTimeout(() => setBubble(false), 1900);
+    bubbleTimer.current = setTimeout(() => {
+      setBubble(true);
+      bubbleTimer.current = setTimeout(() => setBubble(false), 1700);
+    }, 450);
   }, [outfits.length]);
 
   useEffect(() => () => { if (bubbleTimer.current) clearTimeout(bubbleTimer.current); }, []);
@@ -169,38 +174,52 @@ function CharacterImp({ id, pos, line }) {
         transition={{ duration: idleDuration.current, repeat: Infinity, ease: 'easeInOut' }}
       />
       <AnimatePresence>
-        {bubble && (
-          <motion.div
-            key={`bub-${outfitIdx}`}
-            className="absolute left-1/2 -top-3 -translate-x-1/2 -translate-y-full px-3 py-1.5 rounded-2xl border-3 whitespace-nowrap pointer-events-none"
-            style={{
-              backgroundColor: 'white',
-              borderColor: 'var(--jma-dark)',
-              boxShadow: '0 3px 0 0 var(--jma-dark)',
-              fontSize: '0.75rem',
-              fontWeight: 800,
-              color: 'var(--jma-dark)',
-              maxWidth: '160px',
-              whiteSpace: 'normal',
-              textAlign: 'center',
-            }}
-            initial={{ opacity: 0, y: 8, scale: 0.7 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.7 }}
-            transition={{ type: 'spring', stiffness: 320 }}
-          >
-            {line}
-            {/* Tail */}
-            <span
-              className="absolute left-1/2 -bottom-1.5 -translate-x-1/2 w-3 h-3 rotate-45"
+        {bubble && (() => {
+          // Position bubble to the SIDE of the character (left if char is on
+          // the right half of screen, right if on the left half) so it never
+          // covers the outfit. Tail flips to point at the character.
+          const onLeftHalf = pos.l < 50;
+          return (
+            <motion.div
+              key={`bub-${outfitIdx}`}
+              className="absolute top-1/2 px-3 py-1.5 rounded-2xl border-3 pointer-events-none"
               style={{
+                ...(onLeftHalf
+                  ? { left: '100%', marginLeft: '12px' }
+                  : { right: '100%', marginRight: '12px' }),
+                transform: 'translateY(-50%)',
                 backgroundColor: 'white',
-                borderRight: '3px solid var(--jma-dark)',
-                borderBottom: '3px solid var(--jma-dark)',
+                borderColor: 'var(--jma-dark)',
+                boxShadow: '0 3px 0 0 var(--jma-dark)',
+                fontSize: '0.75rem',
+                fontWeight: 800,
+                color: 'var(--jma-dark)',
+                width: 'max-content',
+                maxWidth: '140px',
+                whiteSpace: 'normal',
+                textAlign: 'center',
+                lineHeight: 1.15,
               }}
-            />
-          </motion.div>
-        )}
+              initial={{ opacity: 0, x: onLeftHalf ? -8 : 8, scale: 0.7 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: onLeftHalf ? -8 : 8, scale: 0.7 }}
+              transition={{ type: 'spring', stiffness: 320 }}
+            >
+              {line}
+              {/* Side-pointing tail */}
+              <span
+                className="absolute top-1/2 w-3 h-3 rotate-45"
+                style={{
+                  ...(onLeftHalf
+                    ? { left: '-7px', borderLeft: '3px solid var(--jma-dark)', borderBottom: '3px solid var(--jma-dark)' }
+                    : { right: '-7px', borderRight: '3px solid var(--jma-dark)', borderTop: '3px solid var(--jma-dark)' }),
+                  transform: 'translateY(-50%) rotate(45deg)',
+                  backgroundColor: 'white',
+                }}
+              />
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
     </motion.button>
   );

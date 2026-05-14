@@ -56,16 +56,18 @@ function EarTrainerPage() {
     setTimeout(() => playBellNote(note), 300);
   }, [level.notes, playBellNote]);
 
-  // Start game
-  const startGame = useCallback(() => {
+  // Start game - optional difficulty arg lets a tap on a level card start
+  // immediately without waiting for the state update to flush.
+  const startGame = useCallback((diffOverride) => {
     initAudioContext();
     setGameState('playing');
     setScore(0);
     setStreak(0);
     setRound(1);
     setResults({ correct: 0, wrong: 0 });
+    const useDiff = typeof diffOverride === 'string' ? diffOverride : difficulty;
     setTimeout(() => {
-      const notes = LEVELS[difficulty].notes;
+      const notes = LEVELS[useDiff].notes;
       const note = notes[Math.floor(Math.random() * notes.length)];
       setTargetNote(note);
       setGuess(null);
@@ -188,23 +190,20 @@ function EarTrainerPage() {
           </motion.div>
         )}
 
-        {/* Difficulty */}
-        <div className="grid gap-2 w-full max-w-md mb-6">
+        {/* Difficulty — tapping a level instantly starts the game */}
+        <div className="grid gap-2 w-full max-w-md mb-2">
           {Object.entries(LEVELS).map(([key, lvl], idx) => (
             <motion.button key={key} data-testid={`ear-difficulty-${key}`}
               className={`level-card p-3 text-left ${difficulty === key ? 'ring-4 ring-[var(--jma-blue)]' : ''}`}
-              onClick={() => setDifficulty(key)}
+              onClick={() => { setDifficulty(key); startGame(key); }}
               initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 * idx }}
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
             >
               <h3 className="text-lg font-bold font-display">{lvl.name}</h3>
               <p className="text-xs opacity-60">{lvl.description} ({lvl.noteCount} notes)</p>
             </motion.button>
           ))}
         </div>
-
-        <motion.button data-testid="start-ear-trainer" className="chunky-btn bg-[var(--jma-blue)] text-white px-8 py-3 flex items-center gap-3" onClick={startGame} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Ear className="w-6 h-6" /><span className="text-xl font-bold font-display">START!</span>
-        </motion.button>
       </div>
     );
   }
