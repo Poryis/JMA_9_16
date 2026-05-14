@@ -134,83 +134,150 @@ function FunFactsPage() {
           </div>
         </motion.div>
 
-        {/* The clubhouse scene.
-            Mobile: the SCROLLER fills the remaining vertical space and the
-            scene inside is larger in BOTH axes, so kids pan the picture
-            instead of scrolling the whole page.
-            Desktop (md+): locked 16:9 inside max-w-[1200px], no inner scroll. */}
-        <div
-          className="w-full max-w-[1200px] flex-1 md:flex-none min-h-0 overflow-auto md:overflow-visible rounded-2xl border-4 border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)]"
-          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
-          data-testid="funfacts-scene-scroller"
-        >
+        {/* The clubhouse scene wrapper.
+            Mobile: a PORTHOLE — circular cutout over the pannable scene with
+            a gold rivet ring and dark "wall" corners, so it feels like you're
+            peeking through a window into the clubhouse.
+            Desktop: a wooden "picture frame" look — rectangular with thick
+            gold inner trim and decorative corner bolts. */}
+        <div className="relative w-full max-w-[1200px] flex-1 md:flex-none min-h-0">
           <div
-            className="relative mx-auto w-[1600px] aspect-[16/9] md:w-full"
+            className="w-full h-full overflow-auto md:overflow-visible rounded-2xl md:rounded-[28px] border-4 md:border-[10px] border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)]"
+            style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
+            data-testid="funfacts-scene-scroller"
+          >
+            <div
+              className="relative mx-auto w-[1600px] aspect-[16/9] md:w-full"
+              style={{
+                backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              {SCENE_CHARS.map((char, i) => {
+                const isFound = found.has(char.name);
+                const isPopping = poppingName === char.name;
+                return (
+                  <motion.button
+                    key={char.name}
+                    data-testid={`funfacts-character-${char.name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`}
+                    data-found={isFound ? 'true' : 'false'}
+                    type="button"
+                    onClick={() => showFact(char.name)}
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 + i * 0.08, type: 'spring', stiffness: 220 }}
+                    whileHover={{ scale: 1.12 }}
+                    whileTap={{ scale: 0.92 }}
+                    className="absolute bg-transparent border-0 p-0 cursor-pointer flex flex-col items-center"
+                    style={{
+                      left: `${char.leftPct}%`,
+                      top: `${char.topPct}%`,
+                      width: `${char.widthPct}%`,
+                      transform: 'translate(-50%, -50%)',
+                      filter: isFound
+                        ? 'drop-shadow(0 6px 8px rgba(0,0,0,0.45))'
+                        : 'brightness(0.18) drop-shadow(0 0 12px rgba(255,221,87,0.55)) drop-shadow(0 0 4px rgba(255,221,87,0.8))',
+                      transition: 'filter 0.4s ease-out',
+                    }}
+                    aria-label={isFound ? `Tap ${char.name} for a music fact` : 'A hidden friend - tap to reveal!'}
+                  >
+                    <motion.img
+                      src={char.image}
+                      alt={isFound ? char.name : 'Hidden friend'}
+                      className="w-full h-auto object-contain"
+                      draggable={false}
+                      animate={
+                        isPopping
+                          ? { scale: [1, 1.5, 1.2, 1], rotate: [0, -10, 10, 0] }
+                          : (ANIM_VARIANTS[char.anim] || ANIM_VARIANTS.bob)
+                      }
+                      transition={
+                        isPopping
+                          ? { duration: 0.6, ease: 'easeOut' }
+                          : { duration: 2 + i * 0.25, repeat: Infinity, ease: 'easeInOut', delay: i * 0.15 }
+                      }
+                    />
+                    {isPopping && (
+                      <motion.div
+                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                        initial={{ opacity: 1, scale: 0.4 }}
+                        animate={{ opacity: 0, scale: 2.2 }}
+                        transition={{ duration: 0.6 }}
+                      >
+                        <Sparkles className="w-10 h-10" style={{ color: '#FFDD57' }} />
+                      </motion.div>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ============ MOBILE: PORTHOLE OVERLAY ============ */}
+          {/* Circular cutout with gold ring + dark wall corners.
+              pointer-events: none so taps pass through to the characters. */}
+          <div
+            className="md:hidden absolute inset-0 pointer-events-none rounded-2xl overflow-hidden z-30"
+            data-testid="porthole-frame"
             style={{
-              backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              background: `radial-gradient(circle at 50% 50%,
+                transparent 0,
+                transparent calc(min(46vw, 38vh) - 2px),
+                #C99528 calc(min(46vw, 38vh)),
+                #FFCC00 calc(min(46vw, 38vh) + 8px),
+                #C99528 calc(min(46vw, 38vh) + 16px),
+                #3D2E1F calc(min(46vw, 38vh) + 18px))`,
             }}
           >
-            {SCENE_CHARS.map((char, i) => {
-              const isFound = found.has(char.name);
-              const isPopping = poppingName === char.name;
-              return (
-                <motion.button
-                  key={char.name}
-                  data-testid={`funfacts-character-${char.name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`}
-                  data-found={isFound ? 'true' : 'false'}
-                  type="button"
-                  onClick={() => showFact(char.name)}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 + i * 0.08, type: 'spring', stiffness: 220 }}
-                  whileHover={{ scale: 1.12 }}
-                  whileTap={{ scale: 0.92 }}
-                  className="absolute bg-transparent border-0 p-0 cursor-pointer flex flex-col items-center"
-                  style={{
-                    left: `${char.leftPct}%`,
-                    top: `${char.topPct}%`,
-                    width: `${char.widthPct}%`,
-                    transform: 'translate(-50%, -50%)',
-                    filter: isFound
-                      ? 'drop-shadow(0 6px 8px rgba(0,0,0,0.45))'
-                      // Silhouette mode: dark + slight glow halo to hint location
-                      : 'brightness(0.18) drop-shadow(0 0 12px rgba(255,221,87,0.55)) drop-shadow(0 0 4px rgba(255,221,87,0.8))',
-                    transition: 'filter 0.4s ease-out',
-                  }}
-                  aria-label={isFound ? `Tap ${char.name} for a music fact` : 'A hidden friend - tap to reveal!'}
-                >
-                  <motion.img
-                    src={char.image}
-                    alt={isFound ? char.name : 'Hidden friend'}
-                    className="w-full h-auto object-contain"
-                    draggable={false}
-                    animate={
-                      isPopping
-                        ? { scale: [1, 1.5, 1.2, 1], rotate: [0, -10, 10, 0] }
-                        : (ANIM_VARIANTS[char.anim] || ANIM_VARIANTS.bob)
-                    }
-                    transition={
-                      isPopping
-                        ? { duration: 0.6, ease: 'easeOut' }
-                        : { duration: 2 + i * 0.25, repeat: Infinity, ease: 'easeInOut', delay: i * 0.15 }
-                    }
-                  />
-                  {/* Sparkle pop on first reveal */}
-                  {isPopping && (
-                    <motion.div
-                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                      initial={{ opacity: 1, scale: 0.4 }}
-                      animate={{ opacity: 0, scale: 2.2 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <Sparkles className="w-10 h-10" style={{ color: '#FFDD57' }} />
-                    </motion.div>
-                  )}
-                </motion.button>
-              );
-            })}
+            {/* Brass rivets at compass points around the ring */}
+            {[
+              { top: '8px',  left: '50%',  tx: '-50%', ty: '0' },
+              { bottom: '8px', left: '50%', tx: '-50%', ty: '0' },
+              { left: '8px',  top: '50%',  tx: '0',    ty: '-50%' },
+              { right: '8px', top: '50%',  tx: '0',    ty: '-50%' },
+            ].map((p, idx) => (
+              <span
+                key={idx}
+                className="absolute w-2.5 h-2.5 rounded-full"
+                style={{
+                  ...p,
+                  transform: `translate(${p.tx}, ${p.ty})`,
+                  background: 'radial-gradient(circle at 30% 30%, #FFE57A, #B8860B 70%)',
+                  boxShadow: 'inset 0 -1px 1px rgba(0,0,0,0.4)',
+                }}
+              />
+            ))}
+          </div>
+
+          {/* ============ DESKTOP: WOODEN PICTURE-FRAME TRIM ============ */}
+          {/* Decorative gold inner trim line + brass corner bolts.
+              Lives ABOVE the scene but doesn't intercept clicks. */}
+          <div
+            className="hidden md:block absolute inset-2 pointer-events-none rounded-2xl z-30"
+            data-testid="desktop-frame"
+            style={{
+              boxShadow:
+                'inset 0 0 0 3px #FFCC00, inset 0 0 0 4px #C99528, inset 0 0 0 7px #3D2E1F',
+            }}
+          >
+            {[
+              { top: '12px',    left: '12px' },
+              { top: '12px',    right: '12px' },
+              { bottom: '12px', left: '12px' },
+              { bottom: '12px', right: '12px' },
+            ].map((p, idx) => (
+              <span
+                key={idx}
+                className="absolute w-3.5 h-3.5 rounded-full"
+                style={{
+                  ...p,
+                  background: 'radial-gradient(circle at 30% 30%, #FFE57A, #B8860B 70%)',
+                  boxShadow: 'inset 0 -1px 1px rgba(0,0,0,0.4), 0 1px 1px rgba(0,0,0,0.35)',
+                  border: '1px solid #3D2E1F',
+                }}
+              />
+            ))}
           </div>
         </div>
 

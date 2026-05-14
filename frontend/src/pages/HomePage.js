@@ -146,7 +146,7 @@ function DestinationRoom({ dest, index, navigate }) {
         borderColor: 'var(--jma-dark)',
         boxShadow: `0 8px 0 0 var(--jma-dark)`,
         background: cardBg || dest.color,
-        minHeight: '180px',
+        minHeight: '210px',
       }}
       initial={{ y: 50, opacity: 0, rotate: index % 2 === 0 ? -2 : 2 }}
       animate={{ y: 0, opacity: 1, rotate: 0 }}
@@ -226,16 +226,21 @@ function DestinationRoom({ dest, index, navigate }) {
         </p>
       </div>
 
-      {/* Primary character (rendered with per-destination size cap) */}
+      {/* Primary character — anchored to the floor of the card.
+          `object-position: bottom` keeps the character's feet planted no
+          matter what aspect ratio the source PNG has, so nothing dangles
+          off-screen anymore. */}
       <motion.img
         src={dest.character}
         alt=""
         draggable={false}
         loading="lazy"
-        className="absolute right-2 bottom-2 object-contain pointer-events-none select-none z-10"
+        className="absolute right-2 bottom-0 pointer-events-none select-none z-10"
         style={{
           width: `${dest.charWidthPct || 28}%`,
-          maxHeight: '78%',
+          height: '92%',
+          objectFit: 'contain',
+          objectPosition: 'bottom right',
           filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.45))',
         }}
         animate={hovered ? { y: -10, rotate: -4 } : { y: [0, -6, 0], rotate: 0 }}
@@ -245,17 +250,20 @@ function DestinationRoom({ dest, index, navigate }) {
             : { y: { repeat: Infinity, duration: 2.2, ease: 'easeInOut' } }
         }
       />
-      {/* Secondary character (desktop-only, smaller) */}
+      {/* Secondary character (desktop-only) — also anchored to the floor,
+          with a comfortable gap from the primary so they don't overlap. */}
       <motion.img
         src={dest.character2}
         alt=""
         draggable={false}
         loading="lazy"
-        className="absolute -bottom-2 object-contain pointer-events-none select-none z-[9] hidden md:block"
+        className="absolute bottom-0 pointer-events-none select-none z-[9] hidden md:block"
         style={{
-          right: `${(dest.charWidthPct || 28) + 10}%`,
+          right: `${(dest.charWidthPct || 28) + 8}%`,
           width: `${dest.char2WidthPct || 16}%`,
-          maxHeight: '60%',
+          height: '70%',
+          objectFit: 'contain',
+          objectPosition: 'bottom right',
           filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.4))',
         }}
         animate={{ y: [0, -4, 0], rotate: [-3, 3, -3] }}
