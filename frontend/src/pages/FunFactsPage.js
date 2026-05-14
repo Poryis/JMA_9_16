@@ -100,54 +100,53 @@ function FunFactsPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-[100dvh] md:h-auto md:min-h-screen flex flex-col overflow-hidden md:overflow-visible"
       data-testid="fun-facts-page"
       style={{ backgroundColor: '#3D2E1F' }}
     >
       <GameHeader title="Fun Facts Clubhouse" showHomeButton={true} />
 
-      <main className="flex-1 pt-24 pb-6 px-2 sm:px-3 flex flex-col items-center justify-center">
+      <main className="flex-1 min-h-0 pt-20 md:pt-24 pb-2 md:pb-6 px-2 sm:px-3 flex flex-col items-center">
         {/* Progress / "find-them-all" prompt */}
         <motion.div
-          className="mb-3 flex flex-col sm:flex-row items-center gap-2"
+          className="mb-2 md:mb-3 flex flex-row flex-wrap items-center justify-center gap-2"
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
           <div
-            className="px-4 py-2 rounded-full text-sm md:text-base font-bold flex items-center gap-2"
+            className="px-3 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-base font-bold flex items-center gap-1.5"
             style={{ color: 'white', backgroundColor: 'rgba(10,37,64,0.85)' }}
           >
-            <Search className="inline w-4 h-4" />
+            <Search className="inline w-3.5 h-3.5 md:w-4 md:h-4" />
             <span className="hidden sm:inline">Find all the music friends!</span>
-            <span className="sm:hidden">Swipe & tap the shadows!</span>
+            <span className="sm:hidden">Find the shadows!</span>
           </div>
           <div
             data-testid="funfacts-progress"
-            className="px-3 py-1.5 rounded-full text-xs md:text-sm font-black border-2"
+            className="px-3 py-1 rounded-full text-xs md:text-sm font-black border-2"
             style={{
               backgroundColor: allFound ? '#4CD964' : 'white',
               color: allFound ? 'white' : 'var(--jma-dark)',
               borderColor: 'var(--jma-dark)',
             }}
           >
-            {allFound ? '★ ALL FOUND! ★' : `${totalFound} / ${totalChars} friends found`}
+            {allFound ? '★ ALL FOUND! ★' : `${totalFound} / ${totalChars}`}
           </div>
         </motion.div>
 
         {/* The clubhouse scene.
-            Desktop: locked 16:9 inside max-w-[1200px].
-            Mobile: minWidth: 1100px so kids must pan to discover everyone. */}
+            Mobile: the SCROLLER fills the remaining vertical space and the
+            scene inside is larger in BOTH axes, so kids pan the picture
+            instead of scrolling the whole page.
+            Desktop (md+): locked 16:9 inside max-w-[1200px], no inner scroll. */}
         <div
-          className="w-full max-w-[1200px] overflow-x-auto md:overflow-x-visible md:overflow-y-visible rounded-2xl border-4 border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)]"
-          style={{ WebkitOverflowScrolling: 'touch' }}
+          className="w-full max-w-[1200px] flex-1 md:flex-none min-h-0 overflow-auto md:overflow-visible rounded-2xl border-4 border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)]"
+          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
           data-testid="funfacts-scene-scroller"
         >
           <div
-            className="relative mx-auto"
+            className="relative mx-auto w-[1400px] h-[1050px] md:w-full md:h-auto md:aspect-[16/9]"
             style={{
-              minWidth: '1600px',
-              width: '100%',
-              aspectRatio: '16 / 9',
               backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
@@ -215,8 +214,8 @@ function FunFactsPage() {
           </div>
         </div>
 
-        <p className="mt-3 text-xs md:text-sm font-bold opacity-85 text-center px-3" style={{ color: '#FFE9C4' }}>
-          <span className="block sm:hidden mt-1 italic">← swipe to explore the clubhouse →</span>
+        <p className="mt-2 text-[10px] md:text-sm font-bold opacity-85 text-center px-3" style={{ color: '#FFE9C4' }}>
+          <span className="block sm:hidden italic">↕ pan to explore the clubhouse ↔</span>
           <span className="hidden sm:block">Each glowing shadow is a friend hiding. Tap to reveal them!</span>
         </p>
       </main>
