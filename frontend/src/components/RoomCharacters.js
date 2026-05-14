@@ -110,6 +110,9 @@ function CharacterImp({ id, pos, line }) {
   const [outfitIdx, setOutfitIdx] = useState(0);
   const [bubble, setBubble] = useState(false);
   const bubbleTimer = useRef(null);
+  // Stable per-mount randomized duration so the idle animation doesn't
+  // flicker on re-renders.
+  const idleDuration = useRef(2.2 + Math.random() * 0.8);
 
   const handleTap = useCallback(() => {
     setOutfitIdx((n) => (n + 1) % outfits.length);
@@ -145,7 +148,7 @@ function CharacterImp({ id, pos, line }) {
         draggable={false}
         className="w-full h-auto object-contain select-none"
         animate={ANIMS[pos.anim] || ANIMS.bob}
-        transition={{ duration: 2.2 + Math.random() * 0.8, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: idleDuration.current, repeat: Infinity, ease: 'easeInOut' }}
       />
       <AnimatePresence>
         {bubble && (

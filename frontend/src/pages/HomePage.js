@@ -93,7 +93,7 @@ const DESTINATIONS = [
     character2: 'assets/characters/charlie-polliwog.png',
     color: '#FFCC00',
     accent: '#F39C12',
-    sign: 'CLUBHOUSE',
+    sign: 'FUN FACTS',
   },
 ];
 

@@ -104,6 +104,22 @@ export const CHARACTER_FACTS = {
       "Some instruments are SO big one person can barely carry them — like the double bass or the tuba!",
     ],
   },
+  Stew: {
+    topic: 'kazoos & funny sounds',
+    color: '#16A085',
+    facts: [
+      "A KAZOO doesn't make sound from air — it makes sound from your VOICE buzzing through it!",
+      "If you whisper into a kazoo, nothing happens. You have to HUM!",
+      "Kazoos are called MEMBRANOPHONES because they have a thin membrane that vibrates when you hum.",
+      "Birds like me have a special voice box called a SYRINX — that's why birds can sing two notes at once!",
+      "The kazoo was invented in America in the 1800s. Almost 200 years of buzzing!",
+      "You can play almost ANY song on a kazoo — if you can sing it, you can kazoo it!",
+      "Sea birds use whistles, squawks, and warbles like their own little kazoo songs.",
+      "When a flock of birds sings together, it's called a DAWN CHORUS — nature's first concert of the day!",
+      "Try singing 'LA LA' into a kazoo — that's a smooth sound. Try 'DOO DOO' — that's a punchier sound!",
+      "Kazoos are great for beginners because they sound silly and fun, no wrong notes!",
+    ],
+  },
 };
 
 // Get a random fact for a character, remembering which was shown most recently.

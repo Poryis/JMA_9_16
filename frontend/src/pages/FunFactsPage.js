@@ -81,8 +81,10 @@ function FunFactsPage() {
           <div
             className="relative mx-auto"
             style={{
-              // On mobile we force the scene wider than viewport so it scrolls
-              minWidth: 'min(720px, 95vw)',
+              // On mobile we force the scene wider than the viewport so kids
+              // can swipe horizontally to discover characters. Desktop wraps
+              // it inside max-w-[1200px] so this minWidth has no effect there.
+              minWidth: '720px',
               width: '100%',
               aspectRatio: '16 / 9',
               backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
