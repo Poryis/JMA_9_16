@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { X, Sparkles, Search } from 'lucide-react';
 import { getRandomFact } from '../data/musicFacts';
 import { earnSticker, noteFactSeen } from '../hooks/useStickers';
@@ -46,6 +46,27 @@ function FunFactsPage() {
   const [activeFact, setActiveFact] = useState(null);
   const [found, setFound] = useState(() => readFound());
   const [poppingName, setPoppingName] = useState(null); // for first-find animation
+  const wrapperRef = useRef(null);
+  const desktopPortholeRef = useRef(null);
+
+  // Desktop only: turn the porthole into a spyglass that follows the mouse.
+  // We mutate inline CSS vars directly (no React state per-frame) for smooth
+  // movement. The radial-gradient below reads --ph-x / --ph-y.
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const onMove = (e) => {
+      const node = desktopPortholeRef.current;
+      if (!node) return;
+      const rect = wrapper.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      node.style.setProperty('--ph-x', `${x}%`);
+      node.style.setProperty('--ph-y', `${y}%`);
+    };
+    wrapper.addEventListener('mousemove', onMove);
+    return () => wrapper.removeEventListener('mousemove', onMove);
+  }, []);
 
   // Mark a character as found (persists). Returns true if this was a FIRST find.
   const markFound = useCallback((name) => {
@@ -136,11 +157,11 @@ function FunFactsPage() {
 
         {/* The clubhouse scene wrapper.
             Mobile: a PORTHOLE — circular cutout over the pannable scene with
-            a gold rivet ring and dark "wall" corners, so it feels like you're
-            peeking through a window into the clubhouse.
-            Desktop: a wooden "picture frame" look — rectangular with thick
-            gold inner trim and decorative corner bolts. */}
-        <div className="relative w-full max-w-[1200px] flex-1 md:flex-none min-h-0">
+            a gold rivet ring and dark "wall" corners.
+            Desktop: a SPYGLASS — the porthole follows the mouse so kids hunt
+            characters by sweeping the lens around the room. When all are
+            found, the spyglass fades and the whole room is revealed. */}
+        <div ref={wrapperRef} className="relative w-full max-w-[1200px] flex-1 md:flex-none min-h-0">
           <div
             className="w-full h-full overflow-auto md:overflow-visible rounded-2xl md:rounded-[28px] border-4 md:border-[10px] border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)]"
             style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
@@ -250,48 +271,30 @@ function FunFactsPage() {
             ))}
           </div>
 
-          {/* ============ DESKTOP: PORTHOLE THAT OPENS WHEN ALL FOUND ============ */}
-          {/* Same warm wood + gold rivet vibe as the mobile porthole, sized
-              for desktop. Once every character has been found the gradient
-              fades to transparent, revealing the whole scene — the room
-              "opens up" as a reward for finishing the hunt. */}
+          {/* ============ DESKTOP: MOUSE-FOLLOWING SPYGLASS ============ */}
+          {/* The radial-gradient center reads CSS vars --ph-x / --ph-y which
+              the parent's mousemove handler updates. When all chars are found
+              the spyglass fades away in one smooth transition. */}
           <div
+            ref={desktopPortholeRef}
             className="hidden md:block absolute inset-0 pointer-events-none rounded-2xl overflow-hidden z-30"
             data-testid="desktop-porthole"
             style={{
+              '--ph-x': '50%',
+              '--ph-y': '50%',
               background: allFound
                 ? 'transparent'
-                : `radial-gradient(circle at 50% 50%,
+                : `radial-gradient(circle at var(--ph-x) var(--ph-y),
                     transparent 0,
-                    transparent calc(min(34vw, 60vh) - 2px),
-                    #C99528 calc(min(34vw, 60vh)),
-                    #FFCC00 calc(min(34vw, 60vh) + 10px),
-                    #C99528 calc(min(34vw, 60vh) + 20px),
-                    #3D2E1F calc(min(34vw, 60vh) + 22px))`,
-              transition: 'background 1.1s ease-out, opacity 1.1s ease-out',
+                    transparent calc(min(15vw, 22vh) - 2px),
+                    #C99528 calc(min(15vw, 22vh)),
+                    #FFCC00 calc(min(15vw, 22vh) + 8px),
+                    #C99528 calc(min(15vw, 22vh) + 16px),
+                    rgba(61, 46, 31, 0.97) calc(min(15vw, 22vh) + 18px))`,
+              transition: 'opacity 1.1s ease-out',
               opacity: allFound ? 0 : 1,
             }}
-          >
-            {/* Brass rivets at compass points - hidden when porthole is open */}
-            {!allFound && [
-              { top: '12px',    left: '50%',  tx: '-50%', ty: '0' },
-              { bottom: '12px', left: '50%',  tx: '-50%', ty: '0' },
-              { left: '12px',   top: '50%',   tx: '0',    ty: '-50%' },
-              { right: '12px',  top: '50%',   tx: '0',    ty: '-50%' },
-            ].map((p, idx) => (
-              <span
-                key={idx}
-                className="absolute w-3.5 h-3.5 rounded-full"
-                style={{
-                  ...p,
-                  transform: `translate(${p.tx}, ${p.ty})`,
-                  background: 'radial-gradient(circle at 30% 30%, #FFE57A, #B8860B 70%)',
-                  boxShadow: 'inset 0 -1px 1px rgba(0,0,0,0.4), 0 1px 1px rgba(0,0,0,0.35)',
-                  border: '1px solid #3D2E1F',
-                }}
-              />
-            ))}
-          </div>
+          />
         </div>
 
         <p className="mt-2 text-[10px] md:text-sm font-bold opacity-85 text-center px-3" style={{ color: '#FFE9C4' }}>
