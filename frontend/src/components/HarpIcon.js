@@ -1,20 +1,14 @@
 // JMA harp Home button artwork.
 // Uses the custom uploaded asset (`assets/ui/jma-harp.png`). Renders the
-// image inside a fixed-size square box so different button sizes stay
-// pixel-clean.
+// image at 100% of its parent so wrappers control the size via Tailwind.
 
-export function HarpIcon({ size = 48 }) {
+export function HarpIcon({ size }) {
+  // Backwards-compatible: size is optional. When omitted, image fills parent.
+  const wrapperStyle = size
+    ? { width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+    : { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' };
   return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-      aria-hidden="true"
-    >
+    <div style={wrapperStyle} aria-hidden="true">
       <img
         src="assets/ui/jma-harp.png"
         alt=""

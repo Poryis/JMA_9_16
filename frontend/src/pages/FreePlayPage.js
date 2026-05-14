@@ -438,11 +438,11 @@ function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph }) {
   const current = jamSongs.find(s => s.id === jamTrackId);
 
   return (
-    <div className="game-card px-2 py-1 relative">
+    <div className="game-card px-1 py-0.5 md:px-2 md:py-1 relative">
       {!current ? (
         <button
           data-testid="jam-along-toggle"
-          className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
+          className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
           onClick={() => setOpen(o => !o)}
         >
           <Headphones className="w-3 h-3" /> Jam Along
@@ -451,7 +451,7 @@ function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph }) {
         <div className="flex items-center gap-1">
           <button
             data-testid="jam-along-stop"
-            className="chunky-btn bg-[var(--jma-red)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
+            className="chunky-btn bg-[var(--jma-red)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
             onClick={handleStop}
           >
             <Square className="w-3 h-3 fill-current" /> Stop
@@ -754,32 +754,32 @@ function FreePlayPage() {
       <CharacterReaction streak={streak} />
       <RoomCharacters room="jam-hall" />
 
-      <main className="flex-1 flex flex-col items-center justify-start pt-24 pb-2 px-2">
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
-          <div className="game-card px-2 py-1 flex items-center gap-1">
+      <main className="flex-1 flex flex-col items-center justify-start pt-16 md:pt-24 pb-2 px-2">
+        <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2 mb-1 md:mb-2">
+          <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-1">
             {INSTRUMENT_TABS.map(tab => (
               <button key={tab.id} data-testid={`sound-mode-${tab.id}`}
-                className={`px-3 py-2 md:px-3 md:py-1.5 min-h-[44px] md:min-h-0 rounded-lg text-sm md:text-xs font-bold border-2 transition-all touch-manipulation ${activeTab === tab.id ? 'bg-[var(--jma-dark)] text-white border-[var(--jma-dark)]' : 'bg-white border-gray-300'}`}
+                className={`px-2 py-1 md:px-3 md:py-1.5 rounded-lg text-[10px] md:text-xs font-bold border-2 transition-all touch-manipulation ${activeTab === tab.id ? 'bg-[var(--jma-dark)] text-white border-[var(--jma-dark)]' : 'bg-white border-gray-300'}`}
                 onClick={() => setActiveTab(tab.id)}>{tab.label}</button>
             ))}
           </div>
-          <div className="game-card px-2 py-1 flex items-center gap-2">
+          <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-2">
             {!isRecording ? (
-              <button data-testid="record-btn" className="chunky-btn bg-[var(--jma-red)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation" onClick={startRecording}>
+              <button data-testid="record-btn" className="chunky-btn bg-[var(--jma-red)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation" onClick={startRecording}>
                 <Circle className="w-3 h-3 fill-current" /> REC</button>
             ) : (
-              <button data-testid="stop-record-btn" className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation" onClick={stopRecording}>
+              <button data-testid="stop-record-btn" className="chunky-btn bg-[var(--jma-dark)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation" onClick={stopRecording}>
                 <Square className="w-3 h-3 fill-current" /> STOP</button>
             )}
             {recording.length > 0 && !isRecording && (
-              <button data-testid="playback-btn" className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
+              <button data-testid="playback-btn" className="chunky-btn bg-[var(--jma-green)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
                 onClick={playBack} disabled={isPlayingBack}>
                 <Play className="w-3 h-3" /> {isPlayingBack ? 'Playing...' : `Play (${recording.length})`}</button>
             )}
           </div>
           {!isDrumTab && (
-            <div className="game-card px-2 py-1">
-              <button data-testid="guided-toggle" className={`chunky-btn px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 text-sm md:text-xs font-bold touch-manipulation ${guidedMode ? 'bg-[var(--jma-blue)] text-white' : 'bg-white'}`}
+            <div className="game-card px-1 py-0.5 md:px-2 md:py-1">
+              <button data-testid="guided-toggle" className={`chunky-btn px-2 py-0.5 md:py-1 text-[10px] md:text-xs font-bold touch-manipulation ${guidedMode ? 'bg-[var(--jma-blue)] text-white' : 'bg-white'}`}
                 onClick={() => setGuidedMode(!guidedMode)}>
                 <Music className="inline w-3 h-3 mr-1" /> {guidedMode ? 'Guided ON' : 'Learn a Song'}</button>
             </div>
@@ -791,11 +791,11 @@ function FreePlayPage() {
             getAudioGraph={getAudioGraph}
           />
           {/* MP3 capture - records anything you play (bells, drums, plus jam-along backing) */}
-          <div className="game-card px-2 py-1 flex items-center gap-1">
+          <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-1">
             {!recorder.isRecording ? (
               <button
                 data-testid="mp3-record-btn"
-                className="chunky-btn bg-[var(--jma-purple)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
+                className="chunky-btn bg-[var(--jma-purple)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
                 style={{ backgroundColor: '#AF52DE' }}
                 onClick={() => { initAudioContext(); recorder.start(); }}
                 disabled={recorder.isProcessing}
@@ -805,7 +805,7 @@ function FreePlayPage() {
             ) : (
               <button
                 data-testid="mp3-stop-rec-btn"
-                className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold animate-pulse touch-manipulation"
+                className="chunky-btn bg-[var(--jma-dark)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold animate-pulse touch-manipulation"
                 onClick={async () => { await recorder.stop(); }}
               >
                 <Square className="w-3 h-3 fill-current" /> {recorder.secondsLeft}s
@@ -815,7 +815,7 @@ function FreePlayPage() {
             {recorder.lastMp3Url && !recorder.isRecording && !recorder.isProcessing && (
               <button
                 data-testid="mp3-download-btn"
-                className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 flex items-center gap-1 text-sm md:text-xs font-bold touch-manipulation"
+                className="chunky-btn bg-[var(--jma-green)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
                 onClick={() => recorder.download(`my-jam-${Date.now()}.mp3`)}
               >
                 <Download className="w-3 h-3" /> MP3

@@ -7,7 +7,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
   const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-3 md:px-4 py-2 md:py-3">
+    <header className="fixed top-0 left-0 right-0 z-50 px-2 md:px-4 py-1 md:py-3">
       <div className="max-w-7xl mx-auto flex items-start justify-between gap-2">
         {/* Home button - harp icon + "Home" label below */}
         {showHomeButton && (
@@ -20,7 +20,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
             whileTap={{ scale: 0.95, y: 2 }}
           >
             <div
-              className="rounded-2xl border-3 border-[var(--jma-dark)] shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow p-1.5"
+              className="rounded-xl md:rounded-2xl border-2 md:border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] md:shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow p-1 md:p-1.5 w-8 h-8 md:w-14 md:h-14"
               style={{
                 backgroundColor: 'var(--jma-dark)',
                 display: 'flex',
@@ -28,10 +28,10 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
                 justifyContent: 'center',
               }}
             >
-              <HarpIcon size={48} />
+              <HarpIcon />
             </div>
             <span
-              className="text-[10px] md:text-xs font-black uppercase tracking-wide mt-0.5 px-2 rounded-full"
+              className="text-[8px] md:text-xs font-black uppercase tracking-wide mt-0.5 px-1.5 md:px-2 rounded-full"
               style={{
                 color: 'white',
                 backgroundColor: 'var(--jma-dark)',
@@ -46,7 +46,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
         {/* Title */}
         {title && (
           <motion.h1 
-            className="text-xl md:text-2xl font-bold text-center font-display"
+            className="text-sm md:text-2xl font-bold text-center font-display pt-1 md:pt-0"
             style={{ color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(0,0,0,0.3)' }}
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
