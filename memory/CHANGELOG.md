@@ -1,5 +1,17 @@
 # Changelog
 
+## Feb 14, 2026 — Polish Round (post-partner feedback)
+- **BUG FIX**: Stew Kazoo Says no longer goes to a blank page after beating level 8. Now triggers a mega confetti celebration + "YOU BEAT THE WHOLE GAME!" message, then auto-navigates home after 3.2s. Mid-game level clears also fire confetti (mega on level 5).
+- **Backgrounds**: Deleted `public/assets/backgrounds/stage.png` (had the Snoopy "Legendary Concert" art). Rhythm Arcade card now uses a vibrant red diagonal-stripe arcade gradient instead.
+- **Home card character sizing**: Added per-destination `charWidthPct` + `char2WidthPct` so Jazzy / Stew / Dr Jellybone / Chunk are no longer oversized relative to other characters.
+- **Home card spacing**: Increased gap between primary + secondary characters (Jam Hall's Finn and Charlie no longer overlap).
+- **RoomCharacters polish**:
+  - Hidden on mobile (`hidden md:block`) so they no longer crowd the touch play area.
+  - Added per-character scale map (Jazzy ×0.55, Stew ×0.6, Dr Jellybone ×0.7) so the ambient cast feels visually consistent.
+  - Fixed-size square container + `object-contain` so tapping to cycle outfits no longer shifts the character's footprint.
+- **Jam Hall duplicate Finn**: `CharacterReaction` mascot now only renders at streak ≥ 3 (previously the default low-streak Finn overlapped the room's Charlie at bottom-right).
+- **Perf**: All home card character images now use `loading="lazy"` to help mobile load.
+
 ## Feb 14, 2026 — Academy Campus Evolution (Phases 1-4)
 **Global rebrand to "Jelly of the Month Club Music Academy" (JMA).**
 - HTML title + on-page banner updated.

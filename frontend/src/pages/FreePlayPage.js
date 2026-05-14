@@ -71,14 +71,15 @@ function CharacterReaction({ streak }) {
     { min: 10, src: 'assets/characters/jazzy.png', msg: 'Amazing!' },
     { min: 15, src: 'assets/characters/dr-jellybone.png', msg: 'SUPERSTAR!' },
   ];
+  // Only show the celebratory mascot once the kid is on a real streak.
+  // Avoids overlapping the room's permanent Charlie at bottom-right.
+  if (streak < 3) return null;
   const reaction = [...reactions].reverse().find(r => streak >= r.min) || reactions[0];
   return (
     <motion.div className="fixed bottom-3 right-3 flex items-end gap-2 z-30 hidden md:flex" key={reaction.msg} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
-      {streak >= 3 && (
-        <motion.div className="bg-white px-3 py-2 rounded-2xl border-3 border-[var(--jma-dark)] shadow-lg mb-8" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}>
-          <span className="font-bold text-sm" style={{ color: 'var(--jma-dark)' }}>{reaction.msg}</span>
-        </motion.div>
-      )}
+      <motion.div className="bg-white px-3 py-2 rounded-2xl border-3 border-[var(--jma-dark)] shadow-lg mb-8" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}>
+        <span className="font-bold text-sm" style={{ color: 'var(--jma-dark)' }}>{reaction.msg}</span>
+      </motion.div>
       <motion.img src={reaction.src} alt="character" className="w-20 h-24 object-contain"
         animate={streak >= 5 ? { y: [0, -10, 0], rotate: [-3, 3, -3] } : { y: [0, -5, 0] }}
         transition={{ repeat: Infinity, duration: streak >= 10 ? 0.5 : 1.5, ease: 'easeInOut' }} />

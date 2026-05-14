@@ -61,6 +61,18 @@ const NAMES = {
   doctor: 'Dr. Jellybone',
 };
 
+// Per-character display scaling. Some source PNGs are much larger than others
+// (Jazzy + Stew especially); these factors keep visual sizes consistent.
+const SCALE = {
+  charlie: 1.0,
+  finn: 1.0,
+  chunk: 0.95,
+  jazzy: 0.55,
+  loustew: 0.85,
+  stew: 0.6,
+  doctor: 0.7,
+};
+
 // Predefined "room casts" per page - which characters appear and where.
 // Layout positions are { l: leftPct, t: topPct, w: widthPct, anim: 'bob'|'sway'|'peek' }
 // We use edges/corners so we never block the play area. Mobile shrinks all chars.
@@ -129,11 +141,15 @@ function CharacterImp({ id, pos, line }) {
       data-testid={`room-char-${id}`}
       aria-label={`${NAMES[id]} - tap to change outfit`}
       onClick={handleTap}
-      className="absolute bg-transparent border-0 p-0 cursor-pointer pointer-events-auto"
+      className="absolute bg-transparent border-0 p-0 cursor-pointer pointer-events-auto flex items-end justify-center"
       style={{
         left: `${pos.l}%`,
         top: `${pos.t}%`,
-        width: `clamp(56px, ${pos.w}vw, 130px)`,
+        // Fixed-size square container so different outfit aspect ratios don't
+        // cause the character to grow/shift on tap. The image scales DOWN
+        // inside the box but never up, preserving a stable footprint.
+        width: `clamp(48px, ${pos.w}vw, 110px)`,
+        height: `clamp(48px, ${pos.w}vw, 110px)`,
         transform: 'translate(-50%, -50%)',
         filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.45))',
       }}
@@ -146,7 +162,9 @@ function CharacterImp({ id, pos, line }) {
         src={outfits[outfitIdx]}
         alt={NAMES[id]}
         draggable={false}
-        className="w-full h-auto object-contain select-none"
+        loading="lazy"
+        className="max-w-full max-h-full object-contain select-none"
+        style={{ transform: `scale(${SCALE[id] || 1})`, transformOrigin: 'center bottom' }}
         animate={ANIMS[pos.anim] || ANIMS.bob}
         transition={{ duration: idleDuration.current, repeat: Infinity, ease: 'easeInOut' }}
       />
@@ -192,12 +210,15 @@ function CharacterImp({ id, pos, line }) {
  * <RoomCharacters room="jam-hall" />
  * Drops the predefined cast onto the page in absolute positions.
  * Wrap the page in `relative` for these to anchor correctly.
+ *
+ * Hidden on small phones (<md) where they crowd the play area; the page-level
+ * characters (header mascot, in-scene characters) are sufficient on mobile.
  */
 export default function RoomCharacters({ room }) {
   const cast = ROOM_CAST[room];
   if (!cast) return null;
   return (
-    <div className="absolute inset-0 pointer-events-none z-20" aria-hidden={false}>
+    <div className="absolute inset-0 pointer-events-none z-20 hidden md:block" aria-hidden={false}>
       {cast.map((c) => (
         <CharacterImp key={c.id} id={c.id} pos={c.pos} line={c.line} />
       ))}

@@ -30,7 +30,9 @@ const DESTINATIONS = [
     path: '/free-play',
     bg: 'assets/backgrounds/river.png',
     character: 'assets/characters/charlie-drum-major.png',
+    charWidthPct: 30,
     character2: 'assets/characters/finn-danger.png',
+    char2WidthPct: 18,
     color: '#4CD964',
     accent: '#34A853',
     sign: 'JAM HALL',
@@ -40,9 +42,12 @@ const DESTINATIONS = [
     title: 'Rhythm Arcade',
     tagline: 'Catch the notes as they fall!',
     path: '/rhythm-game',
-    bg: 'assets/backgrounds/stage.png',
+    // No bg image — uses an arcade-vibe gradient (set on card directly)
+    bg: null,
     character: 'assets/characters/charlie-punk.png',
+    charWidthPct: 30,
     character2: 'assets/characters/jazzy.png',
+    char2WidthPct: 13,
     color: '#FF3B30',
     accent: '#C0392B',
     sign: 'RHYTHM ARCADE',
@@ -54,7 +59,9 @@ const DESTINATIONS = [
     path: '/simon-says',
     bg: 'assets/backgrounds/underwater.png',
     character: 'assets/characters/stew.png',
+    charWidthPct: 20,
     character2: 'assets/characters/llama-lou-stew.png',
+    char2WidthPct: 18,
     color: '#4285F4',
     accent: '#1ABC9C',
     sign: 'KAZOO ROOM',
@@ -66,7 +73,9 @@ const DESTINATIONS = [
     path: '/ear-trainer',
     bg: 'assets/backgrounds/beach.png',
     character: 'assets/characters/dr-jellybone.png',
+    charWidthPct: 18,
     character2: 'assets/characters/sharky-snorkel.png',
+    char2WidthPct: 17,
     color: '#FF9500',
     accent: '#E67E22',
     sign: 'EAR QUEST',
@@ -78,7 +87,9 @@ const DESTINATIONS = [
     path: '/loop-studio',
     bg: 'assets/backgrounds/circus.png',
     character: 'assets/characters/chunk-disco.png',
+    charWidthPct: 26,
     character2: 'assets/characters/charlie-rundmc.png',
+    char2WidthPct: 19,
     color: '#AF52DE',
     accent: '#8E44AD',
     sign: 'BEAT LAB',
@@ -90,7 +101,9 @@ const DESTINATIONS = [
     path: '/fun-facts',
     bg: 'assets/backgrounds/clubhouse.png',
     character: 'assets/characters/jazzy.png',
+    charWidthPct: 16,
     character2: 'assets/characters/charlie-polliwog.png',
+    char2WidthPct: 22,
     color: '#FFCC00',
     accent: '#F39C12',
     sign: 'FUN FACTS',
@@ -116,6 +129,11 @@ function SkyNote({ note }) {
 function DestinationRoom({ dest, index, navigate }) {
   const [hovered, setHovered] = useState(false);
 
+  // Arcade gets a vibrant solid gradient (no scenic image).
+  const cardBg = dest.bg
+    ? undefined
+    : `radial-gradient(circle at 30% 30%, ${dest.color} 0%, ${dest.accent} 60%, #0A2540 130%)`;
+
   return (
     <motion.button
       data-testid={`room-${dest.id}`}
@@ -127,7 +145,7 @@ function DestinationRoom({ dest, index, navigate }) {
       style={{
         borderColor: 'var(--jma-dark)',
         boxShadow: `0 8px 0 0 var(--jma-dark)`,
-        background: dest.color,
+        background: cardBg || dest.color,
         minHeight: '180px',
       }}
       initial={{ y: 50, opacity: 0, rotate: index % 2 === 0 ? -2 : 2 }}
@@ -136,22 +154,36 @@ function DestinationRoom({ dest, index, navigate }) {
       whileHover={{ y: -6, boxShadow: '0 14px 0 0 var(--jma-dark)', scale: 1.015 }}
       whileTap={{ y: 4, boxShadow: '0 4px 0 0 var(--jma-dark)', scale: 0.985 }}
     >
-      {/* Background scene */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `url(${dest.bg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      />
+      {/* Background scene (when present) */}
+      {dest.bg && (
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${dest.bg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+      )}
+      {/* Arcade pattern: subtle diagonal stripes for "stage lights" feel */}
+      {!dest.bg && (
+        <div
+          className="absolute inset-0 opacity-25"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0 14px, transparent 14px 32px)',
+          }}
+        />
+      )}
       {/* Color tint gradient for legibility */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, ${dest.color}D9 0%, ${dest.accent}66 55%, transparent 100%)`,
-        }}
-      />
+      {dest.bg && (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(135deg, ${dest.color}D9 0%, ${dest.accent}66 55%, transparent 100%)`,
+          }}
+        />
+      )}
 
       {/* "Sign" / nameplate */}
       <div className="absolute top-3 left-3 z-10">
@@ -194,13 +226,18 @@ function DestinationRoom({ dest, index, navigate }) {
         </p>
       </div>
 
-      {/* Foreground character(s) */}
+      {/* Primary character (rendered with per-destination size cap) */}
       <motion.img
         src={dest.character}
         alt=""
         draggable={false}
-        className="absolute right-1 md:right-2 bottom-0 object-contain pointer-events-none select-none z-10"
-        style={{ width: '38%', maxWidth: 150, filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.45))' }}
+        loading="lazy"
+        className="absolute right-2 bottom-2 object-contain pointer-events-none select-none z-10"
+        style={{
+          width: `${dest.charWidthPct || 28}%`,
+          maxHeight: '78%',
+          filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.45))',
+        }}
         animate={hovered ? { y: -10, rotate: -4 } : { y: [0, -6, 0], rotate: 0 }}
         transition={
           hovered
@@ -208,12 +245,19 @@ function DestinationRoom({ dest, index, navigate }) {
             : { y: { repeat: Infinity, duration: 2.2, ease: 'easeInOut' } }
         }
       />
+      {/* Secondary character (desktop-only, smaller) */}
       <motion.img
         src={dest.character2}
         alt=""
         draggable={false}
-        className="absolute right-[28%] -bottom-2 object-contain pointer-events-none select-none z-[9] hidden md:block"
-        style={{ width: '22%', maxWidth: 100, filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.4))' }}
+        loading="lazy"
+        className="absolute -bottom-2 object-contain pointer-events-none select-none z-[9] hidden md:block"
+        style={{
+          right: `${(dest.charWidthPct || 28) + 10}%`,
+          width: `${dest.char2WidthPct || 16}%`,
+          maxHeight: '60%',
+          filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.4))',
+        }}
         animate={{ y: [0, -4, 0], rotate: [-3, 3, -3] }}
         transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut', delay: 0.3 }}
       />

@@ -214,9 +214,14 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           if (level >= 5) earnSticker('ach_simon_5');
           if (level >= 8) {
             earnSticker('fit_charlie_grad');
+            // Big celebration on beating the final level, then home.
+            celebrate(true);
+            setMessage('YOU BEAT THE WHOLE GAME!');
             setGameState('finished');
-            navigate('/results');
+            timeoutRef.current = setTimeout(() => navigate('/'), 3200);
           } else {
+            // Mega celebration on milestone level 5; regular on every other.
+            celebrate(level === 5);
             setLevel(prev => prev + 1);
             setShowingIndex(0);
             setGameState('showing');
@@ -341,6 +346,14 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         streak={gameStats.streak}
         showHomeButton={true}
       />
+      <RoomCharacters room="kazoo-room" />
+
+      {/* Level-clear confetti */}
+      {showConfetti.on && (
+        <div className="fixed inset-0 pointer-events-none z-[80]">
+          <Confetti key={showConfetti.key} mega={showConfetti.mega} testId="simon-confetti" />
+        </div>
+      )}
 
       {/* Progress */}
       <div className="fixed top-16 left-0 right-0 px-4 py-2 z-40">
