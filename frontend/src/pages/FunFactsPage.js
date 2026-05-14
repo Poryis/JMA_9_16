@@ -244,11 +244,11 @@ function FunFactsPage() {
             style={{
               background: `radial-gradient(circle at 50% 50%,
                 transparent 0,
-                transparent calc(min(46vw, 38vh) - 2px),
-                #C99528 calc(min(46vw, 38vh)),
-                #FFCC00 calc(min(46vw, 38vh) + 8px),
-                #C99528 calc(min(46vw, 38vh) + 16px),
-                #3D2E1F calc(min(46vw, 38vh) + 18px))`,
+                transparent calc(min(32vw, 28vh) - 2px),
+                #C99528 calc(min(32vw, 28vh)),
+                #FFCC00 calc(min(32vw, 28vh) + 8px),
+                #C99528 calc(min(32vw, 28vh) + 16px),
+                #3D2E1F calc(min(32vw, 28vh) + 18px))`,
             }}
           >
             {/* Brass rivets at compass points around the ring */}
@@ -286,11 +286,11 @@ function FunFactsPage() {
                 ? 'transparent'
                 : `radial-gradient(circle at var(--ph-x) var(--ph-y),
                     transparent 0,
-                    transparent calc(min(15vw, 22vh) - 2px),
-                    #C99528 calc(min(15vw, 22vh)),
-                    #FFCC00 calc(min(15vw, 22vh) + 8px),
-                    #C99528 calc(min(15vw, 22vh) + 16px),
-                    rgba(61, 46, 31, 0.97) calc(min(15vw, 22vh) + 18px))`,
+                    transparent calc(min(10vw, 16vh) - 2px),
+                    #C99528 calc(min(10vw, 16vh)),
+                    #FFCC00 calc(min(10vw, 16vh) + 8px),
+                    #C99528 calc(min(10vw, 16vh) + 16px),
+                    rgba(61, 46, 31, 0.97) calc(min(10vw, 16vh) + 18px))`,
               transition: 'opacity 1.1s ease-out',
               opacity: allFound ? 0 : 1,
             }}
