@@ -5,6 +5,7 @@ import { Play, Trophy, Zap } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
 import { PageCharacters } from '../components/PageCharacters';
+import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker } from '../hooks/useStickers';
@@ -342,9 +343,10 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   if (gameState === 'menu') {
     const topScores = getTopScores(5);
     return (
-      <div className="min-h-screen sunburst-bg flex flex-col items-center p-4 pt-20 pb-8" data-testid="rhythm-game-menu">
+      <div className="min-h-screen sunburst-bg flex flex-col items-center p-4 pt-20 pb-8 relative" data-testid="rhythm-game-menu">
         <GameHeader showHomeButton={true} />
-        <motion.h1 className="text-3xl md:text-5xl font-black mb-2 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>Who's Got the Rhythm</motion.h1>
+        <motion.h1 className="text-3xl md:text-5xl font-black mb-2 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>Rhythm Arcade</motion.h1>
+        <p className="text-xs md:text-sm mb-1 opacity-70 font-bold" style={{ color: 'var(--jma-dark)' }}>Catch the notes as they fall</p>
         <p className="text-sm mb-2 bg-white rounded-xl border-2 border-[var(--jma-dark)] px-4 py-1" style={{ color: 'var(--jma-dark)' }}><strong>Controls:</strong> Keys 1-8, click, or tap</p>
         <button data-testid="toggle-high-scores" className="text-sm font-bold mb-4 underline" style={{ color: 'var(--jma-blue)' }} onClick={() => setShowHighScores(!showHighScores)}>
           {showHighScores ? 'Hide' : 'Show'} High Scores <Trophy className="inline w-4 h-4" />
@@ -401,14 +403,14 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           })}
         </div>
         <p className="text-xs opacity-70 mb-3">Tap a song to start!</p>
-        <PageCharacters page="rhythm-menu" />
+        <RoomCharacters room="rhythm-arcade" />
       </div>
     );
   }
 
   // PLAYING screen - with Jelly Bell images!
   return (
-    <div className="min-h-screen sunburst-cool flex flex-col" data-testid="rhythm-game-playing">
+    <div className="min-h-screen sunburst-cool flex flex-col relative" data-testid="rhythm-game-playing">
       {selectedSong.audioUrl && (
         <audio ref={audioRef} src={selectedSong.audioUrl} preload="auto" data-testid="backing-track" />
       )}

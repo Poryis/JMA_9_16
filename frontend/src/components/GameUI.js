@@ -1,24 +1,40 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Volume2 } from 'lucide-react';
+import HarpIcon from './HarpIcon';
 
 function GameHeader({ title, score, streak, showHomeButton = true }) {
   const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-4 py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Home button - JMA shield */}
+    <header className="fixed top-0 left-0 right-0 z-50 px-3 md:px-4 py-2 md:py-3">
+      <div className="max-w-7xl mx-auto flex items-start justify-between gap-2">
+        {/* Home button - harp icon + "Home" label below */}
         {showHomeButton && (
           <motion.button
             data-testid="home-button"
             aria-label="Home"
             onClick={() => navigate('/')}
-            className="bg-white rounded-full p-1 border-2 border-[var(--jma-dark)] shadow-[0_4px_0_0_var(--jma-dark)] hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow"
+            className="group flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer flex-shrink-0"
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95, y: 2 }}
           >
-            <img src="assets/ui/logo.png" alt="JMA Home" className="w-12 h-12 md:w-14 md:h-14 object-contain" draggable={false} />
+            <div
+              className="rounded-2xl bg-white border-3 border-[var(--jma-dark)] shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow p-1.5"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <HarpIcon size={36} />
+            </div>
+            <span
+              className="text-[10px] md:text-xs font-black uppercase tracking-wide mt-0.5 px-2 rounded-full"
+              style={{
+                color: 'white',
+                backgroundColor: 'var(--jma-dark)',
+                textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
+              }}
+            >
+              Home
+            </span>
           </motion.button>
         )}
 

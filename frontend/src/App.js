@@ -11,6 +11,7 @@ import LoopStudioPage from "./pages/LoopStudioPage";
 import StickerBookPage from "./pages/StickerBookPage";
 import FunFactsPage from "./pages/FunFactsPage";
 import StickerToast from "./components/StickerToast";
+import RankUpCelebration from "./components/RankUpCelebration";
 
 function App() {
   const [score, setScore] = useState(0);
@@ -27,6 +28,7 @@ function App() {
     <div className="App min-h-screen">
       <HashRouter>
         <StickerToast />
+        <RankUpCelebration />
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<HomePage />} />

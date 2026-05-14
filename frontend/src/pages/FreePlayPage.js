@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Music, Circle, Square, Play, RotateCcw, ChevronRight, Headphones, Download } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader, NotationDisplay } from '../components/GameUI';
+import RoomCharacters from '../components/RoomCharacters';
 import { XylophoneInstrument, PianoInstrument } from '../components/Instruments';
 import { FullscreenButton } from '../components/FullscreenButton';
 import { earnSticker } from '../hooks/useStickers';
@@ -746,19 +747,15 @@ function FreePlayPage() {
   const isDrumTab = activeTab === 'drums';
 
   return (
-    <div className="min-h-screen flex flex-col" data-testid="free-play-page"
+    <div className="min-h-screen flex flex-col relative" data-testid="free-play-page"
       style={{
         background: 'radial-gradient(circle at 15% 20%, rgba(255, 204, 0, 0.28) 0%, transparent 35%), radial-gradient(circle at 85% 25%, rgba(76, 217, 100, 0.28) 0%, transparent 40%), radial-gradient(circle at 50% 90%, rgba(66, 133, 244, 0.28) 0%, transparent 45%), radial-gradient(circle at 25% 80%, rgba(255, 59, 48, 0.22) 0%, transparent 40%), radial-gradient(circle at 75% 75%, rgba(175, 82, 222, 0.22) 0%, transparent 38%), linear-gradient(135deg, #FFF9E6 0%, #FFF4F4 50%, #F0F9FF 100%)'
       }}>
-      <GameHeader title="Jam Time" showHomeButton={true} />
+      <GameHeader title="Jam Hall" showHomeButton={true} />
       <FullscreenButton />
       <AnimatePresence>{particles.map(p => <ParticleBurst key={p.id} color={p.color} />)}</AnimatePresence>
       <CharacterReaction streak={streak} />
-      <motion.div className="fixed bottom-3 left-3 hidden md:block z-20"
-        initial={{ x: -80, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-        <motion.img src="assets/characters/charlie-polliwog.png" alt="Charlie" className="w-16 h-20 object-contain"
-          animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }} />
-      </motion.div>
+      <RoomCharacters room="jam-hall" />
 
       <main className="flex-1 flex flex-col items-center justify-start pt-24 pb-2 px-2">
         <div className="flex flex-wrap items-center justify-center gap-2 mb-2">

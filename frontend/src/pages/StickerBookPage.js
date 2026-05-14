@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Home, Sparkles, X } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 import { STICKERS, STICKER_CATEGORIES } from '../data/stickers';
 import useStickers from '../hooks/useStickers';
 import { FullscreenButton } from '../components/FullscreenButton';
+import RankBadge from '../components/RankBadge';
+import HarpIcon from '../components/HarpIcon';
 
 function StickerCard({ sticker, earnedAt }) {
   const [open, setOpen] = useState(false);
@@ -114,9 +116,15 @@ export default function StickerBookPage() {
       style={{ background: 'linear-gradient(135deg, #FFF9E6 0%, #E0F7FA 50%, #FFE4F1 100%)' }}>
       <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b-4 border-[var(--jma-dark)] px-4 py-2 flex items-center gap-3 z-40">
         <button data-testid="sticker-home-btn" onClick={() => navigate('/')}
-          className="chunky-btn bg-white px-3 py-1.5 flex items-center gap-2 text-sm font-bold border-[var(--jma-dark)]"
-          style={{ color: 'var(--jma-dark)' }}>
-          <Home className="w-4 h-4" /> Home
+          aria-label="Home"
+          className="flex flex-col items-center group cursor-pointer bg-transparent border-0 p-0">
+          <div className="rounded-2xl bg-white border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] group-hover:shadow-[0_5px_0_0_var(--jma-dark)] transition-shadow p-1">
+            <HarpIcon size={26} />
+          </div>
+          <span className="text-[9px] font-black uppercase tracking-wide mt-0.5 px-1.5 rounded-full"
+            style={{ color: 'white', backgroundColor: 'var(--jma-dark)' }}>
+            Home
+          </span>
         </button>
         <h1 className="text-xl md:text-2xl font-black font-display flex-1 text-center" style={{ color: 'var(--jma-dark)' }}>
           Sticker Book
@@ -129,8 +137,13 @@ export default function StickerBookPage() {
       <FullscreenButton />
 
       <main className="flex-1 pt-16 pb-10 px-3 md:px-6 max-w-6xl mx-auto w-full">
+        {/* Rank badge */}
+        <div className="flex justify-center mt-4 mb-3">
+          <RankBadge />
+        </div>
+
         {/* Progress bar */}
-        <div className="game-card px-4 py-3 mb-6 mt-4">
+        <div className="game-card px-4 py-3 mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-bold" style={{ color: 'var(--jma-dark)' }}>Your Collection</span>
             <span className="text-sm font-black" style={{ color: 'var(--jma-dark)' }}>{pct}%</span>

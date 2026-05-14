@@ -8,8 +8,9 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker } from '../hooks/useStickers';
 import Confetti from '../components/Confetti';
+import RoomCharacters from '../components/RoomCharacters';
 
-// Patterns for Stu Kazoo Says (progressively harder)
+// Patterns for Stew Kazoo Says (progressively harder)
 const PATTERNS = {
   1: ['C', 'E', 'G'],
   2: ['C', 'D', 'E', 'F'],
@@ -258,7 +259,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
   if (gameState === 'ready') {
     return (
       <div 
-        className="min-h-screen flex flex-col items-center justify-center p-4" 
+        className="min-h-screen flex flex-col items-center justify-center p-4 relative" 
         data-testid="simon-says-menu"
         style={{
           backgroundImage: 'url(assets/backgrounds/underwater.png)',
@@ -268,6 +269,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
       >
         <GameHeader showHomeButton={true} />
         <FullscreenButton />
+        <RoomCharacters room="kazoo-room" />
 
         <motion.h1
           className="text-3xl md:text-5xl font-black mb-4 text-center"
@@ -275,7 +277,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
-          Stu Kazoo Says
+          Stew Kazoo Says
         </motion.h1>
 
         <motion.div
@@ -289,7 +291,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
             How to Play
           </h2>
           <p className="text-base" style={{ color: 'var(--jma-dark)' }}>
-            1. Watch Stu play his kazoos<br />
+            1. Watch Stew play his kazoos<br />
             2. Listen to the melody<br />
             3. Play it back yourself!
           </p>
@@ -325,7 +327,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
   // Game screen
   return (
     <div 
-      className="min-h-screen flex flex-col" 
+      className="min-h-screen flex flex-col relative" 
       data-testid="simon-says-playing"
       style={{
         backgroundImage: 'url(assets/backgrounds/underwater.png)',
@@ -463,7 +465,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
           >
-            Stu is playing note {showingIndex + 1} of {currentPattern.length}...
+            Stew is playing note {showingIndex + 1} of {currentPattern.length}...
           </motion.p>
         )}
       </main>

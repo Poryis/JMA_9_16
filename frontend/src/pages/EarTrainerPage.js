@@ -5,6 +5,7 @@ import { Play, Ear, RotateCcw, Volume2, Trophy } from 'lucide-react';
 import { JellyBellsRow, BELLS } from '../components/JellyBells';
 import { GameHeader, FeedbackPopup } from '../components/GameUI';
 import { PageCharacters } from '../components/PageCharacters';
+import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker } from '../hooks/useStickers';
@@ -143,15 +144,16 @@ function EarTrainerPage() {
   if (gameState === 'menu') {
     return (
       <div 
-        className="min-h-screen flex flex-col items-center justify-center p-4"
+        className="min-h-screen flex flex-col items-center justify-center p-4 relative"
         data-testid="ear-trainer-menu"
         style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader showHomeButton={true} />
         <FullscreenButton />
+        <RoomCharacters room="ear-quest" />
 
         <motion.h1 className="text-3xl md:text-5xl font-black mb-4 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-          Ear Trainer
+          Ear Quest
         </motion.h1>
 
         <motion.div className="game-card p-6 mb-6 max-w-md text-center" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }}>
@@ -210,11 +212,12 @@ function EarTrainerPage() {
   // PLAYING screen
   return (
     <div 
-      className="min-h-screen flex flex-col"
+      className="min-h-screen flex flex-col relative"
       data-testid="ear-trainer-playing"
       style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <GameHeader title={`Round ${round} / ${totalRounds}`} score={score} streak={streak} showHomeButton={true} />
+      <RoomCharacters room="ear-quest" />
 
       <main className="flex-1 flex flex-col items-center justify-center pt-20 pb-8 px-4">
         {/* Mystery note indicator */}

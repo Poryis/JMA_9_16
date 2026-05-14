@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Play, Square, Trash2, Plus, Minus, Volume2, Circle, Download } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { PageCharacters } from '../components/PageCharacters';
+import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import { DrumKitVisual, TurntableVisual } from '../components/Instruments';
 import useAudio from '../hooks/useAudio';
@@ -357,10 +358,11 @@ function LoopStudioPage() {
   const measureBars = totalSteps / 16;
 
   return (
-    <div className="min-h-screen flex flex-col" data-testid="loop-studio-page"
+    <div className="min-h-screen flex flex-col relative" data-testid="loop-studio-page"
       style={{ backgroundImage: 'url(assets/backgrounds/playground.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-      <GameHeader title="Loop Studio" showHomeButton={true} />
+      <GameHeader title="Beat Lab" showHomeButton={true} />
       <FullscreenButton />
+      <RoomCharacters room="beat-lab" />
 
       <main className="flex-1 pt-20 pb-4 px-2 md:px-4 overflow-auto">
         {/* Controls Bar */}
