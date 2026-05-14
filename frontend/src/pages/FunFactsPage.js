@@ -147,7 +147,7 @@ function FunFactsPage() {
             data-testid="funfacts-scene-scroller"
           >
             <div
-              className="relative mx-auto w-[1600px] aspect-[16/9] md:w-full"
+              className="relative mx-auto w-[2400px] aspect-[16/9] md:w-full"
               style={{
                 backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
                 backgroundSize: 'cover',
@@ -223,11 +223,11 @@ function FunFactsPage() {
             style={{
               background: `radial-gradient(circle at 50% 50%,
                 transparent 0,
-                transparent calc(min(58vw, 46vh) - 2px),
-                #C99528 calc(min(58vw, 46vh)),
-                #FFCC00 calc(min(58vw, 46vh) + 8px),
-                #C99528 calc(min(58vw, 46vh) + 16px),
-                #3D2E1F calc(min(58vw, 46vh) + 18px))`,
+                transparent calc(min(46vw, 38vh) - 2px),
+                #C99528 calc(min(46vw, 38vh)),
+                #FFCC00 calc(min(46vw, 38vh) + 8px),
+                #C99528 calc(min(46vw, 38vh) + 16px),
+                #3D2E1F calc(min(46vw, 38vh) + 18px))`,
             }}
           >
             {/* Brass rivets at compass points around the ring */}
