@@ -296,9 +296,9 @@ function HomePage() {
         {notes.map((n) => <SkyNote key={n.id} note={n} />)}
       </div>
 
-      {/* Top app-name banner */}
+      {/* Top app-name banner - desktop only, mobile keeps the title clean */}
       <motion.div
-        className="z-10 mt-1 mb-2 flex items-center justify-center gap-2"
+        className="z-10 mt-1 mb-2 hidden md:flex items-center justify-center gap-2"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
@@ -378,7 +378,7 @@ function HomePage() {
         style={{ color: 'var(--jma-dark)', opacity: 0.75 }}
         initial={{ opacity: 0 }} animate={{ opacity: 0.75 }} transition={{ delay: 0.3 }}
       >
-        Where music friends play together
+        Music is FUN
       </motion.p>
 
       {/* Rank badge + Sticker spotlight side-by-side */}

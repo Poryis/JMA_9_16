@@ -145,7 +145,7 @@ function FunFactsPage() {
           data-testid="funfacts-scene-scroller"
         >
           <div
-            className="relative mx-auto w-[1400px] h-[1050px] md:w-full md:h-auto md:aspect-[16/9]"
+            className="relative mx-auto w-[1600px] aspect-[16/9] md:w-full"
             style={{
               backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
               backgroundSize: 'cover',
