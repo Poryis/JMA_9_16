@@ -1,5 +1,16 @@
 # Changelog
 
+## Feb 14, 2026 — Clubhouse Find-and-Reveal + Custom Harp Artwork
+- **Custom JMA harp Home button**: Saved user-uploaded artwork to `assets/ui/jma-harp.png`. Made the black background transparent + resized to 187×256 (8.8 KB). `HarpIcon.js` now renders the PNG instead of the SVG placeholder.
+- **Removed duplicate Stew**: The standalone Stew character on the Fun Facts scene was creating two visible Stews (since Lou's image already has Stew on his shoulder). Now back to 6 characters total.
+- **Fun Facts as a find-the-character game**:
+  - Characters start as **dark silhouettes with a warm yellow glow halo** — kids must spot and tap each shadow to reveal them.
+  - Tapping a hidden friend fires a sparkle "pop" animation, reveals the full-color character, then opens the fact modal.
+  - **Mobile minWidth bumped to 1100px** so kids genuinely have to swipe/pan to discover everyone.
+  - **Found state persists** in `localStorage.jma_funfacts_found_v1` so progress isn't lost between visits.
+  - Live progress chip: "0 / 6 friends found" turns into "★ ALL FOUND! ★" when complete.
+  - Auto-awards the `ach_fact_finder` sticker on first all-found.
+
 ## Feb 14, 2026 — Polish Round (post-partner feedback)
 - **BUG FIX**: Stew Kazoo Says no longer goes to a blank page after beating level 8. Now triggers a mega confetti celebration + "YOU BEAT THE WHOLE GAME!" message, then auto-navigates home after 3.2s. Mid-game level clears also fire confetti (mega on level 5).
 - **Backgrounds**: Deleted `public/assets/backgrounds/stage.png` (had the Snoopy "Legendary Concert" art). Rhythm Arcade card now uses a vibrant red diagonal-stripe arcade gradient instead.

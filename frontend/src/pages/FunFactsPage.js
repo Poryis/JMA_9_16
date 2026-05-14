@@ -1,17 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useCallback } from 'react';
-import { X, Sparkles } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { X, Sparkles, Search } from 'lucide-react';
 import { getRandomFact } from '../data/musicFacts';
 import { earnSticker, noteFactSeen } from '../hooks/useStickers';
 import { GameHeader } from '../components/GameUI';
 
 // Characters placed IN the clubhouse scene at specific spots.
-// Coordinates are % of the 16:9 scene container (origin top-left).
-// Idle animation per location:
-//   - Chunk on the swing → swings side to side
-//   - Finn near the ladder → climbing bob
-//   - Dr. Jellybone in the window → peeks up & down
-//   - Charlie / Lou&Stew / Jazzy on the floor → standing bob
+// Stew removed in Feb 2026 because Lou's image already has Stew on his shoulder
+// (was producing two visible Stews in the same scene).
 const SCENE_CHARS = [
   { name: 'Chunk',         image: 'assets/characters/chunk.png',           stickerId: 'char_chunk',
     leftPct: 32, topPct: 20, widthPct: 13, anim: 'swing' },
@@ -25,8 +21,6 @@ const SCENE_CHARS = [
     leftPct: 50, topPct: 65, widthPct: 19, anim: 'bob' },
   { name: 'Lou & Stew',    image: 'assets/characters/llama-lou-stew.png',  stickerId: 'char_loustew',
     leftPct: 78, topPct: 65, widthPct: 12, anim: 'bob' },
-  { name: 'Stew',          image: 'assets/characters/stew.png',            stickerId: 'char_loustew',
-    leftPct: 90, topPct: 35, widthPct: 7, anim: 'peek' },
 ];
 
 const ANIM_VARIANTS = {
@@ -35,19 +29,74 @@ const ANIM_VARIANTS = {
   peek:  { y: [0, -3, 0], rotate: [-3, 3, -3] },
 };
 
+const FOUND_KEY = 'jma_funfacts_found_v1';
+
+function readFound() {
+  try {
+    const raw = localStorage.getItem(FOUND_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch (_) { return new Set(); }
+}
+
+function writeFound(set) {
+  try { localStorage.setItem(FOUND_KEY, JSON.stringify([...set])); } catch (_) {}
+}
+
 function FunFactsPage() {
   const [activeFact, setActiveFact] = useState(null);
+  const [found, setFound] = useState(() => readFound());
+  const [poppingName, setPoppingName] = useState(null); // for first-find animation
+
+  // Mark a character as found (persists). Returns true if this was a FIRST find.
+  const markFound = useCallback((name) => {
+    let firstFind = false;
+    setFound((prev) => {
+      if (prev.has(name)) return prev;
+      const next = new Set(prev);
+      next.add(name);
+      writeFound(next);
+      firstFind = true;
+      return next;
+    });
+    return firstFind;
+  }, []);
 
   const showFact = useCallback((characterName) => {
     const fact = getRandomFact(characterName);
     if (!fact) return;
-    setActiveFact({ character: characterName, ...fact });
-    const charObj = SCENE_CHARS.find(c => c.name === characterName);
-    if (charObj?.stickerId) earnSticker(charObj.stickerId);
-    noteFactSeen();
-  }, []);
+    // If this is a first-time find, fire a brief "pop" animation BEFORE the modal.
+    const isFirst = !found.has(characterName);
+    markFound(characterName);
+    if (isFirst) {
+      setPoppingName(characterName);
+      setTimeout(() => setPoppingName(null), 650);
+      // Open modal slightly after the pop so the kid notices the reveal.
+      setTimeout(() => {
+        setActiveFact({ character: characterName, ...fact });
+        const charObj = SCENE_CHARS.find(c => c.name === characterName);
+        if (charObj?.stickerId) earnSticker(charObj.stickerId);
+        noteFactSeen();
+      }, 350);
+    } else {
+      setActiveFact({ character: characterName, ...fact });
+      noteFactSeen();
+    }
+  }, [found, markFound]);
 
   const closeFact = useCallback(() => setActiveFact(null), []);
+
+  const totalFound = found.size;
+  const totalChars = SCENE_CHARS.length;
+  const allFound = totalFound === totalChars;
+
+  // One-time celebration when the kid finds them all.
+  const [allFoundCelebrated, setAllFoundCelebrated] = useState(false);
+  useEffect(() => {
+    if (allFound && !allFoundCelebrated && totalFound > 0) {
+      setAllFoundCelebrated(true);
+      earnSticker('ach_fact_finder');
+    }
+  }, [allFound, allFoundCelebrated, totalFound]);
 
   return (
     <div
@@ -58,21 +107,36 @@ function FunFactsPage() {
       <GameHeader title="Fun Facts Clubhouse" showHomeButton={true} />
 
       <main className="flex-1 pt-24 pb-6 px-2 sm:px-3 flex flex-col items-center justify-center">
-        <motion.p
-          className="text-sm md:text-lg font-display mb-3 px-4 py-2 rounded-full text-center"
-          style={{ color: 'white', backgroundColor: 'rgba(10,37,64,0.85)' }}
+        {/* Progress / "find-them-all" prompt */}
+        <motion.div
+          className="mb-3 flex flex-col sm:flex-row items-center gap-2"
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
-          <Sparkles className="inline w-4 h-4 mr-1" />
-          <span className="hidden sm:inline">Tap a friend for a music fact!</span>
-          <span className="sm:hidden">Swipe & tap to meet the band!</span>
-        </motion.p>
+          <div
+            className="px-4 py-2 rounded-full text-sm md:text-base font-bold flex items-center gap-2"
+            style={{ color: 'white', backgroundColor: 'rgba(10,37,64,0.85)' }}
+          >
+            <Search className="inline w-4 h-4" />
+            <span className="hidden sm:inline">Find all the music friends!</span>
+            <span className="sm:hidden">Swipe & tap the shadows!</span>
+          </div>
+          <div
+            data-testid="funfacts-progress"
+            className="px-3 py-1.5 rounded-full text-xs md:text-sm font-black border-2"
+            style={{
+              backgroundColor: allFound ? '#4CD964' : 'white',
+              color: allFound ? 'white' : 'var(--jma-dark)',
+              borderColor: 'var(--jma-dark)',
+            }}
+          >
+            {allFound ? '★ ALL FOUND! ★' : `${totalFound} / ${totalChars} friends found`}
+          </div>
+        </motion.div>
 
         {/* The clubhouse scene.
-            Desktop: locked 16:9.
-            Mobile: scrolls horizontally so kids can pan/explore at a comfortable
-            character size, instead of squinting at a tiny scene. */}
+            Desktop: locked 16:9 inside max-w-[1200px].
+            Mobile: minWidth: 1100px so kids must pan to discover everyone. */}
         <div
           className="w-full max-w-[1200px] overflow-x-auto md:overflow-x-visible md:overflow-y-visible rounded-2xl border-4 border-[var(--jma-dark)] shadow-[0_8px_0_0_var(--jma-dark)]"
           style={{ WebkitOverflowScrolling: 'touch' }}
@@ -81,10 +145,7 @@ function FunFactsPage() {
           <div
             className="relative mx-auto"
             style={{
-              // On mobile we force the scene wider than the viewport so kids
-              // can swipe horizontally to discover characters. Desktop wraps
-              // it inside max-w-[1200px] so this minWidth has no effect there.
-              minWidth: '720px',
+              minWidth: '1100px',
               width: '100%',
               aspectRatio: '16 / 9',
               backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
@@ -92,43 +153,71 @@ function FunFactsPage() {
               backgroundPosition: 'center',
             }}
           >
-            {SCENE_CHARS.map((char, i) => (
-              <motion.button
-                key={char.name}
-                data-testid={`funfacts-character-${char.name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`}
-                type="button"
-                onClick={() => showFact(char.name)}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 + i * 0.08, type: 'spring', stiffness: 220 }}
-                whileHover={{ scale: 1.12 }}
-                whileTap={{ scale: 0.92 }}
-                className="absolute bg-transparent border-0 p-0 cursor-pointer flex flex-col items-center"
-                style={{
-                  left: `${char.leftPct}%`,
-                  top: `${char.topPct}%`,
-                  width: `${char.widthPct}%`,
-                  transform: 'translate(-50%, -50%)',
-                  filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.45))',
-                }}
-                aria-label={`Tap ${char.name} for a music fact`}
-              >
-                <motion.img
-                  src={char.image}
-                  alt={char.name}
-                  className="w-full h-auto object-contain"
-                  draggable={false}
-                  animate={ANIM_VARIANTS[char.anim] || ANIM_VARIANTS.bob}
-                  transition={{ duration: 2 + i * 0.25, repeat: Infinity, ease: 'easeInOut', delay: i * 0.15 }}
-                />
-              </motion.button>
-            ))}
+            {SCENE_CHARS.map((char, i) => {
+              const isFound = found.has(char.name);
+              const isPopping = poppingName === char.name;
+              return (
+                <motion.button
+                  key={char.name}
+                  data-testid={`funfacts-character-${char.name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`}
+                  data-found={isFound ? 'true' : 'false'}
+                  type="button"
+                  onClick={() => showFact(char.name)}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 + i * 0.08, type: 'spring', stiffness: 220 }}
+                  whileHover={{ scale: 1.12 }}
+                  whileTap={{ scale: 0.92 }}
+                  className="absolute bg-transparent border-0 p-0 cursor-pointer flex flex-col items-center"
+                  style={{
+                    left: `${char.leftPct}%`,
+                    top: `${char.topPct}%`,
+                    width: `${char.widthPct}%`,
+                    transform: 'translate(-50%, -50%)',
+                    filter: isFound
+                      ? 'drop-shadow(0 6px 8px rgba(0,0,0,0.45))'
+                      // Silhouette mode: dark + slight glow halo to hint location
+                      : 'brightness(0.18) drop-shadow(0 0 12px rgba(255,221,87,0.55)) drop-shadow(0 0 4px rgba(255,221,87,0.8))',
+                    transition: 'filter 0.4s ease-out',
+                  }}
+                  aria-label={isFound ? `Tap ${char.name} for a music fact` : 'A hidden friend - tap to reveal!'}
+                >
+                  <motion.img
+                    src={char.image}
+                    alt={isFound ? char.name : 'Hidden friend'}
+                    className="w-full h-auto object-contain"
+                    draggable={false}
+                    animate={
+                      isPopping
+                        ? { scale: [1, 1.5, 1.2, 1], rotate: [0, -10, 10, 0] }
+                        : (ANIM_VARIANTS[char.anim] || ANIM_VARIANTS.bob)
+                    }
+                    transition={
+                      isPopping
+                        ? { duration: 0.6, ease: 'easeOut' }
+                        : { duration: 2 + i * 0.25, repeat: Infinity, ease: 'easeInOut', delay: i * 0.15 }
+                    }
+                  />
+                  {/* Sparkle pop on first reveal */}
+                  {isPopping && (
+                    <motion.div
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                      initial={{ opacity: 1, scale: 0.4 }}
+                      animate={{ opacity: 0, scale: 2.2 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <Sparkles className="w-10 h-10" style={{ color: '#FFDD57' }} />
+                    </motion.div>
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
         </div>
 
-        <p className="mt-3 text-xs md:text-sm font-bold opacity-80 text-center px-3" style={{ color: '#FFE9C4' }}>
-          {SCENE_CHARS.length} friends in the clubhouse - find them all!
-          <span className="block sm:hidden mt-1 italic opacity-70">← swipe to explore the room →</span>
+        <p className="mt-3 text-xs md:text-sm font-bold opacity-85 text-center px-3" style={{ color: '#FFE9C4' }}>
+          <span className="block sm:hidden mt-1 italic">← swipe to explore the clubhouse →</span>
+          <span className="hidden sm:block">Each glowing shadow is a friend hiding. Tap to reveal them!</span>
         </p>
       </main>
 
