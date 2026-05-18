@@ -315,7 +315,7 @@ function HomePage() {
           style={{ borderColor: 'var(--jma-dark)', backgroundColor: 'white' }}
         >
           <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.25em]" style={{ color: 'var(--jma-dark)' }}>
-            Jelly of the Month Club · Music Academy
+            Jelly of the Month Club  Music Academy
           </span>
         </div>
       </motion.div>

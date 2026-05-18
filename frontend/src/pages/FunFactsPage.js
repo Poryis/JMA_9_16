@@ -42,12 +42,23 @@ function writeFound(set) {
   try { localStorage.setItem(FOUND_KEY, JSON.stringify([...set])); } catch (_) {}
 }
 
+const INTRO_KEY = 'jma_clubhouse_intro_seen_v1';
+
 function FunFactsPage() {
   const [activeFact, setActiveFact] = useState(null);
   const [found, setFound] = useState(() => readFound());
   const [poppingName, setPoppingName] = useState(null); // for first-find animation
+  // First-visit intro popup. Tells the kid how to play in friendly language.
+  const [showIntro, setShowIntro] = useState(() => {
+    try { return !localStorage.getItem(INTRO_KEY); } catch (_) { return true; }
+  });
   const wrapperRef = useRef(null);
   const desktopPortholeRef = useRef(null);
+
+  const dismissIntro = useCallback(() => {
+    setShowIntro(false);
+    try { localStorage.setItem(INTRO_KEY, '1'); } catch (_) {}
+  }, []);
 
   // Desktop only: turn the porthole into a spyglass that follows the mouse.
   // We mutate inline CSS vars directly (no React state per-frame) for smooth
@@ -302,6 +313,77 @@ function FunFactsPage() {
           <span className="hidden sm:block">Each glowing shadow is a friend hiding. Tap to reveal them!</span>
         </p>
       </main>
+
+      {/* First-visit Clubhouse intro popup. Kid-friendly tone. */}
+      <AnimatePresence>
+        {showIntro && (
+          <motion.div
+            data-testid="clubhouse-intro-backdrop"
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={dismissIntro}
+          >
+            <motion.div
+              data-testid="clubhouse-intro-card"
+              className="relative bg-white rounded-3xl border-4 max-w-sm w-full p-6 text-center"
+              style={{ borderColor: '#FFCC00', boxShadow: '0 10px 0 0 #FFCC00' }}
+              initial={{ scale: 0.6, y: 40, rotate: -4 }}
+              animate={{ scale: 1, y: 0, rotate: 0 }}
+              exit={{ scale: 0.6, y: 40 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.img
+                src="assets/characters/jazzy.png"
+                alt="Jazzy"
+                className="w-24 h-24 mx-auto mb-2 object-contain"
+                animate={{ y: [0, -6, 0], rotate: [-4, 4, -4] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <p
+                className="text-[10px] uppercase tracking-widest font-black mb-1"
+                style={{ color: '#F39C12' }}
+              >
+                Welcome to the Clubhouse!
+              </p>
+              <h2
+                className="text-2xl md:text-3xl font-black font-display mb-3"
+                style={{ color: 'var(--jma-dark)' }}
+              >
+                Find all 6 friends!
+              </h2>
+              <ul
+                className="text-sm font-bold mb-5 space-y-2 text-left mx-auto inline-block"
+                style={{ color: 'var(--jma-dark)' }}
+              >
+                <li className="flex items-start gap-2">
+                  <span className="text-xl leading-none" aria-hidden="true">👀</span>
+                  <span>Each <em>glowing shadow</em> is a hiding friend.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-xl leading-none" aria-hidden="true">👆</span>
+                  <span className="hidden sm:inline">Move your mouse to peek through the spyglass.</span>
+                  <span className="sm:hidden">Swipe to peek around the room.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-xl leading-none" aria-hidden="true">✨</span>
+                  <span><em>Tap</em> a friend to wake them up and learn a music secret!</span>
+                </li>
+              </ul>
+              <button
+                data-testid="clubhouse-intro-go"
+                onClick={dismissIntro}
+                className="chunky-btn text-white px-6 py-2.5 text-base font-bold"
+                style={{ backgroundColor: '#FFCC00', color: 'var(--jma-dark)' }}
+              >
+                Let's find them!
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {activeFact && (
