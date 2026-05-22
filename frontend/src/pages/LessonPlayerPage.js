@@ -26,22 +26,42 @@ export default function LessonPlayerPage() {
   // Lesson 1 is always unlocked; for others, require previous to be watched.
   const allowed = lesson && isUnlocked(lessonNum);
 
+  // Freeze the iframe src to the FIRST loaded lesson. Subsequent lesson changes
+  // are handled via player.loadVideo() so React never reloads the iframe DOM.
+  const [initialSrc] = useState(() =>
+    lesson
+      ? `https://player.vimeo.com/video/${lesson.vimeoId}?app_id=122963&title=0&byline=0&portrait=0&dnt=1`
+      : ''
+  );
+
+  // Effect A: Initialize the Vimeo Player ONCE per page mount.
+  // Effect B (below) handles switching videos via player.loadVideo().
   useEffect(() => {
     if (!allowed) return;
     if (!iframeRef.current) return;
+    if (playerRef.current) return; // already initialized
 
-    loadedRef.current = false;
-    setLoadError(false);
-
-    const player = new Player(iframeRef.current);
+    let cancelled = false;
+    let player;
+    try {
+      player = new Player(iframeRef.current);
+    } catch {
+      setLoadError(true);
+      return;
+    }
     playerRef.current = player;
 
     const onEnded = () => {
-      markWatched(lessonNum);
+      // Mark whichever lesson is currently loaded
+      try {
+        player.getVideoId().then((id) => {
+          const found = LESSONS.find((l) => String(l.vimeoId) === String(id));
+          if (found) markWatched(found.num);
+        }).catch(() => {});
+      } catch { /* ignore */ }
       setCompleted(true);
     };
     const onPlay = () => {
-      // If playback ever starts, hide any stale error overlay
       loadedRef.current = true;
       setLoadError(false);
     };
@@ -53,18 +73,10 @@ export default function LessonPlayerPage() {
     player.on('play', onPlay);
     player.on('error', onError);
 
-    let cancelled = false;
     player.ready()
-      .then(() => {
-        if (cancelled) return;
-        loadedRef.current = true;
-      })
-      .catch(() => {
-        if (!cancelled && !loadedRef.current) setLoadError(true);
-      });
+      .then(() => { if (!cancelled) loadedRef.current = true; })
+      .catch(() => { if (!cancelled && !loadedRef.current) setLoadError(true); });
 
-    // Long safety net: if neither ready nor error fire within 20s AND the user hasn't
-    // started playback, show the fallback. Uses a ref so it sees live state.
     const timeoutId = setTimeout(() => {
       if (!cancelled && !loadedRef.current) setLoadError(true);
     }, 20000);
@@ -72,16 +84,30 @@ export default function LessonPlayerPage() {
     return () => {
       cancelled = true;
       clearTimeout(timeoutId);
-      try {
-        player.off('ended', onEnded);
-        player.off('play', onPlay);
-        player.off('error', onError);
-        player.destroy();
-      } catch {
-        /* ignore */
-      }
+      try { player.off('ended', onEnded); } catch { /* ignore */ }
+      try { player.off('play', onPlay); } catch { /* ignore */ }
+      try { player.off('error', onError); } catch { /* ignore */ }
+      try { player.destroy(); } catch { /* ignore */ }
+      playerRef.current = null;
     };
-  }, [allowed, lessonNum, markWatched]);
+  }, [allowed, markWatched]);
+
+  // Effect B: When the lesson changes, swap the video on the existing player
+  // (instead of remounting the iframe, which races with the SDK).
+  useEffect(() => {
+    if (!allowed || !lesson) return;
+    const player = playerRef.current;
+    if (!player) return;
+    loadedRef.current = false;
+    setLoadError(false);
+    try {
+      player.loadVideo(Number(lesson.vimeoId)).catch(() => {
+        setLoadError(true);
+      });
+    } catch {
+      setLoadError(true);
+    }
+  }, [allowed, lesson]);
 
   // Reflect existing watched state on mount AND reset when lesson changes
   useEffect(() => {
@@ -89,14 +115,22 @@ export default function LessonPlayerPage() {
   }, [allowed, isWatched, lessonNum]);
 
   const handleFullscreen = () => {
-    if (!playerRef.current) return;
-    playerRef.current.requestFullscreen().catch(() => {
-      // Fallback: ask the iframe element itself to go fullscreen
+    const tryNative = () => {
       const el = iframeRef.current;
       if (!el) return;
       const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-      if (req) req.call(el);
-    });
+      if (req) {
+        try { req.call(el); } catch { /* ignore */ }
+      }
+    };
+    const player = playerRef.current;
+    if (!player) { tryNative(); return; }
+    try {
+      const result = player.requestFullscreen();
+      if (result && typeof result.catch === 'function') result.catch(tryNative);
+    } catch {
+      tryNative();
+    }
   };
 
   if (!lesson) {
@@ -204,10 +238,9 @@ export default function LessonPlayerPage() {
       >
         <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
           <iframe
-            key={lesson.vimeoId}
             ref={iframeRef}
             title={lesson.title}
-            src={`https://player.vimeo.com/video/${lesson.vimeoId}?app_id=122963&title=0&byline=0&portrait=0&dnt=1`}
+            src={initialSrc}
             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
