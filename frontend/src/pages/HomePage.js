@@ -32,10 +32,24 @@ const CARDS = [
     shadow: '#F39C12',
     titleColor: '#0A2540',
     titleStroke: '#FFFFFF',
-    // Only 2 tiny corner doodles (matching reference's minimalism)
+    iconShift: { x: -4, y: 2, rot: -3 },
+    // Watercolor blobs (behind everything)
+    blobs: [
+      { color: '#FFB300', top: -10, left: -8,  size: 55, opacity: 0.55 },
+      { color: '#FFE082', top: 50,  left: 70,  size: 60, opacity: 0.55 },
+      { color: '#FF6B35', top: 70,  left: -12, size: 45, opacity: 0.35 },
+    ],
     accents: [
-      { src: 'assets/home/play/note.png',  top: 6,  left: 6,  w: 13, anim: 'bob',  dur: 2.6, delay: 0.0 },
-      { src: 'assets/home/play/stars.png', top: 6,  left: 78, w: 15, anim: 'twinkle', dur: 1.8, delay: 0.2 },
+      // BEHIND icon (z:1) — soft/large
+      { src: 'assets/home/play/note cluster 1.png', top: 8,  left: 58, w: 38, rot: 8,  anim: 'sway',    dur: 3.2, delay: 0.1, z: 1, opacity: 0.85 },
+      { src: 'assets/home/play/drum.png',           top: 62, left: -8, w: 38, rot: -10, anim: 'bob',    dur: 3.0, delay: 0.0, z: 1 },
+      { src: 'assets/home/play/key cluster.png',    top: 56, left: 70, w: 30, rot: 12, anim: 'sway',    dur: 2.8, delay: 0.4, z: 1, opacity: 0.95 },
+      // IN FRONT of icon (z:20)
+      { src: 'assets/home/play/stars.png',          top: -6, left: 70, w: 28, rot: 8,  anim: 'twinkle', dur: 1.6, delay: 0.2, z: 20 },
+      { src: 'assets/home/play/star.png',           top: 4,  left: -4, w: 16, rot: -14, anim: 'twinkle',dur: 1.4, delay: 0.5, z: 20 },
+      { src: 'assets/home/play/note.png',           top: 32, left: 88, w: 14, rot: 18, anim: 'bob',    dur: 2.4, delay: 0.3, z: 20 },
+      { src: 'assets/home/play/accent dot.png',     top: 22, left: 8,  w: 7,  rot: 0,  anim: 'twinkle', dur: 1.8, delay: 0.6, z: 20 },
+      { src: 'assets/home/play/note.png',           top: 78, left: 38, w: 11, rot: -22, anim: 'bob',   dur: 2.6, delay: 0.2, z: 20 },
     ],
   },
   {
@@ -49,9 +63,23 @@ const CARDS = [
     shadow: '#9B6DE0',
     titleColor: '#0A2540',
     titleStroke: '#FFFFFF',
+    iconShift: { x: 3, y: 3, rot: 2 },
+    blobs: [
+      { color: '#7B4FE0', top: -8,  left: 60,  size: 55, opacity: 0.45 },
+      { color: '#E6D5FF', top: 35,  left: -15, size: 60, opacity: 0.6 },
+      { color: '#BB86FC', top: 70,  left: 65,  size: 50, opacity: 0.4 },
+    ],
     accents: [
-      { src: 'assets/home/learn/staraccent.png',  top: 6,  left: 6,  w: 12, anim: 'twinkle', dur: 1.8, delay: 0.1 },
-      { src: 'assets/home/learn/noteaccent1.png', top: 6,  left: 78, w: 14, anim: 'sway', dur: 2.8, delay: 0.3 },
+      // BEHIND
+      { src: 'assets/home/learn/starandcircleaccent.png', top: -4,  left: -6, w: 36, rot: -8, anim: 'twinkle', dur: 2.0, delay: 0.1, z: 1 },
+      { src: 'assets/home/learn/starandswooshaccent.png', top: 58,  left: 68, w: 40, rot: 12, anim: 'sway',   dur: 2.8, delay: 0.4, z: 1 },
+      { src: 'assets/home/learn/accent4.png',             top: 36,  left: 78, w: 26, rot: 14, anim: 'sway',   dur: 3.0, delay: 0.5, z: 1, opacity: 0.9 },
+      { src: 'assets/home/learn/accent3.png',             top: 50,  left: -10, w: 24, rot: -20, anim: 'sway', dur: 2.6, delay: 0.2, z: 1, opacity: 0.9 },
+      // IN FRONT
+      { src: 'assets/home/learn/noteaccent.png',          top: 8,   left: 78, w: 22, rot: 10, anim: 'sway',   dur: 2.4, delay: 0.3, z: 20 },
+      { src: 'assets/home/learn/noteaccent1.png',         top: 36,  left: 4,  w: 16, rot: -12, anim: 'bob',   dur: 2.6, delay: 0.5, z: 20 },
+      { src: 'assets/home/learn/staraccent.png',          top: 80,  left: 6,  w: 14, rot: -6, anim: 'twinkle',dur: 1.6, delay: 0.6, z: 20 },
+      { src: 'assets/home/learn/staraccent.png',          top: 18,  left: 50, w: 9,  rot: 18, anim: 'twinkle',dur: 1.8, delay: 0.2, z: 20 },
     ],
   },
   {
@@ -65,10 +93,23 @@ const CARDS = [
     shadow: '#3FA68B',
     titleColor: '#0A2540',
     titleStroke: '#FFFFFF',
+    iconShift: { x: 5, y: -2, rot: -2 },
+    blobs: [
+      { color: '#2E9E8B', top: -8,  left: 65,  size: 50, opacity: 0.45 },
+      { color: '#B8E8DC', top: 30,  left: -10, size: 55, opacity: 0.6 },
+      { color: '#FF8FB1', top: 75,  left: 60,  size: 45, opacity: 0.35 },
+    ],
     accents: [
-      { src: 'assets/home/create/note accent.png',   top: 6, left: 8,  w: 13, anim: 'sway', dur: 2.6, delay: 0.2 },
-      { src: 'assets/home/create/stars accent.png',  top: 6, left: 78, w: 14, anim: 'twinkle', dur: 1.8, delay: 0.4 },
-      { src: 'assets/home/create/heartbeat 1.png',   top: 75, left: 68, w: 22, anim: 'pulse', dur: 1.4, delay: 0.1 },
+      // BEHIND
+      { src: 'assets/home/create/heartbeat 1.png',  top: 56, left: -6,  w: 60, rot: -4, anim: 'pulse',  dur: 1.6, delay: 0.0, z: 1, opacity: 0.85 },
+      { src: 'assets/home/create/accent 4.png',     top: 8,  left: 70,  w: 30, rot: 14, anim: 'sway',   dur: 2.8, delay: 0.3, z: 1 },
+      { src: 'assets/home/create/accent 1.png',     top: 36, left: 80,  w: 24, rot: -10, anim: 'sway',  dur: 3.0, delay: 0.5, z: 1, opacity: 0.9 },
+      { src: 'assets/home/create/dots accent.png',  top: 70, left: 75,  w: 28, rot: 8,  anim: 'twinkle', dur: 1.8, delay: 0.4, z: 1, opacity: 0.85 },
+      // IN FRONT
+      { src: 'assets/home/create/stars accent.png', top: -4, left: 66,  w: 30, rot: 10, anim: 'twinkle',dur: 1.6, delay: 0.2, z: 20 },
+      { src: 'assets/home/create/note accent.png',  top: 4,  left: -2,  w: 22, rot: -16, anim: 'sway',  dur: 2.4, delay: 0.1, z: 20 },
+      { src: 'assets/home/create/note accent 2.png',top: 38, left: 6,   w: 14, rot: 16, anim: 'bob',    dur: 2.6, delay: 0.5, z: 20 },
+      { src: 'assets/home/create/heartbeat 2.png',  top: 82, left: 30,  w: 18, rot: 0,  anim: 'pulse',  dur: 1.4, delay: 0.3, z: 20, opacity: 0.95 },
     ],
   },
 ];
@@ -87,11 +128,32 @@ function Accent({ a }) {
       className="absolute pointer-events-none select-none"
       style={{
         top: `${a.top}%`, left: `${a.left}%`, width: `${a.w}%`,
-        filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.18))',
-        zIndex: 1,
+        filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.22))',
+        zIndex: a.z ?? 1,
+        opacity: a.opacity ?? 1,
+        rotate: `${a.rot || 0}deg`,
       }}
       animate={ANIMS[a.anim] || ANIMS.bob}
       transition={{ duration: a.dur, delay: a.delay, repeat: Infinity, ease: 'easeInOut' }}
+    />
+  );
+}
+
+function Blob({ b }) {
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        top: `${b.top}%`,
+        left: `${b.left}%`,
+        width: `${b.size}%`,
+        aspectRatio: '1 / 1',
+        background: `radial-gradient(circle, ${b.color} 0%, ${b.color}00 65%)`,
+        opacity: b.opacity ?? 0.5,
+        filter: 'blur(8px)',
+        zIndex: 0,
+        mixBlendMode: 'multiply',
+      }}
     />
   );
 }
@@ -124,29 +186,38 @@ function PrimaryCard({ card, index, navigate }) {
           padding: 'clamp(14px, 2.4vw, 24px)',
         }}
       >
+        {/* Watercolor blobs (deepest layer) */}
+        {(card.blobs || []).map((b, i) => <Blob key={`b-${i}`} b={b} />)}
+
         {/* Subtle inner radial highlight */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.35) 0%, transparent 55%)' }}
+          style={{ background: 'radial-gradient(circle at 50% 30%, rgba(255,255,255,0.32) 0%, transparent 50%)', zIndex: 0 }}
         />
 
-        {card.accents.map((a, i) => <Accent key={i} a={a} />)}
+        {/* Decorative accents — z controls in-front vs behind icon */}
+        {card.accents.map((a, i) => <Accent key={`a-${i}`} a={a} />)}
 
-        {/* HUGE primary icon */}
+        {/* HUGE primary icon (off-center, ~25% larger) */}
         <motion.img
           src={card.icon}
           alt={card.iconAlt}
           draggable={false}
           loading="eager"
-          className="relative object-contain select-none z-10"
+          className="relative object-contain select-none"
           style={{
-            width: 'min(98%, 560px)',
+            width: 'min(118%, 700px)',
             height: 'auto',
-            maxHeight: '78%',
-            marginBottom: 'clamp(6px, 1.4vw, 14px)',
-            filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.24))',
+            maxHeight: '92%',
+            marginBottom: 'clamp(2px, 1vw, 10px)',
+            filter: 'drop-shadow(0 12px 12px rgba(0,0,0,0.28))',
+            zIndex: 10,
+            transform: `translate(${card.iconShift?.x || 0}%, ${card.iconShift?.y || 0}%) rotate(${card.iconShift?.rot || 0}deg)`,
           }}
-          animate={hovered ? { scale: 1.06, y: -6, rotate: -2 } : { y: [0, -6, 0], rotate: 0 }}
+          animate={hovered
+            ? { scale: 1.06, y: -6, rotate: (card.iconShift?.rot || 0) - 2 }
+            : { y: [0, -6, 0], rotate: card.iconShift?.rot || 0 }
+          }
           transition={
             hovered
               ? { type: 'spring', stiffness: 240 }
@@ -156,13 +227,14 @@ function PrimaryCard({ card, index, navigate }) {
 
         {/* Title */}
         <h2
-          className="relative z-10 font-black font-display leading-none text-center"
+          className="relative font-black font-display leading-none text-center"
           style={{
             fontSize: 'clamp(28px, 5.2vw, 56px)',
             color: card.titleColor,
             WebkitTextStroke: `clamp(2px, 0.4vw, 4px) ${card.titleStroke}`,
             paintOrder: 'stroke fill',
             letterSpacing: '0.02em',
+            zIndex: 30,
           }}
         >
           {card.title}
