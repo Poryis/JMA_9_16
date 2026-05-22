@@ -72,7 +72,8 @@ export default function NoteMatchPage() {
   const [elapsed, setElapsed] = useState(0);
   const [bestTimes, setBestTimes] = useState(loadBestTimes);
   const [isNewBest, setIsNewBest] = useState(false);
-  const lockRef = useRef(false);  // prevents 3rd flip during the mismatch flip-back
+  const lockRef = useRef(false);          // prevents tapping a 3rd card mid-resolution
+  const firstFlippedRef = useRef(null);   // explicitly tracks the first card flipped of the pair
   const tickRef = useRef(null);
 
   const level = LEVELS[difficulty];
@@ -100,6 +101,7 @@ export default function NoteMatchPage() {
     setIsNewBest(false);
     setGameState('playing');
     lockRef.current = false;
+    firstFlippedRef.current = null;
   }, [initAudioContext, difficulty]);
 
   // Win check + persist best time
@@ -130,19 +132,31 @@ export default function NoteMatchPage() {
     if (revealed.has(card.id)) return;
 
     playBellNote(card.bell.note);
-    const nextRevealed = new Set(revealed);
-    nextRevealed.add(card.id);
-    setRevealed(nextRevealed);
 
-    // First flip of a pair — just wait for the second flip
-    if (nextRevealed.size - matched.size === 1) return;
+    // First flip of the pair: remember the card, reveal it, and return.
+    if (firstFlippedRef.current == null) {
+      firstFlippedRef.current = card;
+      setRevealed((prev) => {
+        const next = new Set(prev);
+        next.add(card.id);
+        return next;
+      });
+      return;
+    }
 
-    // Second flip — count this as one move
+    // Second flip: compare. Lock the board until resolution completes.
+    const firstCard = firstFlippedRef.current;
+    firstFlippedRef.current = null;
+    lockRef.current = true;
     setMoves((m) => m + 1);
-    const [firstId] = [...nextRevealed].filter((id) => !matched.has(id) && id !== card.id);
-    const firstCard = deck.find((c) => c.id === firstId);
-    if (firstCard && firstCard.pairId === card.pairId) {
-      // Match!
+    setRevealed((prev) => {
+      const next = new Set(prev);
+      next.add(card.id);
+      return next;
+    });
+
+    if (firstCard.pairId === card.pairId) {
+      // Match — promote both to matched, unlock after a short beat.
       setTimeout(() => {
         setMatched((prev) => {
           const next = new Set(prev);
@@ -150,23 +164,22 @@ export default function NoteMatchPage() {
           next.add(card.id);
           return next;
         });
-        // Gentle "yes" — replay both notes together for a brief chime
         try { playBellNote(card.bell.note); } catch { /* ignore */ }
+        lockRef.current = false;
       }, 350);
     } else {
-      // Mismatch — flip both back after a beat
-      lockRef.current = true;
+      // Mismatch — flip both back, then unlock.
       setTimeout(() => {
         setRevealed((prev) => {
           const next = new Set(prev);
-          if (firstCard) next.delete(firstCard.id);
+          next.delete(firstCard.id);
           next.delete(card.id);
           return next;
         });
         lockRef.current = false;
       }, 900);
     }
-  }, [revealed, matched, deck, playBellNote]);
+  }, [revealed, matched, playBellNote]);
 
   // ===== MENU =====
   if (gameState === 'menu') {
