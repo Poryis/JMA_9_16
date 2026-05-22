@@ -1,101 +1,101 @@
-// JMA Home — three big primary cards: PLAY · LEARN · CREATE
-// All artwork is layered (no flattened backgrounds). Decorative doodles
-// float around the cards via absolute positioning + framer-motion bobs.
-// Cards stack vertically on mobile, 3-column on desktop.
+// JMA Home — based on the partner's reference image.
+// Hero: Finn (cello) - SHIELD - Charlie (guitar) on top, no extra wording.
+// Body: three big tappable cards (PLAY · LEARN · CREATE), with the icon as
+// the centerpiece and only minimal corner accents.
+// Bottom: a single helper pill explaining each section.
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Gamepad2, PlayCircle, Drum, Star } from 'lucide-react';
 import RankBadge from '../components/RankBadge';
 import StickerSpotlight from '../components/StickerSpotlight';
 
-// Each card's palette + content + decorative cluster
+// Floating music notes/stars in the sky strip behind the hero row.
+const SKY_DOODLES = [
+  { src: 'assets/home/play/note.png',         top: 22, left: 6,   w: 3.0, dur: 3.0, delay: 0.0 },
+  { src: 'assets/home/learn/noteaccent.png',  top: 8,  left: 18,  w: 3.4, dur: 2.4, delay: 0.4 },
+  { src: 'assets/home/create/note accent.png', top: 18, left: 30, w: 2.8, dur: 3.4, delay: 0.7 },
+  { src: 'assets/home/play/note.png',         top: 12, left: 72,  w: 3.0, dur: 2.8, delay: 0.2 },
+  { src: 'assets/home/learn/noteaccent1.png', top: 22, left: 82,  w: 3.4, dur: 3.2, delay: 0.5 },
+  { src: 'assets/home/create/note accent 2.png', top: 9, left: 92, w: 2.8, dur: 2.6, delay: 0.3 },
+];
+
 const CARDS = [
   {
     id: 'play',
     title: 'PLAY',
-    subtitle: 'Games',
     path: '/play',
     icon: 'assets/home/play/boombox.png',
     iconAlt: 'Boombox',
-    bg: 'linear-gradient(135deg, #FFD23F 0%, #FFB300 100%)',
-    accent: '#E94B3C',
-    ring: '#FF8A33',
-    // accents: each is { src, top%, left%, w%, anim, dur, delay }
+    bg: '#FFC83D',
+    border: '#0A2540',
+    shadow: '#F39C12',
+    titleColor: '#0A2540',
+    titleStroke: '#FFFFFF',
+    // Only 2 tiny corner doodles (matching reference's minimalism)
     accents: [
-      { src: 'assets/home/play/note cluster 1.png', top: -10, left: 70, w: 36, anim: 'bob',   dur: 2.8, delay: 0 },
-      { src: 'assets/home/play/key cluster.png',     top: 62, left: -8, w: 30, anim: 'sway',  dur: 3.2, delay: 0.4 },
-      { src: 'assets/home/play/stars.png',           top: -8, left: -10, w: 22, anim: 'twinkle', dur: 1.6, delay: 0.2 },
-      { src: 'assets/home/play/drum.png',            top: 70, left: 78, w: 30, anim: 'bob',   dur: 2.4, delay: 0.5 },
+      { src: 'assets/home/play/note.png',  top: 6,  left: 6,  w: 13, anim: 'bob',  dur: 2.6, delay: 0.0 },
+      { src: 'assets/home/play/stars.png', top: 6,  left: 78, w: 15, anim: 'twinkle', dur: 1.8, delay: 0.2 },
     ],
+    helper: { icon: Gamepad2, color: '#FF9500', text: 'Play games, instruments and jam!' },
   },
   {
     id: 'learn',
     title: 'LEARN',
-    subtitle: 'Lessons',
     path: '/learn',
     icon: 'assets/home/learn/storybook no accents.png',
     iconAlt: 'Storybook',
-    bg: 'linear-gradient(135deg, #4FC3F7 0%, #1E88E5 100%)',
-    accent: '#0B3D91',
-    ring: '#82B4FF',
+    bg: '#C8A8F2',
+    border: '#0A2540',
+    shadow: '#9B6DE0',
+    titleColor: '#0A2540',
+    titleStroke: '#FFFFFF',
     accents: [
-      { src: 'assets/home/learn/staraccent.png',          top: -8,  left: -6, w: 22, anim: 'twinkle', dur: 1.8, delay: 0.1 },
-      { src: 'assets/home/learn/noteaccent.png',          top: 60,  left: -10, w: 22, anim: 'sway', dur: 3.0, delay: 0.3 },
-      { src: 'assets/home/learn/starandcircleaccent.png', top: -10, left: 76, w: 24, anim: 'bob',  dur: 2.6, delay: 0.5 },
-      { src: 'assets/home/learn/noteaccent1.png',         top: 70,  left: 78, w: 26, anim: 'sway', dur: 3.4, delay: 0.2 },
+      { src: 'assets/home/learn/staraccent.png',  top: 6,  left: 6,  w: 12, anim: 'twinkle', dur: 1.8, delay: 0.1 },
+      { src: 'assets/home/learn/noteaccent1.png', top: 6,  left: 78, w: 14, anim: 'sway', dur: 2.8, delay: 0.3 },
     ],
+    helper: { icon: PlayCircle, color: '#9B6DE0', text: 'Watch videos, sing songs and go on adventures!' },
   },
   {
     id: 'create',
     title: 'CREATE',
-    subtitle: 'Home Studio',
     path: '/create',
     icon: 'assets/home/create/beat pad.png',
     iconAlt: 'Beat Pad',
-    bg: 'linear-gradient(135deg, #FF6FB5 0%, #C2185B 100%)',
-    accent: '#7B1FA2',
-    ring: '#FFB6E0',
+    bg: '#7DD3C0',
+    border: '#0A2540',
+    shadow: '#3FA68B',
+    titleColor: '#0A2540',
+    titleStroke: '#FFFFFF',
     accents: [
-      { src: 'assets/home/create/note accent.png',  top: -8,  left: -8, w: 26, anim: 'sway', dur: 2.6, delay: 0.1 },
-      { src: 'assets/home/create/heartbeat 1.png',  top: 64,  left: -10, w: 30, anim: 'pulse', dur: 1.4, delay: 0.2 },
-      { src: 'assets/home/create/stars accent.png', top: -6,  left: 74, w: 24, anim: 'twinkle', dur: 1.8, delay: 0.3 },
-      { src: 'assets/home/create/note accent 2.png', top: 70, left: 78, w: 22, anim: 'bob',   dur: 2.8, delay: 0.5 },
+      { src: 'assets/home/create/note accent.png',   top: 6, left: 8,  w: 13, anim: 'sway', dur: 2.6, delay: 0.2 },
+      { src: 'assets/home/create/stars accent.png',  top: 6, left: 78, w: 14, anim: 'twinkle', dur: 1.8, delay: 0.4 },
+      { src: 'assets/home/create/heartbeat 1.png',   top: 75, left: 68, w: 22, anim: 'pulse', dur: 1.4, delay: 0.1 },
     ],
+    helper: { icon: Drum, color: '#3FA68B', text: 'Build beats, play instruments and record!' },
   },
 ];
 
 const ANIMS = {
-  bob:     { y: [0, -8, 0] },
-  sway:    { rotate: [-6, 6, -6], y: [0, -4, 0] },
-  twinkle: { scale: [1, 1.15, 1], opacity: [0.9, 1, 0.9] },
-  pulse:   { scale: [1, 1.08, 1] },
+  bob:     { y: [0, -6, 0] },
+  sway:    { rotate: [-5, 5, -5], y: [0, -3, 0] },
+  twinkle: { scale: [1, 1.12, 1], opacity: [0.9, 1, 0.9] },
+  pulse:   { scale: [1, 1.06, 1] },
 };
 
-function Accent({ a, cardId }) {
+function Accent({ a }) {
   return (
     <motion.img
-      src={a.src}
-      alt=""
-      draggable={false}
-      loading="lazy"
+      src={a.src} alt="" draggable={false} loading="lazy"
       className="absolute pointer-events-none select-none"
       style={{
-        top: `${a.top}%`,
-        left: `${a.left}%`,
-        width: `${a.w}%`,
-        filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.18))',
+        top: `${a.top}%`, left: `${a.left}%`, width: `${a.w}%`,
+        filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.18))',
         zIndex: 1,
       }}
       animate={ANIMS[a.anim] || ANIMS.bob}
-      transition={{
-        duration: a.dur,
-        delay: a.delay,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-      data-testid={`home-accent-${cardId}`}
+      transition={{ duration: a.dur, delay: a.delay, repeat: Infinity, ease: 'easeInOut' }}
     />
   );
 }
@@ -110,111 +110,71 @@ function PrimaryCard({ card, index, navigate }) {
       onClick={() => navigate(card.path)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative rounded-[28px] cursor-pointer w-full overflow-visible group bg-transparent border-0 p-0"
-      initial={{ y: 60, opacity: 0, scale: 0.9 }}
+      className="relative rounded-[26px] cursor-pointer w-full bg-transparent border-0 p-0"
+      initial={{ y: 50, opacity: 0, scale: 0.92 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
-      transition={{ delay: 0.18 + index * 0.12, type: 'spring', stiffness: 220 }}
-      whileHover={{ y: -8 }}
+      transition={{ delay: 0.18 + index * 0.1, type: 'spring', stiffness: 220 }}
+      whileHover={{ y: -6 }}
       whileTap={{ scale: 0.97 }}
     >
-      {/* The card body (rounded box) */}
       <div
-        className="relative rounded-[28px] border-[5px] flex flex-col items-center justify-center"
+        className="relative rounded-[26px] flex flex-col items-center justify-end overflow-hidden"
         style={{
           background: card.bg,
-          borderColor: 'var(--jma-dark)',
-          boxShadow: `0 10px 0 0 var(--jma-dark)`,
-          padding: 'clamp(18px, 4vw, 36px) clamp(14px, 3vw, 28px)',
+          border: `5px solid ${card.border}`,
+          boxShadow: `0 10px 0 0 ${card.shadow}, 0 13px 0 0 ${card.border}`,
           aspectRatio: '4 / 5',
-          minHeight: 280,
-          transition: 'box-shadow 0.18s ease-out',
+          minHeight: 320,
+          padding: 'clamp(16px, 3vw, 28px)',
         }}
       >
-        {/* Decorative doodles (clipped to card edges via overflow on a sibling wrapper)
-            We let them peek slightly outside, with rounded clipping. */}
+        {/* Subtle inner radial highlight */}
         <div
-          className="absolute inset-0 rounded-[24px] overflow-hidden pointer-events-none"
-          aria-hidden="true"
-        >
-          {/* Subtle radial highlight for "stage light" feel */}
-          <div
-            className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[140%] h-[80%] rounded-full opacity-30"
-            style={{ background: `radial-gradient(circle, ${card.ring} 0%, transparent 65%)` }}
-          />
-          {card.accents.map((a, i) => (
-            <Accent key={i} a={a} cardId={card.id} />
-          ))}
-        </div>
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.35) 0%, transparent 55%)' }}
+        />
 
-        {/* Primary icon (clickable visual focus) */}
+        {card.accents.map((a, i) => <Accent key={i} a={a} />)}
+
+        {/* HUGE primary icon */}
         <motion.img
           src={card.icon}
           alt={card.iconAlt}
           draggable={false}
           loading="eager"
-          className="relative object-contain select-none drop-shadow-xl z-10"
+          className="relative object-contain select-none z-10"
           style={{
-            width: 'min(72%, 230px)',
+            width: 'min(82%, 280px)',
             height: 'auto',
-            maxHeight: '55%',
+            maxHeight: '62%',
+            marginBottom: 'clamp(8px, 2vw, 18px)',
+            filter: 'drop-shadow(0 8px 8px rgba(0,0,0,0.22))',
           }}
           animate={hovered ? { scale: 1.06, y: -6, rotate: -2 } : { y: [0, -6, 0], rotate: 0 }}
           transition={
             hovered
               ? { type: 'spring', stiffness: 240 }
-              : { y: { repeat: Infinity, duration: 2.4, ease: 'easeInOut', delay: index * 0.2 } }
+              : { y: { repeat: Infinity, duration: 2.6, ease: 'easeInOut', delay: index * 0.2 } }
           }
         />
 
-        {/* Title + Subtitle */}
-        <div className="relative z-10 text-center mt-2 md:mt-3">
-          <h2
-            className="font-black font-display leading-none"
-            style={{
-              color: 'white',
-              fontSize: 'clamp(28px, 5vw, 48px)',
-              textShadow: '3px 3px 0 var(--jma-dark), 5px 5px 0 rgba(10,37,64,0.25)',
-              letterSpacing: '0.02em',
-            }}
-          >
-            {card.title}
-          </h2>
-          <p
-            className="font-bold tracking-wide uppercase mt-1"
-            style={{
-              color: 'white',
-              fontSize: 'clamp(10px, 1.4vw, 14px)',
-              opacity: 0.95,
-              textShadow: '1px 1px 0 rgba(10,37,64,0.6)',
-            }}
-          >
-            {card.subtitle}
-          </p>
-        </div>
-
-        {/* Hover "Enter" chip */}
-        <motion.div
-          className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full border-2 hidden md:flex items-center gap-1 z-10"
-          style={{ backgroundColor: 'white', borderColor: 'var(--jma-dark)' }}
-          animate={hovered ? { x: 0, opacity: 1 } : { x: 20, opacity: 0 }}
-          transition={{ type: 'spring' }}
+        {/* Title */}
+        <h2
+          className="relative z-10 font-black font-display leading-none text-center"
+          style={{
+            fontSize: 'clamp(32px, 6vw, 64px)',
+            color: card.titleColor,
+            WebkitTextStroke: `clamp(2px, 0.4vw, 4px) ${card.titleStroke}`,
+            paintOrder: 'stroke fill',
+            letterSpacing: '0.02em',
+          }}
         >
-          <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'var(--jma-dark)' }}>
-            Enter →
-          </span>
-        </motion.div>
+          {card.title}
+        </h2>
       </div>
     </motion.button>
   );
 }
-
-// Floating ambient doodles across the whole page (very subtle).
-const PAGE_DOODLES = [
-  { src: 'assets/home/play/star.png',          top: 8,  left: 6,  w: 4, dur: 3.2, delay: 0.0 },
-  { src: 'assets/home/learn/staraccent.png',   top: 12, left: 92, w: 5, dur: 2.4, delay: 0.6 },
-  { src: 'assets/home/create/stars accent.png', top: 70, left: 4, w: 5, dur: 3.6, delay: 0.3 },
-  { src: 'assets/home/play/note.png',          top: 80, left: 90, w: 4, dur: 2.8, delay: 0.5 },
-];
 
 function HomePage() {
   const navigate = useNavigate();
@@ -222,84 +182,130 @@ function HomePage() {
   return (
     <div
       data-testid="home-page"
-      className="min-h-screen w-full flex flex-col items-center px-3 sm:px-6 pt-4 pb-8 relative overflow-x-hidden"
+      className="min-h-screen w-full flex flex-col items-center px-3 sm:px-6 pt-4 pb-6 relative overflow-x-hidden"
       style={{
         background:
-          'radial-gradient(circle at 20% 10%, #FFE5A6 0%, transparent 45%),' +
-          'radial-gradient(circle at 80% 18%, #C7E9FF 0%, transparent 45%),' +
-          'radial-gradient(circle at 50% 95%, #FFD9EB 0%, transparent 50%),' +
-          'linear-gradient(180deg, #FFF6E4 0%, #FFEAD3 100%)',
+          'linear-gradient(180deg, #BCE5F2 0%, #E5F2F8 55%, #FFEEC5 100%)',
       }}
     >
-      {/* Page-level ambient doodles */}
-      {PAGE_DOODLES.map((d, i) => (
+      {/* Sky doodles — float behind the hero */}
+      {SKY_DOODLES.map((d, i) => (
         <motion.img
           key={i}
-          src={d.src}
-          alt=""
-          draggable={false}
-          loading="lazy"
-          className="absolute pointer-events-none select-none opacity-70 hidden sm:block"
+          src={d.src} alt="" draggable={false} loading="lazy"
+          className="absolute pointer-events-none select-none opacity-75"
           style={{ top: `${d.top}%`, left: `${d.left}%`, width: `${d.w}%`, zIndex: 0 }}
-          animate={{ y: [0, -14, 0], rotate: [-6, 6, -6] }}
+          animate={{ y: [0, -12, 0], rotate: [-5, 5, -5] }}
           transition={{ duration: d.dur, delay: d.delay, repeat: Infinity, ease: 'easeInOut' }}
         />
       ))}
 
-      {/* Stylized JMA logo (uses the new artwork) */}
-      <motion.img
-        src="assets/ui/jma-stylized-logo.png"
-        alt="Jelly of the Month Club Music Academy"
-        data-testid="jma-logo"
-        className="relative z-10 mx-auto object-contain"
-        style={{
-          width: 'min(78vw, 540px)',
-          height: 'auto',
-          maxHeight: '34vh',
-          filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.18))',
-        }}
-        initial={{ y: -40, opacity: 0, scale: 0.92 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        transition={{ type: 'spring', stiffness: 200 }}
-      />
+      {/* HERO ROW — Finn · Shield · Charlie */}
+      <div className="relative z-10 flex items-center justify-center gap-2 sm:gap-4 md:gap-8 mt-2 mb-2 w-full">
+        <motion.img
+          src="assets/characters/finn-danger.png"
+          alt="Finn"
+          data-testid="home-finn"
+          className="object-contain drop-shadow-lg cursor-pointer"
+          style={{ width: 'clamp(80px, 14vw, 170px)', height: 'auto' }}
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
+          transition={{
+            x: { delay: 0.2, type: 'spring' },
+            opacity: { delay: 0.2 },
+            y: { repeat: Infinity, duration: 2.4, ease: 'easeInOut' },
+          }}
+          whileHover={{ scale: 1.08, rotate: -4 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/fun-facts')}
+        />
 
-      <motion.p
-        className="relative z-10 text-xs md:text-sm font-bold italic mb-4 md:mb-6 mt-1"
-        style={{ color: 'var(--jma-dark)', opacity: 0.7 }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.7 }}
-        transition={{ delay: 0.3 }}
-      >
-        Music is FUN
-      </motion.p>
+        <motion.img
+          src="assets/ui/logo.png"
+          alt="Jelly of the Month Club Music Academy"
+          data-testid="jma-logo"
+          className="object-contain"
+          style={{
+            width: 'clamp(120px, 22vw, 280px)',
+            height: 'auto',
+            filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.18))',
+          }}
+          initial={{ y: -30, opacity: 0, rotate: -4 }}
+          animate={{ y: 0, opacity: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+        />
+
+        <motion.img
+          src="assets/characters/charlie-drum-major.png"
+          alt="Charlie"
+          data-testid="home-charlie"
+          className="object-contain drop-shadow-lg cursor-pointer"
+          style={{ width: 'clamp(80px, 14vw, 170px)', height: 'auto' }}
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
+          transition={{
+            x: { delay: 0.3, type: 'spring' },
+            opacity: { delay: 0.3 },
+            y: { repeat: Infinity, duration: 2.6, ease: 'easeInOut', delay: 0.4 },
+          }}
+          whileHover={{ scale: 1.08, rotate: 4 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/fun-facts')}
+        />
+      </div>
 
       {/* Rank + Sticker spotlight */}
-      <div className="relative z-10 mb-5 md:mb-7 w-full max-w-4xl flex flex-col sm:flex-row items-center justify-center gap-3">
+      <div className="relative z-10 mb-4 md:mb-5 w-full max-w-4xl flex flex-col sm:flex-row items-center justify-center gap-3">
         <RankBadge />
         <StickerSpotlight />
       </div>
 
       {/* THREE PRIMARY CARDS */}
-      <div className="relative z-10 w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-7 px-1">
+      <div className="relative z-10 w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 px-1">
         {CARDS.map((card, idx) => (
           <PrimaryCard key={card.id} card={card} index={idx} navigate={navigate} />
         ))}
       </div>
 
-      {/* Sticker Book button */}
-      <motion.button
-        data-testid="sticker-book-btn"
-        onClick={() => navigate('/sticker-book')}
-        className="relative z-10 mt-7 mb-2 chunky-btn bg-gradient-to-r from-[#FFCC00] via-[#FF9500] to-[#FF3B30] text-white px-6 py-2.5 flex items-center gap-2 text-base font-bold rounded-full border-4 border-[var(--jma-dark)] shadow-[0_6px_0_0_var(--jma-dark)]"
-        initial={{ y: 20, opacity: 0 }}
+      {/* Bottom helper pill: TAP A SECTION TO EXPLORE MORE → 3 section reminders */}
+      <motion.div
+        data-testid="home-helper-pill"
+        className="relative z-10 mt-5 mb-2 w-full max-w-5xl px-3 py-2 md:px-5 md:py-3 rounded-[28px] border-4 flex flex-col md:flex-row md:items-center gap-3 md:gap-5"
+        style={{
+          backgroundColor: '#FFF9EE',
+          borderColor: '#0A2540',
+          boxShadow: '0 6px 0 0 #0A2540',
+        }}
+        initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.9, type: 'spring', stiffness: 260 }}
-        whileHover={{ scale: 1.05, y: -2 }}
-        whileTap={{ scale: 0.96, y: 2 }}
+        transition={{ delay: 0.8, type: 'spring' }}
       >
-        <Sparkles className="w-5 h-5" />
-        Sticker Book
-      </motion.button>
+        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+          <Star className="w-6 h-6 md:w-7 md:h-7 flex-shrink-0" style={{ color: '#FFCC00', fill: '#FFCC00' }} />
+          <span className="text-[11px] md:text-sm font-black uppercase tracking-wide leading-tight" style={{ color: '#0A2540' }}>
+            Tap a section to<br className="hidden md:block" /> explore more!
+          </span>
+          <span className="text-2xl md:text-3xl" style={{ color: '#0A2540' }} aria-hidden="true">→</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2 md:gap-4 flex-1">
+          {CARDS.map((c) => {
+            const Icon = c.helper.icon;
+            return (
+              <div key={c.id} className="flex items-start gap-2 md:gap-3">
+                <div
+                  className="flex-shrink-0 w-9 h-9 md:w-11 md:h-11 rounded-full border-2 flex items-center justify-center"
+                  style={{ backgroundColor: c.helper.color, borderColor: '#0A2540' }}
+                >
+                  <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                </div>
+                <p className="text-[10px] md:text-[11px] font-bold leading-tight" style={{ color: '#0A2540' }}>
+                  {c.helper.text}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
     </div>
   );
 }
