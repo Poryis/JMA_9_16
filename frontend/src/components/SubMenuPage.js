@@ -135,9 +135,9 @@ function Tile({ tile, index, navigate }) {
           className="absolute right-2 bottom-0 pointer-events-none select-none z-10"
           style={{
             width: `${tile.charWidthPct || 32}%`,
-            height: '92%',
-            objectFit: 'contain',
-            objectPosition: 'bottom right',
+            height: `${tile.charHeightPct || 92}%`,
+            objectFit: tile.charObjectFit || 'contain',
+            objectPosition: tile.charObjectPosition || 'bottom right',
             filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.45))',
           }}
           animate={hovered ? { y: -8, rotate: -3 } : { y: [0, -6, 0], rotate: 0 }}

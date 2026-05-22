@@ -10,7 +10,7 @@ const CREATE_TILES = [
     color: '#4CD964',
     accent: '#34A853',
     sign: 'STUDIO',
-    character: 'assets/characters/charlie-drum-major.png',
+    character: 'assets/characters/charlie-punk.png',
     charWidthPct: 30,
   },
   {

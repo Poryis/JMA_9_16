@@ -7,7 +7,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gamepad2, PlayCircle, Drum, Star } from 'lucide-react';
 import RankBadge from '../components/RankBadge';
 import StickerSpotlight from '../components/StickerSpotlight';
 
@@ -38,7 +37,6 @@ const CARDS = [
       { src: 'assets/home/play/note.png',  top: 6,  left: 6,  w: 13, anim: 'bob',  dur: 2.6, delay: 0.0 },
       { src: 'assets/home/play/stars.png', top: 6,  left: 78, w: 15, anim: 'twinkle', dur: 1.8, delay: 0.2 },
     ],
-    helper: { icon: Gamepad2, color: '#FF9500', text: 'Play games, instruments and jam!' },
   },
   {
     id: 'learn',
@@ -55,7 +53,6 @@ const CARDS = [
       { src: 'assets/home/learn/staraccent.png',  top: 6,  left: 6,  w: 12, anim: 'twinkle', dur: 1.8, delay: 0.1 },
       { src: 'assets/home/learn/noteaccent1.png', top: 6,  left: 78, w: 14, anim: 'sway', dur: 2.8, delay: 0.3 },
     ],
-    helper: { icon: PlayCircle, color: '#9B6DE0', text: 'Watch videos, sing songs and go on adventures!' },
   },
   {
     id: 'create',
@@ -73,7 +70,6 @@ const CARDS = [
       { src: 'assets/home/create/stars accent.png',  top: 6, left: 78, w: 14, anim: 'twinkle', dur: 1.8, delay: 0.4 },
       { src: 'assets/home/create/heartbeat 1.png',   top: 75, left: 68, w: 22, anim: 'pulse', dur: 1.4, delay: 0.1 },
     ],
-    helper: { icon: Drum, color: '#3FA68B', text: 'Build beats, play instruments and record!' },
   },
 ];
 
@@ -123,9 +119,9 @@ function PrimaryCard({ card, index, navigate }) {
           background: card.bg,
           border: `5px solid ${card.border}`,
           boxShadow: `0 10px 0 0 ${card.shadow}, 0 13px 0 0 ${card.border}`,
-          aspectRatio: '4 / 5',
-          minHeight: 320,
-          padding: 'clamp(16px, 3vw, 28px)',
+          aspectRatio: '4 / 5.6',
+          minHeight: 460,
+          padding: 'clamp(14px, 2.4vw, 24px)',
         }}
       >
         {/* Subtle inner radial highlight */}
@@ -144,11 +140,11 @@ function PrimaryCard({ card, index, navigate }) {
           loading="eager"
           className="relative object-contain select-none z-10"
           style={{
-            width: 'min(82%, 280px)',
+            width: 'min(98%, 560px)',
             height: 'auto',
-            maxHeight: '62%',
-            marginBottom: 'clamp(8px, 2vw, 18px)',
-            filter: 'drop-shadow(0 8px 8px rgba(0,0,0,0.22))',
+            maxHeight: '78%',
+            marginBottom: 'clamp(6px, 1.4vw, 14px)',
+            filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.24))',
           }}
           animate={hovered ? { scale: 1.06, y: -6, rotate: -2 } : { y: [0, -6, 0], rotate: 0 }}
           transition={
@@ -162,7 +158,7 @@ function PrimaryCard({ card, index, navigate }) {
         <h2
           className="relative z-10 font-black font-display leading-none text-center"
           style={{
-            fontSize: 'clamp(32px, 6vw, 64px)',
+            fontSize: 'clamp(28px, 5.2vw, 56px)',
             color: card.titleColor,
             WebkitTextStroke: `clamp(2px, 0.4vw, 4px) ${card.titleStroke}`,
             paintOrder: 'stroke fill',
@@ -266,46 +262,6 @@ function HomePage() {
           <PrimaryCard key={card.id} card={card} index={idx} navigate={navigate} />
         ))}
       </div>
-
-      {/* Bottom helper pill: TAP A SECTION TO EXPLORE MORE → 3 section reminders */}
-      <motion.div
-        data-testid="home-helper-pill"
-        className="relative z-10 mt-5 mb-2 w-full max-w-5xl px-3 py-2 md:px-5 md:py-3 rounded-[28px] border-4 flex flex-col md:flex-row md:items-center gap-3 md:gap-5"
-        style={{
-          backgroundColor: '#FFF9EE',
-          borderColor: '#0A2540',
-          boxShadow: '0 6px 0 0 #0A2540',
-        }}
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.8, type: 'spring' }}
-      >
-        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-          <Star className="w-6 h-6 md:w-7 md:h-7 flex-shrink-0" style={{ color: '#FFCC00', fill: '#FFCC00' }} />
-          <span className="text-[11px] md:text-sm font-black uppercase tracking-wide leading-tight" style={{ color: '#0A2540' }}>
-            Tap a section to<br className="hidden md:block" /> explore more!
-          </span>
-          <span className="text-2xl md:text-3xl" style={{ color: '#0A2540' }} aria-hidden="true">→</span>
-        </div>
-        <div className="grid grid-cols-3 gap-2 md:gap-4 flex-1">
-          {CARDS.map((c) => {
-            const Icon = c.helper.icon;
-            return (
-              <div key={c.id} className="flex items-start gap-2 md:gap-3">
-                <div
-                  className="flex-shrink-0 w-9 h-9 md:w-11 md:h-11 rounded-full border-2 flex items-center justify-center"
-                  style={{ backgroundColor: c.helper.color, borderColor: '#0A2540' }}
-                >
-                  <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                </div>
-                <p className="text-[10px] md:text-[11px] font-bold leading-tight" style={{ color: '#0A2540' }}>
-                  {c.helper.text}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
     </div>
   );
 }
