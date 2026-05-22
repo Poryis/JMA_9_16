@@ -3,7 +3,7 @@ import SubMenuPage from '../components/SubMenuPage';
 const LEARN_TILES = [
   {
     id: 'lessons',
-    title: 'Lessons 1–8',
+    title: 'Lessons 1–7',
     tagline: 'Charlie\'s music class is in session!',
     path: '/lessons',
     bg: 'assets/backgrounds/chalkboard.png',
