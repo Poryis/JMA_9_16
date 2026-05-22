@@ -353,7 +353,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           animate={{ y: 0, opacity: 1 }}
         >
           <h1 className="text-3xl md:text-5xl font-black font-display leading-none" style={{ color: 'var(--jma-dark)' }}>
-            Rhythm Arcade
+            Who's Got the Rhythm?
           </h1>
           <p className="text-xs md:text-sm mt-1 opacity-70 font-bold" style={{ color: 'var(--jma-dark)' }}>
             Catch the notes as they fall — tap a song to play!
