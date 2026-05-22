@@ -39,10 +39,22 @@ function EarTrainerPage() {
   const level = LEVELS[difficulty];
   const timeoutRef = useRef(null);
 
+  const [showingReference, setShowingReference] = useState(false);
+
   // Cleanup
   useEffect(() => {
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
   }, []);
+
+  // Play the "Do" reference note so kids have a tonic to anchor against.
+  // No perfect pitch required — this is how real solfège training works.
+  const playReference = useCallback(() => {
+    initAudioContext();
+    setShowingReference(true);
+    playBellNote('C');
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setShowingReference(false), 900);
+  }, [initAudioContext, playBellNote]);
 
   // Pick random note and play it
   const playNewNote = useCallback(() => {
@@ -58,6 +70,7 @@ function EarTrainerPage() {
 
   // Start game - optional difficulty arg lets a tap on a level card start
   // immediately without waiting for the state update to flush.
+  // Plays "Do" (C) as a reference tonic first, then the mystery note ~1s later.
   const startGame = useCallback((diffOverride) => {
     initAudioContext();
     setGameState('playing');
@@ -66,6 +79,13 @@ function EarTrainerPage() {
     setRound(1);
     setResults({ correct: 0, wrong: 0 });
     const useDiff = typeof diffOverride === 'string' ? diffOverride : difficulty;
+
+    // 1) Play "Do" reference immediately so the kid hears the tonic
+    setShowingReference(true);
+    playBellNote('C');
+    // 2) Hide the reference indicator after it rings out
+    setTimeout(() => setShowingReference(false), 900);
+    // 3) Then play the mystery note ~1.2s later (after Do has decayed)
     setTimeout(() => {
       const notes = LEVELS[useDiff].notes;
       const note = notes[Math.floor(Math.random() * notes.length)];
@@ -74,7 +94,7 @@ function EarTrainerPage() {
       setIsCorrect(null);
       setShowAnswer(false);
       setTimeout(() => playBellNote(note), 300);
-    }, 500);
+    }, 1200);
   }, [initAudioContext, difficulty, playBellNote]);
 
   // Handle guess
@@ -162,9 +182,10 @@ function EarTrainerPage() {
           <Ear className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--jma-blue)' }} />
           <h2 className="text-xl font-bold mb-2 font-display">How to Play</h2>
           <p className="text-base" style={{ color: 'var(--jma-dark)' }}>
-            1. Listen to the mystery note<br />
-            2. Tap the bell you think it is<br />
-            3. Get it right for bonus points!
+            1. Hear <span className="font-black text-[var(--jma-red)]">Do (C)</span> as your reference<br />
+            2. Then listen to the mystery note<br />
+            3. Tap the bell you think it is<br />
+            4. Stuck? Tap <span className="font-black text-[var(--jma-red)]">Hear Do</span> anytime!
           </p>
         </motion.div>
 
@@ -241,10 +262,47 @@ function EarTrainerPage() {
           </p>
 
           {isCorrect === null && (
-            <motion.button className="chunky-btn bg-[var(--jma-purple)] text-white px-4 py-2 mt-3 flex items-center gap-2 mx-auto" onClick={replayNote} whileTap={{ scale: 0.95 }}>
-              <Volume2 className="w-5 h-5" /> Play Again
-            </motion.button>
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
+              <motion.button
+                data-testid="ear-replay-btn"
+                className="chunky-btn bg-[var(--jma-purple)] text-white px-4 py-2 flex items-center gap-2"
+                onClick={replayNote}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Volume2 className="w-5 h-5" /> Play Again
+              </motion.button>
+              <motion.button
+                data-testid="ear-hear-do-btn"
+                className="chunky-btn bg-[var(--jma-red)] text-white px-4 py-2 flex items-center gap-2"
+                onClick={playReference}
+                whileTap={{ scale: 0.95 }}
+                title="Hear the tonic (Do) for reference"
+              >
+                <Ear className="w-5 h-5" /> Hear Do
+              </motion.button>
+            </div>
           )}
+
+          {/* Reference badge that flashes while Do is ringing */}
+          <AnimatePresence>
+            {showingReference && (
+              <motion.div
+                data-testid="ear-reference-badge"
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border-2"
+                style={{
+                  backgroundColor: '#FF3B30',
+                  color: 'white',
+                  borderColor: 'var(--jma-dark)',
+                  boxShadow: '0 3px 0 0 var(--jma-dark)',
+                }}
+                initial={{ scale: 0, y: 8 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0, opacity: 0 }}
+              >
+                <Volume2 className="w-3.5 h-3.5" /> Reference: DO (C)
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Feedback */}
