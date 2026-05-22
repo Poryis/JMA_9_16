@@ -19,9 +19,9 @@ export default function LessonPlayerPage() {
   const { isUnlocked, isWatched, markWatched } = useLessonsProgress();
   const [completed, setCompleted] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [loaded, setLoaded] = useState(false);
   const iframeRef = useRef(null);
   const playerRef = useRef(null);
+  const loadedRef = useRef(false);
 
   // Lesson 1 is always unlocked; for others, require previous to be watched.
   const allowed = lesson && isUnlocked(lessonNum);
@@ -30,6 +30,9 @@ export default function LessonPlayerPage() {
     if (!allowed) return;
     if (!iframeRef.current) return;
 
+    loadedRef.current = false;
+    setLoadError(false);
+
     const player = new Player(iframeRef.current);
     playerRef.current = player;
 
@@ -37,29 +40,47 @@ export default function LessonPlayerPage() {
       markWatched(lessonNum);
       setCompleted(true);
     };
-    player.on('ended', onEnded);
+    const onPlay = () => {
+      // If playback ever starts, hide any stale error overlay
+      loadedRef.current = true;
+      setLoadError(false);
+    };
+    const onError = () => {
+      if (!loadedRef.current) setLoadError(true);
+    };
 
-    // Confirm the player actually loaded; otherwise show fallback.
+    player.on('ended', onEnded);
+    player.on('play', onPlay);
+    player.on('error', onError);
+
     let cancelled = false;
     player.ready()
-      .then(() => { if (!cancelled) setLoaded(true); })
-      .catch(() => { if (!cancelled) setLoadError(true); });
-    // Safety: if neither resolves within 8s, treat as a load error.
+      .then(() => {
+        if (cancelled) return;
+        loadedRef.current = true;
+      })
+      .catch(() => {
+        if (!cancelled && !loadedRef.current) setLoadError(true);
+      });
+
+    // Long safety net: if neither ready nor error fire within 20s AND the user hasn't
+    // started playback, show the fallback. Uses a ref so it sees live state.
     const timeoutId = setTimeout(() => {
-      if (!cancelled && !loaded) setLoadError(true);
-    }, 8000);
+      if (!cancelled && !loadedRef.current) setLoadError(true);
+    }, 20000);
 
     return () => {
       cancelled = true;
       clearTimeout(timeoutId);
       try {
         player.off('ended', onEnded);
+        player.off('play', onPlay);
+        player.off('error', onError);
         player.destroy();
       } catch {
         /* ignore */
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allowed, lessonNum, markWatched]);
 
   // Reflect existing watched state on mount
@@ -192,7 +213,7 @@ export default function LessonPlayerPage() {
               Check your internet connection and try again. If you're at school, your network might be blocking Vimeo.
             </p>
             <button
-              onClick={() => { setLoadError(false); setLoaded(false); window.location.reload(); }}
+              onClick={() => { setLoadError(false); loadedRef.current = false; window.location.reload(); }}
               className="mt-4 px-4 py-2 rounded-full font-black border-3"
               style={{
                 backgroundColor: '#FFCC00',
