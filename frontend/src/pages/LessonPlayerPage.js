@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Player from '@vimeo/player';
-import { CheckCircle2, ArrowRight, RotateCcw } from 'lucide-react';
+import { CheckCircle2, ArrowRight, RotateCcw, Maximize2 } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { LESSONS, getLesson } from '../data/lessons';
 import { useLessonsProgress } from '../hooks/useLessonsProgress';
@@ -83,10 +83,21 @@ export default function LessonPlayerPage() {
     };
   }, [allowed, lessonNum, markWatched]);
 
-  // Reflect existing watched state on mount
+  // Reflect existing watched state on mount AND reset when lesson changes
   useEffect(() => {
-    if (allowed && isWatched(lessonNum)) setCompleted(true);
+    setCompleted(allowed && isWatched(lessonNum));
   }, [allowed, isWatched, lessonNum]);
+
+  const handleFullscreen = () => {
+    if (!playerRef.current) return;
+    playerRef.current.requestFullscreen().catch(() => {
+      // Fallback: ask the iframe element itself to go fullscreen
+      const el = iframeRef.current;
+      if (!el) return;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      if (req) req.call(el);
+    });
+  };
 
   if (!lesson) {
     return (
@@ -193,6 +204,7 @@ export default function LessonPlayerPage() {
       >
         <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
           <iframe
+            key={lesson.vimeoId}
             ref={iframeRef}
             title={lesson.title}
             src={`https://player.vimeo.com/video/${lesson.vimeoId}?app_id=122963&title=0&byline=0&portrait=0&dnt=1`}
@@ -284,7 +296,7 @@ export default function LessonPlayerPage() {
       )}
 
       {/* Helper row */}
-      <div className="relative z-10 mt-4 flex items-center gap-3">
+      <div className="relative z-10 mt-4 flex flex-wrap items-center justify-center gap-3">
         <button
           data-testid="lesson-back-btn"
           onClick={() => navigate('/lessons')}
@@ -292,6 +304,19 @@ export default function LessonPlayerPage() {
           style={{ backgroundColor: 'white', color: 'var(--jma-dark)', borderColor: 'var(--jma-dark)' }}
         >
           ← All Lessons
+        </button>
+        <button
+          data-testid="lesson-fullscreen-btn"
+          onClick={handleFullscreen}
+          className="px-3 py-1.5 rounded-full font-black text-sm border-2 flex items-center gap-1.5"
+          style={{
+            backgroundColor: '#FFCC00',
+            color: 'var(--jma-dark)',
+            borderColor: 'var(--jma-dark)',
+            boxShadow: '0 3px 0 0 var(--jma-dark)',
+          }}
+        >
+          <Maximize2 className="w-4 h-4" /> Fullscreen
         </button>
         {!completed && (
           <span className="text-xs md:text-sm font-bold flex items-center gap-1.5" style={{ color: '#FFE9C4', textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}>
