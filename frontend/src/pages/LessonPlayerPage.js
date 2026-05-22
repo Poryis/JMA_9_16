@@ -1,8 +1,10 @@
-// Vimeo lesson player. Embeds the Vimeo iframe and listens for the `ended`
-// event via the official @vimeo/player SDK to mark the lesson watched.
-// When complete, the next lesson is auto-unlocked and a "Next Lesson" CTA appears.
+// Vimeo lesson player.
+// Approach: React owns the iframe lifecycle. We update the iframe `src` when the
+// lesson changes; the iframe naturally reloads. After each successful load
+// (`onLoad`) we (re-)initialize the @vimeo/player SDK so we can listen for the
+// `ended` event and trigger fullscreen.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Player from '@vimeo/player';
@@ -21,113 +23,68 @@ export default function LessonPlayerPage() {
   const [loadError, setLoadError] = useState(false);
   const iframeRef = useRef(null);
   const playerRef = useRef(null);
-  const loadedRef = useRef(false);
 
-  // Lesson 1 is always unlocked; for others, require previous to be watched.
   const allowed = lesson && isUnlocked(lessonNum);
 
-  // Freeze the iframe src to the FIRST loaded lesson. Subsequent lesson changes
-  // are handled via player.loadVideo() so React never reloads the iframe DOM.
-  const [initialSrc] = useState(() =>
-    lesson
-      ? `https://player.vimeo.com/video/${lesson.vimeoId}?app_id=122963&title=0&byline=0&portrait=0&dnt=1`
-      : ''
-  );
+  // Tear down the existing Vimeo Player (if any) safely.
+  const destroyPlayer = useCallback(() => {
+    const p = playerRef.current;
+    playerRef.current = null;
+    if (!p) return;
+    try { p.destroy(); } catch { /* ignore */ }
+  }, []);
 
-  // Effect A: Initialize the Vimeo Player ONCE per page mount.
-  // Effect B (below) handles switching videos via player.loadVideo().
-  useEffect(() => {
-    if (!allowed) return;
-    if (!iframeRef.current) return;
-    if (playerRef.current) return; // already initialized
-
-    let cancelled = false;
+  // Initialize the player against the current iframe. Called from onLoad.
+  const initPlayer = useCallback(() => {
+    const el = iframeRef.current;
+    if (!el || !el.isConnected) return;
+    destroyPlayer();
     let player;
-    try {
-      player = new Player(iframeRef.current);
-    } catch {
-      setLoadError(true);
-      return;
-    }
+    try { player = new Player(el); } catch { return; }
     playerRef.current = player;
 
     const onEnded = () => {
-      // Mark whichever lesson is currently loaded
-      try {
-        player.getVideoId().then((id) => {
-          const found = LESSONS.find((l) => String(l.vimeoId) === String(id));
-          if (found) markWatched(found.num);
-        }).catch(() => {});
-      } catch { /* ignore */ }
+      markWatched(lessonNum);
       setCompleted(true);
     };
-    const onPlay = () => {
-      loadedRef.current = true;
-      setLoadError(false);
-    };
-    const onError = () => {
-      if (!loadedRef.current) setLoadError(true);
-    };
-
-    player.on('ended', onEnded);
-    player.on('play', onPlay);
-    player.on('error', onError);
-
-    player.ready()
-      .then(() => { if (!cancelled) loadedRef.current = true; })
-      .catch(() => { if (!cancelled && !loadedRef.current) setLoadError(true); });
-
-    const timeoutId = setTimeout(() => {
-      if (!cancelled && !loadedRef.current) setLoadError(true);
-    }, 20000);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timeoutId);
-      try { player.off('ended', onEnded); } catch { /* ignore */ }
-      try { player.off('play', onPlay); } catch { /* ignore */ }
-      try { player.off('error', onError); } catch { /* ignore */ }
-      try { player.destroy(); } catch { /* ignore */ }
-      playerRef.current = null;
-    };
-  }, [allowed, markWatched]);
-
-  // Effect B: When the lesson changes, swap the video on the existing player
-  // (instead of remounting the iframe, which races with the SDK).
-  useEffect(() => {
-    if (!allowed || !lesson) return;
-    const player = playerRef.current;
-    if (!player) return;
-    loadedRef.current = false;
-    setLoadError(false);
+    try { player.on('ended', onEnded); } catch { /* ignore */ }
+    // Promise the SDK exposes; we use it just to surface real errors.
     try {
-      player.loadVideo(Number(lesson.vimeoId)).catch(() => {
-        setLoadError(true);
-      });
-    } catch {
-      setLoadError(true);
-    }
-  }, [allowed, lesson]);
+      player.ready().catch(() => setLoadError(true));
+    } catch { /* ignore */ }
+  }, [destroyPlayer, lessonNum, markWatched]);
 
-  // Reflect existing watched state on mount AND reset when lesson changes
+  // Reflect persisted watched state when the lesson changes.
   useEffect(() => {
     setCompleted(allowed && isWatched(lessonNum));
+    setLoadError(false);
   }, [allowed, isWatched, lessonNum]);
 
+  // Cleanup on unmount.
+  useEffect(() => {
+    return destroyPlayer;
+  }, [destroyPlayer]);
+
+  // Fullscreen handler — uses the SDK first, then falls back to the iframe's
+  // native fullscreen API. All promise rejections are swallowed.
   const handleFullscreen = () => {
+    const el = iframeRef.current;
+
     const tryNative = () => {
-      const el = iframeRef.current;
-      if (!el) return;
+      if (!el || !el.isConnected) return;
       const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-      if (req) {
-        try { req.call(el); } catch { /* ignore */ }
-      }
+      if (!req) return;
+      try {
+        const r = req.call(el);
+        if (r && typeof r.catch === 'function') r.catch(() => {});
+      } catch { /* ignore */ }
     };
+
     const player = playerRef.current;
     if (!player) { tryNative(); return; }
     try {
-      const result = player.requestFullscreen();
-      if (result && typeof result.catch === 'function') result.catch(tryNative);
+      const r = player.requestFullscreen();
+      if (r && typeof r.catch === 'function') r.catch(tryNative);
     } catch {
       tryNative();
     }
@@ -187,6 +144,7 @@ export default function LessonPlayerPage() {
   }
 
   const nextLesson = LESSONS.find((l) => l.num === lessonNum + 1);
+  const iframeSrc = `https://player.vimeo.com/video/${lesson.vimeoId}?app_id=122963&title=0&byline=0&portrait=0&dnt=1`;
 
   return (
     <div
@@ -207,10 +165,7 @@ export default function LessonPlayerPage() {
       >
         <h1
           className="text-3xl md:text-5xl font-black font-display"
-          style={{
-            color: 'white',
-            textShadow: '3px 3px 0 var(--jma-dark), 5px 5px 0 rgba(0,0,0,0.5)',
-          }}
+          style={{ color: 'white', textShadow: '3px 3px 0 var(--jma-dark), 5px 5px 0 rgba(0,0,0,0.5)' }}
         >
           {lesson.title}
         </h1>
@@ -222,8 +177,7 @@ export default function LessonPlayerPage() {
         </p>
       </motion.div>
 
-      {/* Vimeo player — uses the standard 56.25% padding-bottom responsive embed
-          pattern that Vimeo's own embed code generates. */}
+      {/* Vimeo player wrapper using the 56.25% padding-bottom responsive pattern. */}
       <motion.div
         data-testid="lesson-player-frame"
         className="relative z-10 w-full max-w-4xl rounded-2xl border-4 overflow-hidden"
@@ -238,17 +192,17 @@ export default function LessonPlayerPage() {
       >
         <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
           <iframe
+            key={lesson.vimeoId}
             ref={iframeRef}
             title={lesson.title}
-            src={initialSrc}
+            src={iframeSrc}
             allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
-            onLoad={() => { loadedRef.current = true; setLoadError(false); }}
+            onLoad={() => { setLoadError(false); initPlayer(); }}
             style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
           />
 
-          {/* Friendly fallback if the Vimeo player can't load */}
           {loadError && (
             <div
               data-testid="lesson-load-error"
@@ -258,10 +212,10 @@ export default function LessonPlayerPage() {
               <div className="text-5xl mb-2">📡</div>
               <h3 className="text-xl md:text-2xl font-black font-display mb-1">Hmm, we can't reach this video</h3>
               <p className="text-sm md:text-base font-bold opacity-90 max-w-md">
-                Check your internet connection and try again. If you're at school, your network might be blocking Vimeo.
+                Check your internet connection and try again.
               </p>
               <button
-                onClick={() => { setLoadError(false); loadedRef.current = false; window.location.reload(); }}
+                onClick={() => { setLoadError(false); window.location.reload(); }}
                 className="mt-4 px-4 py-2 rounded-full font-black border-3"
                 style={{
                   backgroundColor: '#FFCC00',
@@ -278,7 +232,6 @@ export default function LessonPlayerPage() {
         </div>
       </motion.div>
 
-      {/* Watched banner + CTAs */}
       {completed && (
         <motion.div
           data-testid="lesson-completed-banner"
@@ -296,10 +249,7 @@ export default function LessonPlayerPage() {
           {nextLesson ? (
             <button
               data-testid="lesson-next-btn"
-              onClick={() => {
-                setCompleted(false);
-                navigate(`/lessons/${nextLesson.num}`);
-              }}
+              onClick={() => navigate(`/lessons/${nextLesson.num}`)}
               className="px-4 py-2 rounded-full font-black border-3 flex items-center gap-1.5"
               style={{
                 backgroundColor: '#FFCC00',
@@ -328,7 +278,6 @@ export default function LessonPlayerPage() {
         </motion.div>
       )}
 
-      {/* Helper row */}
       <div className="relative z-10 mt-4 flex flex-wrap items-center justify-center gap-3">
         <button
           data-testid="lesson-back-btn"
@@ -352,7 +301,10 @@ export default function LessonPlayerPage() {
           <Maximize2 className="w-4 h-4" /> Fullscreen
         </button>
         {!completed && (
-          <span className="text-xs md:text-sm font-bold flex items-center gap-1.5" style={{ color: '#FFE9C4', textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}>
+          <span
+            className="text-xs md:text-sm font-bold flex items-center gap-1.5"
+            style={{ color: '#FFE9C4', textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}
+          >
             <RotateCcw className="w-3.5 h-3.5" /> Finish the video to unlock the next lesson
           </span>
         )}
