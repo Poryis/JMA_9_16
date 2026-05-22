@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Clock, RotateCcw, Sparkles } from 'lucide-react';
+import { Trophy, Clock, RotateCcw, Sparkles, ChevronUp } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
@@ -15,13 +15,15 @@ import { BELLS } from '../components/JellyBells';
 import useAudio from '../hooks/useAudio';
 import { earnSticker } from '../hooks/useStickers';
 
-// 8 unique bells available. Drop the duplicate "Do" (High C) for cleaner matching.
-const UNIQUE_BELLS = BELLS.filter(b => b.note !== 'High C');
+// All 8 bells (including High C). Note Match uses subsets per difficulty.
+// Hard mode = full 8 bells (4 + 4 grid for nice symmetry).
+const ALL_BELLS = BELLS;
+const NON_HIGH_BELLS = BELLS.filter(b => b.note !== 'High C');
 
 const LEVELS = {
-  easy:   { name: 'Easy',   pairs: 4, cols: 4, description: '4 matching pairs', sticker: 'match_easy' },
-  medium: { name: 'Medium', pairs: 6, cols: 4, description: '6 matching pairs', sticker: 'match_medium' },
-  hard:   { name: 'Hard',   pairs: 7, cols: 4, description: 'All 7 bells, double trouble', sticker: 'match_hard' },
+  easy:   { name: 'Easy',   pairs: 4, cols: 4, description: '4 matching pairs',        sticker: 'match_easy',   bellSet: 'low' },
+  medium: { name: 'Medium', pairs: 6, cols: 4, description: '6 matching pairs',        sticker: 'match_medium', bellSet: 'low' },
+  hard:   { name: 'Hard',   pairs: 8, cols: 4, description: 'All 8 bells (with Hi Do)', sticker: 'match_hard',   bellSet: 'all' },
 };
 
 const BEST_TIME_KEY = 'jma_note_match_best_times_v1';
@@ -41,8 +43,9 @@ function shuffle(arr) {
   return a;
 }
 
-function buildDeck(pairs) {
-  const picks = shuffle(UNIQUE_BELLS).slice(0, pairs);
+function buildDeck(pairs, bellSet) {
+  const pool = bellSet === 'all' ? ALL_BELLS : NON_HIGH_BELLS;
+  const picks = shuffle(pool).slice(0, pairs);
   const deck = [];
   picks.forEach((bell, pairIdx) => {
     deck.push({ id: `${pairIdx}-a`, pairId: pairIdx, bell });
@@ -90,7 +93,7 @@ export default function NoteMatchPage() {
   const startGame = useCallback((diffOverride) => {
     initAudioContext();
     const diff = typeof diffOverride === 'string' ? diffOverride : difficulty;
-    const newDeck = buildDeck(LEVELS[diff].pairs);
+    const newDeck = buildDeck(LEVELS[diff].pairs, LEVELS[diff].bellSet);
     setDifficulty(diff);
     setDeck(newDeck);
     setRevealed(new Set());
@@ -187,7 +190,7 @@ export default function NoteMatchPage() {
       <div
         className="min-h-screen flex flex-col items-center justify-center p-4 relative"
         data-testid="note-match-menu"
-        style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+        style={{ backgroundImage: 'url(assets/backgrounds/river.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader showHomeButton={true} />
         <FullscreenButton />
@@ -258,7 +261,7 @@ export default function NoteMatchPage() {
     <div
       className="min-h-screen flex flex-col relative"
       data-testid="note-match-playing"
-      style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={{ backgroundImage: 'url(assets/backgrounds/river.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <GameHeader title={`Note Match · ${level.name}`} showHomeButton={true} />
       <RoomCharacters room="note-match" />
@@ -353,12 +356,20 @@ export default function NoteMatchPage() {
                       className="w-3/4 h-3/4 object-contain pointer-events-none"
                       style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.18))' }}
                     />
-                    <span
-                      className="text-sm md:text-base font-black font-display leading-none"
-                      style={{ color: card.bell.color, textShadow: '1px 1px 0 rgba(0,0,0,0.3)' }}
-                    >
-                      {card.bell.solfege}
-                    </span>
+                    <div className="flex items-center gap-0.5 leading-none">
+                      <span
+                        className="text-sm md:text-base font-black font-display"
+                        style={{ color: card.bell.color, textShadow: '1px 1px 0 rgba(0,0,0,0.3)' }}
+                      >
+                        {card.bell.solfege}
+                      </span>
+                      {card.bell.note === 'High C' && (
+                        <ChevronUp
+                          className="w-3.5 h-3.5 md:w-4 md:h-4 -ml-0.5"
+                          style={{ color: card.bell.color, strokeWidth: 4 }}
+                        />
+                      )}
+                    </div>
                   </div>
                 )}
 
