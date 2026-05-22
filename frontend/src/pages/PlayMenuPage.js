@@ -11,8 +11,7 @@ const PLAY_TILES = [
     accent: '#C0392B',
     sign: 'GAME',
     character: 'assets/characters/jazzy-marching.png',
-    charWidthPct: 40,
-    charHeightPct: 100,
+    charWidthPct: 28,
   },
   {
     id: 'stew-kazoo',
