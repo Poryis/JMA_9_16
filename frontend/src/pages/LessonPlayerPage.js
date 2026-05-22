@@ -177,56 +177,60 @@ export default function LessonPlayerPage() {
         </p>
       </motion.div>
 
-      {/* Vimeo player */}
+      {/* Vimeo player — uses the standard 56.25% padding-bottom responsive embed
+          pattern that Vimeo's own embed code generates. */}
       <motion.div
         data-testid="lesson-player-frame"
         className="relative z-10 w-full max-w-4xl rounded-2xl border-4 overflow-hidden"
         style={{
           borderColor: 'var(--jma-dark)',
           boxShadow: '0 10px 0 0 var(--jma-dark)',
-          aspectRatio: '16 / 9',
           backgroundColor: '#000',
         }}
         initial={{ scale: 0.96, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <iframe
-          ref={iframeRef}
-          title={lesson.title}
-          src={`https://player.vimeo.com/video/${lesson.vimeoId}?title=0&byline=0&portrait=0&dnt=1`}
-          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-          allowFullScreen
-          style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
-        />
+        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+          <iframe
+            ref={iframeRef}
+            title={lesson.title}
+            src={`https://player.vimeo.com/video/${lesson.vimeoId}?app_id=122963&title=0&byline=0&portrait=0&dnt=1`}
+            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+            onLoad={() => { loadedRef.current = true; setLoadError(false); }}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+          />
 
-        {/* Friendly fallback if the Vimeo player can't load (offline / network blocked) */}
-        {loadError && (
-          <div
-            data-testid="lesson-load-error"
-            className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
-            style={{ backgroundColor: 'rgba(10,37,64,0.96)', color: 'white' }}
-          >
-            <div className="text-5xl mb-2">📡</div>
-            <h3 className="text-xl md:text-2xl font-black font-display mb-1">Hmm, we can't reach this video</h3>
-            <p className="text-sm md:text-base font-bold opacity-90 max-w-md">
-              Check your internet connection and try again. If you're at school, your network might be blocking Vimeo.
-            </p>
-            <button
-              onClick={() => { setLoadError(false); loadedRef.current = false; window.location.reload(); }}
-              className="mt-4 px-4 py-2 rounded-full font-black border-3"
-              style={{
-                backgroundColor: '#FFCC00',
-                color: 'var(--jma-dark)',
-                borderColor: 'white',
-                boxShadow: '0 4px 0 0 rgba(0,0,0,0.4)',
-              }}
-              data-testid="lesson-retry-btn"
+          {/* Friendly fallback if the Vimeo player can't load */}
+          {loadError && (
+            <div
+              data-testid="lesson-load-error"
+              className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
+              style={{ backgroundColor: 'rgba(10,37,64,0.96)', color: 'white' }}
             >
-              Try Again
-            </button>
-          </div>
-        )}
+              <div className="text-5xl mb-2">📡</div>
+              <h3 className="text-xl md:text-2xl font-black font-display mb-1">Hmm, we can't reach this video</h3>
+              <p className="text-sm md:text-base font-bold opacity-90 max-w-md">
+                Check your internet connection and try again. If you're at school, your network might be blocking Vimeo.
+              </p>
+              <button
+                onClick={() => { setLoadError(false); loadedRef.current = false; window.location.reload(); }}
+                className="mt-4 px-4 py-2 rounded-full font-black border-3"
+                style={{
+                  backgroundColor: '#FFCC00',
+                  color: 'var(--jma-dark)',
+                  borderColor: 'white',
+                  boxShadow: '0 4px 0 0 rgba(0,0,0,0.4)',
+                }}
+                data-testid="lesson-retry-btn"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+        </div>
       </motion.div>
 
       {/* Watched banner + CTAs */}
