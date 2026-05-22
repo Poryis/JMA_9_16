@@ -88,6 +88,9 @@ export const STICKERS = [
   { id: 'lesson_graduate', name: 'JMA Graduate!', category: 'lessons', icon: 'assets/characters/charlie-grad.png',  color: '#FFD700', hint: 'Finish every lesson' },
 
   // ---- Achievements (milestones across modes) ----
+  { id: 'match_easy',   name: 'Bell Detective',  category: 'achievements', icon: 'assets/bells/C 1.png',           color: '#FFCC00', hint: 'Clear Note Match on Easy' },
+  { id: 'match_medium', name: 'Bell Maestro',    category: 'achievements', icon: 'assets/bells/G 1.png',           color: '#34A853', hint: 'Clear Note Match on Medium' },
+  { id: 'match_hard',   name: 'Bell Genius',     category: 'achievements', icon: 'assets/bells/A 1.png',           color: '#AF52DE', hint: 'Clear Note Match on Hard' },
   { id: 'ach_first_note',    name: 'First Note!',        category: 'achievements', icon: 'assets/characters/finn-danger.png',     color: '#FFCC00', hint: 'Play your very first note' },
   { id: 'ach_one_kid_band',  name: 'One-Kid Band',       category: 'achievements', icon: 'assets/characters/chunk.png',           color: '#9B59B6', hint: 'Play all 4 instruments in Jam Hall' },
   { id: 'ach_streak_10',     name: 'Streak of 10!',      category: 'achievements', icon: 'assets/characters/jazzy.png',            color: '#FF9500', hint: 'Hit 10 notes in a row' },

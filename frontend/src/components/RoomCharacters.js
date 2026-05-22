@@ -108,6 +108,12 @@ const ROOM_CAST = {
     { id: 'jazzy',   pos: { l: 93, t: 22, w: 6.5, anim: 'sway' }, line: 'Make it funky!' },
     { id: 'charlie', pos: { l: 95, t: 82, w: 6.5, anim: 'sway' }, line: 'Loop it!' },
   ],
+  // Note Match — memory pairs game
+  'note-match': [
+    { id: 'doctor',  pos: { l: 5,  t: 22, w: 7,   anim: 'peek' }, line: 'Watch closely!' },
+    { id: 'charlie', pos: { l: 93, t: 22, w: 6.5, anim: 'sway' }, line: 'Find the twins!' },
+    { id: 'finn',    pos: { l: 5,  t: 80, w: 7,   anim: 'bob' },  line: 'Trust your memory!' },
+  ],
   // Fun Facts Clubhouse handled by its own page
 };
 

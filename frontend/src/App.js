@@ -15,6 +15,7 @@ import EarTrainerPage from "./pages/EarTrainerPage";
 import LoopStudioPage from "./pages/LoopStudioPage";
 import StickerBookPage from "./pages/StickerBookPage";
 import FunFactsPage from "./pages/FunFactsPage";
+import NoteMatchPage from "./pages/NoteMatchPage";
 import StickerToast from "./components/StickerToast";
 import RankUpCelebration from "./components/RankUpCelebration";
 
@@ -52,6 +53,7 @@ function App() {
             <Route path="/ear-trainer" element={<EarTrainerPage />} />
             <Route path="/loop-studio" element={<LoopStudioPage />} />
             <Route path="/fun-facts" element={<FunFactsPage />} />
+            <Route path="/note-match" element={<NoteMatchPage />} />
             <Route path="/sticker-book" element={<StickerBookPage />} />
           </Routes>
         </AnimatePresence>
