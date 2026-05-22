@@ -381,14 +381,11 @@ function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph }) {
   const [open, setOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const sourceWiredRef = useRef(false);
-  // Jam Along filter: only show tracks that are non-drum AND whose audio is
-  // in a C-diatonic-friendly key (originalKey starts with C or A minor).
-  // Other JMA Originals (F#/A keyed) live in the Rhythm Arcade only until
-  // their audio is re-rendered in C.
+  // Jam Along: all JMA Originals that aren't drum-mode variants for the rhythm
+  // game. Includes the new pure drum loops (`jamOnly`). All audio is now in
+  // C-diatonic-friendly keys (C major / A minor) so it works with our scale.
   const jamSongs = SONG_LIBRARY.filter(s =>
-    s.category === 'JMA Originals' &&
-    !s.instrumentMode &&
-    (s.originalKey === 'C major' || s.originalKey === 'A minor')
+    s.category === 'JMA Originals' && !s.instrumentMode
   );
 
   // Pipe the <audio> element through the Web Audio master gain so the backing

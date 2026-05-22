@@ -102,9 +102,11 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   const songCategories = useMemo(() => getSongsByCategory(), []);
   const categories = ['All', ...Object.keys(songCategories)];
 
+  // Rhythm Arcade hides jamOnly tracks (drum loops with no melody).
+  const baseSongs = SONG_LIBRARY.filter(s => !s.jamOnly);
   const filteredSongs = categoryFilter === 'All'
-    ? SONG_LIBRARY
-    : SONG_LIBRARY.filter(s => s.category === categoryFilter);
+    ? baseSongs
+    : baseSongs.filter(s => s.category === categoryFilter);
 
   const isDrumMode = selectedSong.instrumentMode === 'drums';
 

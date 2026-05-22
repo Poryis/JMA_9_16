@@ -71,8 +71,8 @@ export const SONG_LIBRARY = [
     audioUrl: 'assets/audio/songs/brand_new_friend.mp3',
     bpm: 136,
     beatsPerNote: 1, // quarter notes - lots of rests create the rhythmic variance
-    mode: 'G-mixolydian',
-    originalKey: 'F# major',
+    mode: 'C-mixolydian',
+    originalKey: 'C major',
     shift: 1,
     // Chord prog I-V-vi-IV in G: G | D | Em | C (4-bar cycle × 7)
     // Heavy rhythmic variance - syncopation, rests, arpeggio-chord-tones-only melody.
@@ -100,8 +100,8 @@ export const SONG_LIBRARY = [
     audioUrl: 'assets/audio/songs/faster_as_we_go.mp3',
     bpm: 103,
     beatsPerNote: 1, // quarter notes
-    mode: 'G-mixolydian',
-    originalKey: 'F# minor',
+    mode: 'A-minor',
+    originalKey: 'A minor',
     shift: 1,
     // Chord prog: G - Em - C - D (i-relative-IV-V folk feel in G minor key).
     // 5 cycles × 4 bars.
@@ -125,9 +125,9 @@ export const SONG_LIBRARY = [
     audioUrl: 'assets/audio/songs/goody_bag.mp3',
     bpm: 123,
     beatsPerNote: 1, // quarter notes
-    mode: 'G-mixolydian',
-    originalKey: 'A major',
-    shift: -2,
+    mode: 'A-minor',
+    originalKey: 'A minor',
+    shift: 0,
     // Chord prog: G - C - G - D (boogie feel). 6 cycles × 4 bars.
     notes: [
       // C1 warm open (8)
@@ -200,6 +200,28 @@ export const SONG_LIBRARY = [
       'kick',null,'snare',null,        null,'hihat',null,null,
       null,null,'snare',null,          'crash',null,null,null,
     ]
+  },
+  // Jam-along drum loops (no notes/melody — just a 1-min groove for kids to
+  // play instruments over). Marked `jamOnly` so they never appear in Rhythm Arcade.
+  {
+    id: 'jam_drums_pocket',
+    name: 'Pocket Groove',
+    category: 'JMA Originals',
+    audioUrl: 'assets/audio/songs/jam_drums_pocket.mp3',
+    bpm: 100,
+    jamOnly: true,
+    originalKey: 'C major',
+    notes: [],
+  },
+  {
+    id: 'jam_drums_boogie',
+    name: 'Boogie Stomp',
+    category: 'JMA Originals',
+    audioUrl: 'assets/audio/songs/jam_drums_boogie.mp3',
+    bpm: 120,
+    jamOnly: true,
+    originalKey: 'C major',
+    notes: [],
   },
   // Classic & Fun
   {
