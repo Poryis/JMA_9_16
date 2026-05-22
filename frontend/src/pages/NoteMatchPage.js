@@ -190,7 +190,7 @@ export default function NoteMatchPage() {
       <div
         className="min-h-screen flex flex-col items-center justify-center p-4 relative"
         data-testid="note-match-menu"
-        style={{ backgroundImage: 'url(assets/backgrounds/river.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+        style={{ backgroundImage: 'url(assets/backgrounds/boat.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <GameHeader showHomeButton={true} />
         <FullscreenButton />
@@ -261,7 +261,7 @@ export default function NoteMatchPage() {
     <div
       className="min-h-screen flex flex-col relative"
       data-testid="note-match-playing"
-      style={{ backgroundImage: 'url(assets/backgrounds/river.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      style={{ backgroundImage: 'url(assets/backgrounds/boat.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
       <GameHeader title={`Note Match · ${level.name}`} showHomeButton={true} />
       <RoomCharacters room="note-match" />
