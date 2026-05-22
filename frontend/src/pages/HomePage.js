@@ -232,7 +232,7 @@ function HomePage() {
         />
 
         <motion.img
-          src="assets/characters/charlie-drum-major.png"
+          src="assets/characters/charlie.png"
           alt="Charlie"
           data-testid="home-charlie"
           className="object-contain drop-shadow-lg cursor-pointer"
