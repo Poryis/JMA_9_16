@@ -381,7 +381,15 @@ function JamAlongControls({ jamTrackId, onPick, audioRef, getAudioGraph }) {
   const [open, setOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const sourceWiredRef = useRef(false);
-  const jamSongs = SONG_LIBRARY.filter(s => s.category === 'JMA Originals');
+  // Jam Along filter: only show tracks that are non-drum AND whose audio is
+  // in a C-diatonic-friendly key (originalKey starts with C or A minor).
+  // Other JMA Originals (F#/A keyed) live in the Rhythm Arcade only until
+  // their audio is re-rendered in C.
+  const jamSongs = SONG_LIBRARY.filter(s =>
+    s.category === 'JMA Originals' &&
+    !s.instrumentMode &&
+    (s.originalKey === 'C major' || s.originalKey === 'A minor')
+  );
 
   // Pipe the <audio> element through the Web Audio master gain so the backing
   // track is captured by the MP3 recorder. Once wired (first time), the audio

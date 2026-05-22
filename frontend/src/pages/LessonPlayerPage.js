@@ -47,8 +47,29 @@ export default function LessonPlayerPage() {
       markWatched(lessonNum);
       setCompleted(true);
     };
+    // Trigger early-unlock when ≤ 30s remain so kids don't have to sit through
+    // end credits. We capture duration once, then watch currentTime.
+    let unlockedEarly = false;
+    let trackedDuration = 0;
+    const onLoaded = ({ duration } = {}) => {
+      if (typeof duration === 'number' && duration > 0) trackedDuration = duration;
+    };
+    const onTimeUpdate = ({ seconds } = {}) => {
+      if (unlockedEarly) return;
+      if (!trackedDuration || trackedDuration <= 30) return;
+      if (seconds >= trackedDuration - 30) {
+        unlockedEarly = true;
+        markWatched(lessonNum);
+        setCompleted(true);
+      }
+    };
+
     try { player.on('ended', onEnded); } catch { /* ignore */ }
-    // Promise the SDK exposes; we use it just to surface real errors.
+    try { player.on('loaded', onLoaded); } catch { /* ignore */ }
+    try { player.on('timeupdate', onTimeUpdate); } catch { /* ignore */ }
+    try {
+      player.getDuration().then((d) => { if (typeof d === 'number' && d > 0) trackedDuration = d; }).catch(() => {});
+    } catch { /* ignore */ }
     try {
       player.ready().catch(() => setLoadError(true));
     } catch { /* ignore */ }

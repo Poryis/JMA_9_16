@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { X, Sparkles, Search } from 'lucide-react';
+import { X, Sparkles, Search, RotateCcw } from 'lucide-react';
 import { getRandomFact } from '../data/musicFacts';
 import { earnSticker, noteFactSeen } from '../hooks/useStickers';
 import { GameHeader } from '../components/GameUI';
@@ -130,6 +130,14 @@ function FunFactsPage() {
     }
   }, [allFound, allFoundCelebrated, totalFound]);
 
+  // Reset the discovery game so kids can play again.
+  const handleReset = useCallback(() => {
+    try { localStorage.removeItem(FOUND_KEY); } catch { /* ignore */ }
+    setFound(new Set());
+    setAllFoundCelebrated(false);
+    setActiveFact(null);
+  }, []);
+
   return (
     <div
       className="h-[100dvh] md:h-auto md:min-h-screen flex flex-col overflow-hidden md:overflow-visible"
@@ -164,6 +172,21 @@ function FunFactsPage() {
           >
             {allFound ? '★ ALL FOUND! ★' : `${totalFound} / ${totalChars}`}
           </div>
+          {allFound && (
+            <button
+              data-testid="funfacts-reset-btn"
+              onClick={handleReset}
+              className="px-3 py-1 rounded-full text-xs md:text-sm font-black border-2 flex items-center gap-1.5"
+              style={{
+                backgroundColor: '#FFCC00',
+                color: 'var(--jma-dark)',
+                borderColor: 'var(--jma-dark)',
+                boxShadow: '0 3px 0 0 var(--jma-dark)',
+              }}
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Play Again
+            </button>
+          )}
         </motion.div>
 
         {/* The clubhouse scene wrapper.

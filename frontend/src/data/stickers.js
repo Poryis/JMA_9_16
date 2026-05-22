@@ -9,6 +9,7 @@ export const STICKER_CATEGORIES = [
   { id: 'instruments', label: 'Instruments' },
   { id: 'bells', label: 'Jellybells' },
   { id: 'songs', label: 'Song Champion' },
+  { id: 'lessons', label: 'Lessons' },
   { id: 'achievements', label: 'Achievements' },
 ];
 
@@ -75,6 +76,16 @@ export const STICKERS = [
   { id: 'song_amazing_grace',  name: 'Amazing Grace',     category: 'songs', icon: 'assets/bells/F 1.png',   color: '#4CD964', hint: 'Complete Amazing Grace' },
   { id: 'song_london_bridge',  name: 'London Bridge',     category: 'songs', icon: 'assets/bells/G 1.png',   color: '#4285F4', hint: 'Complete London Bridge' },
   { id: 'song_itsy_bitsy',     name: 'Itsy Bitsy Spider', category: 'songs', icon: 'assets/bells/D 1.png',   color: '#AF52DE', hint: 'Complete Itsy Bitsy Spider' },
+
+  // ---- Lessons (earned by completing each video lesson in Learn) ----
+  { id: 'lesson_1', name: 'Lesson 1 Complete', category: 'lessons', icon: 'assets/characters/charlie-polliwog.png', color: '#FFCC00', hint: 'Finish Lesson 1' },
+  { id: 'lesson_2', name: 'Lesson 2 Complete', category: 'lessons', icon: 'assets/characters/charlie.png',          color: '#FF9500', hint: 'Finish Lesson 2' },
+  { id: 'lesson_3', name: 'Lesson 3 Complete', category: 'lessons', icon: 'assets/characters/charlie-rundmc.png',   color: '#FF3B30', hint: 'Finish Lesson 3' },
+  { id: 'lesson_4', name: 'Lesson 4 Complete', category: 'lessons', icon: 'assets/characters/charlie-disco.png',    color: '#AF52DE', hint: 'Finish Lesson 4' },
+  { id: 'lesson_5', name: 'Lesson 5 Complete', category: 'lessons', icon: 'assets/characters/charlie-surf.png',     color: '#4285F4', hint: 'Finish Lesson 5' },
+  { id: 'lesson_6', name: 'Lesson 6 Complete', category: 'lessons', icon: 'assets/characters/charlie-zoot.png',     color: '#34A853', hint: 'Finish Lesson 6' },
+  { id: 'lesson_7', name: 'Lesson 7 Complete', category: 'lessons', icon: 'assets/characters/charlie-steampunk.png',color: '#8B4513', hint: 'Finish Lesson 7' },
+  { id: 'lesson_graduate', name: 'JMA Graduate!', category: 'lessons', icon: 'assets/characters/charlie-grad.png',  color: '#FFD700', hint: 'Finish every lesson' },
 
   // ---- Achievements (milestones across modes) ----
   { id: 'ach_first_note',    name: 'First Note!',        category: 'achievements', icon: 'assets/characters/finn-danger.png',     color: '#FFCC00', hint: 'Play your very first note' },

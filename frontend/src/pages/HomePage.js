@@ -63,7 +63,7 @@ const CARDS = [
     shadow: '#9B6DE0',
     titleColor: '#0A2540',
     titleStroke: '#FFFFFF',
-    iconShift: { x: 3, y: 3, rot: 2 },
+    iconShift: { x: 3, y: -10, rot: 2 },
     blobs: [
       { color: '#7B4FE0', top: -8,  left: 60,  size: 55, opacity: 0.45 },
       { color: '#E6D5FF', top: 35,  left: -15, size: 60, opacity: 0.6 },

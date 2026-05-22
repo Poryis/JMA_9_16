@@ -2,6 +2,8 @@
 // Lesson N is "unlocked" when lesson N-1 is in the watched set (lesson 1 is always unlocked).
 
 import { useCallback, useEffect, useState } from 'react';
+import { earnSticker } from './useStickers';
+import { LESSONS } from '../data/lessons';
 
 const KEY = 'jma_lessons_watched_v1';
 
@@ -41,6 +43,11 @@ export function useLessonsProgress() {
       if (prev.includes(num)) return prev;
       const next = [...prev, num].sort((a, b) => a - b);
       saveWatched(next);
+      // Award the per-lesson sticker + the JMA Graduate sticker if all done.
+      try { earnSticker(`lesson_${num}`); } catch { /* ignore */ }
+      if (next.length >= LESSONS.length) {
+        try { earnSticker('lesson_graduate'); } catch { /* ignore */ }
+      }
       return next;
     });
   }, []);
