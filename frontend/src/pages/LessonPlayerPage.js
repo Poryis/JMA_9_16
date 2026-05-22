@@ -18,6 +18,8 @@ export default function LessonPlayerPage() {
   const lessonNum = Number(num);
   const { isUnlocked, isWatched, markWatched } = useLessonsProgress();
   const [completed, setCompleted] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const iframeRef = useRef(null);
   const playerRef = useRef(null);
 
@@ -37,7 +39,19 @@ export default function LessonPlayerPage() {
     };
     player.on('ended', onEnded);
 
+    // Confirm the player actually loaded; otherwise show fallback.
+    let cancelled = false;
+    player.ready()
+      .then(() => { if (!cancelled) setLoaded(true); })
+      .catch(() => { if (!cancelled) setLoadError(true); });
+    // Safety: if neither resolves within 8s, treat as a load error.
+    const timeoutId = setTimeout(() => {
+      if (!cancelled && !loaded) setLoadError(true);
+    }, 8000);
+
     return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
       try {
         player.off('ended', onEnded);
         player.destroy();
@@ -45,6 +59,7 @@ export default function LessonPlayerPage() {
         /* ignore */
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allowed, lessonNum, markWatched]);
 
   // Reflect existing watched state on mount
@@ -163,6 +178,34 @@ export default function LessonPlayerPage() {
           allowFullScreen
           style={{ width: '100%', height: '100%', border: 0, display: 'block' }}
         />
+
+        {/* Friendly fallback if the Vimeo player can't load (offline / network blocked) */}
+        {loadError && (
+          <div
+            data-testid="lesson-load-error"
+            className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
+            style={{ backgroundColor: 'rgba(10,37,64,0.96)', color: 'white' }}
+          >
+            <div className="text-5xl mb-2">📡</div>
+            <h3 className="text-xl md:text-2xl font-black font-display mb-1">Hmm, we can't reach this video</h3>
+            <p className="text-sm md:text-base font-bold opacity-90 max-w-md">
+              Check your internet connection and try again. If you're at school, your network might be blocking Vimeo.
+            </p>
+            <button
+              onClick={() => { setLoadError(false); setLoaded(false); window.location.reload(); }}
+              className="mt-4 px-4 py-2 rounded-full font-black border-3"
+              style={{
+                backgroundColor: '#FFCC00',
+                color: 'var(--jma-dark)',
+                borderColor: 'white',
+                boxShadow: '0 4px 0 0 rgba(0,0,0,0.4)',
+              }}
+              data-testid="lesson-retry-btn"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
       </motion.div>
 
       {/* Watched banner + CTAs */}
