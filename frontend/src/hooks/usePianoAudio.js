@@ -1,9 +1,10 @@
 // Lightweight piano-audio hook for Charlie's Song Studio.
 // Preloads piano MP3s into Web Audio buffers so tapping a key has zero latency
-// and supports polyphonic playback.
+// and supports polyphonic playback. We preload the full melody+chord note set
+// (C4 → C6) so the soft chord triads play instantly under the melody.
 
 import { useCallback, useEffect, useRef } from 'react';
-import { PIANO_KEYS } from '../data/songStudio';
+import { ALL_PIANO_NOTE_IDS, noteFile } from '../data/songStudio';
 
 export default function usePianoAudio() {
   const ctxRef = useRef(null);
@@ -22,15 +23,15 @@ export default function usePianoAudio() {
     return ctxRef.current;
   }, []);
 
-  // Preload all 15 piano MP3s as Audio buffers
+  // Preload all piano MP3s (melody octave + chord octave) as Audio buffers
   const preload = useCallback(async () => {
     const ctx = initContext();
-    await Promise.all(PIANO_KEYS.map(async (k) => {
-      if (buffersRef.current[k.id]) return;
+    await Promise.all(ALL_PIANO_NOTE_IDS.map(async (id) => {
+      if (buffersRef.current[id]) return;
       try {
-        const r = await fetch(k.file);
+        const r = await fetch(noteFile(id));
         const buf = await r.arrayBuffer();
-        buffersRef.current[k.id] = await ctx.decodeAudioData(buf);
+        buffersRef.current[id] = await ctx.decodeAudioData(buf);
       } catch {
         // Silently ignore — falls back to native Audio() if user taps before load
       }
@@ -45,16 +46,15 @@ export default function usePianoAudio() {
     };
   }, []);
 
-  // Play a piano key by id (e.g. 'C4'). Polyphonic — each call spawns a fresh source.
+  // Play a piano note by id (e.g. 'C4'). Polyphonic — each call spawns a fresh source.
   const playPianoNote = useCallback((id, gain = 0.7) => {
     const ctx = initContext();
     const buf = buffersRef.current[id];
     if (!buf) {
-      // Fallback: native HTMLAudio element while buffers are still loading
-      const key = PIANO_KEYS.find((k) => k.id === id);
-      if (!key) return;
+      // Fallback: native HTMLAudio while buffers are still loading
+      if (!ALL_PIANO_NOTE_IDS.includes(id)) return;
       try {
-        const a = new Audio(key.file);
+        const a = new Audio(noteFile(id));
         a.volume = gain;
         a.play().catch(() => { /* ignore */ });
       } catch { /* ignore */ }

@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Play, Trash2, Save, ArrowLeft, BookOpen, Music } from 'lucide-react';
+import { Play, Trash2, Save, ArrowLeft, BookOpen, Music, Drum, Piano } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
@@ -78,6 +78,9 @@ export default function SongStudioPage() {
   const [pendingName, setPendingName] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
   const [songs, setSongs] = useState(loadSongs);
+  // Accompaniment toggles — kids can solo their melody by switching these off
+  const [drumsOn, setDrumsOn] = useState(true);
+  const [chordsOn, setChordsOn] = useState(true);
 
   const drumAudioRef = useRef(null);
   const playTimeoutsRef = useRef([]);
@@ -145,7 +148,7 @@ export default function SongStudioPage() {
     setIsPlaying(true);
 
     // Backing drum loop (if any) — loops underneath both play-throughs
-    if (mood.drumLoop) {
+    if (mood.drumLoop && drumsOn) {
       try {
         const a = new Audio(mood.drumLoop);
         a.volume = 0.45;
@@ -168,8 +171,8 @@ export default function SongStudioPage() {
       const t = setTimeout(() => {
         if (cancelPlayRef.current) return;
         setPlayingSlot(slotIdx);
-        // Play the chord triad on the first beat of every measure
-        if (measureBeat === 0 && mood.chordProgression) {
+        // Play the chord triad on the first beat of every measure (if enabled)
+        if (chordsOn && measureBeat === 0 && mood.chordProgression) {
           const chord = mood.chordProgression[measureIdx];
           if (chord) {
             chord.notes.forEach((n) => playPianoNote(n, 0.35));
@@ -187,7 +190,7 @@ export default function SongStudioPage() {
       stopPlayback();
     }, totalBeats * beatMs + 200);
     playTimeoutsRef.current.push(end);
-  }, [ensureLoaded, stopPlayback, mood, slots, playPianoNote]);
+  }, [ensureLoaded, stopPlayback, mood, slots, playPianoNote, drumsOn, chordsOn]);
 
   // Save the current song to localStorage
   const handleSave = useCallback(() => {
@@ -289,7 +292,7 @@ export default function SongStudioPage() {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
               <div className="text-[10px] uppercase font-black opacity-60" style={{ color: 'var(--jma-dark)' }}>
-                {filledCount} / {TOTAL_SLOTS} beats placed · {mood.bpm} BPM · plays 2×
+                {filledCount} {filledCount === 1 ? 'note' : 'notes'} placed · {mood.bpm} BPM · plays 2×
               </div>
               <div className="flex items-center gap-1 text-[10px] opacity-70" style={{ color: 'var(--jma-dark)' }}>
                 <span className="font-black uppercase">Chords:</span>
@@ -297,6 +300,17 @@ export default function SongStudioPage() {
                   {mood.chordProgression.map((c) => c.label).join(' · ')}
                 </span>
               </div>
+            </div>
+            <div
+              className="text-[10px] md:text-xs text-center mb-1.5 font-bold rounded-md px-2 py-1"
+              style={{
+                color: 'var(--jma-dark)',
+                backgroundColor: `${mood.color}33`,
+                border: `1.5px dashed ${mood.accent}`,
+              }}
+              data-testid="song-studio-rests-tip"
+            >
+              💡 Tip: You don't have to fill every beat — leave some empty for rests!
             </div>
             <div
               className="rounded-2xl border-3 p-2"
@@ -388,6 +402,47 @@ export default function SongStudioPage() {
               );
             })}
           </div>
+        </div>
+
+        {/* ACCOMPANIMENT TOGGLES */}
+        <div className="flex items-center justify-center gap-2 mt-1 mb-2 flex-wrap">
+          <button
+            data-testid="toggle-chords"
+            onClick={() => setChordsOn((v) => !v)}
+            aria-pressed={chordsOn}
+            className="rounded-full border-2 px-3 py-1.5 flex items-center gap-1.5 text-xs md:text-sm font-black font-display"
+            style={{
+              borderColor: 'var(--jma-dark)',
+              backgroundColor: chordsOn ? mood.accent : 'white',
+              color: chordsOn ? 'white' : 'var(--jma-dark)',
+              boxShadow: chordsOn ? '0 3px 0 0 var(--jma-dark)' : '0 2px 0 0 var(--jma-dark)',
+              transition: 'background-color 0.15s, box-shadow 0.12s, transform 0.12s',
+              transform: chordsOn ? 'translateY(-1px)' : 'translateY(0)',
+            }}
+          >
+            <Piano className="w-4 h-4" />
+            Chords {chordsOn ? 'ON' : 'OFF'}
+          </button>
+          <button
+            data-testid="toggle-drums"
+            onClick={() => setDrumsOn((v) => !v)}
+            aria-pressed={drumsOn}
+            disabled={!mood.drumLoop}
+            className="rounded-full border-2 px-3 py-1.5 flex items-center gap-1.5 text-xs md:text-sm font-black font-display disabled:opacity-40"
+            style={{
+              borderColor: 'var(--jma-dark)',
+              backgroundColor: drumsOn && mood.drumLoop ? mood.accent : 'white',
+              color: drumsOn && mood.drumLoop ? 'white' : 'var(--jma-dark)',
+              boxShadow: drumsOn && mood.drumLoop ? '0 3px 0 0 var(--jma-dark)' : '0 2px 0 0 var(--jma-dark)',
+              transition: 'background-color 0.15s, box-shadow 0.12s, transform 0.12s',
+              transform: drumsOn && mood.drumLoop ? 'translateY(-1px)' : 'translateY(0)',
+              cursor: mood.drumLoop ? 'pointer' : 'not-allowed',
+            }}
+            title={mood.drumLoop ? '' : 'No drum loop for this mood'}
+          >
+            <Drum className="w-4 h-4" />
+            Drums {mood.drumLoop ? (drumsOn ? 'ON' : 'OFF') : '—'}
+          </button>
         </div>
 
         {/* CONTROLS */}

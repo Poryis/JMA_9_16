@@ -1,5 +1,11 @@
 # Changelog
 
+## Feb 16, 2026 — Charlie's Song Studio: kid-friendly playability pass
+- **Rests-are-OK hint**: Added a dashed callout above the 16-slot grid: *"💡 Tip: You don't have to fill every beat — leave some empty for rests!"* Counter changed from `0 / 16 beats placed` to `0 notes placed` so the empty grid no longer feels like an unfinished assignment.
+- **High-octave melody keyboard**: Piano now shows only the **top octave (C5 → C6, 8 white keys)** instead of the full C4→C6 range. Kids' melody notes sit cleanly above the I-V-vi-IV chord triads (which live in C4→E5), so harmonies no longer clash. The audio hook still preloads the full C4→C6 set so the underlying chord triads still play with zero latency.
+- **Drums + Chords toggles**: Two new pill buttons (`Chords ON/OFF`, `Drums ON/OFF`) sit between the keyboard and the play row. Kids can solo their melody, or hear it with just chords / just drums / both. Drums toggle is auto-disabled on moods with no drum loop.
+- **Sad drum loop**: New custom-built ~55s loop at 70 BPM (`assets/audio/songs/jam_drums_sad.mp3`) — sparse ride-bell groove on every beat with a soft kick on 1 & 3 and a brushed snare on beat 3 of every other measure. Replaces the previous "no drums" Sad mood.
+
 ## Feb 14, 2026 — Clubhouse Find-and-Reveal + Custom Harp Artwork
 - **Custom JMA harp Home button**: Saved user-uploaded artwork to `assets/ui/jma-harp.png`. Made the black background transparent + resized to 187×256 (8.8 KB). `HarpIcon.js` now renders the PNG instead of the SVG placeholder.
 - **Removed duplicate Stew**: The standalone Stew character on the Fun Facts scene was creating two visible Stews (since Lou's image already has Stew on his shoulder). Now back to 6 characters total.

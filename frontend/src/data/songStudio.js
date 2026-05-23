@@ -1,5 +1,7 @@
 // Charlie's Song Studio — data definitions.
-// 15-key piano keyboard (C4 → C6, white keys only) plus mood configs.
+// 8-key high-octave piano (C5 → C6) plus mood configs.
+// The melody lives an octave above the chord triads so kids' notes don't
+// clash with the underlying I-V-vi-IV harmony.
 
 // Solfège + color per pitch class (matches the JellyBells palette).
 const PITCH = {
@@ -12,15 +14,25 @@ const PITCH = {
   B: { solfege: 'Ti', color: '#FF2D92' },
 };
 
-// 15 white keys from C4 → C6.
-const PIANO_NOTES = ['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5','A5','B5','C6'];
+// 8 white keys from C5 → C6 — what the kid taps on (high octave melody).
+const PIANO_NOTES = ['C5','D5','E5','F5','G5','A5','B5','C6'];
+
+// All notes we need to be able to play back (melody keys + chord-triad notes
+// one octave lower). The audio hook preloads these so the soft chord notes
+// played beneath the melody have zero latency.
+export const ALL_PIANO_NOTE_IDS = [
+  'C4','D4','E4','F4','G4','A4','B4',
+  'C5','D5','E5','F5','G5','A5','B5','C6',
+];
+
+export const noteFile = (id) => `assets/audio/${id}.mp3`;
 
 export const PIANO_KEYS = PIANO_NOTES.map((n) => {
   const pitch = n[0]; // 'C', 'D', etc.
   const octave = parseInt(n.slice(1), 10);
   return {
     id: n,
-    file: `assets/audio/${n}.mp3`,
+    file: noteFile(n),
     pitch,
     octave,
     solfege: PITCH[pitch].solfege,
@@ -68,7 +80,7 @@ export const MOODS = {
     description: 'Slow & thoughtful (A minor)',
     tonic: 'A',
     scaleNotes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
-    drumLoop: null,
+    drumLoop: 'assets/audio/songs/jam_drums_sad.mp3',
     bpm: 70,
     charlie: 'assets/characters/charlie-zoot.png',
     color: '#4285F4',
