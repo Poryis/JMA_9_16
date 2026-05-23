@@ -18,12 +18,12 @@ const CREATE_TILES = [
     title: 'Beat Lab',
     tagline: 'Stack loops and build your own beat!',
     path: '/loop-studio',
-    bg: 'assets/backgrounds/circus.png',
+    bg: 'assets/backgrounds/graffiti-wall.jpg',
     color: '#AF52DE',
     accent: '#8E44AD',
     sign: 'LOOP STATION',
-    character: 'assets/characters/chunk-disco.png',
-    charWidthPct: 28,
+    character: 'assets/characters/jelly-rap-trio.png',
+    charWidthPct: 50,
   },
 ];
 

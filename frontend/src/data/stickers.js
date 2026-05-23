@@ -19,8 +19,7 @@ export const STICKERS = [
   { id: 'char_charlie',   name: 'Charlie',         category: 'characters', icon: 'assets/characters/charlie-polliwog.png', color: '#34A853', hint: 'Meet Charlie on the home page' },
   { id: 'char_chunk',     name: 'Chunk',           category: 'characters', icon: 'assets/characters/chunk.png',           color: '#9B59B6', hint: 'Meet Chunk on the home page' },
   { id: 'char_jazzy',     name: 'Jazzy',           category: 'characters', icon: 'assets/characters/jazzy.png',            color: '#FF9500', hint: 'Meet Jazzy on the home page' },
-  { id: 'char_doctor',    name: 'Dr. Jellybone',   category: 'characters', icon: 'assets/characters/dr-jellybone.png',     color: '#4285F4', hint: 'Visit Detective Dr. Jellybone' },
-  { id: 'char_whiskers',  name: 'Whiskers the Catfish', category: 'characters', icon: 'assets/characters/catfish.png',     color: '#5A8DB3', hint: 'Discover Whiskers in the Clubhouse' },
+  { id: 'char_doctor',    name: 'Dr. Jellybone',   category: 'characters', icon: 'assets/characters/dr-jellybone.png',     color: '#4285F4', hint: 'Meet Dr. Jellybone on the home page' },
   { id: 'char_loustew',   name: 'Lou & Stew',      category: 'characters', icon: 'assets/characters/llama-lou-stew.png',         color: '#AF52DE', hint: 'Meet Lou & Stew on the home page' },
 
   // ---- Outfits (alternate looks of the characters, unlocked via gameplay milestones) ----

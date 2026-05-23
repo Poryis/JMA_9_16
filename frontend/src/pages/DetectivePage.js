@@ -165,7 +165,6 @@ export default function DetectivePage() {
   // ------- Round / game lifecycle -------
   const startGame = useCallback((diffOverride) => {
     initAudioContext();
-    try { earnSticker('char_doctor'); } catch { /* ignore */ }
     cancelPlaybackRef.current = true;
     if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
     const diff = typeof diffOverride === 'string' ? diffOverride : difficulty;
