@@ -12,6 +12,7 @@ const LEARN_TILES = [
     sign: 'LESSONS',
     character: 'assets/characters/charlie-grad.png',
     charWidthPct: 30,
+    sfx: 'assets/audio/sfx-page.mp3',
   },
   {
     id: 'fun-facts',
@@ -24,6 +25,7 @@ const LEARN_TILES = [
     sign: 'CLUBHOUSE',
     character: 'assets/characters/charlie-polliwog.png',
     charWidthPct: 26,
+    sfx: 'assets/audio/sfx-twinkle.mp3',
   },
   {
     id: 'ear-quest',
@@ -36,6 +38,7 @@ const LEARN_TILES = [
     sign: 'EAR QUEST',
     character: 'assets/characters/dr-jellybone.png',
     charWidthPct: 20,
+    sfx: 'assets/audio/sfx-arpeggio.mp3',
   },
 ];
 

@@ -13,6 +13,7 @@ const PLAY_TILES = [
     sign: 'GAME',
     character: 'assets/characters/jazzy-marching.png',
     charWidthPct: 28,
+    sfx: 'assets/audio/sfx-bell-chime.mp3',
   },
   {
     id: 'stew-kazoo',
@@ -26,6 +27,7 @@ const PLAY_TILES = [
     bubble: 'Repeat after me!',
     character: 'assets/characters/stew.png',
     charWidthPct: 26,
+    sfx: 'assets/audio/sfx-kazoo-honk.mp3',
   },
   {
     id: 'note-match',
@@ -40,6 +42,7 @@ const PLAY_TILES = [
     bubble: 'Find the pairs!',
     character: 'assets/characters/charlie-surf.png',
     charWidthPct: 28,
+    sfx: 'assets/audio/sfx-bell-pair.mp3',
   },
   {
     id: 'detective-jellybone',
@@ -53,6 +56,7 @@ const PLAY_TILES = [
     bubble: 'Listen closely!',
     character: 'assets/characters/dr-jellybone-detective.png',
     charWidthPct: 32,
+    sfx: 'assets/audio/sfx-detective.mp3',
   },
 ];
 

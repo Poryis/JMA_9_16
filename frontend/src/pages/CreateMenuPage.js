@@ -12,6 +12,7 @@ const CREATE_TILES = [
     sign: 'STUDIO',
     character: 'assets/characters/charlie-punk.png',
     charWidthPct: 30,
+    sfx: 'assets/audio/sfx-drum-fill.mp3',
   },
   {
     id: 'beat-lab',
