@@ -14,6 +14,8 @@ import { PIANO_KEYS, MOODS, TOTAL_SLOTS, SLOTS_PER_ROW } from '../data/songStudi
 import { earnSticker } from '../hooks/useStickers';
 
 const SONGS_KEY = 'jma_songs_v1';
+const REST = 'REST'; // sentinel value for a rest slot — renders the seahorse PNG and plays nothing
+const SEAHORSE_REST_SRC = 'assets/ui/seahorse-rest.png';
 const loadSongs = () => { try { return JSON.parse(localStorage.getItem(SONGS_KEY) || '[]'); } catch { return []; } };
 const saveSongs = (s) => { try { localStorage.setItem(SONGS_KEY, JSON.stringify(s)); } catch { /* ignore */ } };
 
@@ -108,6 +110,20 @@ export default function SongStudioPage() {
     setCursor((c) => Math.min(c + 1, TOTAL_SLOTS));
   }, [ensureLoaded, playPianoNote, cursor]);
 
+  // Tap the rest button → mark current slot as an explicit rest (silent),
+  // advance the cursor. Stored as the sentinel string REST so it survives
+  // saves and renders the seahorse during composition + playback.
+  const handleRestTap = useCallback(() => {
+    setSlots((prev) => {
+      const next = [...prev];
+      const idx = cursor < TOTAL_SLOTS ? cursor : prev.findIndex((s) => s == null);
+      if (idx < 0) return prev; // grid is full
+      next[idx] = REST;
+      return next;
+    });
+    setCursor((c) => Math.min(c + 1, TOTAL_SLOTS));
+  }, [cursor]);
+
   // Tap a slot — clears it (and moves the cursor there)
   const handleSlotTap = useCallback((slotIdx) => {
     setSlots((prev) => {
@@ -182,7 +198,8 @@ export default function SongStudioPage() {
         const chord = mood.chordProgression[measureIdx];
         if (chord) chord.notes.forEach((n) => playPianoNote(n, 0.35, tCtx));
       }
-      if (noteId) playPianoNote(noteId, 0.85, tCtx);
+      // Only play the melody note if it's an actual pitch (rests stay silent)
+      if (noteId && noteId !== REST) playPianoNote(noteId, 0.85, tCtx);
 
       // Visual playhead — best-effort, lit at wall-clock time matching the
       // scheduled audio. A few ms of jitter is fine for the UI.
@@ -245,6 +262,8 @@ export default function SongStudioPage() {
   }, [songs]);
 
   const filledCount = slots.filter((s) => s != null).length;
+  const noteCount = slots.filter((s) => s != null && s !== REST).length;
+  const restCount = slots.filter((s) => s === REST).length;
   const isFull = filledCount === TOTAL_SLOTS;
 
   return (
@@ -303,7 +322,9 @@ export default function SongStudioPage() {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
               <div className="text-[10px] uppercase font-black opacity-60" style={{ color: 'var(--jma-dark)' }}>
-                {filledCount} {filledCount === 1 ? 'note' : 'notes'} placed · {mood.bpm} BPM · plays 2×
+                {noteCount} {noteCount === 1 ? 'note' : 'notes'}
+                {restCount > 0 && ` + ${restCount} ${restCount === 1 ? 'rest' : 'rests'}`}
+                {' · '}{mood.bpm} BPM · plays 2×
               </div>
               <div className="flex items-center gap-1 text-[10px] opacity-70" style={{ color: 'var(--jma-dark)' }}>
                 <span className="font-black uppercase">Chords:</span>
@@ -321,7 +342,7 @@ export default function SongStudioPage() {
               }}
               data-testid="song-studio-rests-tip"
             >
-              💡 Tip: You don't have to fill every beat — leave some empty for rests!
+              💡 Tip: Leave a beat empty, or tap the 🐠 seahorse for a rest!
             </div>
             <div
               className="rounded-2xl border-3 p-2"
@@ -351,7 +372,8 @@ export default function SongStudioPage() {
                       {[0, 1, 2, 3].map((beatIdx) => {
                         const i = measureIdx * SLOTS_PER_ROW + beatIdx;
                         const noteId = slots[i];
-                        const key = noteId ? PIANO_KEYS.find((k) => k.id === noteId) : null;
+                        const isRest = noteId === REST;
+                        const key = noteId && !isRest ? PIANO_KEYS.find((k) => k.id === noteId) : null;
                         const isCursor = i === cursor && !isPlaying;
                         const isLit = playingSlot === i;
                         return (
@@ -359,17 +381,26 @@ export default function SongStudioPage() {
                             key={i}
                             data-testid={`slot-${i}`}
                             onClick={() => handleSlotTap(i)}
-                            className="aspect-square rounded-lg border-2 flex flex-col items-center justify-center"
+                            className="aspect-square rounded-lg border-2 flex flex-col items-center justify-center overflow-hidden"
                             style={{
                               borderColor: 'var(--jma-dark)',
-                              backgroundColor: isLit ? (key ? key.color : '#FFCC00') : (key ? key.color : 'white'),
+                              backgroundColor: isRest
+                                ? (isLit ? '#FFE0EF' : '#FFF5FA')
+                                : (isLit ? (key ? key.color : '#FFCC00') : (key ? key.color : 'white')),
                               borderStyle: noteId ? 'solid' : 'dashed',
                               boxShadow: isCursor ? `0 0 0 3px ${mood.accent}` : 'none',
                               transform: isLit ? 'scale(1.08)' : 'scale(1)',
                               transition: 'transform 0.1s, background-color 0.15s',
                             }}
                           >
-                            {key ? (
+                            {isRest ? (
+                              <img
+                                src={SEAHORSE_REST_SRC}
+                                alt="rest"
+                                draggable={false}
+                                className="w-full h-full object-contain p-1 select-none pointer-events-none"
+                              />
+                            ) : key ? (
                               <>
                                 <span className="text-[10px] md:text-xs font-black font-display leading-none" style={{ color: 'var(--jma-dark)' }}>
                                   {key.solfege}
@@ -392,12 +423,12 @@ export default function SongStudioPage() {
           </div>
         </div>
 
-        {/* PIANO KEYBOARD */}
+        {/* PIANO KEYBOARD + REST BUTTON */}
         <div
           className="w-full overflow-x-auto pb-3"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          <div className="flex justify-center gap-1 md:gap-1.5 px-2 min-w-max">
+          <div className="flex justify-center items-end gap-1 md:gap-1.5 px-2 min-w-max">
             {PIANO_KEYS.map((k) => {
               const inScale = mood.scaleNotes.includes(k.pitch);
               const isTonic = k.pitch === mood.tonic;
@@ -412,6 +443,34 @@ export default function SongStudioPage() {
                 />
               );
             })}
+            {/* Seahorse REST button — sits flush with the keys */}
+            <motion.button
+              data-testid="rest-button"
+              onClick={handleRestTap}
+              aria-label="Add a rest"
+              className="relative flex flex-col items-center justify-center rounded-b-xl border-3 select-none ml-2 md:ml-3"
+              style={{
+                width: 'clamp(44px, 8vw, 64px)',
+                height: 'clamp(120px, 22vw, 170px)',
+                backgroundColor: 'rgba(255, 245, 250, 1)',
+                borderColor: 'var(--jma-dark)',
+                boxShadow: '0 4px 0 0 var(--jma-dark)',
+              }}
+              whileTap={{ y: 4, boxShadow: '0 1px 0 0 var(--jma-dark)' }}
+            >
+              <img
+                src={SEAHORSE_REST_SRC}
+                alt="rest"
+                draggable={false}
+                className="w-full h-[78%] object-contain pointer-events-none select-none px-1"
+              />
+              <span
+                className="mb-1.5 text-[10px] md:text-xs font-black font-display leading-none"
+                style={{ color: 'var(--jma-dark)', textShadow: '1px 1px 0 rgba(255,255,255,0.6)' }}
+              >
+                Rest
+              </span>
+            </motion.button>
           </div>
         </div>
 
@@ -601,7 +660,7 @@ export default function SongStudioPage() {
                               {song.name}
                             </div>
                             <div className="text-[10px] opacity-60" style={{ color: 'var(--jma-dark)' }}>
-                              {m.name} · {song.bpm} BPM · {song.slots.filter((s) => s != null).length} notes
+                              {m.name} · {song.bpm} BPM · {song.slots.filter((s) => s != null && s !== REST).length} notes
                             </div>
                           </div>
                           <button

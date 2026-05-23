@@ -1,5 +1,12 @@
 # Changelog
 
+## Feb 16, 2026 — Song Studio: seahorse Rest button
+- **New "Rest" key** sits at the right edge of the piano keyboard, sized to match the white keys. Uses the user-supplied seahorse artwork (`assets/ui/seahorse-rest.png`, ~22 KB, 183×320, black-bg removed + trimmed).
+- Tapping the rest button drops a `REST` sentinel into the current slot, advances the auto-cursor, and plays no sound. The slot now displays the seahorse PNG (replacing the slot number) both during composition and during playback (the slot also gently lights pink when its beat plays).
+- Counter updated: `"3 notes + 1 rest · 100 BPM · plays 2×"`. Gallery counts only musical notes (excludes rests).
+- Existing saved songs still work — `REST` is a new value, never present in older saves; no migration needed.
+- Tip text updated: *"💡 Tip: Leave a beat empty, or tap the 🐠 seahorse for a rest!"*
+
 ## Feb 16, 2026 — Song Studio: tight drum sync + slower mysterious
 - **Drum-sync rebuild**: Replaced the HTMLAudioElement drum playback with Web Audio buffer playback. The drum loop AND every chord/melody note now start from a single `AudioContext.currentTime + 120ms` anchor, so they're sample-accurate-aligned no matter the OS audio latency. New helpers in `usePianoAudio`: `preloadLoop`, `playLoop`, `now`, and a `when` parameter on `playPianoNote`.
 - **Mysterious mood slowed**: 120 BPM → **85 BPM** ("spooky & wandering" now actually wanders). Built a new custom drum loop at 85 BPM (`assets/audio/songs/jam_drums_mysterious.mp3`, ~45s) — sparse kick + low-tom hit on beat 1, soft snare on beat 3, and a low-tom flourish on the "&" of 4 every other measure for that off-kilter mystery feel.
