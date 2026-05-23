@@ -16,6 +16,7 @@ import LoopStudioPage from "./pages/LoopStudioPage";
 import StickerBookPage from "./pages/StickerBookPage";
 import FunFactsPage from "./pages/FunFactsPage";
 import NoteMatchPage from "./pages/NoteMatchPage";
+import DetectivePage from "./pages/DetectivePage";
 import StickerToast from "./components/StickerToast";
 import RankUpCelebration from "./components/RankUpCelebration";
 
@@ -54,6 +55,7 @@ function App() {
             <Route path="/loop-studio" element={<LoopStudioPage />} />
             <Route path="/fun-facts" element={<FunFactsPage />} />
             <Route path="/note-match" element={<NoteMatchPage />} />
+            <Route path="/detective" element={<DetectivePage />} />
             <Route path="/sticker-book" element={<StickerBookPage />} />
           </Routes>
         </AnimatePresence>

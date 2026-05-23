@@ -114,6 +114,12 @@ const ROOM_CAST = {
     { id: 'charlie', pos: { l: 93, t: 22, w: 6.5, anim: 'sway' }, line: 'Find the twins!' },
     { id: 'finn',    pos: { l: 5,  t: 80, w: 7,   anim: 'bob' },  line: 'Trust your memory!' },
   ],
+  // Detective Dr. Jellybone — find the wrong note
+  'detective': [
+    { id: 'doctor',  pos: { l: 5,  t: 18, w: 8,   anim: 'peek' }, line: 'Listen sharp!' },
+    { id: 'charlie', pos: { l: 93, t: 22, w: 6.5, anim: 'bob' },  line: "Which one's off?" },
+    { id: 'finn',    pos: { l: 93, t: 82, w: 7,   anim: 'sway' }, line: 'Crack the case!' },
+  ],
   // Fun Facts Clubhouse handled by its own page
 };
 

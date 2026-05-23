@@ -41,6 +41,19 @@ const PLAY_TILES = [
     character: 'assets/characters/charlie-surf.png',
     charWidthPct: 28,
   },
+  {
+    id: 'detective-jellybone',
+    title: 'Detective Dr. Jellybone',
+    tagline: 'Find the note that sounds off!',
+    path: '/detective',
+    bg: 'assets/backgrounds/clubhouse.png',
+    color: '#9B6DE0',
+    accent: '#5E2D8C',
+    sign: 'GAME',
+    bubble: 'Listen closely!',
+    character: 'assets/characters/dr-jellybone.png',
+    charWidthPct: 32,
+  },
 ];
 
 export default function PlayMenuPage() {
