@@ -97,6 +97,7 @@ export const STICKERS = [
   { id: 'detective_sleuth',   name: 'Master Detective',  category: 'achievements', icon: 'assets/characters/dr-jellybone.png', color: '#FF9500', hint: 'Solve a case on Detective' },
   { id: 'detective_master',   name: 'Note Whisperer',    category: 'achievements', icon: 'assets/characters/dr-jellybone.png', color: '#AF52DE', hint: 'Solve a case on Master' },
   { id: 'detective_perfect',  name: 'Perfect Case File', category: 'achievements', icon: 'assets/characters/dr-jellybone.png', color: '#34A853', hint: 'Solve all 5 cases in a row' },
+  { id: 'songwriter',         name: 'Songwriter',        category: 'achievements', icon: 'assets/characters/charlie-grad.png', color: '#FFCC00', hint: "Save your first song in Charlie's Song Studio" },
   { id: 'ach_first_note',    name: 'First Note!',        category: 'achievements', icon: 'assets/characters/finn-danger.png',     color: '#FFCC00', hint: 'Play your very first note' },
   { id: 'ach_one_kid_band',  name: 'One-Kid Band',       category: 'achievements', icon: 'assets/characters/chunk.png',           color: '#9B59B6', hint: 'Play all 4 instruments in Jam Hall' },
   { id: 'ach_streak_10',     name: 'Streak of 10!',      category: 'achievements', icon: 'assets/characters/jazzy.png',            color: '#FF9500', hint: 'Hit 10 notes in a row' },

@@ -27,6 +27,20 @@ const CREATE_TILES = [
     charWidthPct: 50,
     sfx: 'assets/audio/sfx-dj-scratch.mp3',
   },
+  {
+    id: 'song-studio',
+    title: "Charlie's Song Studio",
+    tagline: 'Pick a mood and compose your own song!',
+    path: '/song-studio',
+    bg: 'assets/backgrounds/jelly-stage.png',
+    color: '#FFCC00',
+    accent: '#F39C12',
+    sign: 'COMPOSE',
+    bubble: 'Make a hit!',
+    character: 'assets/characters/charlie-grad.png',
+    charWidthPct: 28,
+    sfx: 'assets/audio/sfx-piano-flourish.mp3',
+  },
 ];
 
 export default function CreateMenuPage() {

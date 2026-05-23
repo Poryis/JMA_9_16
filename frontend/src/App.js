@@ -17,6 +17,7 @@ import StickerBookPage from "./pages/StickerBookPage";
 import FunFactsPage from "./pages/FunFactsPage";
 import NoteMatchPage from "./pages/NoteMatchPage";
 import DetectivePage from "./pages/DetectivePage";
+import SongStudioPage from "./pages/SongStudioPage";
 import StickerToast from "./components/StickerToast";
 import RankUpCelebration from "./components/RankUpCelebration";
 
@@ -56,6 +57,7 @@ function App() {
             <Route path="/fun-facts" element={<FunFactsPage />} />
             <Route path="/note-match" element={<NoteMatchPage />} />
             <Route path="/detective" element={<DetectivePage />} />
+            <Route path="/song-studio" element={<SongStudioPage />} />
             <Route path="/sticker-book" element={<StickerBookPage />} />
           </Routes>
         </AnimatePresence>
