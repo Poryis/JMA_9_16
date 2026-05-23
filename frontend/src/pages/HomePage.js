@@ -51,6 +51,7 @@ const CARDS = [
       { src: 'assets/home/play/accent dot.png',     top: 22, left: 8,  w: 7,  rot: 0,  anim: 'twinkle', dur: 1.8, delay: 0.6, z: 20 },
       { src: 'assets/home/play/note.png',           top: 78, left: 38, w: 11, rot: -22, anim: 'bob',   dur: 2.6, delay: 0.2, z: 20 },
     ],
+    sfx: 'assets/audio/sfx-home-play.mp3',
   },
   {
     id: 'learn',
@@ -81,6 +82,7 @@ const CARDS = [
       { src: 'assets/home/learn/staraccent.png',          top: 80,  left: 6,  w: 14, rot: -6, anim: 'twinkle',dur: 1.6, delay: 0.6, z: 20 },
       { src: 'assets/home/learn/staraccent.png',          top: 18,  left: 50, w: 9,  rot: 18, anim: 'twinkle',dur: 1.8, delay: 0.2, z: 20 },
     ],
+    sfx: 'assets/audio/sfx-home-learn.mp3',
   },
   {
     id: 'create',
@@ -111,6 +113,7 @@ const CARDS = [
       { src: 'assets/home/create/note accent 2.png',top: 38, left: 6,   w: 14, rot: 16, anim: 'bob',    dur: 2.6, delay: 0.5, z: 20 },
       { src: 'assets/home/create/heartbeat 2.png',  top: 82, left: 30,  w: 18, rot: 0,  anim: 'pulse',  dur: 1.4, delay: 0.3, z: 20, opacity: 0.95 },
     ],
+    sfx: 'assets/audio/sfx-home-create.mp3',
   },
 ];
 
@@ -161,11 +164,23 @@ function Blob({ b }) {
 function PrimaryCard({ card, index, navigate }) {
   const [hovered, setHovered] = useState(false);
 
+  const handleClick = () => {
+    if (card.sfx) {
+      try {
+        const audio = new Audio(card.sfx);
+        audio.volume = 0.85;
+        audio.play().catch(() => { /* autoplay rejected — proceed without SFX */ });
+      } catch { /* ignore */ }
+    }
+    const delay = card.sfx ? 240 : 0;
+    setTimeout(() => navigate(card.path), delay);
+  };
+
   return (
     <motion.button
       type="button"
       data-testid={`home-card-${card.id}`}
-      onClick={() => navigate(card.path)}
+      onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="relative rounded-[26px] cursor-pointer w-full bg-transparent border-0 p-0"
