@@ -14,11 +14,25 @@ function Tile({ tile, index, navigate }) {
   const [hovered, setHovered] = useState(false);
   const disabled = tile.disabled;
 
+  const handleClick = () => {
+    if (disabled) return;
+    if (tile.sfx) {
+      try {
+        const audio = new Audio(tile.sfx);
+        audio.volume = 0.85;
+        audio.play().catch(() => { /* autoplay rejected — proceed without SFX */ });
+      } catch { /* ignore */ }
+    }
+    // Small delay so the SFX can ring out before the page transitions
+    const delay = tile.sfx ? 220 : 0;
+    setTimeout(() => navigate(tile.path), delay);
+  };
+
   return (
     <motion.button
       type="button"
       data-testid={`submenu-tile-${tile.id}`}
-      onClick={() => !disabled && navigate(tile.path)}
+      onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={`relative w-full text-left rounded-3xl border-4 overflow-hidden ${disabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}

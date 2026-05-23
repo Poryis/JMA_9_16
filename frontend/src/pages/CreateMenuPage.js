@@ -24,6 +24,7 @@ const CREATE_TILES = [
     sign: 'LOOP STATION',
     character: 'assets/characters/jelly-rap-trio.png',
     charWidthPct: 50,
+    sfx: 'assets/audio/sfx-dj-scratch.mp3',
   },
 ];
 
