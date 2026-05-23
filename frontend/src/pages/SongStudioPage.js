@@ -66,7 +66,7 @@ function ColoredKey({ keyDef, scaleHighlighted, isTonic, onTap, playingNow }) {
 
 export default function SongStudioPage() {
   const navigate = useNavigate();
-  const { preload, playPianoNote, initContext } = usePianoAudio();
+  const { preload, preloadLoop, playPianoNote, playLoop, initContext, now } = usePianoAudio();
 
   const [view, setView] = useState('compose');       // compose | gallery
   const [moodId, setMoodId] = useState('happy');
@@ -82,7 +82,7 @@ export default function SongStudioPage() {
   const [drumsOn, setDrumsOn] = useState(true);
   const [chordsOn, setChordsOn] = useState(true);
 
-  const drumAudioRef = useRef(null);
+  const drumSourceRef = useRef(null);   // Web Audio source for current drum loop
   const playTimeoutsRef = useRef([]);
   const cancelPlayRef = useRef(false);
 
@@ -128,9 +128,9 @@ export default function SongStudioPage() {
     cancelPlayRef.current = true;
     playTimeoutsRef.current.forEach((t) => clearTimeout(t));
     playTimeoutsRef.current = [];
-    if (drumAudioRef.current) {
-      try { drumAudioRef.current.pause(); drumAudioRef.current.currentTime = 0; } catch { /* ignore */ }
-      drumAudioRef.current = null;
+    if (drumSourceRef.current) {
+      try { drumSourceRef.current.stop(); } catch { /* ignore */ }
+      drumSourceRef.current = null;
     }
     setIsPlaying(false);
     setPlayingSlot(-1);
@@ -138,59 +138,70 @@ export default function SongStudioPage() {
 
   useEffect(() => stopPlayback, [stopPlayback]);
 
-  // Play the composed song. Plays the melody twice, with the mood's
-  // chord progression on beat 1 of each measure (chord notes are quieter so
-  // the kid's melody stays in front).
-  const playSong = useCallback(() => {
+  // Play the composed song. Drum loop + chord triads + melody notes all share
+  // a single AudioContext start anchor, so they stay sample-accurate-aligned
+  // regardless of OS audio startup latency.
+  const playSong = useCallback(async () => {
     ensureLoaded();
     stopPlayback();
     cancelPlayRef.current = false;
     setIsPlaying(true);
 
-    // Backing drum loop (if any) — loops underneath both play-throughs
+    // Pre-decode the drum loop (cached after first decode) so it's ready to
+    // start at the exact AudioContext timestamp we pick below.
+    let drumBuf = null;
     if (mood.drumLoop && drumsOn) {
-      try {
-        const a = new Audio(mood.drumLoop);
-        a.volume = 0.45;
-        a.loop = true;
-        a.play().catch(() => { /* autoplay blocked */ });
-        drumAudioRef.current = a;
-      } catch { /* ignore */ }
+      drumBuf = await preloadLoop(mood.drumLoop);
     }
+    if (cancelPlayRef.current) return;
 
-    const beatMs = 60_000 / mood.bpm;
+    const beatSec = 60 / mood.bpm;
     const REPEATS = 2;
     const totalBeats = TOTAL_SLOTS * REPEATS;
 
-    for (let beat = 0; beat < totalBeats; beat++) {
-      const slotIdx = beat % TOTAL_SLOTS;            // which slot in this play-through
-      const measureIdx = Math.floor(slotIdx / SLOTS_PER_ROW); // 0..3
-      const measureBeat = slotIdx % SLOTS_PER_ROW;   // 0..3
-      const noteId = slots[slotIdx];
+    // Small lookahead so every source.start() falls in the future — required
+    // for Web Audio to honour the precise schedule.
+    const LOOKAHEAD_SEC = 0.12;
+    const ctxStart = now() + LOOKAHEAD_SEC;
+    const wallStartMs = Date.now() + LOOKAHEAD_SEC * 1000;
 
-      const t = setTimeout(() => {
-        if (cancelPlayRef.current) return;
-        setPlayingSlot(slotIdx);
-        // Play the chord triad on the first beat of every measure (if enabled)
-        if (chordsOn && measureBeat === 0 && mood.chordProgression) {
-          const chord = mood.chordProgression[measureIdx];
-          if (chord) {
-            chord.notes.forEach((n) => playPianoNote(n, 0.35));
-          }
-        }
-        // Play the melody note (louder so it stays on top)
-        if (noteId) playPianoNote(noteId, 0.85);
-      }, beat * beatMs);
-      playTimeoutsRef.current.push(t);
+    // Kick off the drum loop on the shared anchor
+    if (drumBuf) {
+      drumSourceRef.current = playLoop(drumBuf, 0.45, ctxStart);
     }
 
-    // End-of-song cleanup after both repeats finish
+    // Schedule every chord triad + melody note via AudioContext time
+    for (let beat = 0; beat < totalBeats; beat++) {
+      const slotIdx = beat % TOTAL_SLOTS;
+      const measureIdx = Math.floor(slotIdx / SLOTS_PER_ROW);
+      const measureBeat = slotIdx % SLOTS_PER_ROW;
+      const noteId = slots[slotIdx];
+      const tCtx = ctxStart + beat * beatSec;
+
+      if (chordsOn && measureBeat === 0 && mood.chordProgression) {
+        const chord = mood.chordProgression[measureIdx];
+        if (chord) chord.notes.forEach((n) => playPianoNote(n, 0.35, tCtx));
+      }
+      if (noteId) playPianoNote(noteId, 0.85, tCtx);
+
+      // Visual playhead — best-effort, lit at wall-clock time matching the
+      // scheduled audio. A few ms of jitter is fine for the UI.
+      const visualMs = wallStartMs + beat * beatSec * 1000 - Date.now();
+      const vt = setTimeout(() => {
+        if (cancelPlayRef.current) return;
+        setPlayingSlot(slotIdx);
+      }, Math.max(0, visualMs));
+      playTimeoutsRef.current.push(vt);
+    }
+
+    // End-of-song cleanup
+    const endMs = wallStartMs + totalBeats * beatSec * 1000 + 200 - Date.now();
     const end = setTimeout(() => {
       if (cancelPlayRef.current) return;
       stopPlayback();
-    }, totalBeats * beatMs + 200);
+    }, Math.max(0, endMs));
     playTimeoutsRef.current.push(end);
-  }, [ensureLoaded, stopPlayback, mood, slots, playPianoNote, drumsOn, chordsOn]);
+  }, [ensureLoaded, stopPlayback, mood, slots, playPianoNote, playLoop, preloadLoop, now, drumsOn, chordsOn]);
 
   // Save the current song to localStorage
   const handleSave = useCallback(() => {

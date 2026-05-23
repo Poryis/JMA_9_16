@@ -1,5 +1,9 @@
 # Changelog
 
+## Feb 16, 2026 — Song Studio: tight drum sync + slower mysterious
+- **Drum-sync rebuild**: Replaced the HTMLAudioElement drum playback with Web Audio buffer playback. The drum loop AND every chord/melody note now start from a single `AudioContext.currentTime + 120ms` anchor, so they're sample-accurate-aligned no matter the OS audio latency. New helpers in `usePianoAudio`: `preloadLoop`, `playLoop`, `now`, and a `when` parameter on `playPianoNote`.
+- **Mysterious mood slowed**: 120 BPM → **85 BPM** ("spooky & wandering" now actually wanders). Built a new custom drum loop at 85 BPM (`assets/audio/songs/jam_drums_mysterious.mp3`, ~45s) — sparse kick + low-tom hit on beat 1, soft snare on beat 3, and a low-tom flourish on the "&" of 4 every other measure for that off-kilter mystery feel.
+
 ## Feb 16, 2026 — Song Studio: low chord voicings + ballad backbeat tweak
 - **Chord voicings dropped below the melody**: All chord triads now use 1st/2nd inversions chosen so every chord note sits ≤ **B4** — strictly below the kid's C5→C6 melody octave. No more harmonic muddiness.
   - Happy: C(C-E-G), G(D-G-B), Am(C-E-A), F(C-F-A)

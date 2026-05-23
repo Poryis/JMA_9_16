@@ -1,14 +1,15 @@
 // Lightweight piano-audio hook for Charlie's Song Studio.
-// Preloads piano MP3s into Web Audio buffers so tapping a key has zero latency
-// and supports polyphonic playback. We preload the full melody+chord note set
-// (C4 → C6) so the soft chord triads play instantly under the melody.
+// Uses Web Audio so notes AND the optional drum loop share the same
+// `AudioContext.currentTime` clock — that's what guarantees the drums
+// don't drift behind the melody.
 
 import { useCallback, useEffect, useRef } from 'react';
 import { ALL_PIANO_NOTE_IDS, noteFile } from '../data/songStudio';
 
 export default function usePianoAudio() {
   const ctxRef = useRef(null);
-  const buffersRef = useRef({});
+  const buffersRef = useRef({});       // note id   -> AudioBuffer
+  const loopBuffersRef = useRef({});   // loop url  -> AudioBuffer
   const masterGainRef = useRef(null);
 
   const initContext = useCallback(() => {
@@ -23,35 +24,48 @@ export default function usePianoAudio() {
     return ctxRef.current;
   }, []);
 
-  // Preload all piano MP3s (melody octave + chord octave) as Audio buffers
-  const preload = useCallback(async () => {
+  const decodeUrl = useCallback(async (url) => {
     const ctx = initContext();
+    const r = await fetch(url);
+    const buf = await r.arrayBuffer();
+    return ctx.decodeAudioData(buf);
+  }, [initContext]);
+
+  // Preload all melody+chord piano notes
+  const preload = useCallback(async () => {
+    initContext();
     await Promise.all(ALL_PIANO_NOTE_IDS.map(async (id) => {
       if (buffersRef.current[id]) return;
       try {
-        const r = await fetch(noteFile(id));
-        const buf = await r.arrayBuffer();
-        buffersRef.current[id] = await ctx.decodeAudioData(buf);
+        buffersRef.current[id] = await decodeUrl(noteFile(id));
       } catch {
-        // Silently ignore — falls back to native Audio() if user taps before load
+        // Silently ignore — fallback path will kick in if a note is tapped early
       }
     }));
-  }, [initContext]);
+  }, [initContext, decodeUrl]);
 
-  useEffect(() => {
-    // Note: we don't auto-preload; the page kicks this off after the first user
-    // interaction so AudioContext is allowed to start.
-    return () => {
-      try { ctxRef.current?.close(); } catch { /* ignore */ }
-    };
-  }, []);
+  // Preload (and cache) a drum loop URL → AudioBuffer
+  const preloadLoop = useCallback(async (url) => {
+    if (!url) return null;
+    if (loopBuffersRef.current[url]) return loopBuffersRef.current[url];
+    try {
+      const buf = await decodeUrl(url);
+      loopBuffersRef.current[url] = buf;
+      return buf;
+    } catch {
+      return null;
+    }
+  }, [decodeUrl]);
 
-  // Play a piano note by id (e.g. 'C4'). Polyphonic — each call spawns a fresh source.
-  const playPianoNote = useCallback((id, gain = 0.7) => {
+  // Play a piano note. Polyphonic. `when` is an AudioContext timestamp; 0 = now.
+  const playPianoNote = useCallback((id, gain = 0.7, when = 0) => {
     const ctx = initContext();
+    const startAt = when || ctx.currentTime;
     const buf = buffersRef.current[id];
     if (!buf) {
-      // Fallback: native HTMLAudio while buffers are still loading
+      // Fallback for the very first taps before preload finishes.
+      // We can't honor `when` precisely here, but for the immediate-tap path
+      // it's fine (no scheduling involved).
       if (!ALL_PIANO_NOTE_IDS.includes(id)) return;
       try {
         const a = new Audio(noteFile(id));
@@ -63,10 +77,38 @@ export default function usePianoAudio() {
     const source = ctx.createBufferSource();
     const g = ctx.createGain();
     source.buffer = buf;
-    g.gain.setValueAtTime(gain, ctx.currentTime);
+    g.gain.setValueAtTime(gain, startAt);
     source.connect(g).connect(masterGainRef.current);
-    source.start(0);
+    source.start(startAt);
   }, [initContext]);
 
-  return { preload, playPianoNote, initContext };
+  // Start a looped drum buffer at a precise AudioContext timestamp.
+  // Returns the source so the caller can stop it.
+  const playLoop = useCallback((buf, gain = 0.45, when = 0) => {
+    if (!buf) return null;
+    const ctx = initContext();
+    const startAt = when || ctx.currentTime;
+    const source = ctx.createBufferSource();
+    const g = ctx.createGain();
+    source.buffer = buf;
+    source.loop = true;
+    g.gain.setValueAtTime(gain, startAt);
+    source.connect(g).connect(masterGainRef.current);
+    source.start(startAt);
+    return source;
+  }, [initContext]);
+
+  // Current AudioContext time (callers schedule relative to this).
+  const now = useCallback(() => {
+    const ctx = initContext();
+    return ctx.currentTime;
+  }, [initContext]);
+
+  useEffect(() => {
+    return () => {
+      try { ctxRef.current?.close(); } catch { /* ignore */ }
+    };
+  }, []);
+
+  return { preload, preloadLoop, playPianoNote, playLoop, initContext, now };
 }
