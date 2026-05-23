@@ -1,5 +1,12 @@
 # Changelog
 
+## Feb 16, 2026 — Song Studio: low chord voicings + ballad backbeat tweak
+- **Chord voicings dropped below the melody**: All chord triads now use 1st/2nd inversions chosen so every chord note sits ≤ **B4** — strictly below the kid's C5→C6 melody octave. No more harmonic muddiness.
+  - Happy: C(C-E-G), G(D-G-B), Am(C-E-A), F(C-F-A)
+  - Sad: Am(C-E-A), F(C-F-A), C(C-E-G), G(D-G-B)
+  - Mysterious: Dm(D-F-A), G(D-G-B), Dm(D-F-A), C(C-E-G)
+- **Sad drum loop — ballad backbeat**: Replaced the soft kick on beat 3 with a snare in every measure. Pattern is now: kick on beat 1, snare on beat 3, ride-bell sparkle on every beat. Classic slow-ballad feel.
+
 ## Feb 16, 2026 — Charlie's Song Studio: kid-friendly playability pass
 - **Rests-are-OK hint**: Added a dashed callout above the 16-slot grid: *"💡 Tip: You don't have to fill every beat — leave some empty for rests!"* Counter changed from `0 / 16 beats placed` to `0 notes placed` so the empty grid no longer feels like an unfinished assignment.
 - **High-octave melody keyboard**: Piano now shows only the **top octave (C5 → C6, 8 white keys)** instead of the full C4→C6 range. Kids' melody notes sit cleanly above the I-V-vi-IV chord triads (which live in C4→E5), so harmonies no longer clash. The audio hook still preloads the full C4→C6 set so the underlying chord triads still play with zero latency.

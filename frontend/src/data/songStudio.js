@@ -48,9 +48,10 @@ export const PIANO_KEYS = PIANO_NOTES.map((n) => {
 //  - drumLoop: backing track during playback (null = no drums)
 //  - bpm: melody playback tempo
 //  - charlie: Charlie outfit to display
-//  - chordProgression: 4 triads, one per measure (each triad = array of 3 piano note IDs).
-//                     The triad plays softly on beat 1 of its measure during playback.
-//                     `label` is what we show above the measure in the UI.
+//  - chordProgression: 4 triads, one per measure. Voicings are chosen so every
+//    chord-note sits strictly BELOW the melody octave (i.e. ≤ B4) — we use root
+//    position when possible, 1st inversion otherwise — so the kid's C5→C6
+//    melody always sounds on top.
 //  - color: theme color for the mood card
 export const MOODS = {
   happy: {
@@ -66,11 +67,12 @@ export const MOODS = {
     color: '#FFCC00',
     accent: '#FF9500',
     // "Let It Be" / "Don't Stop Believin'" progression: I-V-vi-IV
+    // Voicings stay ≤ B4 so they never collide with melody.
     chordProgression: [
-      { label: 'C',  notes: ['C4', 'E4', 'G4'] },
-      { label: 'G',  notes: ['G4', 'B4', 'D5'] },
-      { label: 'Am', notes: ['A4', 'C5', 'E5'] },
-      { label: 'F',  notes: ['F4', 'A4', 'C5'] },
+      { label: 'C',  notes: ['C4', 'E4', 'G4'] },           // C root position
+      { label: 'G',  notes: ['D4', 'G4', 'B4'] },           // G 1st inversion (drops D5→D4)
+      { label: 'Am', notes: ['C4', 'E4', 'A4'] },           // Am 1st inversion (drops C5→C4, E5→E4)
+      { label: 'F',  notes: ['C4', 'F4', 'A4'] },           // F 2nd inversion (drops C5→C4)
     ],
   },
   sad: {
@@ -87,10 +89,10 @@ export const MOODS = {
     accent: '#2A5DB0',
     // Reflective minor progression: i-VI-III-VII (Am-F-C-G)
     chordProgression: [
-      { label: 'Am', notes: ['A4', 'C5', 'E5'] },
-      { label: 'F',  notes: ['F4', 'A4', 'C5'] },
-      { label: 'C',  notes: ['C4', 'E4', 'G4'] },
-      { label: 'G',  notes: ['G4', 'B4', 'D5'] },
+      { label: 'Am', notes: ['C4', 'E4', 'A4'] },           // Am 1st inversion
+      { label: 'F',  notes: ['C4', 'F4', 'A4'] },           // F 2nd inversion
+      { label: 'C',  notes: ['C4', 'E4', 'G4'] },           // C root
+      { label: 'G',  notes: ['D4', 'G4', 'B4'] },           // G 1st inversion
     ],
   },
   mysterious: {
@@ -107,10 +109,10 @@ export const MOODS = {
     accent: '#5E2D8C',
     // Modal Dorian groove: i-IV-i-bVII (Dm-G-Dm-C) — keeps the major IV signature
     chordProgression: [
-      { label: 'Dm', notes: ['D4', 'F4', 'A4'] },
-      { label: 'G',  notes: ['G4', 'B4', 'D5'] },
-      { label: 'Dm', notes: ['D4', 'F4', 'A4'] },
-      { label: 'C',  notes: ['C4', 'E4', 'G4'] },
+      { label: 'Dm', notes: ['D4', 'F4', 'A4'] },           // Dm root
+      { label: 'G',  notes: ['D4', 'G4', 'B4'] },           // G 1st inversion
+      { label: 'Dm', notes: ['D4', 'F4', 'A4'] },           // Dm root
+      { label: 'C',  notes: ['C4', 'E4', 'G4'] },           // C root
     ],
   },
 };
