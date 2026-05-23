@@ -36,6 +36,9 @@ export const PIANO_KEYS = PIANO_NOTES.map((n) => {
 //  - drumLoop: backing track during playback (null = no drums)
 //  - bpm: melody playback tempo
 //  - charlie: Charlie outfit to display
+//  - chordProgression: 4 triads, one per measure (each triad = array of 3 piano note IDs).
+//                     The triad plays softly on beat 1 of its measure during playback.
+//                     `label` is what we show above the measure in the UI.
 //  - color: theme color for the mood card
 export const MOODS = {
   happy: {
@@ -50,6 +53,13 @@ export const MOODS = {
     charlie: 'assets/characters/charlie.png',
     color: '#FFCC00',
     accent: '#FF9500',
+    // "Let It Be" / "Don't Stop Believin'" progression: I-V-vi-IV
+    chordProgression: [
+      { label: 'C',  notes: ['C4', 'E4', 'G4'] },
+      { label: 'G',  notes: ['G4', 'B4', 'D5'] },
+      { label: 'Am', notes: ['A4', 'C5', 'E5'] },
+      { label: 'F',  notes: ['F4', 'A4', 'C5'] },
+    ],
   },
   sad: {
     id: 'sad',
@@ -57,12 +67,19 @@ export const MOODS = {
     emoji: '😢',
     description: 'Slow & thoughtful (A minor)',
     tonic: 'A',
-    scaleNotes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], // same pitch classes but tonic is A
+    scaleNotes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
     drumLoop: null,
     bpm: 70,
     charlie: 'assets/characters/charlie-zoot.png',
     color: '#4285F4',
     accent: '#2A5DB0',
+    // Reflective minor progression: i-VI-III-VII (Am-F-C-G)
+    chordProgression: [
+      { label: 'Am', notes: ['A4', 'C5', 'E5'] },
+      { label: 'F',  notes: ['F4', 'A4', 'C5'] },
+      { label: 'C',  notes: ['C4', 'E4', 'G4'] },
+      { label: 'G',  notes: ['G4', 'B4', 'D5'] },
+    ],
   },
   mysterious: {
     id: 'mysterious',
@@ -70,12 +87,19 @@ export const MOODS = {
     emoji: '👻',
     description: 'Spooky & wandering (D Dorian)',
     tonic: 'D',
-    scaleNotes: ['D', 'E', 'F', 'G', 'A', 'B', 'C'], // tonic is D
+    scaleNotes: ['D', 'E', 'F', 'G', 'A', 'B', 'C'],
     drumLoop: 'assets/audio/songs/jam_drums_boogie.mp3',
     bpm: 120,
     charlie: 'assets/characters/charlie-steampunk.png',
     color: '#9B6DE0',
     accent: '#5E2D8C',
+    // Modal Dorian groove: i-IV-i-bVII (Dm-G-Dm-C) — keeps the major IV signature
+    chordProgression: [
+      { label: 'Dm', notes: ['D4', 'F4', 'A4'] },
+      { label: 'G',  notes: ['G4', 'B4', 'D5'] },
+      { label: 'Dm', notes: ['D4', 'F4', 'A4'] },
+      { label: 'C',  notes: ['C4', 'E4', 'G4'] },
+    ],
   },
 };
 

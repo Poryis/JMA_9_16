@@ -135,38 +135,57 @@ export default function SongStudioPage() {
 
   useEffect(() => stopPlayback, [stopPlayback]);
 
-  // Play the composed song
+  // Play the composed song. Plays the melody twice, with the mood's
+  // chord progression on beat 1 of each measure (chord notes are quieter so
+  // the kid's melody stays in front).
   const playSong = useCallback(() => {
     ensureLoaded();
     stopPlayback();
     cancelPlayRef.current = false;
     setIsPlaying(true);
 
-    // Backing drum loop (if any) — kept synchronized at the mood's BPM
+    // Backing drum loop (if any) — loops underneath both play-throughs
     if (mood.drumLoop) {
       try {
         const a = new Audio(mood.drumLoop);
         a.volume = 0.45;
         a.loop = true;
-        a.play().catch(() => { /* autoplay blocked — silent fallback */ });
+        a.play().catch(() => { /* autoplay blocked */ });
         drumAudioRef.current = a;
       } catch { /* ignore */ }
     }
 
     const beatMs = 60_000 / mood.bpm;
-    slots.forEach((noteId, i) => {
+    const REPEATS = 2;
+    const totalBeats = TOTAL_SLOTS * REPEATS;
+
+    for (let beat = 0; beat < totalBeats; beat++) {
+      const slotIdx = beat % TOTAL_SLOTS;            // which slot in this play-through
+      const measureIdx = Math.floor(slotIdx / SLOTS_PER_ROW); // 0..3
+      const measureBeat = slotIdx % SLOTS_PER_ROW;   // 0..3
+      const noteId = slots[slotIdx];
+
       const t = setTimeout(() => {
         if (cancelPlayRef.current) return;
-        setPlayingSlot(i);
-        if (noteId) playPianoNote(noteId, 0.8);
-      }, i * beatMs);
+        setPlayingSlot(slotIdx);
+        // Play the chord triad on the first beat of every measure
+        if (measureBeat === 0 && mood.chordProgression) {
+          const chord = mood.chordProgression[measureIdx];
+          if (chord) {
+            chord.notes.forEach((n) => playPianoNote(n, 0.35));
+          }
+        }
+        // Play the melody note (louder so it stays on top)
+        if (noteId) playPianoNote(noteId, 0.85);
+      }, beat * beatMs);
       playTimeoutsRef.current.push(t);
-    });
-    // End-of-song cleanup
+    }
+
+    // End-of-song cleanup after both repeats finish
     const end = setTimeout(() => {
       if (cancelPlayRef.current) return;
       stopPlayback();
-    }, TOTAL_SLOTS * beatMs + 200);
+    }, totalBeats * beatMs + 200);
     playTimeoutsRef.current.push(end);
   }, [ensureLoaded, stopPlayback, mood, slots, playPianoNote]);
 
@@ -268,50 +287,80 @@ export default function SongStudioPage() {
             transition={{ repeat: Infinity, duration: isPlaying ? 0.6 : 2.4, ease: 'easeInOut' }}
           />
           <div className="flex-1">
-            <div className="text-[10px] uppercase font-black opacity-60 mb-1" style={{ color: 'var(--jma-dark)' }}>
-              {filledCount} / {TOTAL_SLOTS} beats placed · {mood.bpm} BPM
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-[10px] uppercase font-black opacity-60" style={{ color: 'var(--jma-dark)' }}>
+                {filledCount} / {TOTAL_SLOTS} beats placed · {mood.bpm} BPM · plays 2×
+              </div>
+              <div className="flex items-center gap-1 text-[10px] opacity-70" style={{ color: 'var(--jma-dark)' }}>
+                <span className="font-black uppercase">Chords:</span>
+                <span className="font-black">
+                  {mood.chordProgression.map((c) => c.label).join(' · ')}
+                </span>
+              </div>
             </div>
             <div
-              className="grid gap-1.5 md:gap-2 rounded-2xl border-3 p-2"
+              className="rounded-2xl border-3 p-2"
               style={{
-                gridTemplateColumns: `repeat(${SLOTS_PER_ROW}, minmax(0, 1fr))`,
                 borderColor: 'var(--jma-dark)',
                 backgroundColor: 'rgba(255,255,255,0.85)',
                 boxShadow: '0 4px 0 0 var(--jma-dark)',
               }}
             >
-              {slots.map((noteId, i) => {
-                const key = noteId ? PIANO_KEYS.find((k) => k.id === noteId) : null;
-                const isCursor = i === cursor && !isPlaying;
-                const isLit = playingSlot === i;
+              {/* 4 measure rows, each with a chord label + 4 slots */}
+              {[0, 1, 2, 3].map((measureIdx) => {
+                const chord = mood.chordProgression[measureIdx];
                 return (
-                  <button
-                    key={i}
-                    data-testid={`slot-${i}`}
-                    onClick={() => handleSlotTap(i)}
-                    className="aspect-square rounded-lg border-2 flex flex-col items-center justify-center"
-                    style={{
-                      borderColor: 'var(--jma-dark)',
-                      backgroundColor: isLit ? (key ? key.color : '#FFCC00') : (key ? key.color : 'white'),
-                      borderStyle: noteId ? 'solid' : 'dashed',
-                      boxShadow: isCursor ? `0 0 0 3px ${mood.accent}` : 'none',
-                      transform: isLit ? 'scale(1.08)' : 'scale(1)',
-                      transition: 'transform 0.1s, background-color 0.15s',
-                    }}
-                  >
-                    {key ? (
-                      <>
-                        <span className="text-[10px] md:text-xs font-black font-display leading-none" style={{ color: 'var(--jma-dark)' }}>
-                          {key.solfege}
-                        </span>
-                        <span className="text-[8px] opacity-60 leading-none mt-0.5" style={{ color: 'var(--jma-dark)' }}>
-                          {key.octave}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-[10px] opacity-30 font-bold" style={{ color: 'var(--jma-dark)' }}>{i + 1}</span>
-                    )}
-                  </button>
+                  <div key={measureIdx} className="flex items-center gap-1.5 md:gap-2 mb-1 last:mb-0">
+                    <div
+                      className="flex-shrink-0 w-9 md:w-12 rounded-md text-center py-1 border-2"
+                      style={{
+                        borderColor: 'var(--jma-dark)',
+                        backgroundColor: mood.accent,
+                        color: 'white',
+                      }}
+                    >
+                      <div className="text-[9px] uppercase font-black opacity-80 leading-none">M{measureIdx + 1}</div>
+                      <div className="text-xs md:text-sm font-black font-display leading-tight">{chord.label}</div>
+                    </div>
+                    <div className="grid gap-1.5 md:gap-2 flex-1" style={{ gridTemplateColumns: `repeat(${SLOTS_PER_ROW}, minmax(0, 1fr))` }}>
+                      {[0, 1, 2, 3].map((beatIdx) => {
+                        const i = measureIdx * SLOTS_PER_ROW + beatIdx;
+                        const noteId = slots[i];
+                        const key = noteId ? PIANO_KEYS.find((k) => k.id === noteId) : null;
+                        const isCursor = i === cursor && !isPlaying;
+                        const isLit = playingSlot === i;
+                        return (
+                          <button
+                            key={i}
+                            data-testid={`slot-${i}`}
+                            onClick={() => handleSlotTap(i)}
+                            className="aspect-square rounded-lg border-2 flex flex-col items-center justify-center"
+                            style={{
+                              borderColor: 'var(--jma-dark)',
+                              backgroundColor: isLit ? (key ? key.color : '#FFCC00') : (key ? key.color : 'white'),
+                              borderStyle: noteId ? 'solid' : 'dashed',
+                              boxShadow: isCursor ? `0 0 0 3px ${mood.accent}` : 'none',
+                              transform: isLit ? 'scale(1.08)' : 'scale(1)',
+                              transition: 'transform 0.1s, background-color 0.15s',
+                            }}
+                          >
+                            {key ? (
+                              <>
+                                <span className="text-[10px] md:text-xs font-black font-display leading-none" style={{ color: 'var(--jma-dark)' }}>
+                                  {key.solfege}
+                                </span>
+                                <span className="text-[8px] opacity-60 leading-none mt-0.5" style={{ color: 'var(--jma-dark)' }}>
+                                  {key.octave}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-[10px] opacity-30 font-bold" style={{ color: 'var(--jma-dark)' }}>{i + 1}</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>
