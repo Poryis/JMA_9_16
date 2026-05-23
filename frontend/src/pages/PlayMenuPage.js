@@ -51,7 +51,7 @@ const PLAY_TILES = [
     accent: '#5E2D8C',
     sign: 'GAME',
     bubble: 'Listen closely!',
-    character: 'assets/characters/dr-jellybone.png',
+    character: 'assets/characters/dr-jellybone-detective.png',
     charWidthPct: 32,
   },
 ];

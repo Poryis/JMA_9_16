@@ -1,61 +1,62 @@
 // Detective Dr. Jellybone — melody library.
 // All tunes are in C-diatonic so they work with our bell set.
-// Each tune is a short, recognizable phrase so kids can spot the wrong note.
+// `null` entries are RESTS — silent beats that preserve the rhythm so the tune
+// is recognizable, but aren't shown as numbered slots and aren't wrong-note candidates.
 
 export const DETECTIVE_TUNES = [
-  // ===== Beginner: very familiar nursery tunes, 5-8 notes =====
+  // ===== Beginner: very familiar nursery tunes =====
   {
     id: 'twinkle',
     name: 'Twinkle Twinkle Little Star',
     level: 'easy',
-    notes: ['C', 'C', 'G', 'G', 'A', 'A', 'G'],
+    notes: ['C', 'C', 'G', 'G', 'A', 'A', 'G', null, 'F', 'F', 'E', 'E', 'D', 'D', 'C'],
   },
   {
     id: 'mary_lamb',
     name: 'Mary Had a Little Lamb',
     level: 'easy',
-    notes: ['E', 'D', 'C', 'D', 'E', 'E', 'E'],
+    notes: ['E', 'D', 'C', 'D', 'E', 'E', 'E', null, 'D', 'D', 'D', null, 'E', 'G', 'G'],
   },
   {
     id: 'hot_cross',
     name: 'Hot Cross Buns',
     level: 'easy',
-    notes: ['E', 'D', 'C', 'E', 'D', 'C'],
+    notes: ['E', 'D', 'C', null, 'E', 'D', 'C'],
   },
   {
     id: 'row_boat',
     name: 'Row Row Row Your Boat',
     level: 'easy',
-    notes: ['C', 'C', 'C', 'D', 'E', 'E', 'D', 'E', 'F', 'G'],
+    notes: ['C', 'C', 'C', 'D', 'E', null, 'E', 'D', 'E', 'F', 'G'],
   },
 
-  // ===== Intermediate: 8-12 notes, less ubiquitous =====
+  // ===== Intermediate =====
   {
     id: 'frere_jacques',
     name: 'Frère Jacques',
     level: 'medium',
-    notes: ['C', 'D', 'E', 'C', 'C', 'D', 'E', 'C', 'E', 'F', 'G'],
+    notes: ['C', 'D', 'E', 'C', null, 'C', 'D', 'E', 'C', null, 'E', 'F', 'G', null, 'E', 'F', 'G'],
   },
   {
     id: 'london_bridge',
     name: 'London Bridge',
     level: 'medium',
-    notes: ['G', 'A', 'G', 'F', 'E', 'F', 'G', 'D', 'E', 'F'],
+    notes: ['G', 'A', 'G', 'F', 'E', 'F', 'G', null, 'D', 'E', 'F', null, 'E', 'F', 'G'],
   },
   {
     id: 'old_macdonald',
     name: 'Old MacDonald',
     level: 'medium',
-    notes: ['G', 'G', 'G', 'D', 'E', 'E', 'D', 'B', 'B', 'A', 'A', 'G'],
+    notes: ['G', 'G', 'G', 'D', 'E', 'E', 'D', null, 'B', 'B', 'A', 'A', 'G'],
   },
   {
     id: 'when_saints_short',
-    name: 'When the Saints (Verse)',
+    name: 'When the Saints',
     level: 'medium',
-    notes: ['C', 'E', 'F', 'G', 'C', 'E', 'F', 'G', 'C', 'E', 'F', 'G', 'E', 'C', 'E', 'D'],
+    notes: ['C', 'E', 'F', 'G', null, 'C', 'E', 'F', 'G', null, 'C', 'E', 'F', 'G', 'E', 'C', 'E', 'D'],
   },
 
-  // ===== Master: 12-16 notes, may be less familiar =====
+  // ===== Master =====
   {
     id: 'ode_to_joy',
     name: 'Ode to Joy',
@@ -66,13 +67,13 @@ export const DETECTIVE_TUNES = [
     id: 'jingle_bells',
     name: 'Jingle Bells',
     level: 'hard',
-    notes: ['E', 'E', 'E', 'E', 'E', 'E', 'E', 'G', 'C', 'D', 'E', 'F', 'F', 'F', 'F', 'F', 'E', 'E', 'E', 'E', 'D', 'D', 'E', 'D', 'G'],
+    notes: ['E', 'E', 'E', null, 'E', 'E', 'E', null, 'E', 'G', 'C', 'D', 'E'],
   },
   {
     id: 'happy_birthday',
     name: 'Birthday Tune',
     level: 'hard',
-    notes: ['C', 'C', 'D', 'C', 'F', 'E', 'C', 'C', 'D', 'C', 'G', 'F'],
+    notes: ['C', 'C', 'D', 'C', 'F', 'E', null, 'C', 'C', 'D', 'C', 'G', 'F'],
   },
 ];
 

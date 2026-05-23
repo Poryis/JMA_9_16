@@ -18,8 +18,8 @@ import { earnSticker } from '../hooks/useStickers';
 const BELL_BY_NOTE = Object.fromEntries(BELLS.map(b => [b.note, b]));
 
 const LEVELS = {
-  easy:   { name: 'Rookie',    description: 'Big mistakes, short tunes', noteMs: 650, swapMin: 3, swapMax: 4, melodyLevel: 'easy',   sticker: 'detective_rookie' },
-  medium: { name: 'Detective', description: 'Trickier, medium tunes',    noteMs: 520, swapMin: 2, swapMax: 3, melodyLevel: 'medium', sticker: 'detective_sleuth' },
+  easy:   { name: 'Rookie',    description: 'Big mistakes, short tunes', noteMs: 600, swapMin: 3, swapMax: 4, melodyLevel: 'easy',   sticker: 'detective_rookie' },
+  medium: { name: 'Detective', description: 'Trickier, medium tunes',    noteMs: 500, swapMin: 2, swapMax: 3, melodyLevel: 'medium', sticker: 'detective_sleuth' },
   hard:   { name: 'Master',    description: 'Sneaky, long tunes',         noteMs: 420, swapMin: 1, swapMax: 2, melodyLevel: 'hard',   sticker: 'detective_master' },
 };
 
@@ -33,15 +33,11 @@ const saveBest = (b) => { try { localStorage.setItem(BEST_KEY, JSON.stringify(b)
 function pickWrongNote(original, swapMin, swapMax) {
   const idx = SCALE_ORDER.indexOf(original);
   if (idx < 0) return original;
-  // Candidate notes whose scale-distance from original is within [swapMin, swapMax].
   const candidates = SCALE_ORDER
     .map((n, i) => ({ n, d: Math.abs(i - idx) }))
     .filter(c => c.n !== original && c.d >= swapMin && c.d <= swapMax)
     .map(c => c.n);
-  if (!candidates.length) {
-    // Fallback: any other note
-    return SCALE_ORDER.filter(n => n !== original)[0];
-  }
+  if (!candidates.length) return SCALE_ORDER.filter(n => n !== original)[0];
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
@@ -50,15 +46,41 @@ function pickTune(level) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+// Build a round. `notes` may contain `null` rests — those preserve rhythm but
+// are NOT corruptable and don't get clickable slots. Slots are indexed only
+// across the non-rest entries.
 function buildRound(levelKey) {
   const lvl = LEVELS[levelKey];
   const tune = pickTune(lvl.melodyLevel);
-  // Pick a random index to corrupt (avoid the very first note so kids have a reference).
-  const wrongIndex = 1 + Math.floor(Math.random() * (tune.notes.length - 1));
-  const original = tune.notes[wrongIndex];
+
+  // Map each note index to its slot number (or -1 for rests).
+  const slotMap = [];
+  let s = 0;
+  tune.notes.forEach((n) => {
+    if (n == null) { slotMap.push(-1); }
+    else { slotMap.push(s); s += 1; }
+  });
+
+  // Non-rest indices into tune.notes
+  const noteIndices = tune.notes.map((n, i) => (n == null ? -1 : i)).filter(i => i >= 0);
+  // Avoid the very first note as the wrong one so kids have a reference.
+  const corruptable = noteIndices.slice(1);
+  const corruptIdx = corruptable[Math.floor(Math.random() * corruptable.length)];
+
+  const original = tune.notes[corruptIdx];
   const wrong = pickWrongNote(original, lvl.swapMin, lvl.swapMax);
-  const corrupted = tune.notes.map((n, i) => (i === wrongIndex ? wrong : n));
-  return { tune, wrongIndex, original, wrong, corrupted };
+  const corrupted = tune.notes.map((n, i) => (i === corruptIdx ? wrong : n));
+
+  return {
+    tune,
+    corruptIdx,        // index into tune.notes (with rests)
+    correctSlot: slotMap[corruptIdx], // index into the slot row (without rests)
+    original,
+    wrong,
+    corrupted,
+    slotMap,
+    totalSlots: s,
+  };
 }
 
 export default function DetectivePage() {
@@ -75,47 +97,70 @@ export default function DetectivePage() {
   const [bestStreak, setBestStreak] = useState(0);
   const [bestRecords, setBestRecords] = useState(loadBest);
 
-  const [playbackIdx, setPlaybackIdx] = useState(-1); // which note is "lit" during playback
-  const [phase, setPhase] = useState('listen');        // listen | guess | reveal
-  const [guessIdx, setGuessIdx] = useState(null);
+  const [playbackIdx, setPlaybackIdx] = useState(-1); // index of currently-lit slot (or -1)
+  const [phase, setPhase] = useState('listen_original'); // listen_original | gap | listen_corrupted | guess | reveal
+  const [guessSlot, setGuessSlot] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
 
   const playbackTimerRef = useRef(null);
   const cancelPlaybackRef = useRef(false);
 
-  // ------- Cleanup playback on unmount or state change -------
+  // ------- Cleanup playback on unmount -------
   useEffect(() => () => {
     cancelPlaybackRef.current = true;
     if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
   }, []);
 
-  // ------- Playback driver -------
-  const playMelody = useCallback((roundData) => {
+  // ------- Playback driver. `mode` = 'original' | 'corrupted' -------
+  // Plays each note of the sequence at `noteMs` intervals, lighting up the
+  // corresponding slot. `null` entries are rests (silent, slot-less).
+  const playSequence = useCallback((roundData, mode, onDone) => {
     if (!roundData) return;
-    cancelPlaybackRef.current = false;
-    setPhase('listen');
-    setPlaybackIdx(-1);
-
+    const seq = mode === 'corrupted' ? roundData.corrupted : roundData.tune.notes;
     const lvl = LEVELS[difficulty];
     const noteMs = lvl.noteMs;
-    let i = 0;
 
+    cancelPlaybackRef.current = false;
+    setPlaybackIdx(-1);
+
+    let i = 0;
     const tick = () => {
       if (cancelPlaybackRef.current) return;
-      if (i >= roundData.corrupted.length) {
+      if (i >= seq.length) {
         setPlaybackIdx(-1);
-        setPhase('guess');
+        if (onDone) onDone();
         return;
       }
-      const note = roundData.corrupted[i];
-      setPlaybackIdx(i);
-      playBellNote(note);
+      const note = seq[i];
+      const slotIdx = roundData.slotMap[i];
+      if (note != null) {
+        setPlaybackIdx(slotIdx);
+        playBellNote(note);
+      } else {
+        // Rest — clear the lit slot during silence
+        setPlaybackIdx(-1);
+      }
       i += 1;
       playbackTimerRef.current = setTimeout(tick, noteMs);
     };
-
     tick();
   }, [difficulty, playBellNote]);
+
+  // Two-pass playback: original → gap → corrupted → guess phase
+  const playRound = useCallback((roundData) => {
+    if (!roundData) return;
+    setPhase('listen_original');
+    playSequence(roundData, 'original', () => {
+      // Brief pause between original and corrupted versions
+      setPhase('gap');
+      playbackTimerRef.current = setTimeout(() => {
+        setPhase('listen_corrupted');
+        playSequence(roundData, 'corrupted', () => {
+          setPhase('guess');
+        });
+      }, 700);
+    });
+  }, [playSequence]);
 
   // ------- Round / game lifecycle -------
   const startGame = useCallback((diffOverride) => {
@@ -129,24 +174,23 @@ export default function DetectivePage() {
     setStreak(0);
     setBestStreak(0);
     setRoundNum(1);
-    setGuessIdx(null);
+    setGuessSlot(null);
     setIsCorrect(null);
     const r = buildRound(diff);
     setRound(r);
     setGameState('playing');
-    // Tiny delay so the page renders before audio
-    setTimeout(() => playMelody(r), 350);
-  }, [initAudioContext, difficulty, playMelody]);
+    setTimeout(() => playRound(r), 350);
+  }, [initAudioContext, difficulty, playRound]);
 
-  const handleGuess = useCallback((idx) => {
-    if (phase !== 'guess' || round == null || guessIdx != null) return;
-    const correct = idx === round.wrongIndex;
-    setGuessIdx(idx);
+  const handleGuess = useCallback((slotNum) => {
+    if (phase !== 'guess' || round == null || guessSlot != null) return;
+    const correct = slotNum === round.correctSlot;
+    setGuessSlot(slotNum);
     setIsCorrect(correct);
     setPhase('reveal');
 
     if (correct) {
-      const bonus = 20 + Math.max(0, (round.tune.notes.length - 5)) * 2;
+      const bonus = 20 + Math.max(0, (round.totalSlots - 5)) * 2;
       const newStreak = streak + 1;
       const streakBonus = newStreak >= 3 ? 10 : 0;
       const total = bonus + streakBonus;
@@ -159,12 +203,11 @@ export default function DetectivePage() {
       setStreak(0);
       playFeedbackSound('error');
     }
-  }, [phase, round, guessIdx, streak, playFeedbackSound]);
+  }, [phase, round, guessSlot, streak, playFeedbackSound]);
 
   // Auto-advance from reveal to next round (or game over)
   const advance = useCallback(() => {
     if (lives <= 0) {
-      // Save best + sticker + transition to game over
       const lvl = LEVELS[difficulty];
       const prev = bestRecords[difficulty] || { score: 0, streak: 0 };
       const next = { ...bestRecords, [difficulty]: { score: Math.max(prev.score, score), streak: Math.max(prev.streak, bestStreak) } };
@@ -177,7 +220,6 @@ export default function DetectivePage() {
       return;
     }
     if (roundNum >= ROUNDS_PER_RUN) {
-      // Run cleared!
       const lvl = LEVELS[difficulty];
       const prev = bestRecords[difficulty] || { score: 0, streak: 0 };
       const next = { ...bestRecords, [difficulty]: { score: Math.max(prev.score, score), streak: Math.max(prev.streak, bestStreak) } };
@@ -190,18 +232,30 @@ export default function DetectivePage() {
       setGameState('win');
       return;
     }
-    // Next round
     const r = buildRound(difficulty);
     setRound(r);
     setRoundNum((n) => n + 1);
-    setGuessIdx(null);
+    setGuessSlot(null);
     setIsCorrect(null);
-    setTimeout(() => playMelody(r), 350);
-  }, [lives, roundNum, difficulty, bestRecords, score, bestStreak, playMelody]);
+    setTimeout(() => playRound(r), 350);
+  }, [lives, roundNum, difficulty, bestRecords, score, bestStreak, playRound]);
 
-  const replay = useCallback(() => {
-    if (round && phase !== 'listen') playMelody(round);
-  }, [round, phase, playMelody]);
+  // Re-listen handlers during guess phase
+  const replayOriginal = useCallback(() => {
+    if (!round || phase === 'listen_original' || phase === 'listen_corrupted') return;
+    cancelPlaybackRef.current = true;
+    if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+    setPhase('listen_original');
+    playSequence(round, 'original', () => setPhase('guess'));
+  }, [round, phase, playSequence]);
+
+  const replayCorrupted = useCallback(() => {
+    if (!round || phase === 'listen_original' || phase === 'listen_corrupted') return;
+    cancelPlaybackRef.current = true;
+    if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+    setPhase('listen_corrupted');
+    playSequence(round, 'corrupted', () => setPhase('guess'));
+  }, [round, phase, playSequence]);
 
   // ===== MENU =====
   if (gameState === 'menu') {
@@ -237,26 +291,23 @@ export default function DetectivePage() {
           animate={{ scale: 1 }}
           transition={{ delay: 0.15 }}
         >
-          {/* Animated magnifying glass icon */}
-          <motion.div
-            className="absolute -top-6 -right-4 z-10"
-            animate={{ rotate: [-10, 10, -10], y: [0, -3, 0] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <div
-              className="w-14 h-14 rounded-full border-3 flex items-center justify-center"
-              style={{ backgroundColor: '#FFCC00', borderColor: 'var(--jma-dark)', boxShadow: '0 4px 0 0 var(--jma-dark)' }}
-            >
-              <Search className="w-7 h-7" style={{ color: 'var(--jma-dark)' }} />
-            </div>
-          </motion.div>
+          {/* Detective Dr. Jellybone illustration */}
+          <motion.img
+            src="assets/characters/dr-jellybone-detective.png"
+            alt="Detective Dr. Jellybone"
+            className="absolute -top-12 -right-6 md:-top-16 md:-right-10 pointer-events-none select-none z-10"
+            style={{ width: 'clamp(80px, 16vw, 130px)', filter: 'drop-shadow(0 6px 6px rgba(0,0,0,0.4))' }}
+            animate={{ y: [0, -5, 0], rotate: [-3, 3, -3] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+            draggable={false}
+          />
 
           <Sparkles className="w-9 h-9 mx-auto mb-1" style={{ color: 'var(--jma-purple)' }} />
           <h2 className="text-xl font-bold mb-2 font-display">How to Play</h2>
           <p className="text-sm md:text-base" style={{ color: 'var(--jma-dark)' }}>
-            1. Listen carefully — a familiar tune plays<br />
-            2. One note will sound <span className="font-black text-[var(--jma-red)]">off</span><br />
-            3. Tap the beat where you heard the mistake<br />
+            1. Listen to the <span className="font-black text-[var(--jma-green)]">ORIGINAL</span> tune<br />
+            2. Then hear the <span className="font-black text-[var(--jma-red)]">SUSPECT</span> — one note is off!<br />
+            3. Tap the beat that sounded wrong<br />
             4. Three strikes and the case closes!
           </p>
         </motion.div>
@@ -298,7 +349,6 @@ export default function DetectivePage() {
 
   // ===== PLAYING / WIN / GAMEOVER =====
   const tune = round?.tune;
-  const corrupted = round?.corrupted || [];
   return (
     <div
       data-testid="detective-playing"
@@ -360,20 +410,74 @@ export default function DetectivePage() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
+          {/* Detective Dr. Jellybone peeks at the case file */}
+          <motion.img
+            src="assets/characters/dr-jellybone-detective.png"
+            alt="Detective Dr. Jellybone"
+            className="absolute -top-16 -left-2 md:-top-20 md:-left-6 pointer-events-none select-none"
+            style={{ width: 'clamp(70px, 14vw, 130px)', filter: 'drop-shadow(0 6px 6px rgba(0,0,0,0.4))' }}
+            animate={{ y: [0, -4, 0], rotate: [-2, 2, -2] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+            draggable={false}
+          />
+
           <div className="text-xs uppercase font-black opacity-60" style={{ color: 'var(--jma-dark)' }}>
             Case file
           </div>
-          <h2 className="text-xl md:text-2xl font-black font-display mb-2" style={{ color: 'var(--jma-dark)' }}>
+          <h2 className="text-xl md:text-2xl font-black font-display mb-1" style={{ color: 'var(--jma-dark)' }}>
             {tune?.name || '...'}
           </h2>
 
-          {/* Beat slots */}
+          {/* Phase label */}
+          <div
+            data-testid="detective-phase-label"
+            className="inline-block px-3 py-1 rounded-full text-xs md:text-sm font-black border-2 mt-1"
+            style={{
+              backgroundColor:
+                phase === 'listen_original' ? '#34A853' :
+                phase === 'gap' ? 'rgba(255,255,255,0.85)' :
+                phase === 'listen_corrupted' ? '#FF3B30' :
+                phase === 'guess' ? 'var(--jma-yellow)' :
+                'rgba(255,255,255,0.85)',
+              color:
+                phase === 'listen_original' || phase === 'listen_corrupted' ? 'white' : 'var(--jma-dark)',
+              borderColor: 'var(--jma-dark)',
+            }}
+          >
+            {phase === 'listen_original' && '🎵 Listen to the ORIGINAL tune'}
+            {phase === 'gap' && '🤔 Now find what changed...'}
+            {phase === 'listen_corrupted' && '🔍 Hear the SUSPECT — one note is off!'}
+            {phase === 'guess' && '👇 Tap the beat that sounded wrong'}
+            {phase === 'reveal' && (isCorrect ? '🔍 Case solved!' : '😅 Try the next case!')}
+          </div>
+
+          {/* Beat slots — rests are skipped, slots are numbered only across real notes */}
           <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 mt-3">
-            {corrupted.map((note, i) => {
+            {round && tune?.notes.map((note, i) => {
+              if (note == null) {
+                // Rest — show a subtle dash, not a clickable slot
+                return (
+                  <div
+                    key={`rest-${i}`}
+                    className="flex items-center justify-center"
+                    style={{
+                      width: 'clamp(18px, 4vw, 26px)',
+                      height: 'clamp(48px, 10vw, 70px)',
+                      color: 'rgba(10,37,64,0.4)',
+                      fontWeight: 900,
+                      fontSize: '1.2rem',
+                    }}
+                    aria-hidden="true"
+                  >
+                    •
+                  </div>
+                );
+              }
+              const slotNum = round.slotMap[i];
               const bell = BELL_BY_NOTE[note];
-              const isLit = playbackIdx === i;
-              const isGuessed = guessIdx === i;
-              const isAnswer = phase === 'reveal' && i === round.wrongIndex;
+              const isLit = playbackIdx === slotNum;
+              const isGuessed = guessSlot === slotNum;
+              const isAnswer = phase === 'reveal' && slotNum === round.correctSlot;
               const showAnswer = phase === 'reveal';
               const slotColor = isAnswer
                 ? (isCorrect && isGuessed ? '#34A853' : '#FF3B30')
@@ -381,9 +485,9 @@ export default function DetectivePage() {
 
               return (
                 <motion.button
-                  key={i}
-                  data-testid={`detective-slot-${i}`}
-                  onClick={() => handleGuess(i)}
+                  key={`slot-${i}`}
+                  data-testid={`detective-slot-${slotNum}`}
+                  onClick={() => handleGuess(slotNum)}
                   disabled={phase !== 'guess'}
                   className="relative rounded-xl border-3 flex flex-col items-center justify-center"
                   style={{
@@ -404,7 +508,7 @@ export default function DetectivePage() {
                     className="text-xs md:text-sm font-black font-display leading-none"
                     style={{ color: isAnswer || (isGuessed && !isCorrect) ? 'white' : 'var(--jma-dark)' }}
                   >
-                    {i + 1}
+                    {slotNum + 1}
                   </span>
                   {showAnswer && isAnswer && bell && (
                     <span className="text-[8px] md:text-[10px] font-black mt-0.5" style={{ color: 'white' }}>
@@ -434,8 +538,8 @@ export default function DetectivePage() {
                 }}
               >
                 {isCorrect
-                  ? `🔍 Case solved! Beat ${round.wrongIndex + 1} should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`
-                  : `Beat ${round.wrongIndex + 1} was off! Should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`
+                  ? `🔍 Beat ${round.correctSlot + 1} was the wrong one — should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`
+                  : `Beat ${round.correctSlot + 1} was off! Should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`
                 }
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
@@ -450,23 +554,27 @@ export default function DetectivePage() {
             </motion.div>
           )}
 
-          {/* Replay during guess phase */}
+          {/* Replay buttons during guess phase */}
           {phase === 'guess' && (
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               <button
-                data-testid="detective-replay-btn"
-                onClick={replay}
-                className="chunky-btn bg-[var(--jma-purple)] text-white px-4 py-2 flex items-center gap-2"
+                data-testid="detective-replay-original-btn"
+                onClick={replayOriginal}
+                className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-1.5 text-sm flex items-center gap-1.5"
               >
-                <Volume2 className="w-4 h-4" /> Play Again
+                <Volume2 className="w-4 h-4" /> Hear Original
               </button>
-              <span className="text-xs font-bold opacity-60" style={{ color: 'var(--jma-dark)' }}>
-                Tap the beat that sounded off
-              </span>
+              <button
+                data-testid="detective-replay-suspect-btn"
+                onClick={replayCorrupted}
+                className="chunky-btn bg-[var(--jma-red)] text-white px-3 py-1.5 text-sm flex items-center gap-1.5"
+              >
+                <Search className="w-4 h-4" /> Hear Suspect
+              </button>
             </div>
           )}
 
-          {phase === 'listen' && (
+          {(phase === 'listen_original' || phase === 'listen_corrupted' || phase === 'gap') && (
             <p className="mt-3 text-sm font-bold opacity-70" style={{ color: 'var(--jma-dark)' }}>
               🎧 Listen carefully...
             </p>
