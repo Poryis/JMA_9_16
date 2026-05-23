@@ -13,7 +13,7 @@ const PLAY_TILES = [
     sign: 'GAME',
     character: 'assets/characters/jazzy-marching.png',
     charWidthPct: 28,
-    sfx: 'assets/audio/sfx-bell-chime.mp3',
+    sfx: 'assets/audio/sfx-rhythm-fill.mp3',
   },
   {
     id: 'stew-kazoo',
