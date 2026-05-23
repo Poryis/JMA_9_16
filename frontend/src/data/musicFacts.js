@@ -36,7 +36,7 @@ export const CHARACTER_FACTS = {
       "You don't need a real drum to drum — you can tap a table, a cup, or even your knees!",
     ],
   },
-  'Dr. Jellybone': {
+  'Whiskers': {
     topic: 'theory',
     color: '#4285F4',
     facts: [

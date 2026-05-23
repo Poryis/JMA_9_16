@@ -48,7 +48,10 @@ const OUTFITS = {
     'assets/characters/stew.png',
     'assets/characters/stew-swing.png',
   ],
-  doctor: ['assets/characters/dr-jellybone.png'],
+  doctor: [
+    'assets/characters/dr-jellybone.png',
+    'assets/characters/dr-jellybone-detective.png',
+  ],
 };
 
 const NAMES = {

@@ -19,7 +19,8 @@ export const STICKERS = [
   { id: 'char_charlie',   name: 'Charlie',         category: 'characters', icon: 'assets/characters/charlie-polliwog.png', color: '#34A853', hint: 'Meet Charlie on the home page' },
   { id: 'char_chunk',     name: 'Chunk',           category: 'characters', icon: 'assets/characters/chunk.png',           color: '#9B59B6', hint: 'Meet Chunk on the home page' },
   { id: 'char_jazzy',     name: 'Jazzy',           category: 'characters', icon: 'assets/characters/jazzy.png',            color: '#FF9500', hint: 'Meet Jazzy on the home page' },
-  { id: 'char_doctor',    name: 'Dr. Jellybone',   category: 'characters', icon: 'assets/characters/dr-jellybone.png',     color: '#4285F4', hint: 'Meet Dr. Jellybone on the home page' },
+  { id: 'char_doctor',    name: 'Dr. Jellybone',   category: 'characters', icon: 'assets/characters/dr-jellybone.png',     color: '#4285F4', hint: 'Visit Detective Dr. Jellybone' },
+  { id: 'char_whiskers',  name: 'Whiskers the Catfish', category: 'characters', icon: 'assets/characters/catfish.png',     color: '#5A8DB3', hint: 'Discover Whiskers in the Clubhouse' },
   { id: 'char_loustew',   name: 'Lou & Stew',      category: 'characters', icon: 'assets/characters/llama-lou-stew.png',         color: '#AF52DE', hint: 'Meet Lou & Stew on the home page' },
 
   // ---- Outfits (alternate looks of the characters, unlocked via gameplay milestones) ----
@@ -42,6 +43,8 @@ export const STICKERS = [
   { id: 'fit_sharky_zoot',        name: 'Zoot Sharky',         category: 'outfits', icon: 'assets/characters/sharky-zoot.png',        color: '#27AE60', hint: 'Play the Piano in Jam Hall' },
   // JAZZY looks
   { id: 'fit_jazzy_disco',        name: 'Disco Jazzy',         category: 'outfits', icon: 'assets/characters/jazzy-disco.png',        color: '#FF1493', hint: 'Complete 10 songs total' },
+  // DR. JELLYBONE looks
+  { id: 'fit_doctor_detective',   name: 'Detective Dr. Jellybone', category: 'outfits', icon: 'assets/characters/dr-jellybone-detective.png', color: '#9B6DE0', hint: 'Solve a case in Detective Dr. Jellybone' },
   // LOU & STEW looks
   { id: 'fit_lou_disco',          name: 'Disco Lou',           category: 'outfits', icon: 'assets/characters/lou-disco.png',          color: '#D35400', hint: 'Complete Goody Bag in the Rhythm Game' },
   { id: 'fit_stew_swing',         name: 'Swing Stew',          category: 'outfits', icon: 'assets/characters/stew-swing.png',         color: '#16A085', hint: 'Complete Faster As We Go in the Rhythm Game' },
