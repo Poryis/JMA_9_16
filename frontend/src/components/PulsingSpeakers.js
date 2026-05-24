@@ -18,6 +18,7 @@ const FRAMES = [
 export function PulsingSpeakers({
   side = 'left',
   playing = false,
+  bpm = 100,
   bottom = '4%',
   width = 'clamp(70px, 12vw, 160px)',
   className = '',
@@ -27,10 +28,14 @@ export function PulsingSpeakers({
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
-    const intervalMs = playing ? 120 : 400;
+    // When the beat is playing, pump in sync with the BPM — one frame swap
+    // per eighth-note. When idle, drift gently every 400 ms.
+    const intervalMs = playing
+      ? Math.max(70, Math.round(60_000 / bpm / 2))
+      : 400;
     const id = setInterval(() => setFrame((f) => (f + 1) % FRAMES.length), intervalMs);
     return () => clearInterval(id);
-  }, [playing]);
+  }, [playing, bpm]);
 
   const positionStyle = side === 'left'
     ? { left: '1.5%', bottom }

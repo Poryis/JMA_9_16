@@ -19,7 +19,9 @@ function Tile({ tile, index, navigate }) {
     if (tile.sfx) {
       try {
         const audio = new Audio(tile.sfx);
-        audio.volume = 0.85;
+        // Keep the DJ scratch loud (it's the signature Beat Lab cue) — every
+        // other card click is softer so the menu navigation doesn't blast.
+        audio.volume = tile.sfx.includes('sfx-dj-scratch') ? 0.85 : 0.42;
         audio.play().catch(() => { /* autoplay rejected — proceed without SFX */ });
       } catch { /* ignore */ }
     }

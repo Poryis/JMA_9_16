@@ -294,7 +294,8 @@ function PrimaryCard({ card, index, navigate }) {
     if (card.sfx) {
       try {
         const audio = new Audio(card.sfx);
-        audio.volume = 0.85;
+        // Soft tap-sfx so home-card clicks don't blast — kids tap these a lot
+        audio.volume = 0.42;
         audio.play().catch(() => { /* autoplay rejected — proceed without SFX */ });
       } catch { /* ignore */ }
     }

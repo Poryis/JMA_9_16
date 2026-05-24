@@ -1,5 +1,13 @@
 # Changelog
 
+## Feb 16, 2026 — Speakers pulse on beat + softer card SFX
+- **PulsingSpeakers locked to BPM**: the speakers now accept a `bpm` prop and pulse once per eighth-note while playing (`intervalMs = 60_000 / bpm / 2`, clamped to a 70 ms floor). Beat Lab passes its live `bpm` so the amps actually pump with the loop. When playback stops they drift back to the idle 400 ms cycle.
+- **Softer card-click SFX everywhere except DJ Scratch**:
+  - Home cards (PLAY · LEARN · CREATE): `0.85` → `0.42` volume.
+  - Submenu tiles: `0.85` → `0.42`, *except* `sfx-dj-scratch.mp3` on Beat Lab which keeps the signature `0.85` punch.
+  - Same delay/transition behaviour preserved; only volume tuned down.
+- Both touches verified via `CI=true yarn build` → **Compiled successfully**, no lint regressions.
+
 ## Feb 16, 2026 — Cleanup + Beat Lab speakers + GH Pages build verified
 - **Orphan asset cleanup**: removed `assets/characters/catfish.png` (118 KB) and `assets/backgrounds/BG.png` (260 KB) — both genuinely unreferenced. Total ~376 KB shaved off the GH Pages payload.
 - **Pulsing speakers in Beat Lab**: new reusable `<PulsingSpeakers />` component (3-frame cycle, accelerates from 400 ms → 120 ms when `playing` is true). Dropped at both bottom corners of the Beat Lab page; the right one mirrors via `scaleX(-1)`. Verified live: cycling frames at the correct interval, present on both sides. Component is reusable — can drop into Stew Kazoo Says or other pages later.

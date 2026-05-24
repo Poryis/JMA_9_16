@@ -365,10 +365,10 @@ function LoopStudioPage() {
       <FullscreenButton />
       <RoomCharacters room="beat-lab" />
 
-      {/* Pulsing Stew speakers bracketing the playground — accelerate while the
-          beat is playing */}
-      <PulsingSpeakers side="left"  playing={isPlaying} />
-      <PulsingSpeakers side="right" playing={isPlaying} flip />
+      {/* Pulsing Stew speakers bracketing the playground — pump in sync with
+          the BPM while the beat is running */}
+      <PulsingSpeakers side="left"  playing={isPlaying} bpm={bpm} />
+      <PulsingSpeakers side="right" playing={isPlaying} bpm={bpm} flip />
 
       <main className="flex-1 pt-20 pb-4 px-2 md:px-4 overflow-auto">
         {/* Controls Bar */}
