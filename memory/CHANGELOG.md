@@ -1,5 +1,27 @@
 # Changelog
 
+## Feb 16, 2026 — Lesson-world art landed in the app
+Imported & optimized the 5-23 batch of lesson artwork for in-app use.
+
+**New backgrounds (`assets/backgrounds/`):**
+- `detective-room.jpg` (1600×900, 260 KB) — corkboard with detective notes. Drives the Detective Dr. Jellybone card on the PLAY menu AND the full-screen Detective game scene (menu + playing screens).
+- `recording-studio.jpg` (1600×900, 100 KB) — JMA Recording Studio. Drives the full-screen Charlie's Song Studio scene; overlaid with a soft mood-color tint that crossfades when kids switch moods.
+- `charlie-in-studio.jpg` (1280×720, 97 KB) — Charlie-in-the-Studio scene art used as the Song Studio card on the CREATE menu. Charlie's already in-scene, so no separate character overlay needed.
+
+**New character (`assets/characters/`):**
+- `charlie-studio.png` (663×700, 265 KB) — Studio Charlie cutout. Replaces the per-mood Charlie outfits (`charlie.png`, `charlie-zoot.png`, `charlie-steampunk.png`) in the Song Studio so the studio setting feels consistent across Happy/Sad/Mysterious.
+
+**New animation frame sets (`assets/animations/`, ready for use):**
+- `jelly-rocks-blimp-{1,2,3}.png` (800×450, 83-84 KB each) — 3-frame Jelly Rocks blimp animation.
+- `speakers-stew-{1,2,3}.png` (600×600, 65-82 KB each) — 3-frame speaker pulse animation.
+
+**Wired changes:**
+- `pages/PlayMenuPage.js` — Detective tile bg → `detective-room.jpg`.
+- `pages/CreateMenuPage.js` — Song Studio tile bg → `charlie-in-studio.jpg`, character overlay removed.
+- `pages/DetectivePage.js` — menu + playing screens bg → `detective-room.jpg`.
+- `pages/SongStudioPage.js` — page bg → fixed `recording-studio.jpg` with a per-mood color tint overlay (no longer the plain mood-color gradient). Content moved to `z-10` so it sits above the tint.
+- `data/songStudio.js` — all three mood `charlie` fields → `charlie-studio.png`.
+
 ## Feb 16, 2026 — Song Studio: seahorse Rest button
 - **New "Rest" key** sits at the right edge of the piano keyboard, sized to match the white keys. Uses the user-supplied seahorse artwork (`assets/ui/seahorse-rest.png`, ~22 KB, 183×320, black-bg removed + trimmed).
 - Tapping the rest button drops a `REST` sentinel into the current slot, advances the auto-cursor, and plays no sound. The slot now displays the seahorse PNG (replacing the slot number) both during composition and during playback (the slot also gently lights pink when its beat plays).

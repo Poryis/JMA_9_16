@@ -32,13 +32,12 @@ const CREATE_TILES = [
     title: "Charlie's Song Studio",
     tagline: 'Pick a mood and compose your own song!',
     path: '/song-studio',
-    bg: 'assets/backgrounds/jelly-stage.png',
+    bg: 'assets/backgrounds/charlie-in-studio.jpg',
     color: '#FFCC00',
     accent: '#F39C12',
     sign: 'COMPOSE',
     bubble: 'Make a hit!',
-    character: 'assets/characters/charlie-grad.png',
-    charWidthPct: 28,
+    // No separate character overlay — Studio Charlie is already in the bg scene.
     sfx: 'assets/audio/sfx-piano-flourish.mp3',
   },
 ];

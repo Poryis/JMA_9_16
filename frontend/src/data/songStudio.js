@@ -63,7 +63,7 @@ export const MOODS = {
     scaleNotes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
     drumLoop: 'assets/audio/songs/jam_drums_pocket.mp3',
     bpm: 100,
-    charlie: 'assets/characters/charlie.png',
+    charlie: 'assets/characters/charlie-studio.png',
     color: '#FFCC00',
     accent: '#FF9500',
     // "Let It Be" / "Don't Stop Believin'" progression: I-V-vi-IV
@@ -84,7 +84,7 @@ export const MOODS = {
     scaleNotes: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
     drumLoop: 'assets/audio/songs/jam_drums_sad.mp3',
     bpm: 70,
-    charlie: 'assets/characters/charlie-zoot.png',
+    charlie: 'assets/characters/charlie-studio.png',
     color: '#4285F4',
     accent: '#2A5DB0',
     // Reflective minor progression: i-VI-III-VII (Am-F-C-G)
@@ -104,7 +104,7 @@ export const MOODS = {
     scaleNotes: ['D', 'E', 'F', 'G', 'A', 'B', 'C'],
     drumLoop: 'assets/audio/songs/jam_drums_mysterious.mp3',
     bpm: 85,
-    charlie: 'assets/characters/charlie-steampunk.png',
+    charlie: 'assets/characters/charlie-studio.png',
     color: '#9B6DE0',
     accent: '#5E2D8C',
     // Modal Dorian groove: i-IV-i-bVII (Dm-G-Dm-C) — keeps the major IV signature

@@ -271,13 +271,24 @@ export default function SongStudioPage() {
       data-testid="song-studio-page"
       className="min-h-screen flex flex-col relative"
       style={{
-        background: `linear-gradient(180deg, ${mood.color}33 0%, white 60%)`,
+        backgroundImage: 'url(assets/backgrounds/recording-studio.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
       }}
     >
+      {/* Mood-color tint overlay so the studio reads with the active mood */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `linear-gradient(180deg, ${mood.color}55 0%, ${mood.color}22 40%, rgba(255,255,255,0.55) 90%)`,
+          transition: 'background 0.4s ease',
+        }}
+      />
       <GameHeader title="Charlie's Song Studio" showHomeButton={true} />
       <FullscreenButton />
 
-      <main className="flex-1 flex flex-col items-center pt-14 md:pt-20 pb-6 px-3 max-w-4xl mx-auto w-full">
+      <main className="relative z-10 flex-1 flex flex-col items-center pt-14 md:pt-20 pb-6 px-3 max-w-4xl mx-auto w-full">
 
         {/* MOOD PICKER */}
         <div className="w-full mb-3">

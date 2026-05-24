@@ -49,7 +49,7 @@ const PLAY_TILES = [
     title: 'Detective Dr. Jellybone',
     tagline: 'Find the note that sounds off!',
     path: '/detective',
-    bg: 'assets/backgrounds/clubhouse.png',
+    bg: 'assets/backgrounds/detective-room.jpg',
     color: '#9B6DE0',
     accent: '#5E2D8C',
     sign: 'GAME',

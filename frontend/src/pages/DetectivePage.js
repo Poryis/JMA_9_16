@@ -265,7 +265,7 @@ export default function DetectivePage() {
         data-testid="detective-menu"
         className="min-h-screen flex flex-col items-center justify-center p-4 relative"
         style={{
-          backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
+          backgroundImage: 'url(assets/backgrounds/detective-room.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -355,7 +355,7 @@ export default function DetectivePage() {
       data-testid="detective-playing"
       className="min-h-screen flex flex-col relative"
       style={{
-        backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
+        backgroundImage: 'url(assets/backgrounds/detective-room.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
