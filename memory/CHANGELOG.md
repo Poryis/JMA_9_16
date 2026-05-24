@@ -1,5 +1,18 @@
 # Changelog
 
+## Feb 16, 2026 — Rhythm BG actually pulses + Surprise Me in Song Studio
+- **Rhythm Game background — visibly pulsing now**: pure scale-only animation was invisible because a uniform radial sunburst has no fixed reference point. Rebuilt as a compound animation:
+  - `scale: 1.00 → 1.18 → 1.00`
+  - `rotate: -1.5° → 1.5° → -1.5°` (makes the rays clearly twist instead of just zooming)
+  - `filter: brightness(1) → brightness(1.18) → brightness(1)` (light pulse)
+  - Plus a separate radial-glow overlay (`screen` blend mode) pulsing opacity `0.15 → 0.7 → 0.15` for an extra "stadium light" punch
+  - Verified live: across 4 samples in one beat the transform matrix and brightness clearly cycled — `1.016 → 1.168 → 1.007 → 1.174`, brightness `1.009 → 1.120 → 1.005 → 1.138`. Big visible throb.
+- **Song Studio — Surprise Me! button**: new pill (mood-accent colored, with `Dices` icon) sits next to Clear. On tap:
+  - Picks a random number of seahorse rests in **[6, 11]** (guaranteed)
+  - Fills the remaining slots with random notes from the active mood's scale (high-octave keys only)
+  - Fisher-Yates shuffles so rests are scattered, not clumped
+  - Verified live: 5 consecutive clicks produced rest counts of `8, 10, 8, 11, 8` — all in range, all 16 slots filled, zero empties.
+
 ## Feb 16, 2026 — Rhythm Arcade pulsing background
 - **`Who's Got the Rhythm?` playing screen** — the cool-blue sunburst background now **pulses with the song's BPM**. Subtle scale wobble (`1.0 → 1.06 → 1.0`) on an `easeInOut` curve, period = `60 / bpm` seconds. Verified live: 7 sequential `getComputedStyle(...).transform` samples across 660 ms showed 7 distinct scales (`1.02778 → 1.00000 → 1.03073 → 1.05942 → 1.04915 → 1.00646 → 1.00593`).
 - Implementation: a separate `motion.div` overlay carries the `sunburst-cool` class and the `scale` animation, sitting at `z-index: 0` behind a `relative z-10` main game area so the lanes/notes don't scale. Outer wrapper also gets `overflow-hidden` to clip the breathing layer at the edges.

@@ -461,20 +461,47 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   }
 
   // PLAYING screen - with Jelly Bell images!
-  // Background pulse — one breath per beat synced to the song's BPM. Subtle
-  // scale wobble (1 → 1.06) on a sunburst layer behind the lanes.
+  // Background pulse — one breath per beat synced to the song's BPM. Combines
+  // scale + slight rotation + brightness so the radial sunburst actually
+  // VISIBLY throbs (a pure scale change on a uniform radial pattern is
+  // invisible — the rays need to twist to read as motion).
   const pulseDurationSec = selectedSong.bpm
     ? Math.max(0.2, 60 / selectedSong.bpm)
     : 0.6;
 
   return (
     <div className="min-h-screen sunburst-cool flex flex-col relative overflow-hidden" data-testid="rhythm-game-playing">
-      {/* Pulsing sunburst layer — scales rhythmically while the song plays */}
+      {/* Pulsing sunburst layer — scales + rotates + brightens rhythmically */}
       <motion.div
         aria-hidden="true"
         className="absolute inset-0 sunburst-cool pointer-events-none"
-        style={{ transformOrigin: 'center', zIndex: 0 }}
-        animate={{ scale: [1, 1.06, 1] }}
+        style={{
+          transformOrigin: 'center',
+          zIndex: 0,
+          willChange: 'transform, filter',
+        }}
+        animate={{
+          scale: [1, 1.18, 1],
+          rotate: [-1.5, 1.5, -1.5],
+          filter: ['brightness(1)', 'brightness(1.18)', 'brightness(1)'],
+        }}
+        transition={{
+          duration: pulseDurationSec,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      />
+      {/* Radial accent burst that fades in and out on every beat — adds a
+          "stadium light" pop that reads even on uniform sunburst backgrounds */}
+      <motion.div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at 50% 55%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 55%)',
+          mixBlendMode: 'screen',
+          zIndex: 0,
+        }}
+        animate={{ opacity: [0.15, 0.7, 0.15] }}
         transition={{
           duration: pulseDurationSec,
           repeat: Infinity,

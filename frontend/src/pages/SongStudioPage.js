@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Play, Trash2, Save, ArrowLeft, BookOpen, Music, Drum, Piano } from 'lucide-react';
+import { Play, Trash2, Save, ArrowLeft, BookOpen, Music, Drum, Piano, Dices } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
@@ -138,6 +138,34 @@ export default function SongStudioPage() {
     setSlots(Array(TOTAL_SLOTS).fill(null));
     setCursor(0);
   }, []);
+
+  // Surprise Me! — auto-fills the 16 slots with a random melody using the
+  // active mood's scale notes (in the high octave the kid can play) plus a
+  // GUARANTEED 6–11 seahorse rests scattered throughout.
+  const surpriseMe = useCallback(() => {
+    ensureLoaded();
+    // 1. Pick how many rests (6–11 inclusive)
+    const numRests = 6 + Math.floor(Math.random() * 6);   // 6..11
+    const numNotes = TOTAL_SLOTS - numRests;
+    // 2. Candidate note pool: only mood-scale notes from the displayed (high-octave) keys
+    const scaleNotes = PIANO_KEYS
+      .filter((k) => mood.scaleNotes.includes(k.pitch))
+      .map((k) => k.id);
+    if (scaleNotes.length === 0) return;
+    // 3. Build numNotes random scale notes + numRests REST sentinels
+    const items = [];
+    for (let i = 0; i < numNotes; i++) {
+      items.push(scaleNotes[Math.floor(Math.random() * scaleNotes.length)]);
+    }
+    for (let i = 0; i < numRests; i++) items.push(REST);
+    // 4. Fisher-Yates shuffle so rests are scattered, not clumped at the end
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    setSlots(items);
+    setCursor(TOTAL_SLOTS);
+  }, [ensureLoaded, mood.scaleNotes]);
 
   // Stop any running playback
   const stopPlayback = useCallback(() => {
@@ -576,6 +604,18 @@ export default function SongStudioPage() {
             style={{ borderColor: 'var(--jma-dark)' }}
           >
             <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" /> Clear
+          </button>
+          <button
+            data-testid="song-surprise-btn"
+            onClick={surpriseMe}
+            className="chunky-btn px-2.5 md:px-3 py-1.5 md:py-2 flex items-center gap-1 md:gap-1.5 text-[11px] md:text-sm"
+            style={{
+              backgroundColor: mood.accent,
+              color: 'white',
+              border: '2px solid var(--jma-dark)',
+            }}
+          >
+            <Dices className="w-3.5 h-3.5 md:w-4 md:h-4" /> Surprise Me!
           </button>
           <button
             data-testid="song-gallery-btn"
