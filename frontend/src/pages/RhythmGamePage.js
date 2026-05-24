@@ -461,8 +461,26 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   }
 
   // PLAYING screen - with Jelly Bell images!
+  // Background pulse — one breath per beat synced to the song's BPM. Subtle
+  // scale wobble (1 → 1.06) on a sunburst layer behind the lanes.
+  const pulseDurationSec = selectedSong.bpm
+    ? Math.max(0.2, 60 / selectedSong.bpm)
+    : 0.6;
+
   return (
-    <div className="min-h-screen sunburst-cool flex flex-col relative" data-testid="rhythm-game-playing">
+    <div className="min-h-screen sunburst-cool flex flex-col relative overflow-hidden" data-testid="rhythm-game-playing">
+      {/* Pulsing sunburst layer — scales rhythmically while the song plays */}
+      <motion.div
+        aria-hidden="true"
+        className="absolute inset-0 sunburst-cool pointer-events-none"
+        style={{ transformOrigin: 'center', zIndex: 0 }}
+        animate={{ scale: [1, 1.06, 1] }}
+        transition={{
+          duration: pulseDurationSec,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      />
       {selectedSong.audioUrl && (
         <audio ref={audioRef} src={selectedSong.audioUrl} preload="auto" data-testid="backing-track" />
       )}
@@ -478,7 +496,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         </div>
       )}
       <AnimatePresence>{feedback && <FeedbackPopup feedback={feedback} />}</AnimatePresence>
-      <main className="flex-1 flex flex-col pt-20 pb-2 px-2 md:px-4">
+      <main className="relative z-10 flex-1 flex flex-col pt-20 pb-2 px-2 md:px-4">
         <div className="game-board relative overflow-hidden" style={{ height: 'calc(100vh - 100px)' }}>
           {/* Lanes - each lane has its instrument target at the bottom */}
           <div className="rhythm-lanes" style={{ height: '100%' }}>

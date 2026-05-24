@@ -1,5 +1,9 @@
 # Changelog
 
+## Feb 16, 2026 — Rhythm Arcade pulsing background
+- **`Who's Got the Rhythm?` playing screen** — the cool-blue sunburst background now **pulses with the song's BPM**. Subtle scale wobble (`1.0 → 1.06 → 1.0`) on an `easeInOut` curve, period = `60 / bpm` seconds. Verified live: 7 sequential `getComputedStyle(...).transform` samples across 660 ms showed 7 distinct scales (`1.02778 → 1.00000 → 1.03073 → 1.05942 → 1.04915 → 1.00646 → 1.00593`).
+- Implementation: a separate `motion.div` overlay carries the `sunburst-cool` class and the `scale` animation, sitting at `z-index: 0` behind a `relative z-10` main game area so the lanes/notes don't scale. Outer wrapper also gets `overflow-hidden` to clip the breathing layer at the edges.
+
 ## Feb 16, 2026 — Speakers pulse on beat + softer card SFX
 - **PulsingSpeakers locked to BPM**: the speakers now accept a `bpm` prop and pulse once per eighth-note while playing (`intervalMs = 60_000 / bpm / 2`, clamped to a 70 ms floor). Beat Lab passes its live `bpm` so the amps actually pump with the loop. When playback stops they drift back to the idle 400 ms cycle.
 - **Softer card-click SFX everywhere except DJ Scratch**:
