@@ -20,14 +20,9 @@ const BLIMP_FRAMES = [
 function BlimpFlyby() {
   const [frame, setFrame] = useState(0);
 
-  // Each "lap" carries randomized parameters so the blimp doesn't fly the
-  // same path twice. After a lap finishes we re-randomize for the next one.
-  const [lap, setLap] = useState(() => ({
-    direction: 1,             // 1 = L→R, -1 = R→L
-    startY: 4 + Math.random() * 14,   // % of viewport height
-    endY:   4 + Math.random() * 14,
-    durationSec: 22 + Math.random() * 12,   // 22 – 34 s
-  }));
+  // One lap = one cross of the sky with randomized angle/duration/scale.
+  // Re-randomized for the next lap as soon as the current one finishes.
+  const [lap, setLap] = useState(() => makeLap(1));
 
   // Cycle the 3-frame animation independent of the drift
   useEffect(() => {
@@ -35,21 +30,15 @@ function BlimpFlyby() {
     return () => clearInterval(id);
   }, []);
 
-  // When the current lap ends, generate a fresh one with a new direction,
-  // a new diagonal angle, and a new duration.
+  // When the current lap ends, generate a fresh one
   useEffect(() => {
     const id = setTimeout(() => {
-      setLap((prev) => ({
-        direction: -prev.direction,
-        startY: 2 + Math.random() * 16,
-        endY:   2 + Math.random() * 16,
-        durationSec: 22 + Math.random() * 12,
-      }));
+      setLap((prev) => makeLap(-prev.direction));
     }, lap.durationSec * 1000);
     return () => clearTimeout(id);
   }, [lap]);
 
-  const { direction, startY, endY, durationSec } = lap;
+  const { direction, startYvh, endYvh, durationSec, scale } = lap;
   const fromX = direction === 1 ? '-35vw' : '115vw';
   const toX   = direction === 1 ? '115vw' : '-35vw';
 
@@ -61,27 +50,29 @@ function BlimpFlyby() {
       style={{
         left: 0,
         top: 0,
+        // Base width = 100%. Per-lap scale further multiplies via motion.
         width: 'clamp(112px, 18vw, 256px)',
         zIndex: 0,
         opacity: 0.92,
       }}
-      // Re-mount each lap so motion picks up the new initial/animate cleanly
-      key={`${direction}-${startY.toFixed(2)}-${endY.toFixed(2)}`}
-      initial={{ x: fromX, y: `${startY}vh`, rotate: -3 * direction }}
+      // Re-mount per lap so motion picks up fresh initial/animate cleanly
+      key={`${direction}-${startYvh.toFixed(1)}-${endYvh.toFixed(1)}-${scale.toFixed(2)}`}
+      initial={{ x: fromX, y: `${startYvh}vh`, rotate: -3 * direction, scale }}
       animate={{
         x: toX,
-        y: `${endY}vh`,
+        y: `${endYvh}vh`,
         rotate: [direction * -3, direction * 3, direction * -3],
+        scale,
       }}
       transition={{
         x: { duration: durationSec, ease: 'linear' },
         y: { duration: durationSec, ease: 'easeInOut' },
         rotate: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
+        scale: { duration: 0 },
       }}
     >
-      {/* Inner wrapper owns the horizontal flip. The source art faces LEFT by
-          default, so to face the direction of travel we apply scaleX(-direction):
-          moving right (direction=1) → scaleX(-1), moving left (direction=-1) → scaleX(1). */}
+      {/* Inner wrapper owns the horizontal flip. The source art faces LEFT,
+          so to face the direction of travel we apply scaleX(-direction). */}
       <div
         style={{
           transform: `scaleX(${-direction})`,
@@ -112,6 +103,27 @@ function BlimpFlyby() {
       </div>
     </motion.div>
   );
+}
+
+// Generates a random lap. Guarantees a meaningful diagonal by enforcing a
+// minimum |endY - startY| delta so the path isn't accidentally near-flat.
+function makeLap(direction) {
+  const startYvh = 2 + Math.random() * 14;        // 2 – 16 vh
+  const minDelta = 6;                              // at least 6 vh of vertical travel
+  const maxDelta = 14;
+  const sign = Math.random() < 0.5 ? -1 : 1;
+  const delta = sign * (minDelta + Math.random() * (maxDelta - minDelta));
+  // Clamp endY into [1, 20] vh so the blimp stays in the sky strip
+  const endYvh = Math.max(1, Math.min(20, startYvh + delta));
+  return {
+    direction,
+    startYvh,
+    endYvh,
+    durationSec: 22 + Math.random() * 12,         // 22 – 34 s
+    // Random scale: 40% – 90% of base size (which is itself 80% of the
+    // original asset width, capped by the clamp() on `width`).
+    scale: 0.4 + Math.random() * 0.5,
+  };
 }
 
 // Easter-egg animation variants for the shield. Click cycles through them.

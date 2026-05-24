@@ -36,8 +36,9 @@ const CREATE_TILES = [
     color: '#FFCC00',
     accent: '#F39C12',
     sign: 'COMPOSE',
-    bubble: 'Make a hit!',
-    // No separate character overlay — Studio Charlie is already in the bg scene.
+    // No bubble — Charlie is already in the scene art and the bubble was
+    // landing on top of his face.
+    // No separate character overlay either.
     sfx: 'assets/audio/sfx-piano-flourish.mp3',
   },
 ];

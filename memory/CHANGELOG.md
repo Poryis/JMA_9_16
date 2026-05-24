@@ -1,5 +1,15 @@
 # Changelog
 
+## Feb 16, 2026 — Detective copy, blimp v3, Song Studio bubble fix
+- **Detective Dr. Jellybone**: copy fixes
+  - "How to play" → *"Tap the wrong note as you hear it..."* (was "beat")
+  - Guess-phase hint → *"Tap the note that sounded wrong"* (was "beat")
+- **Blimp v3 — actually diagonal + size variation**:
+  - Re-extracted to a `makeLap()` factory that *guarantees* a minimum |endY − startY| delta of 6 vh (capped at 14 vh) so the y-trajectory is never accidentally flat. Verified live: blimp Y drifted 77→109 px (32 px diagonal) across 10 s — confirmed via DOM measurements at 5 sample times.
+  - Each lap also picks a random scale in `0.4 – 0.9` of base width — so the blimp can drift small-and-far one lap, big-and-close the next.
+  - Duration still random 22–34 s; direction still alternates each lap with `scaleX(-direction)` flip so it never flies backwards.
+- **CREATE menu — Song Studio card**: dropped the `"Make a hit!"` bubble that was landing on Charlie's face (Charlie is already in the bg scene with his own context).
+
 ## Feb 16, 2026 — Blimp: forward-flying + diagonal randomization + 80% size
 - **Blimp size 80% of original**: `clamp(112px, 18vw, 256px)` (was the half-size version). Verified at 1280 viewport it renders ~236 px wide.
 - **Flight orientation fixed**: the source PNG faces LEFT by default, so the previous `scaleX(direction)` had it always flying backwards. Inverted to `scaleX(-direction)` — now direction=1 → scaleX=-1 (faces RIGHT while moving right), direction=-1 → scaleX=1 (faces LEFT while moving left). Verified via inline transform check.

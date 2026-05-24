@@ -317,7 +317,7 @@ export default function DetectivePage() {
           <p className="text-sm md:text-base" style={{ color: 'var(--jma-dark)' }}>
             1. Listen to the <span className="font-black text-[var(--jma-green)]">ORIGINAL</span> tune<br />
             2. Then hear the <span className="font-black text-[var(--jma-red)]">SUSPECT</span> — one note is off!<br />
-            3. Tap the wrong beat as you hear it, or wait until the end<br />
+            3. Tap the wrong note as you hear it, or wait until the end<br />
             4. Three strikes and the case closes!
           </p>
         </motion.div>
@@ -457,7 +457,7 @@ export default function DetectivePage() {
             {phase === 'listen_original' && '🎵 Listen to the ORIGINAL tune'}
             {phase === 'gap' && '🤔 Now find what changed...'}
             {phase === 'listen_corrupted' && '🔍 Tap the wrong note the moment you hear it!'}
-            {phase === 'guess' && '👇 Tap the beat that sounded wrong'}
+            {phase === 'guess' && '👇 Tap the note that sounded wrong'}
             {phase === 'reveal' && (isCorrect ? '🔍 Case solved!' : '😅 Try the next case!')}
           </div>
 
