@@ -19,10 +19,32 @@ const BLIMP_FRAMES = [
 
 function BlimpFlyby() {
   const [frame, setFrame] = useState(0);
+  // direction === 1  → drifting LEFT-to-RIGHT, blimp faces right (scaleX:  1)
+  // direction === -1 → drifting RIGHT-to-LEFT, blimp faces left  (scaleX: -1)
+  const [direction, setDirection] = useState(1);
+
+  // Cycle the 3-frame animation independent of the drift
   useEffect(() => {
     const id = setInterval(() => setFrame((f) => (f + 1) % BLIMP_FRAMES.length), 220);
     return () => clearInterval(id);
   }, []);
+
+  // Each drift takes ~28 s. From far off-screen on one side, all the way to
+  // off-screen on the other. Off-screen we flip horizontally so the blimp
+  // never visually flies backwards.
+  const DRIFT_SEC = 28;
+
+  // Flip direction every DRIFT_SEC. (We can't rely on motion's
+  // onAnimationComplete here because the rotate sub-anim repeats forever, so
+  // the parent animation "never completes" from motion's perspective.)
+  useEffect(() => {
+    const id = setTimeout(() => setDirection((d) => -d), DRIFT_SEC * 1000);
+    return () => clearTimeout(id);
+  }, [direction]);
+
+  const fromX = direction === 1 ? '-30vw' : '110vw';
+  const toX   = direction === 1 ? '110vw' : '-30vw';
+
   return (
     <motion.div
       aria-hidden="true"
@@ -30,40 +52,49 @@ function BlimpFlyby() {
       className="absolute pointer-events-none select-none"
       style={{
         top: '4%',
-        // Width relative to viewport so it scales nicely on phone + desktop
-        width: 'clamp(140px, 22vw, 320px)',
+        width: 'clamp(70px, 11vw, 160px)',
         zIndex: 0,
         opacity: 0.92,
       }}
-      // Slow side-to-side drift across the sky strip, then back — pure ambient flair
-      initial={{ x: '-25vw', rotate: -3 }}
-      animate={{ x: ['-25vw', '85vw', '-25vw'], rotate: [-3, 3, -3] }}
+      // Key changes per direction so motion restarts the x animation cleanly
+      key={direction}
+      initial={{ x: fromX, rotate: -3 * direction }}
+      animate={{ x: toX, rotate: [direction * -3, direction * 3, direction * -3] }}
       transition={{
-        x: { duration: 56, repeat: Infinity, ease: 'easeInOut' },
-        rotate: { duration: 14, repeat: Infinity, ease: 'easeInOut' },
+        x: { duration: DRIFT_SEC, ease: 'linear' },
+        rotate: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
       }}
     >
-      {BLIMP_FRAMES.map((src, i) => (
+      {/* Inner wrapper owns the horizontal flip so it doesn't fight motion's
+          own transform on x/rotate. CSS transforms compose cleanly. */}
+      <div
+        style={{
+          transform: `scaleX(${direction})`,
+          transformOrigin: 'center',
+        }}
+      >
+        {BLIMP_FRAMES.map((src, i) => (
+          <img
+            key={i}
+            src={src}
+            alt=""
+            draggable={false}
+            loading="lazy"
+            className="absolute inset-0 w-full h-auto"
+            style={{
+              display: i === frame ? 'block' : 'none',
+              filter: 'drop-shadow(0 8px 14px rgba(10,37,64,0.18))',
+            }}
+          />
+        ))}
+        {/* Reserve aspect with first frame so motion has size */}
         <img
-          key={i}
-          src={src}
+          src={BLIMP_FRAMES[0]}
           alt=""
-          draggable={false}
-          loading="lazy"
-          className="absolute inset-0 w-full h-auto"
-          style={{
-            display: i === frame ? 'block' : 'none',
-            filter: 'drop-shadow(0 8px 14px rgba(10,37,64,0.18))',
-          }}
+          aria-hidden="true"
+          className="block w-full h-auto invisible"
         />
-      ))}
-      {/* Reserve aspect with first frame so motion has size */}
-      <img
-        src={BLIMP_FRAMES[0]}
-        alt=""
-        aria-hidden="true"
-        className="block w-full h-auto invisible"
-      />
+      </div>
     </motion.div>
   );
 }
