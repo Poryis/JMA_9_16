@@ -1,5 +1,16 @@
 # Changelog
 
+## Feb 16, 2026 — Blimp: forward-flying + diagonal randomization + 80% size
+- **Blimp size 80% of original**: `clamp(112px, 18vw, 256px)` (was the half-size version). Verified at 1280 viewport it renders ~236 px wide.
+- **Flight orientation fixed**: the source PNG faces LEFT by default, so the previous `scaleX(direction)` had it always flying backwards. Inverted to `scaleX(-direction)` — now direction=1 → scaleX=-1 (faces RIGHT while moving right), direction=-1 → scaleX=1 (faces LEFT while moving left). Verified via inline transform check.
+- **Random diagonal flight path**: each lap now generates fresh random parameters and re-mounts the motion node via `key=`:
+  - `startY`: 2 – 18% of viewport height
+  - `endY`:   2 – 18% of viewport height (independent → varied diagonal angle)
+  - `durationSec`: 22 – 34 seconds (so timing varies too)
+  - Direction alternates each lap
+  - `x` eases linear (true travel feel), `y` eases easeInOut (gentle arc), `rotate` bobs ±3° every 6 s
+- Result: no two laps look the same. Sometimes the blimp drifts gently down-and-right, sometimes climbs up-and-left, sometimes nearly level — like wind currents in the sky.
+
 ## Feb 16, 2026 — Blimp size + flip, longer Stew breathing room
 - **Blimp half the size**: `clamp(140px, 22vw, 320px)` → `clamp(70px, 11vw, 160px)`. Verified at 1280 viewport it now renders ~145 px wide (was ~280 px).
 - **Blimp never flies backwards**: rebuilt the drift as a two-phase animation. Each phase drifts the blimp linearly all the way across the screen (`-30vw → 110vw`) over 28 s. When it's off-screen we flip `scaleX` (via an inner wrapper so it doesn't fight motion's own transform) and the next phase drifts the now-mirrored blimp back the other way. Linear easing so the cross looks like real travel; rotate bob still oscillates ±3° on a 6 s loop.

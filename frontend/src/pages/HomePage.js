@@ -19,9 +19,15 @@ const BLIMP_FRAMES = [
 
 function BlimpFlyby() {
   const [frame, setFrame] = useState(0);
-  // direction === 1  → drifting LEFT-to-RIGHT, blimp faces right (scaleX:  1)
-  // direction === -1 → drifting RIGHT-to-LEFT, blimp faces left  (scaleX: -1)
-  const [direction, setDirection] = useState(1);
+
+  // Each "lap" carries randomized parameters so the blimp doesn't fly the
+  // same path twice. After a lap finishes we re-randomize for the next one.
+  const [lap, setLap] = useState(() => ({
+    direction: 1,             // 1 = L→R, -1 = R→L
+    startY: 4 + Math.random() * 14,   // % of viewport height
+    endY:   4 + Math.random() * 14,
+    durationSec: 22 + Math.random() * 12,   // 22 – 34 s
+  }));
 
   // Cycle the 3-frame animation independent of the drift
   useEffect(() => {
@@ -29,21 +35,23 @@ function BlimpFlyby() {
     return () => clearInterval(id);
   }, []);
 
-  // Each drift takes ~28 s. From far off-screen on one side, all the way to
-  // off-screen on the other. Off-screen we flip horizontally so the blimp
-  // never visually flies backwards.
-  const DRIFT_SEC = 28;
-
-  // Flip direction every DRIFT_SEC. (We can't rely on motion's
-  // onAnimationComplete here because the rotate sub-anim repeats forever, so
-  // the parent animation "never completes" from motion's perspective.)
+  // When the current lap ends, generate a fresh one with a new direction,
+  // a new diagonal angle, and a new duration.
   useEffect(() => {
-    const id = setTimeout(() => setDirection((d) => -d), DRIFT_SEC * 1000);
+    const id = setTimeout(() => {
+      setLap((prev) => ({
+        direction: -prev.direction,
+        startY: 2 + Math.random() * 16,
+        endY:   2 + Math.random() * 16,
+        durationSec: 22 + Math.random() * 12,
+      }));
+    }, lap.durationSec * 1000);
     return () => clearTimeout(id);
-  }, [direction]);
+  }, [lap]);
 
-  const fromX = direction === 1 ? '-30vw' : '110vw';
-  const toX   = direction === 1 ? '110vw' : '-30vw';
+  const { direction, startY, endY, durationSec } = lap;
+  const fromX = direction === 1 ? '-35vw' : '115vw';
+  const toX   = direction === 1 ? '115vw' : '-35vw';
 
   return (
     <motion.div
@@ -51,25 +59,32 @@ function BlimpFlyby() {
       data-testid="home-blimp"
       className="absolute pointer-events-none select-none"
       style={{
-        top: '4%',
-        width: 'clamp(70px, 11vw, 160px)',
+        left: 0,
+        top: 0,
+        width: 'clamp(112px, 18vw, 256px)',
         zIndex: 0,
         opacity: 0.92,
       }}
-      // Key changes per direction so motion restarts the x animation cleanly
-      key={direction}
-      initial={{ x: fromX, rotate: -3 * direction }}
-      animate={{ x: toX, rotate: [direction * -3, direction * 3, direction * -3] }}
+      // Re-mount each lap so motion picks up the new initial/animate cleanly
+      key={`${direction}-${startY.toFixed(2)}-${endY.toFixed(2)}`}
+      initial={{ x: fromX, y: `${startY}vh`, rotate: -3 * direction }}
+      animate={{
+        x: toX,
+        y: `${endY}vh`,
+        rotate: [direction * -3, direction * 3, direction * -3],
+      }}
       transition={{
-        x: { duration: DRIFT_SEC, ease: 'linear' },
+        x: { duration: durationSec, ease: 'linear' },
+        y: { duration: durationSec, ease: 'easeInOut' },
         rotate: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
       }}
     >
-      {/* Inner wrapper owns the horizontal flip so it doesn't fight motion's
-          own transform on x/rotate. CSS transforms compose cleanly. */}
+      {/* Inner wrapper owns the horizontal flip. The source art faces LEFT by
+          default, so to face the direction of travel we apply scaleX(-direction):
+          moving right (direction=1) → scaleX(-1), moving left (direction=-1) → scaleX(1). */}
       <div
         style={{
-          transform: `scaleX(${direction})`,
+          transform: `scaleX(${-direction})`,
           transformOrigin: 'center',
         }}
       >
