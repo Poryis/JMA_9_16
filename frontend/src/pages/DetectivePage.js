@@ -183,7 +183,16 @@ export default function DetectivePage() {
   }, [initAudioContext, difficulty, playRound]);
 
   const handleGuess = useCallback((slotNum) => {
-    if (phase !== 'guess' || round == null || guessSlot != null) return;
+    if (round == null || guessSlot != null) return;
+    // Allow guess during the corrupted playback — but only for the currently-lit slot.
+    // Tapping the lit chip immediately ends playback and submits the guess.
+    if (phase === 'listen_corrupted') {
+      if (slotNum !== playbackIdx) return;
+      cancelPlaybackRef.current = true;
+      if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+    } else if (phase !== 'guess') {
+      return;
+    }
     const correct = slotNum === round.correctSlot;
     setGuessSlot(slotNum);
     setIsCorrect(correct);
@@ -204,7 +213,7 @@ export default function DetectivePage() {
       setStreak(0);
       playFeedbackSound('error');
     }
-  }, [phase, round, guessSlot, streak, playFeedbackSound]);
+  }, [phase, round, guessSlot, streak, playFeedbackSound, playbackIdx]);
 
   // Auto-advance from reveal to next round (or game over)
   const advance = useCallback(() => {
@@ -308,7 +317,7 @@ export default function DetectivePage() {
           <p className="text-sm md:text-base" style={{ color: 'var(--jma-dark)' }}>
             1. Listen to the <span className="font-black text-[var(--jma-green)]">ORIGINAL</span> tune<br />
             2. Then hear the <span className="font-black text-[var(--jma-red)]">SUSPECT</span> — one note is off!<br />
-            3. Tap the beat that sounded wrong<br />
+            3. Tap the wrong beat as you hear it, or wait until the end<br />
             4. Three strikes and the case closes!
           </p>
         </motion.div>
@@ -447,7 +456,7 @@ export default function DetectivePage() {
           >
             {phase === 'listen_original' && '🎵 Listen to the ORIGINAL tune'}
             {phase === 'gap' && '🤔 Now find what changed...'}
-            {phase === 'listen_corrupted' && '🔍 Hear the SUSPECT — one note is off!'}
+            {phase === 'listen_corrupted' && '🔍 Tap the wrong note the moment you hear it!'}
             {phase === 'guess' && '👇 Tap the beat that sounded wrong'}
             {phase === 'reveal' && (isCorrect ? '🔍 Case solved!' : '😅 Try the next case!')}
           </div>
@@ -482,6 +491,12 @@ export default function DetectivePage() {
               const showAnswer = phase === 'reveal';
               const isWrongGuess = isGuessed && !isCorrect;
               const isCorrectAnswer = isAnswer && isCorrect && isGuessed;
+              // A chip is tappable when:
+              //   - It's the guess phase (any chip), OR
+              //   - It's the corrupted playback phase AND this is the currently-lit chip
+              //     (kids can buzz in the instant they hear the wrong note)
+              const isTappable =
+                phase === 'guess' || (phase === 'listen_corrupted' && isLit);
               // State-driven palette: lit (during playback) glows in the bell's color,
               // reveal-state goes hard green/red. Rest of the time the chip sits as a
               // cream "evidence card" pinned to the corkboard.
@@ -505,7 +520,7 @@ export default function DetectivePage() {
                   key={`slot-${i}`}
                   data-testid={`detective-slot-${slotNum}`}
                   onClick={() => handleGuess(slotNum)}
-                  disabled={phase !== 'guess'}
+                  disabled={!isTappable}
                   className="relative rounded-lg border-3 flex flex-col items-center justify-between overflow-hidden"
                   style={{
                     width: 'clamp(46px, 9vw, 64px)',
@@ -515,13 +530,13 @@ export default function DetectivePage() {
                     boxShadow: isLit
                       ? `0 0 0 3px ${bell ? bell.color : '#FFCC00'}66, 0 6px 0 0 var(--jma-dark), 0 14px 22px rgba(0,0,0,0.28)`
                       : '0 4px 0 0 var(--jma-dark), 0 8px 14px rgba(0,0,0,0.18)',
-                    cursor: phase === 'guess' ? 'pointer' : 'default',
+                    cursor: isTappable ? 'pointer' : 'default',
                     transform: `rotate(${tilt}deg) scale(${isLit ? 1.14 : 1})`,
                     transformOrigin: 'center',
                     transition: 'transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s, box-shadow 0.18s',
                   }}
-                  whileHover={phase === 'guess' ? { y: -4, scale: 1.05, rotate: 0 } : {}}
-                  whileTap={phase === 'guess' ? { y: 1, scale: 0.98 } : {}}
+                  whileHover={isTappable ? { y: -4, scale: isLit ? 1.18 : 1.05, rotate: 0 } : {}}
+                  whileTap={isTappable ? { y: 1, scale: isLit ? 1.08 : 0.98 } : {}}
                 >
                   {/* Top tape strip — pinned-to-corkboard feel */}
                   <div

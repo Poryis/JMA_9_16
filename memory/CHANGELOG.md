@@ -1,5 +1,12 @@
 # Changelog
 
+## Feb 16, 2026 — Detective: buzz-in during the suspect playback
+- Kids can now **tap the currently-lit chip during the SUSPECT/corrupted playback** to lock in their guess the moment they hear something off. Other chips stay locked until the playback finishes (so it's "buzz on the wrong note" — not random clicks).
+- Tapping the lit chip cancels the remaining playback and snaps straight to the reveal phase.
+- Phase hint reworded: `🔍 Tap the wrong note the moment you hear it!`
+- "How to Play" updated: *"Tap the wrong beat as you hear it, or wait until the end."*
+- Verified live via automated test: clicking the lit chip mid-corrupted-playback transitions phase to `reveal`, locks the guess, and shows the case result.
+
 ## Feb 16, 2026 — Polish round: calmer Song Studio, finished Detective chips, smaller Finn
 - **Charlie's Song Studio — calmer hierarchy**:
   - Reduced the mood-color tint over the studio backdrop (from 55%→33% at top, transparent middle, soft white wash at bottom) so the studio reads as a single unified setting instead of fighting the controls.
