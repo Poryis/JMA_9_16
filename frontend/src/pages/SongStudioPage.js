@@ -30,13 +30,13 @@ function ColoredKey({ keyDef, scaleHighlighted, isTonic, onTap, playingNow }) {
     <motion.button
       data-testid={`piano-key-${keyDef.id}`}
       onClick={() => onTap(keyDef)}
-      className="relative flex flex-col items-center justify-end rounded-b-xl border-3 select-none"
+      className="relative flex flex-col items-center justify-end rounded-b-xl border-2 md:border-3 select-none"
       style={{
-        width: 'clamp(44px, 8vw, 64px)',
-        height: 'clamp(120px, 22vw, 170px)',
+        width: 'clamp(34px, 7.5vw, 64px)',
+        height: 'clamp(78px, 16vw, 170px)',
         backgroundColor: dim ? 'rgba(255,255,255,0.55)' : keyDef.color,
         borderColor: 'var(--jma-dark)',
-        boxShadow: '0 4px 0 0 var(--jma-dark)',
+        boxShadow: '0 3px 0 0 var(--jma-dark)',
         opacity: dim ? 0.55 : 1,
         filter: playingNow ? 'brightness(1.35)' : 'none',
         transform: playingNow ? 'translateY(3px)' : 'translateY(0)',
@@ -47,17 +47,17 @@ function ColoredKey({ keyDef, scaleHighlighted, isTonic, onTap, playingNow }) {
       {/* Tonic indicator (small "home" dot) */}
       {isTonic && (
         <div
-          className="absolute top-1 right-1 w-3 h-3 rounded-full"
+          className="absolute top-0.5 right-0.5 md:top-1 md:right-1 w-2 h-2 md:w-3 md:h-3 rounded-full"
           style={{ backgroundColor: 'var(--jma-dark)', border: '1.5px solid white' }}
           title="Home note"
         />
       )}
       {/* Octave indicator at the top */}
-      <div className="absolute top-1.5 left-1.5 text-[9px] font-black opacity-50" style={{ color: 'var(--jma-dark)' }}>
+      <div className="absolute top-1 left-1 md:top-1.5 md:left-1.5 text-[8px] md:text-[9px] font-black opacity-50" style={{ color: 'var(--jma-dark)' }}>
         {keyDef.octave}
       </div>
       <span
-        className="mb-2 text-xs md:text-sm font-black font-display leading-none"
+        className="mb-1 md:mb-2 text-[10px] md:text-sm font-black font-display leading-none"
         style={{ color: 'var(--jma-dark)', textShadow: '1px 1px 0 rgba(255,255,255,0.6)' }}
       >
         {keyDef.solfege}
@@ -288,12 +288,12 @@ export default function SongStudioPage() {
       <GameHeader title="Charlie's Song Studio" showHomeButton={true} />
       <FullscreenButton />
 
-      <main className="relative z-10 flex-1 flex flex-col items-center pt-14 md:pt-20 pb-6 px-3 max-w-4xl mx-auto w-full">
+      <main className="relative z-10 flex-1 flex flex-col items-center pt-14 md:pt-20 pb-3 md:pb-6 px-2 md:px-3 max-w-4xl mx-auto w-full">
 
         {/* Unified frosted "studio console" — calms the busy bg by grouping
             all the controls inside one cohesive surface */}
         <div
-          className="w-full rounded-3xl border-3 p-3 md:p-4"
+          className="w-full rounded-2xl md:rounded-3xl border-3 p-2 md:p-4"
           style={{
             backgroundColor: 'rgba(255, 252, 247, 0.86)',
             backdropFilter: 'blur(14px)',
@@ -304,61 +304,61 @@ export default function SongStudioPage() {
         >
 
         {/* MOOD PICKER */}
-        <div className="w-full mb-3">
-          <div className="text-center text-xs uppercase font-black opacity-60 mb-1" style={{ color: 'var(--jma-dark)' }}>
+        <div className="w-full mb-2 md:mb-3">
+          <div className="hidden md:block text-center text-xs uppercase font-black opacity-60 mb-1" style={{ color: 'var(--jma-dark)' }}>
             Pick a mood
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5 md:gap-2">
             {Object.values(MOODS).map((m) => (
               <button
                 key={m.id}
                 data-testid={`mood-${m.id}`}
                 onClick={() => { setMoodId(m.id); stopPlayback(); }}
-                className="rounded-2xl border-3 p-2 text-center"
+                className="rounded-xl md:rounded-2xl border-2 md:border-3 px-1.5 py-1 md:p-2 text-center flex items-center justify-center gap-1.5 md:flex-col md:gap-0"
                 style={{
                   borderColor: 'var(--jma-dark)',
                   backgroundColor: moodId === m.id ? m.color : 'white',
                   color: 'var(--jma-dark)',
-                  boxShadow: moodId === m.id ? '0 5px 0 0 var(--jma-dark)' : '0 3px 0 0 var(--jma-dark)',
-                  transform: moodId === m.id ? 'translateY(-2px)' : 'translateY(0)',
+                  boxShadow: moodId === m.id ? '0 4px 0 0 var(--jma-dark)' : '0 2px 0 0 var(--jma-dark)',
+                  transform: moodId === m.id ? 'translateY(-1px)' : 'translateY(0)',
                   transition: 'transform 0.12s, background-color 0.2s, box-shadow 0.12s',
                 }}
               >
-                <div className="text-2xl md:text-3xl">{m.emoji}</div>
+                <div className="text-xl md:text-3xl leading-none">{m.emoji}</div>
                 <div className="text-xs md:text-sm font-black font-display leading-tight">{m.name}</div>
-                <div className="text-[10px] opacity-60 leading-tight mt-0.5">{m.description}</div>
+                <div className="hidden md:block text-[10px] opacity-60 leading-tight mt-0.5">{m.description}</div>
               </button>
             ))}
           </div>
         </div>
 
         {/* COMPOSITION GRID + CHARLIE */}
-        <div className="w-full flex items-center gap-3 mb-3">
+        <div className="w-full flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
           <motion.img
             src={mood.charlie}
             alt="Charlie"
             draggable={false}
-            className="object-contain pointer-events-none select-none flex-shrink-0"
+            className="hidden sm:block object-contain pointer-events-none select-none flex-shrink-0"
             style={{ width: 'clamp(60px, 11vw, 110px)', filter: 'drop-shadow(0 6px 6px rgba(0,0,0,0.35))' }}
             animate={isPlaying ? { y: [0, -8, 0], rotate: [-3, 3, -3] } : { y: [0, -4, 0] }}
             transition={{ repeat: Infinity, duration: isPlaying ? 0.6 : 2.4, ease: 'easeInOut' }}
           />
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <div className="text-[10px] uppercase font-black opacity-60" style={{ color: 'var(--jma-dark)' }}>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2 mb-0.5 md:mb-1">
+              <div className="text-[9px] md:text-[10px] uppercase font-black opacity-60 truncate" style={{ color: 'var(--jma-dark)' }}>
                 {noteCount} {noteCount === 1 ? 'note' : 'notes'}
                 {restCount > 0 && ` + ${restCount} ${restCount === 1 ? 'rest' : 'rests'}`}
                 {' · '}{mood.bpm} BPM · plays 2×
               </div>
-              <div className="flex items-center gap-1 text-[10px] opacity-70" style={{ color: 'var(--jma-dark)' }}>
-                <span className="font-black uppercase">Chords:</span>
+              <div className="flex items-center gap-1 text-[9px] md:text-[10px] opacity-70 flex-shrink-0" style={{ color: 'var(--jma-dark)' }}>
+                <span className="font-black uppercase hidden sm:inline">Chords:</span>
                 <span className="font-black">
                   {mood.chordProgression.map((c) => c.label).join(' · ')}
                 </span>
               </div>
             </div>
             <div
-              className="text-[10px] md:text-xs text-center mb-1.5 font-bold rounded-md px-2 py-1"
+              className="text-[9px] md:text-xs text-center mb-1 md:mb-1.5 font-bold rounded-md px-2 py-0.5 md:py-1"
               style={{
                 color: 'var(--jma-dark)',
                 backgroundColor: `${mood.color}33`,
@@ -366,31 +366,31 @@ export default function SongStudioPage() {
               }}
               data-testid="song-studio-rests-tip"
             >
-              💡 Tip: Leave a beat empty, or tap the 🐠 seahorse for a rest!
+              💡 Leave a beat empty, or tap the 🐠 for a rest!
             </div>
             <div
-              className="rounded-2xl border-3 p-2"
+              className="rounded-xl md:rounded-2xl border-2 md:border-3 p-1.5 md:p-2"
               style={{
                 borderColor: 'var(--jma-dark)',
                 backgroundColor: 'rgba(255,255,255,0.85)',
-                boxShadow: '0 4px 0 0 var(--jma-dark)',
+                boxShadow: '0 3px 0 0 var(--jma-dark)',
               }}
             >
               {/* 4 measure rows, each with a chord label + 4 slots */}
               {[0, 1, 2, 3].map((measureIdx) => {
                 const chord = mood.chordProgression[measureIdx];
                 return (
-                  <div key={measureIdx} className="flex items-center gap-1.5 md:gap-2 mb-1 last:mb-0">
+                  <div key={measureIdx} className="flex items-center gap-1 md:gap-2 mb-1 last:mb-0">
                     <div
-                      className="flex-shrink-0 w-9 md:w-12 rounded-md text-center py-1 border-2"
+                      className="flex-shrink-0 w-8 md:w-12 rounded-md text-center py-0.5 md:py-1 border-2"
                       style={{
                         borderColor: 'var(--jma-dark)',
                         backgroundColor: mood.accent,
                         color: 'white',
                       }}
                     >
-                      <div className="text-[9px] uppercase font-black opacity-80 leading-none">M{measureIdx + 1}</div>
-                      <div className="text-xs md:text-sm font-black font-display leading-tight">{chord.label}</div>
+                      <div className="text-[8px] md:text-[9px] uppercase font-black opacity-80 leading-none">M{measureIdx + 1}</div>
+                      <div className="text-[11px] md:text-sm font-black font-display leading-tight">{chord.label}</div>
                     </div>
                     <div className="grid gap-1.5 md:gap-2 flex-1" style={{ gridTemplateColumns: `repeat(${SLOTS_PER_ROW}, minmax(0, 1fr))` }}>
                       {[0, 1, 2, 3].map((beatIdx) => {
@@ -449,10 +449,10 @@ export default function SongStudioPage() {
 
         {/* PIANO KEYBOARD + REST BUTTON */}
         <div
-          className="w-full overflow-x-auto pb-3"
+          className="w-full overflow-x-auto pb-1.5 md:pb-3"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          <div className="flex justify-center items-end gap-1 md:gap-1.5 px-2 min-w-max">
+          <div className="flex justify-center items-end gap-1 md:gap-1.5 px-1 md:px-2 min-w-max">
             {PIANO_KEYS.map((k) => {
               const inScale = mood.scaleNotes.includes(k.pitch);
               const isTonic = k.pitch === mood.tonic;
@@ -472,13 +472,13 @@ export default function SongStudioPage() {
               data-testid="rest-button"
               onClick={handleRestTap}
               aria-label="Add a rest"
-              className="relative flex flex-col items-center justify-center rounded-b-xl border-3 select-none ml-2 md:ml-3"
+              className="relative flex flex-col items-center justify-center rounded-b-xl border-2 md:border-3 select-none ml-1.5 md:ml-3"
               style={{
-                width: 'clamp(44px, 8vw, 64px)',
-                height: 'clamp(120px, 22vw, 170px)',
+                width: 'clamp(34px, 7.5vw, 64px)',
+                height: 'clamp(78px, 16vw, 170px)',
                 backgroundColor: 'rgba(255, 245, 250, 1)',
                 borderColor: 'var(--jma-dark)',
-                boxShadow: '0 4px 0 0 var(--jma-dark)',
+                boxShadow: '0 3px 0 0 var(--jma-dark)',
               }}
               whileTap={{ y: 4, boxShadow: '0 1px 0 0 var(--jma-dark)' }}
             >
@@ -489,7 +489,7 @@ export default function SongStudioPage() {
                 className="w-full h-[78%] object-contain pointer-events-none select-none px-1"
               />
               <span
-                className="mb-1.5 text-[10px] md:text-xs font-black font-display leading-none"
+                className="mb-1 md:mb-1.5 text-[9px] md:text-xs font-black font-display leading-none"
                 style={{ color: 'var(--jma-dark)', textShadow: '1px 1px 0 rgba(255,255,255,0.6)' }}
               >
                 Rest
@@ -499,12 +499,12 @@ export default function SongStudioPage() {
         </div>
 
         {/* ACCOMPANIMENT TOGGLES */}
-        <div className="flex items-center justify-center gap-2 mt-1 mb-2 flex-wrap">
+        <div className="flex items-center justify-center gap-2 mt-0.5 md:mt-1 mb-1.5 md:mb-2 flex-wrap">
           <button
             data-testid="toggle-chords"
             onClick={() => setChordsOn((v) => !v)}
             aria-pressed={chordsOn}
-            className="rounded-full border-2 px-3 py-1.5 flex items-center gap-1.5 text-xs md:text-sm font-black font-display"
+            className="rounded-full border-2 px-2.5 md:px-3 py-1 md:py-1.5 flex items-center gap-1 md:gap-1.5 text-[11px] md:text-sm font-black font-display"
             style={{
               borderColor: 'var(--jma-dark)',
               backgroundColor: chordsOn ? mood.accent : 'white',
@@ -514,7 +514,7 @@ export default function SongStudioPage() {
               transform: chordsOn ? 'translateY(-1px)' : 'translateY(0)',
             }}
           >
-            <Piano className="w-4 h-4" />
+            <Piano className="w-3.5 h-3.5 md:w-4 md:h-4" />
             Chords {chordsOn ? 'ON' : 'OFF'}
           </button>
           <button
@@ -522,7 +522,7 @@ export default function SongStudioPage() {
             onClick={() => setDrumsOn((v) => !v)}
             aria-pressed={drumsOn}
             disabled={!mood.drumLoop}
-            className="rounded-full border-2 px-3 py-1.5 flex items-center gap-1.5 text-xs md:text-sm font-black font-display disabled:opacity-40"
+            className="rounded-full border-2 px-2.5 md:px-3 py-1 md:py-1.5 flex items-center gap-1 md:gap-1.5 text-[11px] md:text-sm font-black font-display disabled:opacity-40"
             style={{
               borderColor: 'var(--jma-dark)',
               backgroundColor: drumsOn && mood.drumLoop ? mood.accent : 'white',
@@ -534,18 +534,18 @@ export default function SongStudioPage() {
             }}
             title={mood.drumLoop ? '' : 'No drum loop for this mood'}
           >
-            <Drum className="w-4 h-4" />
+            <Drum className="w-3.5 h-3.5 md:w-4 md:h-4" />
             Drums {mood.drumLoop ? (drumsOn ? 'ON' : 'OFF') : '—'}
           </button>
         </div>
 
         {/* CONTROLS */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 mt-1 md:mt-2">
           <button
             data-testid="song-play-btn"
             onClick={isPlaying ? stopPlayback : playSong}
             disabled={filledCount === 0}
-            className="chunky-btn px-4 py-2 flex items-center gap-2"
+            className="chunky-btn px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-base flex items-center gap-1.5 md:gap-2"
             style={{
               backgroundColor: filledCount === 0 ? '#9CA3AF' : '#34A853',
               color: 'white',
@@ -553,13 +553,13 @@ export default function SongStudioPage() {
               cursor: filledCount === 0 ? 'not-allowed' : 'pointer',
             }}
           >
-            <Play className="w-4 h-4" /> {isPlaying ? 'Stop' : 'Play My Song'}
+            <Play className="w-3.5 h-3.5 md:w-4 md:h-4" /> {isPlaying ? 'Stop' : 'Play My Song'}
           </button>
           <button
             data-testid="song-save-btn"
             onClick={handleSave}
             disabled={filledCount === 0}
-            className="chunky-btn px-4 py-2 flex items-center gap-2"
+            className="chunky-btn px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-base flex items-center gap-1.5 md:gap-2"
             style={{
               backgroundColor: filledCount === 0 ? '#9CA3AF' : '#FFCC00',
               color: 'var(--jma-dark)',
@@ -567,23 +567,23 @@ export default function SongStudioPage() {
               cursor: filledCount === 0 ? 'not-allowed' : 'pointer',
             }}
           >
-            <Save className="w-4 h-4" /> Save
+            <Save className="w-3.5 h-3.5 md:w-4 md:h-4" /> Save
           </button>
           <button
             data-testid="song-clear-btn"
             onClick={clearAll}
-            className="chunky-btn bg-white text-[var(--jma-dark)] px-3 py-2 flex items-center gap-1.5 text-sm border-2"
+            className="chunky-btn bg-white text-[var(--jma-dark)] px-2.5 md:px-3 py-1.5 md:py-2 flex items-center gap-1 md:gap-1.5 text-[11px] md:text-sm border-2"
             style={{ borderColor: 'var(--jma-dark)' }}
           >
-            <Trash2 className="w-4 h-4" /> Clear
+            <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" /> Clear
           </button>
           <button
             data-testid="song-gallery-btn"
             onClick={() => setView('gallery')}
-            className="chunky-btn bg-white text-[var(--jma-dark)] px-3 py-2 flex items-center gap-1.5 text-sm border-2"
+            className="chunky-btn bg-white text-[var(--jma-dark)] px-2.5 md:px-3 py-1.5 md:py-2 flex items-center gap-1 md:gap-1.5 text-[11px] md:text-sm border-2"
             style={{ borderColor: 'var(--jma-dark)' }}
           >
-            <BookOpen className="w-4 h-4" /> My Songs ({songs.length})
+            <BookOpen className="w-3.5 h-3.5 md:w-4 md:h-4" /> Songs ({songs.length})
           </button>
         </div>
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## Feb 16, 2026 — Song Studio mobile pass + seahorse fix
+- **Seahorse rest — restored the black quarter-rest body**: my earlier processing wiped out near-black pixels everywhere, which accidentally erased the seahorse's own black body (the part that forms the quarter-rest shape). The source PNG was already correctly transparent at the corners — no black-stripping needed. Re-exported as a straight trim + resize so the black quarter-rest tail is now visible inside slots and the Rest button.
+- **Song Studio fits a phone screen with zero scroll** (390×800 → document height = 800px exact, no overflow):
+  - Mood picker becomes a horizontal **emoji + name pill** on mobile (no descriptions, smaller emoji, gap-1.5).
+  - Charlie hidden on `<sm` widths so the grid can stretch full-width.
+  - Meta line gets `text-[9px]` + `truncate`; "Chords:" label collapses on the smallest widths.
+  - Tip line shortened ("💡 Leave a beat empty, or tap the 🐠 for a rest!"), `py-0.5` on mobile.
+  - Grid card padding `p-1.5 md:p-2`; chord-label cells `w-8 md:w-12`.
+  - **Piano keys**: width `clamp(34px, 7.5vw, 64px)`, height `clamp(78px, 16vw, 170px)` (was 120 min) — keyboard now ~40% shorter on mobile.
+  - Rest button matched to the same dimensions.
+  - Toggles + control buttons: smaller padding, smaller icons (`w-3.5 h-3.5 md:w-4 md:h-4`), smaller text (`text-[11px] md:text-sm`), tighter gaps.
+  - Console wrap: `p-2 md:p-4` (was `p-3 md:p-4`), shorter "My Songs" → "Songs" label on the gallery button.
+- Desktop layout unchanged — all the `md:` modifiers preserve the full-size experience.
+
 ## Feb 16, 2026 — Detective: buzz-in during the suspect playback
 - Kids can now **tap the currently-lit chip during the SUSPECT/corrupted playback** to lock in their guess the moment they hear something off. Other chips stay locked until the playback finishes (so it's "buzz on the wrong note" — not random clicks).
 - Tapping the lit chip cancels the remaining playback and snaps straight to the reveal phase.
