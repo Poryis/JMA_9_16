@@ -277,11 +277,11 @@ export default function SongStudioPage() {
         backgroundAttachment: 'fixed',
       }}
     >
-      {/* Mood-color tint overlay so the studio reads with the active mood */}
+      {/* Mood-color tint overlay — kept gentle so the studio reads cleanly */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: `linear-gradient(180deg, ${mood.color}55 0%, ${mood.color}22 40%, rgba(255,255,255,0.55) 90%)`,
+          background: `linear-gradient(180deg, ${mood.color}33 0%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0.55) 100%)`,
           transition: 'background 0.4s ease',
         }}
       />
@@ -289,6 +289,19 @@ export default function SongStudioPage() {
       <FullscreenButton />
 
       <main className="relative z-10 flex-1 flex flex-col items-center pt-14 md:pt-20 pb-6 px-3 max-w-4xl mx-auto w-full">
+
+        {/* Unified frosted "studio console" — calms the busy bg by grouping
+            all the controls inside one cohesive surface */}
+        <div
+          className="w-full rounded-3xl border-3 p-3 md:p-4"
+          style={{
+            backgroundColor: 'rgba(255, 252, 247, 0.86)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            borderColor: 'var(--jma-dark)',
+            boxShadow: '0 10px 0 0 var(--jma-dark), 0 18px 30px rgba(10,37,64,0.18)',
+          }}
+        >
 
         {/* MOOD PICKER */}
         <div className="w-full mb-3">
@@ -573,6 +586,8 @@ export default function SongStudioPage() {
             <BookOpen className="w-4 h-4" /> My Songs ({songs.length})
           </button>
         </div>
+
+        </div>{/* /studio-console */}
 
         {/* SAVE MODAL */}
         <AnimatePresence>

@@ -1,5 +1,18 @@
 # Changelog
 
+## Feb 16, 2026 — Polish round: calmer Song Studio, finished Detective chips, smaller Finn
+- **Charlie's Song Studio — calmer hierarchy**:
+  - Reduced the mood-color tint over the studio backdrop (from 55%→33% at top, transparent middle, soft white wash at bottom) so the studio reads as a single unified setting instead of fighting the controls.
+  - Wrapped the entire control surface (mood picker + grid + keyboard + toggles + buttons) in a single frosted-glass "studio console" panel: `rgba(255,252,247,0.86)` + `backdropFilter: blur(14px)` + chunky 10px JMA-dark drop. Studio bg shows around the edges only; controls now sit on one cohesive surface.
+- **Detective Dr. Jellybone — finished beat-chip aesthetic**: Replaced the plain white rounded rectangles with proper "evidence card" chips that match the corkboard theme:
+  - Cream paper base (`#FFF7E1`) with a subtle inner gradient + double-shadow (3D button drop + ambient cast shadow)
+  - Numbered badge (white circle, bordered) at the top instead of a bare number
+  - Centered eighth-note SVG glyph at the body (swaps to solfege text on reveal)
+  - Per-slot deterministic tilt (-3° to +3°) for a hand-pinned look
+  - Lit playback state now uses the bell's color with a colored outer-ring glow + scale-up; reveal states still hard green/red
+  - Larger touch target (46–64px wide × 60–86px tall)
+- **Home page — Finn scaled 15% smaller**: `clamp(80px, 14vw, 170px)` → `clamp(68px, 12vw, 145px)`. Now visually balances Charlie and the JMA shield rather than overpowering them.
+
 ## Feb 16, 2026 — Lesson-world art landed in the app
 Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 

@@ -290,7 +290,7 @@ function HomePage() {
           alt="Finn"
           data-testid="home-finn"
           className="object-contain drop-shadow-lg cursor-pointer"
-          style={{ width: 'clamp(80px, 14vw, 170px)', height: 'auto' }}
+          style={{ width: 'clamp(68px, 12vw, 145px)', height: 'auto' }}
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
           transition={{

@@ -453,7 +453,7 @@ export default function DetectivePage() {
           </div>
 
           {/* Beat slots — rests are skipped, slots are numbered only across real notes */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 mt-3">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-2.5 mt-3">
             {round && tune?.notes.map((note, i) => {
               if (note == null) {
                 // Rest — show a subtle dash, not a clickable slot
@@ -462,8 +462,8 @@ export default function DetectivePage() {
                     key={`rest-${i}`}
                     className="flex items-center justify-center"
                     style={{
-                      width: 'clamp(18px, 4vw, 26px)',
-                      height: 'clamp(48px, 10vw, 70px)',
+                      width: 'clamp(20px, 4vw, 28px)',
+                      height: 'clamp(60px, 12vw, 86px)',
                       color: 'rgba(10,37,64,0.4)',
                       fontWeight: 900,
                       fontSize: '1.2rem',
@@ -480,9 +480,25 @@ export default function DetectivePage() {
               const isGuessed = guessSlot === slotNum;
               const isAnswer = phase === 'reveal' && slotNum === round.correctSlot;
               const showAnswer = phase === 'reveal';
-              const slotColor = isAnswer
-                ? (isCorrect && isGuessed ? '#34A853' : '#FF3B30')
-                : (isGuessed && !isCorrect ? '#FF3B30' : 'white');
+              const isWrongGuess = isGuessed && !isCorrect;
+              const isCorrectAnswer = isAnswer && isCorrect && isGuessed;
+              // State-driven palette: lit (during playback) glows in the bell's color,
+              // reveal-state goes hard green/red. Rest of the time the chip sits as a
+              // cream "evidence card" pinned to the corkboard.
+              const fillColor = isCorrectAnswer
+                ? '#34A853'
+                : isAnswer
+                  ? '#FF3B30'
+                  : isWrongGuess
+                    ? '#FF3B30'
+                    : isLit
+                      ? (bell ? bell.color : '#FFCC00')
+                      : '#FFF7E1';
+              const labelColor = isCorrectAnswer || isAnswer || isWrongGuess || isLit
+                ? 'white'
+                : 'var(--jma-dark)';
+              // Slight hand-pinned rotation per slot (deterministic, not random per render)
+              const tilt = ((slotNum * 37) % 7) - 3; // -3..+3 deg
 
               return (
                 <motion.button
@@ -490,32 +506,73 @@ export default function DetectivePage() {
                   data-testid={`detective-slot-${slotNum}`}
                   onClick={() => handleGuess(slotNum)}
                   disabled={phase !== 'guess'}
-                  className="relative rounded-xl border-3 flex flex-col items-center justify-center"
+                  className="relative rounded-lg border-3 flex flex-col items-center justify-between overflow-hidden"
                   style={{
-                    width: 'clamp(38px, 8vw, 56px)',
-                    height: 'clamp(48px, 10vw, 70px)',
+                    width: 'clamp(46px, 9vw, 64px)',
+                    height: 'clamp(60px, 12vw, 86px)',
                     borderColor: 'var(--jma-dark)',
-                    boxShadow: '0 3px 0 0 var(--jma-dark)',
-                    backgroundColor: slotColor,
+                    background: `linear-gradient(180deg, ${fillColor} 0%, ${fillColor} 55%, rgba(0,0,0,0.06) 100%)`,
+                    boxShadow: isLit
+                      ? `0 0 0 3px ${bell ? bell.color : '#FFCC00'}66, 0 6px 0 0 var(--jma-dark), 0 14px 22px rgba(0,0,0,0.28)`
+                      : '0 4px 0 0 var(--jma-dark), 0 8px 14px rgba(0,0,0,0.18)',
                     cursor: phase === 'guess' ? 'pointer' : 'default',
-                    transform: isLit ? 'scale(1.18)' : 'scale(1)',
-                    transition: 'transform 0.12s, background-color 0.2s',
+                    transform: `rotate(${tilt}deg) scale(${isLit ? 1.14 : 1})`,
+                    transformOrigin: 'center',
+                    transition: 'transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s, box-shadow 0.18s',
                   }}
-                  whileHover={phase === 'guess' ? { y: -3, boxShadow: '0 6px 0 0 var(--jma-dark)' } : {}}
-                  whileTap={phase === 'guess' ? { y: 1 } : {}}
-                  animate={isLit ? { backgroundColor: bell ? bell.color : '#FFCC00' } : {}}
+                  whileHover={phase === 'guess' ? { y: -4, scale: 1.05, rotate: 0 } : {}}
+                  whileTap={phase === 'guess' ? { y: 1, scale: 0.98 } : {}}
                 >
+                  {/* Top tape strip — pinned-to-corkboard feel */}
+                  <div
+                    className="absolute top-0 left-0 right-0 flex items-center justify-center"
+                    style={{
+                      height: '14px',
+                      background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%)',
+                      borderBottom: '1px dashed rgba(10,37,64,0.18)',
+                    }}
+                  />
+                  {/* Numbered evidence-tag badge */}
                   <span
-                    className="text-xs md:text-sm font-black font-display leading-none"
-                    style={{ color: isAnswer || (isGuessed && !isCorrect) ? 'white' : 'var(--jma-dark)' }}
+                    className="mt-1.5 inline-flex items-center justify-center rounded-full border-2 text-[10px] md:text-xs font-black font-display leading-none"
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      backgroundColor: 'rgba(255,255,255,0.92)',
+                      borderColor: 'var(--jma-dark)',
+                      color: 'var(--jma-dark)',
+                    }}
                   >
                     {slotNum + 1}
                   </span>
-                  {showAnswer && isAnswer && bell && (
-                    <span className="text-[8px] md:text-[10px] font-black mt-0.5" style={{ color: 'white' }}>
-                      {bell.solfege}{note === 'High C' ? '↑' : ''}
-                    </span>
-                  )}
+                  {/* Centered eighth-note glyph (or solfege when revealing the answer) */}
+                  <div className="flex-1 flex items-center justify-center w-full">
+                    {showAnswer && isAnswer && bell ? (
+                      <span
+                        className="text-xs md:text-sm font-black font-display"
+                        style={{ color: labelColor, textShadow: '1px 1px 0 rgba(0,0,0,0.18)' }}
+                      >
+                        {bell.solfege}{note === 'High C' ? '↑' : ''}
+                      </span>
+                    ) : (
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke={labelColor}
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ opacity: isLit || isAnswer || isWrongGuess ? 1 : 0.6 }}
+                        aria-hidden="true"
+                      >
+                        <circle cx="6" cy="18" r="3" />
+                        <path d="M9 18V4l10-1v13" />
+                        <circle cx="16" cy="17" r="3" />
+                      </svg>
+                    )}
+                  </div>
                 </motion.button>
               );
             })}
