@@ -453,8 +453,8 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                 className="relative rounded-2xl border-3 overflow-hidden text-left flex"
                 style={{
                   borderColor: 'var(--jma-dark)',
-                  background: `linear-gradient(135deg, ${tint}33 0%, white 60%)`,
-                  boxShadow: '0 5px 0 0 var(--jma-dark), 0 10px 18px rgba(10,37,64,0.12)',
+                  backgroundColor: 'white',
+                  boxShadow: '0 5px 0 0 var(--jma-dark), 0 10px 18px rgba(10,37,64,0.10)',
                   transition: 'transform 0.12s, box-shadow 0.12s',
                 }}
               >

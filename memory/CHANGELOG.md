@@ -1,5 +1,9 @@
 # Changelog
 
+## Feb 16, 2026 — Song picker cards calmed
+- **Song tile backgrounds → solid white** (was a tinted-to-white gradient). 17 cards in different tints was creating a rainbow soup. The color cue is now carried entirely by the **left stripe + circular icon button**, which keeps the category encoding clear without a busy backdrop. Drum songs still distinct via purple stripe + drum icon.
+- Drop shadow lightened (`rgba(10,37,64,0.12)` → `0.10`) to match the calmer surface.
+
 ## Feb 16, 2026 — Rhythm song picker polished + pulse one more notch gentler
 - **Pulse another notch gentler** (per user "tiny bit gentler please"):
   - `scale 1.045 → 1.03`
