@@ -231,9 +231,15 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
             // Mega celebration on milestone level 5; regular on every other.
             celebrate(level === 5);
             setLevel(prev => prev + 1);
-            setShowingIndex(0);
-            setGameState('showing');
-            setMessage('Watch and listen!');
+            // Wait for the level-clear fanfare (4 kazoo notes spaced 90 ms +
+            // ~700 ms decay tail) to finish BEFORE Stew starts demoing the
+            // new pattern — otherwise the fanfare notes pile on top of the
+            // pattern's first note and it sounds like a chord.
+            timeoutRef.current = setTimeout(() => {
+              setShowingIndex(0);
+              setGameState('showing');
+              setMessage('Watch and listen!');
+            }, 900);
           }
           setFeedback(null);
         }, 1500);

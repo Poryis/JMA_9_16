@@ -4,11 +4,79 @@
 // the centerpiece and only minimal corner accents.
 // Bottom: a single helper pill explaining each section.
 
-import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { motion, useAnimationControls } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RankBadge from '../components/RankBadge';
 import StickerSpotlight from '../components/StickerSpotlight';
+
+// Jelly Rocks blimp — 3-frame loop slowly drifting side-to-side behind everything.
+const BLIMP_FRAMES = [
+  'assets/animations/jelly-rocks-blimp-1.png',
+  'assets/animations/jelly-rocks-blimp-2.png',
+  'assets/animations/jelly-rocks-blimp-3.png',
+];
+
+function BlimpFlyby() {
+  const [frame, setFrame] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setFrame((f) => (f + 1) % BLIMP_FRAMES.length), 220);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <motion.div
+      aria-hidden="true"
+      data-testid="home-blimp"
+      className="absolute pointer-events-none select-none"
+      style={{
+        top: '4%',
+        // Width relative to viewport so it scales nicely on phone + desktop
+        width: 'clamp(140px, 22vw, 320px)',
+        zIndex: 0,
+        opacity: 0.92,
+      }}
+      // Slow side-to-side drift across the sky strip, then back — pure ambient flair
+      initial={{ x: '-25vw', rotate: -3 }}
+      animate={{ x: ['-25vw', '85vw', '-25vw'], rotate: [-3, 3, -3] }}
+      transition={{
+        x: { duration: 56, repeat: Infinity, ease: 'easeInOut' },
+        rotate: { duration: 14, repeat: Infinity, ease: 'easeInOut' },
+      }}
+    >
+      {BLIMP_FRAMES.map((src, i) => (
+        <img
+          key={i}
+          src={src}
+          alt=""
+          draggable={false}
+          loading="lazy"
+          className="absolute inset-0 w-full h-auto"
+          style={{
+            display: i === frame ? 'block' : 'none',
+            filter: 'drop-shadow(0 8px 14px rgba(10,37,64,0.18))',
+          }}
+        />
+      ))}
+      {/* Reserve aspect with first frame so motion has size */}
+      <img
+        src={BLIMP_FRAMES[0]}
+        alt=""
+        aria-hidden="true"
+        className="block w-full h-auto invisible"
+      />
+    </motion.div>
+  );
+}
+
+// Easter-egg animation variants for the shield. Click cycles through them.
+const SHIELD_ANIMS = [
+  { name: 'wobble',  keyframes: { rotate: [0, -14, 12, -8, 6, 0],         scale: [1, 1.06, 1.08, 1.04, 1.02, 1], y: [0, 0, 0, 0, 0, 0] }, duration: 0.9 },
+  { name: 'spin',    keyframes: { rotate: [0, 360],                        scale: [1, 1.1, 1],                 y: [0, -10, 0] },        duration: 0.95 },
+  { name: 'pop',     keyframes: { rotate: [0, 0],                          scale: [1, 1.35, 0.9, 1.12, 1],     y: [0, -16, 0, -6, 0] }, duration: 0.85 },
+  { name: 'flipx',   keyframes: { rotateY: [0, 360],                       scale: [1, 1.05, 1],                y: [0, -8, 0] },         duration: 0.95 },
+  { name: 'shimmy',  keyframes: { x: [0, -10, 10, -7, 7, -4, 4, 0],        rotate: [0, -4, 4, -2, 2, 0, 0, 0], scale: [1, 1.04, 1.04, 1.04, 1.04, 1.02, 1.02, 1] }, duration: 0.95 },
+  { name: 'jelly',   keyframes: { scaleX: [1, 1.25, 0.85, 1.12, 0.95, 1],  scaleY: [1, 0.78, 1.22, 0.92, 1.05, 1], y: [0, -4, 4, -2, 0, 0] }, duration: 0.9 },
+];
 
 // Floating music notes/stars in the sky strip behind the hero row.
 const SKY_DOODLES = [
@@ -261,6 +329,32 @@ function PrimaryCard({ card, index, navigate }) {
 
 function HomePage() {
   const navigate = useNavigate();
+  const shieldControls = useAnimationControls();
+  const shieldHitsRef = useRef(0);
+
+  // Shield intro: tilt-in spring on first paint. After that, clicks replace
+  // the animation with one of SHIELD_ANIMS for the easter-egg flourish.
+  useEffect(() => {
+    shieldControls.start({
+      y: 0,
+      opacity: 1,
+      rotate: 0,
+      scale: 1,
+      transition: { type: 'spring', stiffness: 200 },
+    });
+  }, [shieldControls]);
+
+  const triggerShieldEasterEgg = () => {
+    // Cycle deterministically through the animations so kids get variety
+    // every tap without repeating the same one back-to-back.
+    const idx = shieldHitsRef.current % SHIELD_ANIMS.length;
+    shieldHitsRef.current += 1;
+    const anim = SHIELD_ANIMS[idx];
+    shieldControls.start({
+      ...anim.keyframes,
+      transition: { duration: anim.duration, ease: 'easeInOut' },
+    });
+  };
 
   return (
     <div
@@ -271,6 +365,9 @@ function HomePage() {
           'linear-gradient(180deg, #BCE5F2 0%, #E5F2F8 55%, #FFEEC5 100%)',
       }}
     >
+      {/* Drifting Jelly Rocks blimp — behind everything */}
+      <BlimpFlyby />
+
       {/* Sky doodles — float behind the hero */}
       {SKY_DOODLES.map((d, i) => (
         <motion.img
@@ -290,7 +387,7 @@ function HomePage() {
           alt="Finn"
           data-testid="home-finn"
           className="object-contain drop-shadow-lg cursor-pointer"
-          style={{ width: 'clamp(68px, 12vw, 145px)', height: 'auto' }}
+          style={{ width: 'clamp(61px, 11vw, 131px)', height: 'auto' }}
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
           transition={{
@@ -307,15 +404,18 @@ function HomePage() {
           src="assets/ui/logo.png"
           alt="Jelly of the Month Club Music Academy"
           data-testid="jma-logo"
-          className="object-contain"
+          className="object-contain cursor-pointer"
           style={{
             width: 'clamp(120px, 22vw, 280px)',
             height: 'auto',
             filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.18))',
+            transformOrigin: 'center',
           }}
           initial={{ y: -30, opacity: 0, rotate: -4 }}
-          animate={{ y: 0, opacity: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 200 }}
+          animate={shieldControls}
+          onClick={triggerShieldEasterEgg}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
         />
 
         <motion.img

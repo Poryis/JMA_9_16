@@ -1,5 +1,11 @@
 # Changelog
 
+## Feb 16, 2026 — Home flair + Stew round-start audio fix
+- **Stew Kazoo Says — fanfare/pattern-start bug fixed**: on level-up, `celebrate()` was firing 4 fanfare kazoo notes (C-E-G-HighC at 0/90/180/270 ms) and the next-level `showing` phase started immediately afterward, so the fanfare notes piled onto the first pattern note(s) — sounded like a chord at round start. Added a **900 ms delay** between the fanfare and the next pattern's first note so the fanfare can fully decay first.
+- **Finn another −10% on the homepage**: `clamp(68px, 12vw, 145px)` → `clamp(61px, 11vw, 131px)`. Verified: at 1280px viewport Finn now renders at exactly 131 px wide.
+- **Jelly Rocks blimp drifting in the sky** (new `BlimpFlyby` component on `HomePage`): 3-frame loop cycling every 220 ms, slowly drifting `-25vw → 85vw → -25vw` across the sky strip over 56 s (rotation oscillates ±3° on a separate 14 s loop for a gentle bob). Placed at `z-index: 0` so it sits behind the hero, sky doodles, cards, and everything else.
+- **Shield easter egg**: tapping the JMA shield logo cycles deterministically through **6 different animations** — `wobble`, `spin`, `pop`, `flipx`, `shimmy`, and `jelly` (squash/stretch). Each click animates the shield with `useAnimationControls`. Intro spring animation preserved.
+
 ## Feb 16, 2026 — Song Studio mobile pass + seahorse fix
 - **Seahorse rest — restored the black quarter-rest body**: my earlier processing wiped out near-black pixels everywhere, which accidentally erased the seahorse's own black body (the part that forms the quarter-rest shape). The source PNG was already correctly transparent at the corners — no black-stripping needed. Re-exported as a straight trim + resize so the black quarter-rest tail is now visible inside slots and the Rest button.
 - **Song Studio fits a phone screen with zero scroll** (390×800 → document height = 800px exact, no overflow):
