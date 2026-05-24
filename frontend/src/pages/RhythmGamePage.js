@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Play, Trophy, Zap, Drum } from 'lucide-react';
+import { Play, Trophy, Zap, Drum, Music2, Star, Sparkles, Gamepad2, Flame, Leaf } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
 import { PageCharacters } from '../components/PageCharacters';
@@ -13,6 +13,17 @@ import { SONG_LIBRARY, SPEED_SETTINGS, getSongsByCategory } from '../data/songs'
 import { getHighScore, saveHighScore, getTopScores } from '../hooks/useScores';
 
 const NOTE_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
+
+// Per-category visual styling for the song cards.
+const CATEGORY_STYLE = {
+  'JMA Originals': { icon: Star,      tint: '#FFCC00', accent: '#F39C12', label: 'JMA ORIGINALS' },
+  'Classic':       { icon: Music2,    tint: '#AF52DE', accent: '#5E2D8C', label: 'CLASSIC' },
+  'Game':          { icon: Gamepad2,  tint: '#4CD964', accent: '#2D9D3E', label: 'GAME' },
+  'Original':      { icon: Sparkles,  tint: '#FF6BAA', accent: '#C7367C', label: 'ORIGINAL' },
+};
+
+// Per-speed icon
+const SPEED_ICON = { chill: Leaf, normal: Music2, turbo: Flame };
 
 // Drum-mode lanes: same falling-note machinery, but the targets at the bottom
 // are drum images, kid plays drum sounds, and the keyboard map uses simpler keys.
@@ -362,69 +373,154 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           </p>
         </motion.div>
 
-        {/* Speed selector */}
-        <div className="flex gap-2 mb-3 flex-wrap justify-center">
-          {Object.entries(SPEED_SETTINGS).map(([key, cfg]) => (
-            <motion.button
-              key={key}
-              data-testid={`speed-${key}`}
-              className={`chunky-btn px-3 py-1.5 text-xs md:text-sm font-bold ${speed === key ? 'ring-4 ring-[var(--jma-yellow)]' : ''}`}
-              style={{ backgroundColor: cfg.color, color: key === 'normal' ? 'var(--jma-dark)' : 'white' }}
-              onClick={() => setSpeed(key)}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Zap className="inline w-3.5 h-3.5 mr-1" />{cfg.label}
-            </motion.button>
-          ))}
+        {/* Speed selector — chunky pill row with proper "Speed:" label */}
+        <div className="flex items-center gap-2 mb-3 flex-wrap justify-center">
+          <span className="text-[10px] md:text-xs uppercase font-black opacity-60 mr-1" style={{ color: 'var(--jma-dark)' }}>
+            Speed
+          </span>
+          {Object.entries(SPEED_SETTINGS).map(([key, cfg]) => {
+            const Icon = SPEED_ICON[key] || Zap;
+            const selected = speed === key;
+            return (
+              <motion.button
+                key={key}
+                data-testid={`speed-${key}`}
+                onClick={() => setSpeed(key)}
+                whileTap={{ scale: 0.94 }}
+                className="rounded-full border-3 px-3 py-1.5 text-xs md:text-sm font-black font-display flex items-center gap-1.5"
+                style={{
+                  borderColor: 'var(--jma-dark)',
+                  backgroundColor: selected ? cfg.color : 'white',
+                  color: selected && key !== 'normal' ? 'white' : 'var(--jma-dark)',
+                  boxShadow: selected ? `0 5px 0 0 var(--jma-dark)` : `0 3px 0 0 var(--jma-dark)`,
+                  transform: selected ? 'translateY(-2px)' : 'translateY(0)',
+                  transition: 'transform 0.12s, background-color 0.18s, box-shadow 0.12s',
+                }}
+              >
+                <Icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                {cfg.label}
+              </motion.button>
+            );
+          })}
         </div>
 
-        {/* Category filter */}
+        {/* Category filter chips */}
         <div className="flex gap-1.5 mb-3 flex-wrap justify-center max-w-2xl">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              className={`px-2.5 py-0.5 rounded-full text-[11px] md:text-xs font-bold border-2 border-[var(--jma-dark)] transition-all ${categoryFilter === cat ? 'bg-[var(--jma-dark)] text-white' : 'bg-white/85'}`}
-              onClick={() => setCategoryFilter(cat)}
-            >
-              {cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const style = CATEGORY_STYLE[cat] || null;
+            const Icon = style ? style.icon : null;
+            const isActive = categoryFilter === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className="rounded-full px-3 py-1 text-[11px] md:text-xs font-black border-2 flex items-center gap-1 transition-all"
+                style={{
+                  borderColor: 'var(--jma-dark)',
+                  backgroundColor: isActive
+                    ? (style ? style.tint : 'var(--jma-dark)')
+                    : 'rgba(255,255,255,0.88)',
+                  color: isActive && cat !== 'All' ? 'var(--jma-dark)' : (isActive ? 'white' : 'var(--jma-dark)'),
+                  boxShadow: isActive ? '0 3px 0 0 var(--jma-dark)' : '0 2px 0 0 var(--jma-dark)',
+                  transform: isActive ? 'translateY(-1px)' : 'translateY(0)',
+                }}
+              >
+                {Icon && <Icon className="w-3 h-3" />}
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Song grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-2xl mb-3 max-h-[55vh] overflow-y-auto px-1">
+        {/* Song grid — polished tiles */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 w-full max-w-3xl mb-3 max-h-[55vh] overflow-y-auto px-1 pb-2">
           {filteredSongs.map((song) => {
             const highScore = getHighScore(song.id, speed);
             const isDrums = song.instrumentMode === 'drums';
+            const catStyle = CATEGORY_STYLE[song.category] || CATEGORY_STYLE['Original'];
+            const CatIcon = catStyle.icon;
+            // Drum songs get a distinct purple sash so they pop from melodic tracks
+            const tint = isDrums ? '#AF52DE' : catStyle.tint;
+            const accent = isDrums ? '#5E2D8C' : catStyle.accent;
+            const hitCount = song.notes.filter((n) => n != null).length;
             return (
               <motion.button
                 key={song.id}
                 data-testid={`song-${song.id}`}
-                className="level-card p-3 text-left flex items-center gap-3"
                 onClick={() => { setSelectedSong(song); startGame(); }}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ y: -3, scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
+                className="relative rounded-2xl border-3 overflow-hidden text-left flex"
+                style={{
+                  borderColor: 'var(--jma-dark)',
+                  background: `linear-gradient(135deg, ${tint}33 0%, white 60%)`,
+                  boxShadow: '0 5px 0 0 var(--jma-dark), 0 10px 18px rgba(10,37,64,0.12)',
+                  transition: 'transform 0.12s, box-shadow 0.12s',
+                }}
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-[var(--jma-dark)] flex items-center justify-center"
-                  style={{ backgroundColor: isDrums ? 'var(--jma-purple)' : 'var(--jma-blue)' }}>
-                  {isDrums
-                    ? <Drum className="w-4 h-4 text-white" />
-                    : <Play className="w-4 h-4 text-white" fill="white" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm md:text-base font-bold font-display truncate">{song.name}</h3>
-                  <p className="text-[10px] md:text-xs opacity-60 truncate">
-                    {song.category} · {song.notes.filter(n => n != null).length} hits
-                    {isDrums && ' · Drums'}
-                  </p>
-                </div>
-                {highScore && (
-                  <div className="flex-shrink-0 text-right">
-                    <p className="text-[11px] font-bold flex items-center gap-1" style={{ color: 'var(--jma-orange)' }}>
-                      <Trophy className="w-3 h-3" /> {highScore.score.toLocaleString()}
-                    </p>
+                {/* Left accent strip — color-codes the category at a glance */}
+                <div
+                  className="flex-shrink-0 w-2.5 md:w-3"
+                  style={{ backgroundColor: tint }}
+                />
+                {/* Icon column */}
+                <div
+                  className="flex-shrink-0 flex items-center justify-center pl-3 pr-2.5"
+                >
+                  <div
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-full border-3 flex items-center justify-center"
+                    style={{
+                      borderColor: 'var(--jma-dark)',
+                      backgroundColor: accent,
+                      boxShadow: '0 3px 0 0 var(--jma-dark)',
+                    }}
+                  >
+                    {isDrums
+                      ? <Drum className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                      : <Play className="w-5 h-5 md:w-6 md:h-6 text-white" fill="white" />}
                   </div>
-                )}
+                </div>
+                {/* Title + meta */}
+                <div className="flex-1 min-w-0 py-2.5 pr-3">
+                  <div className="flex items-center gap-1 text-[9px] md:text-[10px] uppercase font-black opacity-70" style={{ color: 'var(--jma-dark)' }}>
+                    <CatIcon className="w-3 h-3" />
+                    {catStyle.label}{isDrums && ' · DRUMS'}
+                  </div>
+                  <h3
+                    className="text-base md:text-lg font-black font-display leading-tight truncate"
+                    style={{ color: 'var(--jma-dark)' }}
+                  >
+                    {song.name}
+                  </h3>
+                  <div className="text-[10px] md:text-xs opacity-60 font-bold mt-0.5" style={{ color: 'var(--jma-dark)' }}>
+                    {hitCount} hits{song.bpm ? ` · ${song.bpm} BPM` : ''}
+                  </div>
+                </div>
+                {/* Right: high-score badge OR a chunky play arrow when unplayed */}
+                <div className="flex-shrink-0 flex items-center pr-3">
+                  {highScore ? (
+                    <div
+                      className="flex items-center gap-1 rounded-full border-2 px-2 py-1"
+                      style={{
+                        borderColor: 'var(--jma-dark)',
+                        backgroundColor: '#FFF3C4',
+                        color: 'var(--jma-dark)',
+                      }}
+                    >
+                      <Trophy className="w-3.5 h-3.5" style={{ color: '#D89B00' }} />
+                      <span className="text-[11px] md:text-xs font-black font-display leading-none">
+                        {highScore.score.toLocaleString()}
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      className="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center"
+                      style={{ borderColor: 'var(--jma-dark)', backgroundColor: 'white' }}
+                    >
+                      <Play className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: 'var(--jma-dark)' }} fill="var(--jma-dark)" />
+                    </div>
+                  )}
+                </div>
               </motion.button>
             );
           })}
@@ -483,9 +579,9 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           willChange: 'transform, filter',
         }}
         animate={{
-          scale: [1, 1.045, 1],
-          rotate: [-0.6, 0.6, -0.6],
-          filter: ['brightness(1)', 'brightness(1.04)', 'brightness(1)'],
+          scale: [1, 1.03, 1],
+          rotate: [-0.4, 0.4, -0.4],
+          filter: ['brightness(1)', 'brightness(1.025)', 'brightness(1)'],
         }}
         transition={{
           duration: pulseDurationSec,
@@ -502,7 +598,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           mixBlendMode: 'screen',
           zIndex: 0,
         }}
-        animate={{ opacity: [0.06, 0.22, 0.06] }}
+        animate={{ opacity: [0.05, 0.15, 0.05] }}
         transition={{
           duration: pulseDurationSec,
           repeat: Infinity,

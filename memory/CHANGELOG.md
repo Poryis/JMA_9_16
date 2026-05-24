@@ -1,5 +1,23 @@
 # Changelog
 
+## Feb 16, 2026 — Rhythm song picker polished + pulse one more notch gentler
+- **Pulse another notch gentler** (per user "tiny bit gentler please"):
+  - `scale 1.045 → 1.03`
+  - `rotate ±0.6° → ±0.4°`
+  - `brightness +4% → +2.5%`
+  - Halo overlay peak `0.22 → 0.15`
+- **`Who's Got the Rhythm?` song selection screen — full polish pass**:
+  - New helper config `CATEGORY_STYLE` maps each category (`JMA Originals`, `Classic`, `Game`, `Original`) to an icon + tint + accent. Drum songs override with purple to stay visually distinct.
+  - **Speed pills**: replaced flat row of `chunky-btn`s with rounded-full pills carrying proper icons (Leaf / Music2 / Flame) + a "SPEED" label, with the selected pill rising 2 px with a deeper drop shadow.
+  - **Category chips**: each now uses its category icon + theme tint for the active state (yellow JMA, purple Classic, green Game, pink Original) with chunky borders.
+  - **Song cards** rebuilt as 4-section flex tiles:
+    1. Left **color stripe** in the category's tint (or purple for drum tracks)
+    2. **Big circular icon button** in the category accent color (Play/Drum icon)
+    3. **Title + meta** column — category badge with icon, big chunky-display song name, `X hits · BPM` line
+    4. Right slot — **Trophy + high-score pill** if played, else a small white circular play arrow
+  - Subtle category-tint → white gradient background, chunky drop shadow, hover lift.
+  - Verified live: 17 cards render, chips/pills look great, drum songs are clearly distinguishable.
+
 ## Feb 16, 2026 — Rhythm BG pulse dialed WAY down (kid-safe)
 Previous pulse was too intense. Reduced all four channels ~3–4× so the sunburst feels "alive" instead of "rave":
 - `scale`: `1.0 → 1.18` → **`1.0 → 1.045`**
