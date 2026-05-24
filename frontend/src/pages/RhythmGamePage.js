@@ -471,7 +471,9 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
 
   return (
     <div className="min-h-screen sunburst-cool flex flex-col relative overflow-hidden" data-testid="rhythm-game-playing">
-      {/* Pulsing sunburst layer — scales + rotates + brightens rhythmically */}
+      {/* Pulsing sunburst layer — gentle scale + slight rotation so the rays
+          read as "alive" without strobing. Kept WELL under photo-sensitivity
+          thresholds (small brightness delta, no large area flashes). */}
       <motion.div
         aria-hidden="true"
         className="absolute inset-0 sunburst-cool pointer-events-none"
@@ -481,9 +483,9 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           willChange: 'transform, filter',
         }}
         animate={{
-          scale: [1, 1.18, 1],
-          rotate: [-1.5, 1.5, -1.5],
-          filter: ['brightness(1)', 'brightness(1.18)', 'brightness(1)'],
+          scale: [1, 1.045, 1],
+          rotate: [-0.6, 0.6, -0.6],
+          filter: ['brightness(1)', 'brightness(1.04)', 'brightness(1)'],
         }}
         transition={{
           duration: pulseDurationSec,
@@ -491,17 +493,16 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           ease: 'easeInOut',
         }}
       />
-      {/* Radial accent burst that fades in and out on every beat — adds a
-          "stadium light" pop that reads even on uniform sunburst backgrounds */}
+      {/* Soft radial accent — VERY subtle "stadium glow" pump at center */}
       <motion.div
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at 50% 55%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 55%)',
+          background: 'radial-gradient(circle at 50% 55%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0) 60%)',
           mixBlendMode: 'screen',
           zIndex: 0,
         }}
-        animate={{ opacity: [0.15, 0.7, 0.15] }}
+        animate={{ opacity: [0.06, 0.22, 0.06] }}
         transition={{
           duration: pulseDurationSec,
           repeat: Infinity,

@@ -1,5 +1,14 @@
 # Changelog
 
+## Feb 16, 2026 — Rhythm BG pulse dialed WAY down (kid-safe)
+Previous pulse was too intense. Reduced all four channels ~3–4× so the sunburst feels "alive" instead of "rave":
+- `scale`: `1.0 → 1.18` → **`1.0 → 1.045`**
+- `rotate`: `±1.5°` → **`±0.6°`**
+- `brightness`: `+18%` → **`+4%`**
+- Radial halo overlay peak opacity: `0.7` → **`0.22`** (and base color from `rgba(255,255,255,0.55)` → `0.32`)
+
+The brightness delta is now small enough to be well under photo-sensitivity thresholds even at the fastest song (152 BPM = 2.5 pulses/sec → 4% brightness swing is below WCAG's 10% large-area threshold). The motion still tracks the BPM, so the background reads as "breathing with the song" without being distracting.
+
 ## Feb 16, 2026 — Rhythm BG actually pulses + Surprise Me in Song Studio
 - **Rhythm Game background — visibly pulsing now**: pure scale-only animation was invisible because a uniform radial sunburst has no fixed reference point. Rebuilt as a compound animation:
   - `scale: 1.00 → 1.18 → 1.00`
