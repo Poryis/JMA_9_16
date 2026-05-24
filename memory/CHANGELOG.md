@@ -1,5 +1,18 @@
 # Changelog
 
+## Feb 16, 2026 — Cleanup + Beat Lab speakers + GH Pages build verified
+- **Orphan asset cleanup**: removed `assets/characters/catfish.png` (118 KB) and `assets/backgrounds/BG.png` (260 KB) — both genuinely unreferenced. Total ~376 KB shaved off the GH Pages payload.
+- **Pulsing speakers in Beat Lab**: new reusable `<PulsingSpeakers />` component (3-frame cycle, accelerates from 400 ms → 120 ms when `playing` is true). Dropped at both bottom corners of the Beat Lab page; the right one mirrors via `scaleX(-1)`. Verified live: cycling frames at the correct interval, present on both sides. Component is reusable — can drop into Stew Kazoo Says or other pages later.
+- **GH Pages build verified end-to-end**:
+  - `HashRouter` ✓
+  - No absolute `/assets/...` or `url(/...)` in source ✓
+  - `public/index.html` clean ✓
+  - `package.json`: `"homepage": "."`, `predeploy` + `deploy` scripts ✓
+  - `CI=true yarn build` → **`Compiled successfully`**, 250 KB JS gz / 13.8 KB CSS gz
+  - Built `index.html` serves `./static/...` references (all relative) ✓
+  - Static server smoke test: `HTTP 200` for `/index.html`, `/static/js/main.*.js`, and a sample asset (`/assets/animations/jelly-rocks-blimp-1.png`) ✓
+- **SimonSays useCallback dep fix**: added `celebrate` to the dependency array of the play-handling callback (it was a missing dep flagged by `react-hooks/exhaustive-deps` in CI). `celebrate` is itself a `useCallback`, so this doesn't cause re-renders.
+
 ## Feb 16, 2026 — Detective copy, blimp v3, Song Studio bubble fix
 - **Detective Dr. Jellybone**: copy fixes
   - "How to play" → *"Tap the wrong note as you hear it..."* (was "beat")

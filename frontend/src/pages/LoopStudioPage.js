@@ -7,6 +7,7 @@ import { PageCharacters } from '../components/PageCharacters';
 import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import { DrumKitVisual, TurntableVisual } from '../components/Instruments';
+import { PulsingSpeakers } from '../components/PulsingSpeakers';
 import useAudio from '../hooks/useAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
 import { earnSticker } from '../hooks/useStickers';
@@ -363,6 +364,11 @@ function LoopStudioPage() {
       <GameHeader title="Beat Lab" showHomeButton={true} />
       <FullscreenButton />
       <RoomCharacters room="beat-lab" />
+
+      {/* Pulsing Stew speakers bracketing the playground — accelerate while the
+          beat is playing */}
+      <PulsingSpeakers side="left"  playing={isPlaying} />
+      <PulsingSpeakers side="right" playing={isPlaying} flip />
 
       <main className="flex-1 pt-20 pb-4 px-2 md:px-4 overflow-auto">
         {/* Controls Bar */}

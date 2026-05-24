@@ -269,7 +269,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         setFeedback(null);
       }, 1500);
     }
-  }, [gameState, playerIndex, currentPattern, level, playKazooNote, cycleStew, tiltStewForNote, emitFloatingNote, playFeedbackSound, setScore, setGameStats, navigate]);
+  }, [gameState, playerIndex, currentPattern, level, playKazooNote, cycleStew, tiltStewForNote, emitFloatingNote, playFeedbackSound, setScore, setGameStats, navigate, celebrate]);
 
   // NOTE: Keyboard is handled inside <JellyBellsRow> itself (with imperative
   // visual swap + dedup of key-repeat). Adding another keydown listener here
