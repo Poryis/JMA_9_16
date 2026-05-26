@@ -1,5 +1,28 @@
 # Changelog
 
+## Feb 16, 2026 — Rhythm picker iPhone fix + library tidy-up + home page squared
+### Rhythm Game menu
+- **Category cleanup**:
+  - Dropped the **"All"** filter chip
+  - Removed the entire **"Game"** category and all 3 of its tracks (Super Jump Theme, Block Drop, Hero's Lullaby)
+  - Renamed **"Original"** → **"Mini Jams"** (the 4 short bonus tracks) — no longer confusable with "JMA Originals"
+  - Default chip is now **JMA Originals** so kids land on the most-played category right away
+  - Cleaner palette: only 3 categories, each color-coded (yellow/purple/pink)
+- **iPhone song-card layout fix**: the previous narrow-card layout was squashing the title text on narrow phones. Reworked:
+  - `min-height: 78 px` so cards never go pancake-thin
+  - Title allowed to **wrap to 2 lines** (via `-webkit-line-clamp: 2`) instead of `truncate`
+  - Mobile padding tightened on the icon column
+  - Category badge gets its own `truncate` so it never bleeds past the column
+  - All four content blocks now have proper vertical centering inside the card.
+
+### Home page
+- **Cards squared up**: `aspect-ratio` `4 / 5.6` → **`1 / 1.15`** (nearly square). Min-height also reduced from 460 → 360 px. Less negative space, more impact.
+- **Heroes shrunk ~20%** to balance the smaller cards:
+  - Finn: `clamp(61, 11vw, 131)` → `clamp(48, 9vw, 105)`
+  - Shield: `clamp(120, 22vw, 280)` → `clamp(96, 17.5vw, 220)`
+  - Charlie: `clamp(80, 14vw, 170)` → `clamp(64, 11vw, 136)`
+- Card padding also dialed down slightly to match the squarer canvas.
+
 ## Feb 16, 2026 — Song picker bg → calm sky gradient
 - The rotating-sunburst page background was the real noise source behind the cards. Replaced with the **same calm sky gradient the homepage uses** (`#BCE5F2 → #E5F2F8 → #FFEEC5` top-to-bottom). Now the cards float on a clean blue→cream sky and every element reads on its own.
 - Brand consistency win: same gradient as `HomePage`, so the song picker and home now feel like the same world.

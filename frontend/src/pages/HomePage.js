@@ -323,9 +323,9 @@ function PrimaryCard({ card, index, navigate }) {
           background: card.bg,
           border: `5px solid ${card.border}`,
           boxShadow: `0 10px 0 0 ${card.shadow}, 0 13px 0 0 ${card.border}`,
-          aspectRatio: '4 / 5.6',
-          minHeight: 460,
-          padding: 'clamp(14px, 2.4vw, 24px)',
+          aspectRatio: '1 / 1.15',
+          minHeight: 360,
+          padding: 'clamp(12px, 2.2vw, 22px)',
         }}
       >
         {/* Watercolor blobs (deepest layer) */}
@@ -446,7 +446,7 @@ function HomePage() {
           alt="Finn"
           data-testid="home-finn"
           className="object-contain drop-shadow-lg cursor-pointer"
-          style={{ width: 'clamp(61px, 11vw, 131px)', height: 'auto' }}
+          style={{ width: 'clamp(48px, 9vw, 105px)', height: 'auto' }}
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
           transition={{
@@ -465,7 +465,7 @@ function HomePage() {
           data-testid="jma-logo"
           className="object-contain cursor-pointer"
           style={{
-            width: 'clamp(120px, 22vw, 280px)',
+            width: 'clamp(96px, 17.5vw, 220px)',
             height: 'auto',
             filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.18))',
             transformOrigin: 'center',
@@ -482,7 +482,7 @@ function HomePage() {
           alt="Charlie"
           data-testid="home-charlie"
           className="object-contain drop-shadow-lg cursor-pointer"
-          style={{ width: 'clamp(80px, 14vw, 170px)', height: 'auto' }}
+          style={{ width: 'clamp(64px, 11vw, 136px)', height: 'auto' }}
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
           transition={{

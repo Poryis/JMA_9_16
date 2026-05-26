@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Play, Trophy, Zap, Drum, Music2, Star, Sparkles, Gamepad2, Flame, Leaf } from 'lucide-react';
+import { Play, Trophy, Zap, Drum, Music2, Star, Sparkles, Flame, Leaf } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
 import { PageCharacters } from '../components/PageCharacters';
@@ -18,8 +18,7 @@ const NOTE_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
 const CATEGORY_STYLE = {
   'JMA Originals': { icon: Star,      tint: '#FFCC00', accent: '#F39C12', label: 'JMA ORIGINALS' },
   'Classic':       { icon: Music2,    tint: '#AF52DE', accent: '#5E2D8C', label: 'CLASSIC' },
-  'Game':          { icon: Gamepad2,  tint: '#4CD964', accent: '#2D9D3E', label: 'GAME' },
-  'Original':      { icon: Sparkles,  tint: '#FF6BAA', accent: '#C7367C', label: 'ORIGINAL' },
+  'Mini Jams':     { icon: Sparkles,  tint: '#FF6BAA', accent: '#C7367C', label: 'MINI JAMS' },
 };
 
 // Per-speed icon
@@ -87,7 +86,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   const [currentNoteIndex, setCurrentNoteIndex] = useState(0);
   const [feedback, setFeedback] = useState(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [categoryFilter, setCategoryFilter] = useState('JMA Originals');
 
   const gameLoopRef = useRef(null);
   const noteIdRef = useRef(0);
@@ -111,13 +110,13 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     return speedConfig.ms;
   }, [selectedSong.bpm, selectedSong.beatsPerNote, speed, speedConfig.ms]);
   const songCategories = useMemo(() => getSongsByCategory(), []);
-  const categories = ['All', ...Object.keys(songCategories)];
+  // Show only the three top-level categories — no "All", and "Game" tracks
+  // have been removed entirely from the library.
+  const categories = Object.keys(songCategories).filter((c) => c in CATEGORY_STYLE);
 
   // Rhythm Arcade hides jamOnly tracks (drum loops with no melody).
-  const baseSongs = SONG_LIBRARY.filter(s => !s.jamOnly);
-  const filteredSongs = categoryFilter === 'All'
-    ? baseSongs
-    : baseSongs.filter(s => s.category === categoryFilter);
+  const baseSongs = SONG_LIBRARY.filter((s) => !s.jamOnly);
+  const filteredSongs = baseSongs.filter((s) => s.category === categoryFilter);
 
   const isDrumMode = selectedSong.instrumentMode === 'drums';
 
@@ -413,8 +412,8 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         {/* Category filter chips */}
         <div className="flex gap-1.5 mb-3 flex-wrap justify-center max-w-2xl">
           {categories.map((cat) => {
-            const style = CATEGORY_STYLE[cat] || null;
-            const Icon = style ? style.icon : null;
+            const style = CATEGORY_STYLE[cat];
+            const Icon = style.icon;
             const isActive = categoryFilter === cat;
             return (
               <button
@@ -424,15 +423,15 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                 style={{
                   borderColor: 'var(--jma-dark)',
                   backgroundColor: isActive
-                    ? (style ? style.tint : 'var(--jma-dark)')
+                    ? style.tint
                     : 'rgba(255,255,255,0.88)',
-                  color: isActive && cat !== 'All' ? 'var(--jma-dark)' : (isActive ? 'white' : 'var(--jma-dark)'),
+                  color: isActive ? 'var(--jma-dark)' : 'var(--jma-dark)',
                   boxShadow: isActive ? '0 3px 0 0 var(--jma-dark)' : '0 2px 0 0 var(--jma-dark)',
                   transform: isActive ? 'translateY(-1px)' : 'translateY(0)',
                 }}
               >
                 {Icon && <Icon className="w-3 h-3" />}
-                {cat}
+                {style.label}
               </button>
             );
           })}
@@ -443,7 +442,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           {filteredSongs.map((song) => {
             const highScore = getHighScore(song.id, speed);
             const isDrums = song.instrumentMode === 'drums';
-            const catStyle = CATEGORY_STYLE[song.category] || CATEGORY_STYLE['Original'];
+            const catStyle = CATEGORY_STYLE[song.category] || CATEGORY_STYLE['Mini Jams'];
             const CatIcon = catStyle.icon;
             // Drum songs get a distinct purple sash so they pop from melodic tracks
             const tint = isDrums ? '#AF52DE' : catStyle.tint;
@@ -456,25 +455,24 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                 onClick={() => { setSelectedSong(song); startGame(); }}
                 whileHover={{ y: -3, scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
-                className="relative rounded-2xl border-3 overflow-hidden text-left flex"
+                className="relative rounded-2xl border-3 overflow-hidden text-left flex items-stretch"
                 style={{
                   borderColor: 'var(--jma-dark)',
                   backgroundColor: 'white',
                   boxShadow: '0 5px 0 0 var(--jma-dark), 0 10px 18px rgba(10,37,64,0.10)',
                   transition: 'transform 0.12s, box-shadow 0.12s',
+                  minHeight: '78px',
                 }}
               >
                 {/* Left accent strip — color-codes the category at a glance */}
                 <div
-                  className="flex-shrink-0 w-2.5 md:w-3"
+                  className="flex-shrink-0 w-3"
                   style={{ backgroundColor: tint }}
                 />
                 {/* Icon column */}
-                <div
-                  className="flex-shrink-0 flex items-center justify-center pl-3 pr-2.5"
-                >
+                <div className="flex-shrink-0 flex items-center justify-center pl-2.5 md:pl-3 pr-2 md:pr-2.5">
                   <div
-                    className="w-10 h-10 md:w-12 md:h-12 rounded-full border-3 flex items-center justify-center"
+                    className="w-11 h-11 md:w-12 md:h-12 rounded-full border-3 flex items-center justify-center"
                     style={{
                       borderColor: 'var(--jma-dark)',
                       backgroundColor: accent,
@@ -486,24 +484,31 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                       : <Play className="w-5 h-5 md:w-6 md:h-6 text-white" fill="white" />}
                   </div>
                 </div>
-                {/* Title + meta */}
-                <div className="flex-1 min-w-0 py-2.5 pr-3">
-                  <div className="flex items-center gap-1 text-[9px] md:text-[10px] uppercase font-black opacity-70" style={{ color: 'var(--jma-dark)' }}>
-                    <CatIcon className="w-3 h-3" />
-                    {catStyle.label}{isDrums && ' · DRUMS'}
+                {/* Title + meta — vertical stack with proper wrapping */}
+                <div className="flex-1 min-w-0 py-2 pr-2 md:pr-3 flex flex-col justify-center">
+                  <div className="flex items-center gap-1 text-[9px] md:text-[10px] uppercase font-black opacity-70 leading-none mb-1" style={{ color: 'var(--jma-dark)' }}>
+                    <CatIcon className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">{catStyle.label}{isDrums && ' · DRUMS'}</span>
                   </div>
                   <h3
-                    className="text-base md:text-lg font-black font-display leading-tight truncate"
-                    style={{ color: 'var(--jma-dark)' }}
+                    className="text-sm md:text-lg font-black font-display leading-tight"
+                    style={{
+                      color: 'var(--jma-dark)',
+                      // Allow up to 2 lines on phones, then ellipsis if still too long
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
                   >
                     {song.name}
                   </h3>
-                  <div className="text-[10px] md:text-xs opacity-60 font-bold mt-0.5" style={{ color: 'var(--jma-dark)' }}>
+                  <div className="text-[10px] md:text-xs opacity-60 font-bold mt-0.5 leading-none" style={{ color: 'var(--jma-dark)' }}>
                     {hitCount} hits{song.bpm ? ` · ${song.bpm} BPM` : ''}
                   </div>
                 </div>
                 {/* Right: high-score badge OR a chunky play arrow when unplayed */}
-                <div className="flex-shrink-0 flex items-center pr-3">
+                <div className="flex-shrink-0 flex items-center pr-2 md:pr-3">
                   {highScore ? (
                     <div
                       className="flex items-center gap-1 rounded-full border-2 px-2 py-1"
@@ -513,7 +518,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                         color: 'var(--jma-dark)',
                       }}
                     >
-                      <Trophy className="w-3.5 h-3.5" style={{ color: '#D89B00' }} />
+                      <Trophy className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#D89B00' }} />
                       <span className="text-[11px] md:text-xs font-black font-display leading-none">
                         {highScore.score.toLocaleString()}
                       </span>

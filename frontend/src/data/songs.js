@@ -263,53 +263,32 @@ export const SONG_LIBRARY = [
             'A','G',
             'F']
   },
-  // Video Game Vibes
-  {
-    id: 'mario_theme',
-    name: 'Super Jump Theme',
-    category: 'Game',
-    notes: ['E','E','E','C','E','G','G','C','G','E','A','B','A',
-            'G','E','G','A','F','G','E','C','D','B']
-  },
-  {
-    id: 'tetris_theme',
-    name: 'Block Drop',
-    category: 'Game',
-    notes: ['E','B','C','D','C','B','A','A','C','E','D','C','B',
-            'C','D','E','C','A','A','D','F','A','G','F','E','C','E','D','C','B']
-  },
-  {
-    id: 'zelda_lullaby',
-    name: 'Hero\'s Lullaby',
-    category: 'Game',
-    notes: ['B','D','A','B','D','A','B','D','A','G','A','B','D','A','G','E','D']
-  },
-  // Original Grooves
+  // Mini Jams — short bonus tunes
   {
     id: 'jelly_groove',
     name: 'Jelly Groove',
-    category: 'Original',
+    category: 'Mini Jams',
     notes: ['C','E','G','E','C','D','F','A','F','D','E','G','B','G','E',
             'G','E','C','F','D','B','D','F','A','G','E','C']
   },
   {
     id: 'ocean_wave',
     name: 'Ocean Wave',
-    category: 'Original',
+    category: 'Mini Jams',
     notes: ['C','D','E','F','G','A','G','F','E','D','C','D','E','F','G',
             'High C','G','F','E','D','C','E','G','E','C']
   },
   {
     id: 'bell_bounce',
     name: 'Bell Bounce',
-    category: 'Original',
+    category: 'Mini Jams',
     notes: ['C','G','E','G','C','A','F','A','C','B','G','B','C',
             'G','E','C','F','A','F','D','G','B','G','E','High C']
   },
   {
     id: 'funky_fish',
     name: 'Funky Fish',
-    category: 'Original',
+    category: 'Mini Jams',
     notes: ['G','G','A','G','F','E','G','G','A','G','F','E','C','D','E','F',
             'G','A','G','F','E','D','C','D','E','D','C']
   }
