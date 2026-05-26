@@ -1,5 +1,15 @@
 # Changelog
 
+## Feb 16, 2026 — Card hero sizing (correct one this time)
+- Reverted the homepage Finn/Charlie/Shield sizes back to original — those were never the issue.
+- **The actual fix**: per-card `iconWidthPct` controlling the **boombox / storybook / beat pad** heroes inside the PLAY/LEARN/CREATE cards.
+  - Boombox: 118% → **95%** (smaller, more breathing room above the title)
+  - Beat Pad: 118% → **95%**
+  - Storybook: 118% → **118%** kept big *(it's the same number, but with no `iconWidthPct` previously the storybook was using the same 118% as the others — what made it look small was its `y: -10` upward translate). Now it sits naturally centered.*
+  - Storybook `iconShift.y`: `-10` → **`0`**. The storybook art has more padding around the subject, so the upward shift was making it look stuck high and small. Removing it lets the artwork center optically.
+- **Cards even more square**: aspect `1 / 1.15` → **`1 / 1.05`**. Min-height also reduced 360 → 340.
+- All three card heroes now read at visually equal size and sit in the same vertical position on the card.
+
 ## Feb 16, 2026 — Rhythm picker iPhone fix + library tidy-up + home page squared
 ### Rhythm Game menu
 - **Category cleanup**:

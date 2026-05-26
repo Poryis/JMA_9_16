@@ -159,6 +159,7 @@ const CARDS = [
     titleColor: '#0A2540',
     titleStroke: '#FFFFFF',
     iconShift: { x: -4, y: 2, rot: -3 },
+    iconWidthPct: 95,
     // Watercolor blobs (behind everything)
     blobs: [
       { color: '#FFB300', top: -10, left: -8,  size: 55, opacity: 0.55 },
@@ -190,7 +191,10 @@ const CARDS = [
     shadow: '#9B6DE0',
     titleColor: '#0A2540',
     titleStroke: '#FFFFFF',
-    iconShift: { x: 3, y: -10, rot: 2 },
+    // Storybook art has more padding around the subject — boost width AND
+    // remove the upward y-shift so it visually centers like the boombox/beat-pad.
+    iconShift: { x: 3, y: 0, rot: 2 },
+    iconWidthPct: 118,
     blobs: [
       { color: '#7B4FE0', top: -8,  left: 60,  size: 55, opacity: 0.45 },
       { color: '#E6D5FF', top: 35,  left: -15, size: 60, opacity: 0.6 },
@@ -222,6 +226,7 @@ const CARDS = [
     titleColor: '#0A2540',
     titleStroke: '#FFFFFF',
     iconShift: { x: 5, y: -2, rot: -2 },
+    iconWidthPct: 95,
     blobs: [
       { color: '#2E9E8B', top: -8,  left: 65,  size: 50, opacity: 0.45 },
       { color: '#B8E8DC', top: 30,  left: -10, size: 55, opacity: 0.6 },
@@ -323,8 +328,8 @@ function PrimaryCard({ card, index, navigate }) {
           background: card.bg,
           border: `5px solid ${card.border}`,
           boxShadow: `0 10px 0 0 ${card.shadow}, 0 13px 0 0 ${card.border}`,
-          aspectRatio: '1 / 1.15',
-          minHeight: 360,
+          aspectRatio: '1 / 1.05',
+          minHeight: 340,
           padding: 'clamp(12px, 2.2vw, 22px)',
         }}
       >
@@ -340,7 +345,7 @@ function PrimaryCard({ card, index, navigate }) {
         {/* Decorative accents — z controls in-front vs behind icon */}
         {card.accents.map((a, i) => <Accent key={`a-${i}`} a={a} />)}
 
-        {/* HUGE primary icon (off-center, ~25% larger) */}
+        {/* HUGE primary icon (off-center, per-card sized via iconWidthPct) */}
         <motion.img
           src={card.icon}
           alt={card.iconAlt}
@@ -348,9 +353,9 @@ function PrimaryCard({ card, index, navigate }) {
           loading="eager"
           className="relative object-contain select-none"
           style={{
-            width: 'min(118%, 700px)',
+            width: `min(${card.iconWidthPct || 100}%, ${Math.round((card.iconWidthPct || 100) * 5.6)}px)`,
             height: 'auto',
-            maxHeight: '92%',
+            maxHeight: '88%',
             marginBottom: 'clamp(2px, 1vw, 10px)',
             filter: 'drop-shadow(0 12px 12px rgba(0,0,0,0.28))',
             zIndex: 10,
@@ -446,7 +451,7 @@ function HomePage() {
           alt="Finn"
           data-testid="home-finn"
           className="object-contain drop-shadow-lg cursor-pointer"
-          style={{ width: 'clamp(48px, 9vw, 105px)', height: 'auto' }}
+          style={{ width: 'clamp(61px, 11vw, 131px)', height: 'auto' }}
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
           transition={{
@@ -465,7 +470,7 @@ function HomePage() {
           data-testid="jma-logo"
           className="object-contain cursor-pointer"
           style={{
-            width: 'clamp(96px, 17.5vw, 220px)',
+            width: 'clamp(120px, 22vw, 280px)',
             height: 'auto',
             filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.18))',
             transformOrigin: 'center',
@@ -482,7 +487,7 @@ function HomePage() {
           alt="Charlie"
           data-testid="home-charlie"
           className="object-contain drop-shadow-lg cursor-pointer"
-          style={{ width: 'clamp(64px, 11vw, 136px)', height: 'auto' }}
+          style={{ width: 'clamp(80px, 14vw, 170px)', height: 'auto' }}
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1, y: [0, -8, 0] }}
           transition={{
