@@ -78,9 +78,19 @@ function buildRound(levelKey) {
     // means the new note becomes the (i+1)-th element of `corrupted`.
     const insertableIndices = noteIndices.slice(1); // index of "previous" note
     const insertAfterIdx = insertableIndices[Math.floor(Math.random() * insertableIndices.length)];
-    // Choose an "extra" note within the scale that differs from its neighbors
+
+    // Find the NEXT non-rest note after the insert point (might be undefined
+    // if we're at the very end of the tune).
+    let nextNote = null;
+    for (let i = insertAfterIdx + 1; i < tune.notes.length; i++) {
+      if (tune.notes[i] != null) { nextNote = tune.notes[i]; break; }
+    }
     const prevNote = tune.notes[insertAfterIdx];
-    const candidates = SCALE_ORDER.filter(n => n !== prevNote);
+
+    // The extra note must differ from BOTH the previous and next neighbors —
+    // otherwise it sounds like a repeat instead of an "extra" note, and the
+    // kid has no clear way to point at the one that shouldn't be there.
+    const candidates = SCALE_ORDER.filter(n => n !== prevNote && n !== nextNote);
     const extraNote = candidates[Math.floor(Math.random() * candidates.length)];
 
     // Build corrupted: copy original notes, splice in extra after insertAfterIdx.

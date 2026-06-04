@@ -341,8 +341,17 @@ export default function SightReadingPage() {
           </button>
         )}
 
-        {/* Bells */}
-        <div className="mt-5 w-full">
+        {/* Bells — wrapped in a light "music desk" panel so the colorful bells
+            stand out against the dark wood background */}
+        <div
+          className="mt-5 w-full max-w-3xl rounded-2xl border-4 px-3 py-2"
+          style={{
+            borderColor: 'var(--jma-dark)',
+            background: 'linear-gradient(180deg, rgba(255,251,238,0.92) 0%, rgba(255,244,214,0.92) 100%)',
+            backdropFilter: 'blur(6px)',
+            boxShadow: '0 6px 0 0 var(--jma-dark)',
+          }}
+        >
           <JellyBellsRow
             ref={bellsRowRef}
             onPlayNote={handleBellTap}
