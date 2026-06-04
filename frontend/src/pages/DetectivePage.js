@@ -585,11 +585,15 @@ export default function DetectivePage() {
           )}
 
           {/* Beat slots — rests are skipped, slots are numbered only across real notes.
-              In extra-note mode the chips render from the CORRUPTED sequence so the
-              extra note shows up as a chip the kid can pick. */}
+              In extra-note mode (Rest Quiz) the chips render from the CORRUPTED sequence
+              so the extra note shows up as a chip the kid can pick. We also hide rest
+              dots in Rest Quiz mode — the inserted extra chip shifts the line by one,
+              and the leftover rest dots from the original tune just look out of place. */}
           <div className="flex flex-wrap items-center justify-center gap-2 md:gap-2.5 mt-3">
             {round && (round.mode === 'extra' ? round.corrupted : tune?.notes)?.map((note, i) => {
               if (note == null) {
+                // Hide rest placeholders entirely in Rest Quiz mode for a cleaner row
+                if (round.mode === 'extra') return null;
                 // Rest — show a subtle dash, not a clickable slot
                 return (
                   <div
