@@ -26,8 +26,8 @@ const BELL_BY_NOTE = Object.fromEntries(BELLS.map(b => [b.note, b]));
 // y in %: where the CENTER of the note head sits inside the staff container.
 // These match real treble-clef positions for our bell range.
 const NOTE_Y = {
-  C: 99,       // Middle C — sits on a ledger line below the staff
-  D: 92,
+  C: 95,       // Middle C — sits on a ledger line just below the staff (5% breathing room from frame)
+  D: 91,
   E: 85,       // bottom line
   F: 78,       // first space
   G: 71,       // second line
