@@ -1,5 +1,16 @@
 # Changelog
 
+## Feb 18, 2026 — Polish round (visual + immersion fixes)
+Direct user feedback drove these:
+
+1. **Sight-Reading staff is now pixel-correct**. Rebuilt `SolfegeStaff.js` around the user's custom quarter-note PNGs (`assets/notes/{do,re,mi,fa,so,la,ti,do-hi}.png`). Each note positions itself by anchoring its HEAD (at known % of the image height) to the proper treble-clef staff Y. Middle C now sits on its own visible ledger line BELOW the staff — not in Re's space. Re sits in the space between the bottom line and the ledger. Verified pixel-level: every head lands within ~1% (<3px on a 300px staff) of its musical-theory position.
+2. **Bells make sound in Sight-Reading**. `handleBellTap` was only running game logic — it never called `playBellNote()`. Added it as the first line so every tap fires audio regardless of state.
+3. **Renamed "Rest Quiz" → "Sneaky Note"** and made the gameplay actually about rests. `pickTune(level, {requireRest:true})` filters to tunes that contain a rest, then `buildRound` REPLACES that rest with a note (instead of inserting an extra note at a random spot). Phase label now reads *"Which note covered up the silence?"* and reveal text says *"Slot N (Solfege) covered up a silence — that spot should have been a REST!"* — kids actually learn that silences are part of music.
+4. **Renamed "Tempo Quiz" → "Snail or Cheetah?"** to match the magical-world tone. Choice buttons are CHEETAH 🐆 and SNAIL 🐌. Win modal reads "Race Over!"
+5. **Custom note artwork** — User uploaded 8 hand-drawn PNGs (per-note color + solfège label inside the head, stem-up for low notes, stem-down for high notes). Wired into the new staff renderer.
+
+Tested via testing_agent_v3_fork iter_7 → 100% pass with pixel-level staff verification.
+
 ## Feb 17, 2026 — Phase 3: Four educational wins
 Locked in 4 new features explicitly designed to boost music-learning ROI for teachers/parents while staying playful for kids:
 

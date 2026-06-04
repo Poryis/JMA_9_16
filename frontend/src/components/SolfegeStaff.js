@@ -87,9 +87,6 @@ function TrebleClef({ height }) {
   );
 }
 
-// Note image height as % of the staff container height. Unused — see NOTE_IMG_H.
-const NOTE_IMG_HEIGHT_PCT = 100;
-
 export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1, doneIndices = new Set() }) {
   const heightStyle = 'clamp(240px, 34vw, 300px)';
   return (
