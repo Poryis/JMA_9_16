@@ -170,10 +170,10 @@ export default function TempoListeningGame({ onExit }) {
           <Turtle className="w-9 h-9" style={{ color: '#34A853' }} />
         </div>
         <h2 className="text-2xl font-black font-display mb-1" style={{ color: 'var(--jma-dark)' }}>
-          Tempo Quiz
+          Snail or Cheetah?
         </h2>
         <p className="text-sm font-bold mb-3" style={{ color: 'var(--jma-dark)' }}>
-          Listen to two clips. Is the second one <b>faster</b> or <b>slower</b>?
+          Two tunes! Was the second one a <b>cheetah</b> 🐆 (faster) or a <b>snail</b> 🐌 (slower)?
         </p>
         <p className="text-xs opacity-70 mb-3" style={{ color: 'var(--jma-dark)' }}>
           10 rounds · the differences get sneakier as you go!
@@ -190,7 +190,7 @@ export default function TempoListeningGame({ onExit }) {
             onClick={startGame}
             className="chunky-btn bg-[var(--jma-green)] text-white px-4 py-2 flex items-center gap-2"
           >
-            <Play className="w-4 h-4" /> Start Quiz
+            <Play className="w-4 h-4" /> Start the Race!
           </button>
           <button
             data-testid="tempo-quiz-back"
@@ -258,10 +258,10 @@ export default function TempoListeningGame({ onExit }) {
         }}
       >
         {gameState === 'listening' && '🎧 Listen carefully...'}
-        {gameState === 'guess' && '👇 Was clip #2 faster or slower?'}
+        {gameState === 'guess' && '👇 Was clip #2 a cheetah or a snail?'}
         {gameState === 'reveal' && (wasCorrect
-          ? `✅ Yes — #2 was ${round.correct.toUpperCase()} (${round.firstBpm} → ${round.secondBpm} BPM)`
-          : `😅 #2 was actually ${round.correct.toUpperCase()} (${round.firstBpm} → ${round.secondBpm} BPM)`)}
+          ? `✅ Yes — #2 was ${round.correct === 'faster' ? 'a CHEETAH 🐆' : 'a SNAIL 🐌'} (${round.firstBpm} → ${round.secondBpm} BPM)`
+          : `😅 #2 was actually ${round.correct === 'faster' ? 'a CHEETAH 🐆' : 'a SNAIL 🐌'} (${round.firstBpm} → ${round.secondBpm} BPM)`)}
       </div>
 
       {/* Choice buttons */}
@@ -282,7 +282,7 @@ export default function TempoListeningGame({ onExit }) {
             opacity: gameState === 'guess' ? 1 : 0.85,
           }}
         >
-          <Rabbit className="w-5 h-5" /> FASTER
+          <Rabbit className="w-5 h-5" /> CHEETAH
         </motion.button>
         <motion.button
           data-testid="tempo-quiz-slower"
@@ -300,7 +300,7 @@ export default function TempoListeningGame({ onExit }) {
             opacity: gameState === 'guess' ? 1 : 0.85,
           }}
         >
-          <Turtle className="w-5 h-5" /> SLOWER
+          <Turtle className="w-5 h-5" /> SNAIL
         </motion.button>
       </div>
 
@@ -350,7 +350,7 @@ export default function TempoListeningGame({ onExit }) {
             >
               <div className="text-5xl mb-2">{isNewBest ? '🏆' : '🎉'}</div>
               <h2 className="text-2xl md:text-3xl font-black font-display mb-1" style={{ color: 'var(--jma-dark)' }}>
-                {isNewBest ? 'NEW BEST!' : 'Quiz Complete!'}
+                {isNewBest ? 'NEW BEST!' : 'Race Over!'}
               </h2>
               <p className="font-bold mb-3" style={{ color: 'var(--jma-dark)' }}>
                 You got <b>{correct} / {ROUNDS_PER_RUN}</b> right!

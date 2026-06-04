@@ -130,6 +130,9 @@ export default function SightReadingPage() {
   }, [initAudioContext, stopTimers, difficulty, playDemo]);
 
   const handleBellTap = useCallback((note) => {
+    // Always play the bell sound when tapped — kids should hear feedback even
+    // if their tap was wrong, and the audio reinforces which bell they hit.
+    try { playBellNote(note); } catch { /* ignore */ }
     if (gameState !== 'playing') return;
     if (currentIndex >= sequence.length) return;
     const target = sequence[currentIndex];
@@ -173,7 +176,7 @@ export default function SightReadingPage() {
       setScore((s) => Math.max(0, s - 5));
       setTimeout(() => setWrongAt(-1), 500);
     }
-  }, [gameState, currentIndex, sequence, secsLeft, score, bestRecords, difficulty, playFeedbackSound, stopTimers]);
+  }, [gameState, currentIndex, sequence, secsLeft, score, bestRecords, difficulty, playBellNote, playFeedbackSound, stopTimers]);
 
   // Replay the demo from anywhere in playing state (kids can hear it again)
   const replayDemo = useCallback(() => {

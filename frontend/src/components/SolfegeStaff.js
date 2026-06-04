@@ -39,20 +39,32 @@ const NOTE_ART = {
   'High C': { src: 'assets/notes/do-hi.png',  headPct: 15.2 },
 };
 
+// Real treble-clef positions for our bell range. Staff lines sit at 22, 33,
+// 44, 55, 66% (5 lines, 11% apart). Notes alternate line/space, so each
+// half-step in the scale walks 5.5% up or down. Middle C lives on its OWN
+// ledger line one full step BELOW the bottom line.
+//   Pitch     Where it sits                         Y%
+//   --------- ------------------------------------- ----
+//   C (Do)    Ledger line below the staff           77
+//   D (Re)    Space between bottom line and ledger  71.5
+//   E (Mi)    Bottom line                           66
+//   F (Fa)    First space                           60.5
+//   G (So)    Second line                           55
+//   A (La)    Second space                          49.5
+//   B (Ti)    Middle line                           44
+//   High C    Third space                           38.5
 const NOTE_Y = {
-  C: 85,        // Middle C — sits on a ledger line just below the staff
-  D: 80,
-  E: 75,        // bottom line
-  F: 69,        // first space
-  G: 62,        // second line
-  A: 55,        // second space
-  B: 49,        // middle line
-  'High C': 42, // third space
+  C: 77,
+  D: 71.5,
+  E: 66,
+  F: 60.5,
+  G: 55,
+  A: 49.5,
+  B: 44,
+  'High C': 38.5,
 };
 
-// The 5 staff lines, top to bottom (in %). Spaced 13% apart with the bottom
-// line at 75% so there's room below for Middle C's ledger note.
-const STAFF_LINES = [23, 36, 49, 62, 75];
+const STAFF_LINES = [22, 33, 44, 55, 66];
 
 const NOTE_IMG_H = 'clamp(140px, 22vw, 200px)';
 
@@ -133,18 +145,19 @@ export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1
               data-testid={`staff-note-${i}`}
               className="relative flex-1 h-full"
             >
-              {/* Ledger line for Middle C — drawn behind the note head, thicker so it reads */}
+              {/* Ledger line for Middle C — drawn ABOVE the note image so it
+                  reads even when the colorful head sits on top of it. */}
               {showLedger && (
                 <div
                   className="absolute pointer-events-none"
                   style={{
                     left: '50%',
                     top: `${y}%`,
-                    width: 'clamp(34px, 6vw, 50px)',
+                    width: 'clamp(40px, 7vw, 56px)',
                     height: '3px',
-                    backgroundColor: 'rgba(10,37,64,0.7)',
+                    backgroundColor: 'rgba(10,37,64,0.85)',
                     transform: 'translate(-50%, -50%)',
-                    zIndex: 1,
+                    zIndex: 4,
                   }}
                 />
               )}

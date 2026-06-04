@@ -178,11 +178,11 @@ function EarTrainerPage() {
         data-testid="ear-trainer-tempo"
         style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
-        <GameHeader title="Tempo Quiz" showHomeButton={true} />
+        <GameHeader title="Snail or Cheetah?" showHomeButton={true} />
         <FullscreenButton />
         <RoomCharacters room="ear-quest" />
         <motion.h1 className="text-2xl md:text-3xl font-black mb-4 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-          Tempo Quiz
+          Snail or Cheetah?
         </motion.h1>
         <TempoListeningGame onExit={() => setGameState('menu')} />
       </div>
@@ -251,7 +251,7 @@ function EarTrainerPage() {
               <p className="text-xs opacity-60">{lvl.description} ({lvl.noteCount} notes)</p>
             </motion.button>
           ))}
-          {/* Tempo Quiz — separate sub-mode below the pitch ladder */}
+          {/* Snail or Cheetah? — separate sub-mode below the pitch ladder */}
           <motion.button
             data-testid="ear-tempo-quiz-btn"
             className="level-card p-3 text-left flex items-center justify-between"
@@ -262,9 +262,9 @@ function EarTrainerPage() {
           >
             <div>
               <h3 className="text-lg font-bold font-display flex items-center gap-1.5">
-                <Rabbit className="w-4 h-4" /> Tempo Quiz
+                <Rabbit className="w-4 h-4" /> Snail or Cheetah?
               </h3>
-              <p className="text-xs opacity-90">Faster or slower? 10 rounds</p>
+              <p className="text-xs opacity-90">🐆 vs 🐌 — 10 rounds of pace-spotting</p>
             </div>
             <div className="text-xl">↔</div>
           </motion.button>

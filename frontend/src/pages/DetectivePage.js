@@ -21,7 +21,7 @@ const LEVELS = {
   easy:   { name: 'Rookie',    description: 'Big mistakes, short tunes', noteMs: 600, swapMin: 3, swapMax: 4, melodyLevel: 'easy',   sticker: 'detective_rookie', mode: 'wrong' },
   medium: { name: 'Detective', description: 'Trickier, medium tunes',    noteMs: 500, swapMin: 2, swapMax: 3, melodyLevel: 'medium', sticker: 'detective_sleuth', mode: 'wrong' },
   hard:   { name: 'Master',    description: 'Sneaky, long tunes',         noteMs: 420, swapMin: 1, swapMax: 2, melodyLevel: 'hard',   sticker: 'detective_master', mode: 'wrong' },
-  restquiz: { name: 'Rest Quiz', description: '30 s · spot the EXTRA note', noteMs: 480, swapMin: 1, swapMax: 3, melodyLevel: 'easy', sticker: 'detective_rookie', mode: 'extra', timeLimit: 30 },
+  restquiz: { name: 'Sneaky Note', description: 'The suspect filled a SILENCE with a note!', noteMs: 480, swapMin: 1, swapMax: 3, melodyLevel: 'easy', sticker: 'detective_rookie', mode: 'extra', timeLimit: 30 },
 };
 
 const STARTING_LIVES = 3;
@@ -42,8 +42,14 @@ function pickWrongNote(original, swapMin, swapMax) {
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
-function pickTune(level) {
-  const pool = DETECTIVE_TUNES.filter(t => t.level === level);
+function pickTune(level, options = {}) {
+  let pool = DETECTIVE_TUNES.filter(t => t.level === level);
+  // In Sneaky-Note mode prefer tunes that actually contain a rest so the
+  // gameplay matches the magical-world theme.
+  if (options.requireRest) {
+    const withRests = pool.filter(t => t.notes.some(n => n == null));
+    if (withRests.length) pool = withRests;
+  }
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -57,7 +63,7 @@ function pickTune(level) {
 //             Kid finds the slot that shouldn't be there (Rest Quiz).
 function buildRound(levelKey) {
   const lvl = LEVELS[levelKey];
-  const tune = pickTune(lvl.melodyLevel);
+  const tune = pickTune(lvl.melodyLevel, { requireRest: lvl.mode === 'extra' });
 
   // Map each note index to its slot number (or -1 for rests).
   const slotMap = [];
@@ -73,45 +79,78 @@ function buildRound(levelKey) {
   const corruptable = noteIndices.slice(1);
 
   if (lvl.mode === 'extra') {
-    // Pick a slot AFTER which to insert an extra note. Avoid inserting right
-    // after the very first note (kids need a reference). Insert at index i
-    // means the new note becomes the (i+1)-th element of `corrupted`.
-    const insertableIndices = noteIndices.slice(1); // index of "previous" note
-    const insertAfterIdx = insertableIndices[Math.floor(Math.random() * insertableIndices.length)];
+    // SNEAKY-NOTE mode: the suspect FILLS a rest in the song with a note.
+    // Kids learn that rests (silences) are part of music — the suspect tried
+    // to "cover" a silence by playing through it.
+    //
+    // 1. Find all rest indices in the tune (positions where notes[i] === null).
+    // 2. If the tune has no rest, pick any insertable spot and treat it as one.
+    //    (Fallback for tunes without rests — should be rare given our library.)
+    // 3. Replace the rest with a randomly chosen scale note that differs from
+    //    its previous AND next non-null neighbors (so the kid can't confuse
+    //    the new note with a repeat).
+    const restIndices = [];
+    tune.notes.forEach((n, i) => { if (n == null) restIndices.push(i); });
 
-    // Find the NEXT non-rest note after the insert point (might be undefined
-    // if we're at the very end of the tune).
+    let restIdx;
+    let usingFallback = false;
+    if (restIndices.length > 0) {
+      restIdx = restIndices[Math.floor(Math.random() * restIndices.length)];
+    } else {
+      // Fallback: insert after a random non-first note (treat as a fake rest)
+      const insertable = noteIndices.slice(1);
+      restIdx = insertable[Math.floor(Math.random() * insertable.length)];
+      usingFallback = true;
+    }
+
+    // Find neighbors that surround this position (skipping over other rests)
+    let prevNote = null;
+    for (let i = restIdx - 1; i >= 0; i--) {
+      if (tune.notes[i] != null) { prevNote = tune.notes[i]; break; }
+    }
     let nextNote = null;
-    for (let i = insertAfterIdx + 1; i < tune.notes.length; i++) {
+    for (let i = restIdx + 1; i < tune.notes.length; i++) {
       if (tune.notes[i] != null) { nextNote = tune.notes[i]; break; }
     }
-    const prevNote = tune.notes[insertAfterIdx];
-
-    // The extra note must differ from BOTH the previous and next neighbors —
-    // otherwise it sounds like a repeat instead of an "extra" note, and the
-    // kid has no clear way to point at the one that shouldn't be there.
     const candidates = SCALE_ORDER.filter(n => n !== prevNote && n !== nextNote);
     const extraNote = candidates[Math.floor(Math.random() * candidates.length)];
 
-    // Build corrupted: copy original notes, splice in extra after insertAfterIdx.
-    // Track BOTH slot maps:
-    //   - corruptedSlotMap aligns with the corrupted array
-    //   - slotMap is the original (unchanged from above)
+    // Build the "corrupted" sequence:
+    //   - Real-rest path: replace the rest at restIdx with the extra note (length unchanged)
+    //   - Fallback path:  splice the extra note in AFTER restIdx (length +1)
     const corrupted = [];
     const corruptedSlotMap = [];
     let newS = 0;
     let newCorrectSlot = -1;
-    tune.notes.forEach((n, i) => {
-      corrupted.push(n);
-      if (n == null) { corruptedSlotMap.push(-1); }
-      else { corruptedSlotMap.push(newS); newS += 1; }
-      if (i === insertAfterIdx) {
-        corrupted.push(extraNote);
-        corruptedSlotMap.push(newS);
-        newCorrectSlot = newS;
-        newS += 1;
-      }
-    });
+
+    if (!usingFallback) {
+      // Walk the original; at restIdx swap null → extraNote
+      tune.notes.forEach((n, i) => {
+        if (i === restIdx) {
+          corrupted.push(extraNote);
+          corruptedSlotMap.push(newS);
+          newCorrectSlot = newS;
+          newS += 1;
+        } else {
+          corrupted.push(n);
+          if (n == null) corruptedSlotMap.push(-1);
+          else { corruptedSlotMap.push(newS); newS += 1; }
+        }
+      });
+    } else {
+      // Splice the extra note in AFTER restIdx
+      tune.notes.forEach((n, i) => {
+        corrupted.push(n);
+        if (n == null) corruptedSlotMap.push(-1);
+        else { corruptedSlotMap.push(newS); newS += 1; }
+        if (i === restIdx) {
+          corrupted.push(extraNote);
+          corruptedSlotMap.push(newS);
+          newCorrectSlot = newS;
+          newS += 1;
+        }
+      });
+    }
 
     return {
       tune,
@@ -124,6 +163,7 @@ function buildRound(levelKey) {
       corruptedSlotMap,                 // corrupted layout
       totalSlots: newS,
       mode: 'extra',
+      restWasReal: !usingFallback,      // true → the suspect covered a real rest
     };
   }
 
@@ -574,8 +614,8 @@ export default function DetectivePage() {
           >
             {phase === 'listen_original' && '🎵 Listen to the ORIGINAL tune'}
             {phase === 'gap' && '🤔 Now find what changed...'}
-            {phase === 'listen_corrupted' && (round?.mode === 'extra' ? '🔍 Tap the EXTRA note when you hear it!' : '🔍 Tap the wrong note the moment you hear it!')}
-            {phase === 'guess' && (round?.mode === 'extra' ? '👇 Which note shouldn\'t be there?' : '👇 Tap the note that sounded wrong')}
+            {phase === 'listen_corrupted' && (round?.mode === 'extra' ? '🔍 The suspect added a note where there should be silence — tap it!' : '🔍 Tap the wrong note the moment you hear it!')}
+            {phase === 'guess' && (round?.mode === 'extra' ? '👇 Which note covered up the silence?' : '👇 Tap the note that sounded wrong')}
             {phase === 'reveal' && (isCorrect ? '🔍 Case solved!' : '😅 Try the next case!')}
           </div>
 
@@ -752,8 +792,8 @@ export default function DetectivePage() {
               >
                 {round.mode === 'extra'
                   ? (isCorrect
-                      ? `🔍 Slot ${round.correctSlot + 1} (${BELL_BY_NOTE[round.wrong]?.solfege || round.wrong}) was the EXTRA note!`
-                      : `Slot ${round.correctSlot + 1} (${BELL_BY_NOTE[round.wrong]?.solfege || round.wrong}) was the extra one. Listen again next round!`)
+                      ? `🔍 Slot ${round.correctSlot + 1} (${BELL_BY_NOTE[round.wrong]?.solfege || round.wrong}) covered up a silence — that spot should have been a REST!`
+                      : `Slot ${round.correctSlot + 1} (${BELL_BY_NOTE[round.wrong]?.solfege || round.wrong}) was hiding a silence. The song has a rest there!`)
                   : (isCorrect
                       ? `🔍 Beat ${round.correctSlot + 1} was the wrong one — should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`
                       : `Beat ${round.correctSlot + 1} was off! Should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`)
