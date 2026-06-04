@@ -8,7 +8,7 @@ import { PageCharacters } from '../components/PageCharacters';
 import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
-import { earnSticker } from '../hooks/useStickers';
+import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { SONG_LIBRARY, SPEED_SETTINGS, getSongsByCategory } from '../data/songs';
 import { getHighScore, saveHighScore, getTopScores } from '../hooks/useScores';
 
@@ -273,6 +273,13 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     if (accuracy >= 70) {
       const id = `song_${selectedSong.id}`;
       earnSticker(id);
+      // 🎯 Rhythm Reader achievements
+      // Cadet: 20+ perfect hits in a single song
+      if (gameStats.perfect >= 20) earnAchievement('rhythm', 'cadet');
+      // Pro: complete with 90%+ accuracy
+      if (accuracy >= 90) earnAchievementUpTo('rhythm', 'pro');
+      // Master: complete on Turbo speed
+      if (speed === 'turbo') earnAchievementUpTo('rhythm', 'master');
       // Turbo speed wins earn the Ragu Charlie outfit
       if (speed === 'turbo') earnSticker('fit_charlie_ragu');
       // Specific JMA Original outfit tie-ins
@@ -294,7 +301,10 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     if (score >= 1000) earnSticker('fit_sharky_hiphop');
     // Streak stickers
     if (gameStats.maxStreak >= 10) earnSticker('ach_streak_10');
-    if (gameStats.maxStreak >= 15) earnSticker('fit_charlie_punk');
+    if (gameStats.maxStreak >= 15) {
+      earnSticker('fit_charlie_punk');
+      earnAchievementUpTo('rhythm', 'pro');
+    }
     if (gameStats.maxStreak >= 25) earnSticker('ach_streak_25');
   }, [gameState, selectedSong.id, speed, score, gameStats]);
 

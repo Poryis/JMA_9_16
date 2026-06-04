@@ -2,7 +2,7 @@
 // Lesson N is "unlocked" when lesson N-1 is in the watched set (lesson 1 is always unlocked).
 
 import { useCallback, useEffect, useState } from 'react';
-import { earnSticker } from './useStickers';
+import { earnSticker, earnAchievement, earnAchievementUpTo } from './useStickers';
 import { LESSONS } from '../data/lessons';
 
 const KEY = 'jma_lessons_watched_v1';
@@ -45,6 +45,13 @@ export function useLessonsProgress() {
       saveWatched(next);
       // Award the per-lesson sticker + the JMA Graduate sticker if all done.
       try { earnSticker(`lesson_${num}`); } catch { /* ignore */ }
+      // 📖 Music Scholar achievements: Cadet on lesson 1, Pro on lesson 4,
+      // Master on completing every lesson.
+      try {
+        if (num >= 1) earnAchievement('scholar', 'cadet');
+        if (next.length >= 4) earnAchievementUpTo('scholar', 'pro');
+        if (next.length >= LESSONS.length) earnAchievementUpTo('scholar', 'master');
+      } catch { /* ignore */ }
       if (next.length >= LESSONS.length) {
         try { earnSticker('lesson_graduate'); } catch { /* ignore */ }
       }

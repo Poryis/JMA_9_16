@@ -10,7 +10,7 @@ import { DrumKitVisual, TurntableVisual } from '../components/Instruments';
 import { PulsingSpeakers } from '../components/PulsingSpeakers';
 import useAudio from '../hooks/useAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
-import { earnSticker } from '../hooks/useStickers';
+import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 
 const DEFAULT_BPM = 100;
 
@@ -224,6 +224,12 @@ function LoopStudioPage() {
       setIsPlaying(true);
       // Sticker: kid played a loop
       earnSticker('ach_beat_maker');
+      // 🥁 Beat Builder achievement — playing any loop = Cadet
+      earnAchievement('beat', 'cadet');
+      // Count active tracks (any track with at least one hit) for the Pro tier
+      const activeTrackCount = Object.values(gridRef.current).filter(steps => steps.some(s => s)).length;
+      if (activeTrackCount >= 3) earnAchievementUpTo('beat', 'pro');
+      if (activeTrackCount >= 4 && bpm >= 140) earnAchievementUpTo('beat', 'master');
       // Track play count for Surf Charlie (3 loops played)
       try {
         const n = parseInt(localStorage.getItem('jma_loops_played_v1') || '0', 10) + 1;

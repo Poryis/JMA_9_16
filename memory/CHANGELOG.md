@@ -1,5 +1,45 @@
 # Changelog
 
+## Feb 16, 2026 — Achievement-driven progression system (Phase 1 + 2)
+Major redesign — ranks are no longer earned by **collecting** stickers, they're earned by **demonstrating skills**.
+
+### Data model
+- **NEW: `data/achievements.js`** — 6 skill domains × 3 tiers = **18 achievement stickers** (Rhythm Reader, Note Detective, Keyboard Scout, Beat Builder, Song Creator, Music Scholar — each in Cadet/Pro/Master).
+- **`data/stickers.js`** split into `COLLECTION_STICKERS` (pure flair) and `ACHIEVEMENT_STICKERS` (the rank-gating set).
+- **`data/ranks.js`** rebuilt: 7 ranks (Polliwog · Tadpole · Apprentice · Soloist · Performer · Conductor · Maestro), each gated by domain breadth × tier depth (e.g. Maestro = 3 Master badges across different domains).
+
+### Gating rules (the "no Cadet→Maestro speedrun" enforcement)
+- **Tier prerequisite**: within a domain, Pro requires Cadet, Master requires Pro. `earnAchievement()` silently no-ops if the prereq is missing.
+- **Cross-domain breadth**: top ranks require Pro/Master across **3 different domains** — so kids must demonstrate variety, not just depth in one game.
+- Together: reaching Maestro requires **9 separate skill proofs** (3 domains × 3 tiers).
+
+### Engine + hooks
+- **NEW: `earnAchievement(domain, tier)`** and **`earnAchievementUpTo(domain, tier)`** helpers in `useStickers`.
+- **One-time legacy migration**: kids who already earned legacy stickers (`match_easy`, `ach_simon_5`, `lesson_graduate`, etc.) get retro-credited with the equivalent achievements. Tracked via `jma_stickers_migrated_v2` key so it runs exactly once.
+- **`useRank`** rebuilt to derive rank from the achievement subset, not raw count. Exposes `currentRank`, `nextRank`, `progress`, `achievementCount`.
+
+### Call-site rewires (game → achievement)
+- **Rhythm Arcade**: 20 perfect hits → Cadet; 90% accuracy → Pro; Turbo completion → Master; streak ≥15 also → Pro
+- **Detective Dr. Jellybone**: Easy/Medium/Hard completion → Cadet/Pro/Master (Ear domain)
+- **Note Match**: Easy/Medium/Hard → Cadet/Pro/Master (Ear domain — shares ladder with Detective)
+- **Stew Kazoo Says**: level 1 → Cadet, level 4 → Pro, level 8 → Master (Keyboard domain)
+- **Beat Lab**: any loop → Cadet, 3+ active tracks → Pro, 4+ tracks at 140+ BPM → Master
+- **Song Studio**: save → Cadet, save in 3 moods → Pro, fully-filled song → Master
+- **Lessons**: lesson 1 → Cadet, lessons 1–4 → Pro, all 7 → Master
+- **Jam Hall**: play all 8 bells (any tab) → Keyboard Cadet
+- **Ear Quest**: score 5 → Note Detective Cadet (+ Master bonus path)
+
+### Visual treatment (Phase 2)
+- **NEW: `<AchievementBadge />`** — octagonal shield silhouette + bronze/silver/gold metallic frame + radial enamel + domain portrait + chunky tier ribbon ("CADET" / "PRO" / "MASTER"). Locked badges desaturate + show a lock icon. Three sizes (`sm`/`md`/`lg`). Visually distinct from round collection stickers.
+- **`StickerBookPage`** rebuilt as 3 sections:
+  1. 🏅 **Achievement Badges** (top) — one row per domain, 3 badges across, RankBadge with progress meter sits on top
+  2. 🎭 **Meet the Band**, 👕 **Outfit Collection**, 🎺 **Instruments**, 🔔 **Jellybells**, 🏆 **Song Champion**, 📖 **Lessons**, ⭐ **Fun Milestones** — all collection stickers, original round-card style
+- **`RankBadge`** now shows the next-rank **requirement label** ("Next: Earn Pro badges in 3 different domains") instead of a vague sticker count, plus a `x/3` progress meter.
+
+### Verified
+- `CI=true yarn build` → Compiled successfully.
+- Live test: seeded 5 achievements (Rhythm Cadet+Pro, Ear Cadet, Beat Cadet, Scholar Cadet) → correctly placed kid at **Soloist** rank (1 Pro earned), with progress showing "1/3 toward Performer".
+
 ## Feb 16, 2026 — Card hero sizing (correct one this time)
 - Reverted the homepage Finn/Charlie/Shield sizes back to original — those were never the issue.
 - **The actual fix**: per-card `iconWidthPct` controlling the **boombox / storybook / beat pad** heroes inside the PLAY/LEARN/CREATE cards.

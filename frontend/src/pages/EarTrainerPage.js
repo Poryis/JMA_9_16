@@ -8,7 +8,7 @@ import { PageCharacters } from '../components/PageCharacters';
 import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
-import { earnSticker } from '../hooks/useStickers';
+import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { getEarTrainerStats, saveEarTrainerStats } from '../hooks/useScores';
 
 // Difficulty levels
@@ -113,7 +113,14 @@ function EarTrainerPage() {
       setStreak(prev => prev + 1);
       setResults(prev => {
         const next = { ...prev, correct: prev.correct + 1 };
-        if (next.correct >= 5) earnSticker('ach_ear_trainer');
+        if (next.correct >= 5) {
+          earnSticker('ach_ear_trainer');
+          // 🎧 Note Detective Cadet — scored 5 correct in Ear Quest.
+          earnAchievement('ear', 'cadet');
+          // Ear Master requires Pro first (from Note Match/Detective hard
+          // tier); this earnAchievementUpTo no-ops if those aren't earned.
+          earnAchievementUpTo('ear', 'master');
+        }
         return next;
       });
       playFeedbackSound('perfect');

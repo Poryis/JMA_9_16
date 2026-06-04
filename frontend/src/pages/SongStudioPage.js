@@ -11,7 +11,7 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import usePianoAudio from '../hooks/usePianoAudio';
 import { PIANO_KEYS, MOODS, TOTAL_SLOTS, SLOTS_PER_ROW } from '../data/songStudio';
-import { earnSticker } from '../hooks/useStickers';
+import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 
 const SONGS_KEY = 'jma_songs_v1';
 const REST = 'REST'; // sentinel value for a rest slot — renders the seahorse PNG and plays nothing
@@ -271,6 +271,17 @@ export default function SongStudioPage() {
     setShowSaveModal(false);
     setShowCelebration(true);
     try { earnSticker('songwriter'); } catch { /* ignore */ }
+    // ✍️ Song Creator achievements
+    try {
+      // Cadet: first saved song
+      earnAchievement('song', 'cadet');
+      // Pro: saved at least 1 song in each of the 3 moods
+      const moodsUsed = new Set(next.map((s) => s.moodId));
+      if (moodsUsed.size >= 3) earnAchievementUpTo('song', 'pro');
+      // Master: fully filled song (all 16 slots — any non-null counts)
+      const fullCount = newSong.slots.filter((s) => s != null).length;
+      if (fullCount >= newSong.slots.length) earnAchievementUpTo('song', 'master');
+    } catch { /* ignore */ }
     setTimeout(() => setShowCelebration(false), 2200);
   }, [pendingName, moodId, slots, mood.bpm, songs]);
 

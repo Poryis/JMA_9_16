@@ -13,7 +13,7 @@ import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
 import { BELLS } from '../components/JellyBells';
 import useAudio from '../hooks/useAudio';
-import { earnSticker } from '../hooks/useStickers';
+import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 
 // All 8 bells (including High C). Note Match uses subsets per difficulty.
 // Hard mode = full 8 bells (4 + 4 grid for nice symmetry).
@@ -123,6 +123,13 @@ export default function NoteMatchPage() {
         setIsNewBest(true);
       }
       try { earnSticker(level.sticker); } catch { /* ignore */ }
+      // 🎧 Note Detective achievement — completing each tier proves a level
+      // of ear/memory skill.
+      try {
+        if (difficulty === 'easy')   earnAchievement('ear', 'cadet');
+        if (difficulty === 'medium') earnAchievementUpTo('ear', 'pro');
+        if (difficulty === 'hard')   earnAchievementUpTo('ear', 'master');
+      } catch { /* ignore */ }
       playFeedbackSound('perfect');
       setTimeout(() => setGameState('win'), 600);
     }

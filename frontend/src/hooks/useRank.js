@@ -1,10 +1,14 @@
-// Rank tracking: derives current rank from sticker count.
-// Rank-up detection is opt-in via `withCelebration: true` — only ONE component
-// (RankUpCelebration in App.js) should request celebration tracking; everyone
-// else just reads currentRank/progress.
+// Rank tracking: rank is now derived from EARNED ACHIEVEMENT STICKERS, not
+// total sticker count. Achievement-driven ranks reflect demonstrated music
+// skill across multiple domains.
+//
+// Rank-up celebration is opt-in via `withCelebration: true` — only one
+// component (RankUpCelebration in App.js) should request celebration
+// tracking; everyone else just reads currentRank/progress.
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { RANKS, getRankForCount, getNextRank } from '../data/ranks';
+import { RANKS, getCurrentRank, getNextRank, getProgressToNext } from '../data/ranks';
+import { ALL_ACHIEVEMENT_IDS } from '../data/achievements';
 import useStickers from './useStickers';
 
 const LAST_SEEN_KEY = 'jma_rank_seen_v1';
@@ -19,21 +23,22 @@ function writeLastSeen(id) {
 }
 
 export default function useRank({ withCelebration = false } = {}) {
-  const { earnedCount } = useStickers();
+  const { earned, earnedCount } = useStickers();
   const [rankUp, setRankUp] = useState(null);
-  const currentRank = useMemo(() => getRankForCount(earnedCount), [earnedCount]);
-  const nextRank = useMemo(() => getNextRank(currentRank.id), [currentRank]);
 
-  const progress = useMemo(() => {
-    if (!nextRank) return { current: earnedCount, target: currentRank.minStickers, pct: 100 };
-    const span = nextRank.minStickers - currentRank.minStickers;
-    const done = earnedCount - currentRank.minStickers;
-    return {
-      current: earnedCount,
-      target: nextRank.minStickers,
-      pct: Math.max(0, Math.min(100, Math.round((done / span) * 100))),
-    };
-  }, [earnedCount, currentRank, nextRank]);
+  // Filter the earned-sticker map down to just the achievement IDs, then
+  // compute current/next rank from that set.
+  const achievementSet = useMemo(() => {
+    const s = new Set();
+    for (const id of ALL_ACHIEVEMENT_IDS) {
+      if (earned[id]) s.add(id);
+    }
+    return s;
+  }, [earned]);
+
+  const currentRank = useMemo(() => getCurrentRank(achievementSet), [achievementSet]);
+  const nextRank = useMemo(() => getNextRank(currentRank.id), [currentRank]);
+  const progress = useMemo(() => getProgressToNext(achievementSet), [achievementSet]);
 
   useEffect(() => {
     if (!withCelebration) return;
@@ -48,5 +53,13 @@ export default function useRank({ withCelebration = false } = {}) {
 
   const dismissRankUp = useCallback(() => setRankUp(null), []);
 
-  return { currentRank, nextRank, progress, rankUp, dismissRankUp, totalStickers: earnedCount };
+  return {
+    currentRank,
+    nextRank,
+    progress,
+    rankUp,
+    dismissRankUp,
+    achievementCount: achievementSet.size,
+    totalStickers: earnedCount,
+  };
 }

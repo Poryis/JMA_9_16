@@ -6,7 +6,7 @@ import { GameHeader } from '../components/GameUI';
 import RoomCharacters from '../components/RoomCharacters';
 import { XylophoneInstrument, PianoInstrument } from '../components/Instruments';
 import { FullscreenButton } from '../components/FullscreenButton';
-import { earnSticker } from '../hooks/useStickers';
+import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { SONG_LIBRARY } from '../data/songs';
 import useAudio from '../hooks/useAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
@@ -599,6 +599,15 @@ function FreePlayPage() {
       }
       const hasAll = ['bells', 'xylophone', 'piano', 'drums'].every(t => played.includes(t));
       if (hasAll) earnSticker('ach_one_kid_band');
+    } catch (_) {}
+    // 🎹 Keyboard Scout Cadet — playing all 8 bells in any tab.
+    try {
+      const bellsHit = JSON.parse(localStorage.getItem('jma_bells_played_v1') || '[]');
+      if (note && !bellsHit.includes(note)) {
+        bellsHit.push(note);
+        localStorage.setItem('jma_bells_played_v1', JSON.stringify(bellsHit));
+      }
+      if (bellsHit.length >= 8) earnAchievement('keyboard', 'cadet');
     } catch (_) {}
   }, [initAudioContext, playModeSound, isRecording, guidedMode, guidedSongIdx, guidedStep, spawnParticles, activeTab]);
 

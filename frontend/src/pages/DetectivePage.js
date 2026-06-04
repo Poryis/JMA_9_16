@@ -13,7 +13,7 @@ import RoomCharacters from '../components/RoomCharacters';
 import { BELLS } from '../components/JellyBells';
 import { DETECTIVE_TUNES, SCALE_ORDER } from '../data/detectiveMelodies';
 import useAudio from '../hooks/useAudio';
-import { earnSticker } from '../hooks/useStickers';
+import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 
 const BELL_BY_NOTE = Object.fromEntries(BELLS.map(b => [b.note, b]));
 
@@ -207,6 +207,8 @@ export default function DetectivePage() {
       setStreak(newStreak);
       setBestStreak((b) => Math.max(b, newStreak));
       try { earnSticker('fit_doctor_detective'); } catch { /* ignore */ }
+      // 🎧 Note Detective achievement — Cadet on first correct guess ever
+      try { earnAchievement('ear', 'cadet'); } catch { /* ignore */ }
       playFeedbackSound('perfect');
     } else {
       setLives((l) => l - 1);
@@ -236,6 +238,13 @@ export default function DetectivePage() {
       saveBest(next);
       setBestRecords(next);
       try { earnSticker(lvl.sticker); } catch { /* ignore */ }
+      // 🎧 Note Detective achievement — completing the run on each difficulty
+      // proves a tier of pitch-reading skill.
+      try {
+        if (difficulty === 'easy')   earnAchievement('ear', 'cadet');
+        if (difficulty === 'medium') earnAchievementUpTo('ear', 'pro');
+        if (difficulty === 'hard')   earnAchievementUpTo('ear', 'master');
+      } catch { /* ignore */ }
       if (bestStreak >= ROUNDS_PER_RUN) {
         try { earnSticker('detective_perfect'); } catch { /* ignore */ }
       }

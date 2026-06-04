@@ -1,115 +1,134 @@
+// Sticker Book — three top-level sections:
+//   🏅 Achievement Badges (bronze/silver/gold enamel — drive rank)
+//   🎭 Meet the Band       (characters)
+//   🎁 Collection          (everything else — outfits, instruments, bells, songs, etc.)
+//
+// Achievement badges visually distinct (enamel + tier ribbon) so kids/teachers
+// can instantly tell skill badges from flair. Round Collection stickers keep
+// their old look.
+
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, X } from 'lucide-react';
-import { STICKERS, STICKER_CATEGORIES } from '../data/stickers';
+import { Sparkles, X, Trophy } from 'lucide-react';
+import { STICKER_MAP, COLLECTION_STICKERS, STICKER_CATEGORIES } from '../data/stickers';
+import { ACHIEVEMENT_DOMAINS, ACHIEVEMENT_TIERS, achievementId } from '../data/achievements';
 import useStickers from '../hooks/useStickers';
 import { FullscreenButton } from '../components/FullscreenButton';
 import RankBadge from '../components/RankBadge';
+import AchievementBadge from '../components/AchievementBadge';
 import HarpIcon from '../components/HarpIcon';
 
-function StickerCard({ sticker, earnedAt }) {
-  const [open, setOpen] = useState(false);
-  const isEarned = !!earnedAt;
+// Detail modal for ANY sticker (round or badge).
+function StickerDetailModal({ sticker, earned, onClose }) {
+  if (!sticker) return null;
+  const isEarned = !!earned;
   return (
-    <>
-      <motion.button
-        data-testid={`sticker-${sticker.id}`}
-        onClick={() => setOpen(true)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="relative flex flex-col items-center rounded-2xl border-4 p-3 md:p-4 cursor-pointer"
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      data-testid="sticker-detail-modal"
+    >
+      <motion.div
+        className="relative bg-white rounded-3xl border-4 max-w-sm w-full p-6 text-center shadow-2xl"
         style={{
-          borderColor: isEarned ? sticker.color : '#cbd5e1',
-          backgroundColor: isEarned ? `${sticker.color}20` : '#f1f5f9',
-          boxShadow: isEarned ? `0 6px 0 0 ${sticker.color}` : '0 4px 0 0 #cbd5e1',
+          borderColor: isEarned ? (sticker.color || 'var(--jma-dark)') : '#64748b',
+          boxShadow: `0 10px 0 0 ${isEarned ? (sticker.color || 'var(--jma-dark)') : '#64748b'}`,
         }}
+        initial={{ scale: 0.7, y: 40, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.7, y: 40, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
-          <img
-            src={sticker.icon}
-            alt={sticker.name}
-            draggable={false}
-            className="w-full h-full object-contain pointer-events-none"
-            style={{
-              filter: isEarned ? 'none' : 'grayscale(1) opacity(0.35)',
-            }}
-          />
-        </div>
-        <span
-          className="text-xs md:text-sm font-black text-center mt-2 leading-tight"
-          style={{ color: isEarned ? sticker.color : '#64748b' }}
-        >
-          {isEarned ? sticker.name : '???'}
-        </span>
-        {isEarned && (
-          <motion.div
-            className="absolute -top-2 -right-2 bg-yellow-300 rounded-full w-7 h-7 flex items-center justify-center border-2 border-[var(--jma-dark)] shadow-md"
-            initial={{ rotate: -15, scale: 0.8 }}
-            animate={{ rotate: [ -15, 15, -15 ], scale: 1 }}
-            transition={{ repeat: Infinity, duration: 2 }}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[var(--jma-dark)]" />
-          </motion.div>
+        <button onClick={onClose}
+          className="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-white border-3 border-[var(--jma-dark)] flex items-center justify-center shadow-md"
+          aria-label="Close">
+          <X className="w-4 h-4" style={{ color: 'var(--jma-dark)' }} />
+        </button>
+        {sticker.category === 'achievements' ? (
+          <div className="flex justify-center"><AchievementBadge domain={sticker.domain} tier={sticker.tier} earned={isEarned} size="lg" showName={false} /></div>
+        ) : (
+          <img src={sticker.icon} alt={sticker.name} draggable={false}
+            className="w-32 h-32 object-contain mx-auto"
+            style={{ filter: isEarned ? 'none' : 'grayscale(1) opacity(0.35)' }} />
         )}
-      </motion.button>
+        <h3 className="text-2xl font-black mt-2" style={{ color: isEarned ? (sticker.color || 'var(--jma-dark)') : '#64748b' }}>
+          {isEarned ? sticker.name : 'Locked'}
+        </h3>
+        <p className="text-sm mt-2 font-medium" style={{ color: 'var(--jma-dark)' }}>
+          {isEarned ? `Earned on ${new Date(earned.earnedAt).toLocaleDateString()}` : sticker.hint}
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+}
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setOpen(false)}
-            data-testid="sticker-detail-modal"
-          >
-            <motion.div
-              className="relative bg-white rounded-3xl border-4 max-w-sm w-full p-6 text-center shadow-2xl"
-              style={{ borderColor: isEarned ? sticker.color : '#64748b', boxShadow: `0 10px 0 0 ${isEarned ? sticker.color : '#64748b'}` }}
-              initial={{ scale: 0.7, y: 40, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.7, y: 40, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setOpen(false)}
-                className="absolute -top-3 -right-3 w-9 h-9 rounded-full bg-white border-3 border-[var(--jma-dark)] flex items-center justify-center shadow-md"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" style={{ color: 'var(--jma-dark)' }} />
-              </button>
-              <img src={sticker.icon} alt={sticker.name} draggable={false}
-                className="w-32 h-32 object-contain mx-auto"
-                style={{ filter: isEarned ? 'none' : 'grayscale(1) opacity(0.35)' }} />
-              <h3 className="text-2xl font-black mt-2" style={{ color: isEarned ? sticker.color : '#64748b' }}>
-                {isEarned ? sticker.name : 'Locked'}
-              </h3>
-              <p className="text-sm mt-2 font-medium" style={{ color: 'var(--jma-dark)' }}>
-                {isEarned ? `Earned on ${new Date(earnedAt).toLocaleDateString()}` : sticker.hint}
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+// Round collection-sticker tile (kept from the original design).
+function CollectionStickerCard({ sticker, earned, onOpen }) {
+  const isEarned = !!earned;
+  return (
+    <motion.button
+      data-testid={`sticker-${sticker.id}`}
+      onClick={() => onOpen(sticker)}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="relative flex flex-col items-center rounded-2xl border-4 p-2 md:p-3 cursor-pointer"
+      style={{
+        borderColor: isEarned ? sticker.color : '#cbd5e1',
+        backgroundColor: isEarned ? `${sticker.color}20` : '#f1f5f9',
+        boxShadow: isEarned ? `0 5px 0 0 ${sticker.color}` : '0 3px 0 0 #cbd5e1',
+      }}
+    >
+      <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
+        <img
+          src={sticker.icon}
+          alt={sticker.name}
+          draggable={false}
+          className="w-full h-full object-contain pointer-events-none"
+          style={{ filter: isEarned ? 'none' : 'grayscale(1) opacity(0.35)' }}
+        />
+      </div>
+      <span
+        className="text-[10px] md:text-xs font-black text-center mt-1 leading-tight"
+        style={{ color: isEarned ? sticker.color : '#64748b' }}
+      >
+        {isEarned ? sticker.name : '???'}
+      </span>
+      {isEarned && (
+        <motion.div
+          className="absolute -top-2 -right-2 bg-yellow-300 rounded-full w-6 h-6 flex items-center justify-center border-2 border-[var(--jma-dark)] shadow-md"
+          initial={{ rotate: -15, scale: 0.8 }}
+          animate={{ rotate: [-15, 15, -15], scale: 1 }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          <Sparkles className="w-3 h-3 text-[var(--jma-dark)]" />
+        </motion.div>
+      )}
+    </motion.button>
   );
 }
 
 export default function StickerBookPage() {
   const navigate = useNavigate();
-  const { earned, earnedCount } = useStickers();
-  const total = STICKERS.length;
+  const { earned, achievementCount, collectionCount } = useStickers();
+  const [openSticker, setOpenSticker] = useState(null);
 
-  const grouped = useMemo(() => {
+  const totalAchievements = 18;
+  const totalCollection = COLLECTION_STICKERS.length;
+
+  // Group collection stickers by category (achievements live in their own section)
+  const collectionByCategory = useMemo(() => {
     const map = {};
-    STICKER_CATEGORIES.forEach(c => { map[c.id] = []; });
-    STICKERS.forEach(s => {
+    STICKER_CATEGORIES.filter(c => c.kind === 'collection').forEach(c => { map[c.id] = []; });
+    for (const s of COLLECTION_STICKERS) {
       if (!map[s.category]) map[s.category] = [];
       map[s.category].push(s);
-    });
+    }
     return map;
   }, []);
 
-  const pct = Math.round((earnedCount / total) * 100);
+  const handleStickerClick = (s) => setOpenSticker(s);
 
   return (
     <div className="min-h-screen flex flex-col" data-testid="sticker-book-page"
@@ -132,52 +151,110 @@ export default function StickerBookPage() {
         <h1 className="text-xl md:text-2xl font-black font-display flex-1 text-center" style={{ color: 'var(--jma-dark)' }}>
           Sticker Book
         </h1>
-        <div className="text-sm font-bold whitespace-nowrap" style={{ color: 'var(--jma-dark)' }}>
-          {earnedCount} / {total}
+        <div className="text-xs md:text-sm font-bold whitespace-nowrap text-right leading-tight" style={{ color: 'var(--jma-dark)' }}>
+          <div>🏅 {achievementCount}/{totalAchievements}</div>
+          <div>🎁 {collectionCount}/{totalCollection}</div>
         </div>
       </div>
 
       <FullscreenButton />
 
       <main className="flex-1 pt-16 pb-10 px-3 md:px-6 max-w-6xl mx-auto w-full">
-        {/* Rank badge */}
-        <div className="flex justify-center mt-4 mb-3">
-          <RankBadge />
+        {/* Rank badge with progress meter inside it */}
+        <div className="flex justify-center mt-4 mb-6">
+          <RankBadge showProgress />
         </div>
 
-        {/* Progress bar */}
-        <div className="game-card px-4 py-3 mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-bold" style={{ color: 'var(--jma-dark)' }}>Your Collection</span>
-            <span className="text-sm font-black" style={{ color: 'var(--jma-dark)' }}>{pct}%</span>
-          </div>
-          <div className="h-4 bg-slate-200 rounded-full overflow-hidden border-2 border-[var(--jma-dark)]">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: 'linear-gradient(90deg, #FFCC00, #4CD964, #4285F4, #AF52DE)' }}
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-            />
-          </div>
-        </div>
-
-        {STICKER_CATEGORIES.map(cat => (
-          <section key={cat.id} className="mb-8" data-testid={`category-${cat.id}`}>
-            <h2 className="text-lg md:text-xl font-black font-display mb-3 px-1" style={{ color: 'var(--jma-dark)' }}>
-              {cat.label}
-              <span className="ml-2 text-xs font-bold opacity-60">
-                ({grouped[cat.id].filter(s => earned[s.id]).length} / {grouped[cat.id].length})
-              </span>
+        {/* ============ ACHIEVEMENT BADGES (top — the rank-driving section) ============ */}
+        <section className="mb-10" data-testid="category-achievements">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-lg md:text-xl font-black font-display flex items-center gap-2" style={{ color: 'var(--jma-dark)' }}>
+              <Trophy className="w-5 h-5" style={{ color: '#D89B00' }} />
+              Achievement Badges
+              <span className="text-xs font-bold opacity-60 ml-1">({achievementCount}/{totalAchievements})</span>
             </h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-              {grouped[cat.id].map(sticker => (
-                <StickerCard key={sticker.id} sticker={sticker} earnedAt={earned[sticker.id]?.earnedAt} />
-              ))}
-            </div>
-          </section>
-        ))}
+            <span className="hidden sm:inline text-[11px] md:text-xs font-bold opacity-70 italic" style={{ color: 'var(--jma-dark)' }}>
+              These badges unlock your rank!
+            </span>
+          </div>
+
+          {/* One row per domain, three badges across (Cadet · Pro · Master) */}
+          <div className="rounded-2xl border-3 border-[var(--jma-dark)] bg-white/80 backdrop-blur-sm divide-y-2 divide-[var(--jma-dark)]/15 overflow-hidden">
+            {ACHIEVEMENT_DOMAINS.map((dom) => (
+              <div key={dom.id} className="flex items-center gap-2 md:gap-4 p-2.5 md:p-4">
+                {/* Domain label column */}
+                <div className="flex-shrink-0 w-[110px] md:w-[150px]">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-9 h-9 md:w-11 md:h-11 rounded-full border-2 flex-shrink-0"
+                      style={{ borderColor: 'var(--jma-dark)', backgroundColor: `${dom.color}33`, overflow: 'hidden' }}
+                    >
+                      <img src={dom.icon} alt={dom.label} className="w-full h-full object-contain" draggable={false} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs md:text-sm font-black font-display leading-tight" style={{ color: 'var(--jma-dark)' }}>{dom.label}</div>
+                      <div className="text-[9px] md:text-[10px] opacity-60 leading-tight" style={{ color: 'var(--jma-dark)' }}>{dom.blurb}</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Three tier badges */}
+                <div className="flex-1 flex justify-around gap-1 md:gap-2">
+                  {ACHIEVEMENT_TIERS.map((t) => {
+                    const sticker = STICKER_MAP[achievementId(dom.id, t.id)];
+                    const isEarned = !!earned[sticker.id];
+                    return (
+                      <AchievementBadge
+                        key={t.id}
+                        domain={dom.id}
+                        tier={t.id}
+                        earned={isEarned}
+                        size="sm"
+                        showName={false}
+                        onClick={() => handleStickerClick(sticker)}
+                        testId={`badge-${sticker.id}`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ============ COLLECTION SECTIONS ============ */}
+        {STICKER_CATEGORIES.filter(c => c.kind === 'collection').map(cat => {
+          const stickers = collectionByCategory[cat.id] || [];
+          const earnedHere = stickers.filter(s => earned[s.id]).length;
+          return (
+            <section key={cat.id} className="mb-8" data-testid={`category-${cat.id}`}>
+              <h2 className="text-lg md:text-xl font-black font-display mb-3 px-1" style={{ color: 'var(--jma-dark)' }}>
+                {cat.label}
+                <span className="ml-2 text-xs font-bold opacity-60">({earnedHere}/{stickers.length})</span>
+              </h2>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3">
+                {stickers.map(s => (
+                  <CollectionStickerCard
+                    key={s.id}
+                    sticker={s}
+                    earned={earned[s.id]}
+                    onOpen={handleStickerClick}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </main>
+
+      <AnimatePresence>
+        {openSticker && (
+          <StickerDetailModal
+            sticker={openSticker}
+            earned={earned[openSticker.id]}
+            onClose={() => setOpenSticker(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

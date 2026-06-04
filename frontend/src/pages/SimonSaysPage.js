@@ -6,7 +6,7 @@ import { KazoosRow, KAZOOS } from '../components/Kazoos';
 import { GameHeader, FeedbackPopup, ProgressBar } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
-import { earnSticker } from '../hooks/useStickers';
+import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import Confetti from '../components/Confetti';
 import RoomCharacters from '../components/RoomCharacters';
 
@@ -220,6 +220,10 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         timeoutRef.current = setTimeout(() => {
           // Sticker: completed a level — level 5+ earns Super Ear
           if (level >= 5) earnSticker('ach_simon_5');
+          // 🎹 Keyboard Scout achievements via Stew Kazoo Says level milestones
+          if (level >= 1) earnAchievement('keyboard', 'cadet');
+          if (level >= 4) earnAchievementUpTo('keyboard', 'pro');
+          if (level >= 8) earnAchievementUpTo('keyboard', 'master');
           if (level >= 8) {
             earnSticker('fit_charlie_grad');
             // Big celebration on beating the final level, then home.
