@@ -1,5 +1,35 @@
 # Changelog
 
+## Feb 17, 2026 — Phase 3: Four educational wins
+Locked in 4 new features explicitly designed to boost music-learning ROI for teachers/parents while staying playful for kids:
+
+### 1. Practice Buddy (daily-return streak)
+- **NEW: `hooks/usePracticeStreak.js`** — Tracks `{count, lastDate}` in `jma_practice_streak_v1`. Same-day → no change; previous-day → +1; gaps → reset to 1. Awards `practice_buddy_3/7/14` stickers at the corresponding crossings.
+- **NEW: `components/PracticeStreakChip.js`** — Hot-flame chip on the Home page; hidden when streak < 2 so day-1 kids don't see "1-day streak" (which would feel like pressure). Tier-colored: bronze (2) → orange (3) → red (7) → gold (14).
+- **`data/stickers.js`** — Added 3 new collection stickers under Fun Milestones. Pure flair — these don't gate rank, the achievement ladder still does.
+
+### 2. Sight-Reading Sprint
+- **NEW: `pages/SightReadingPage.js`** + route `/sight-reading` + tile on Play menu.
+- **NEW: `components/SolfegeStaff.js`** — 3-line staff with solfege circles colored by pitch (low notes sit lower, high notes higher). Currently-aimed-at note pulses gold; completed slots flip green; wrong taps flash red briefly.
+- 3 tiers: Cadet (3 notes / 20 s / 7-bell pool), Pro (4 notes / 18 s / 7-bell pool), Master (5 notes / 16 s / full 8-bell + High C). Flow: hear-demo → tap-in-order → timer → win modal w/ time bonus.
+- Earns **Music Scholar** achievement ladder (same domain as lessons — proves notation-reading skill).
+
+### 3. Rest Quiz — new Detective Dr. Jellybone mode
+- 4th difficulty `restquiz` in `pages/DetectivePage.js`: the suspect tune has an EXTRA note inserted (vs the wrong-pitch corruption in the other modes).
+- 30-second `detective-timer` pill counts down during guess phase. Timeout → auto-reveal as miss + life lost.
+- Build logic forks at `buildRound()` — extra-note mode splices a random in-scale note after a random existing note, builds a separate `corruptedSlotMap` to align with the longer corrupted sequence, and renders the chip row from `round.corrupted` so the extra chip actually appears.
+- Reveal text: *"Slot N (Mi) was the EXTRA note!"*
+
+### 4. Tempo Quiz — new Ear Quest sub-mode
+- **NEW: `components/TempoListeningGame.js`** + `tempo` gameState in `pages/EarTrainerPage.js`.
+- Plays two short clips of the same recognizable tune (Twinkle / Mary / Hot Cross Buns / Row Row Row), each at a different BPM. Kid picks **Faster** or **Slower**.
+- 10 rounds per run. Progressive difficulty: rounds 1-3 use ±40 BPM (very obvious), 4-7 use ±20, 8-10 use ±10 (subtle).
+- Earns **Rhythm Reader** achievement ladder: Cadet at 5+ correct, Pro at 8+, Master at 10/10.
+
+### Verified
+- Frontend testing agent: 100% pass (6/6 acceptance criteria), zero pageerror exceptions, all 13 routes clean.
+- `CI=true yarn build` → Compiled successfully (263.25 KB gz, +8 KB for Phase 3).
+
 ## Feb 16, 2026 — Achievement-driven progression system (Phase 1 + 2)
 Major redesign — ranks are no longer earned by **collecting** stickers, they're earned by **demonstrating skills**.
 

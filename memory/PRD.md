@@ -82,6 +82,38 @@ Driven by total stickers earned. Warm, non-competitive.
 - **P2**: README.md with GitHub Pages deploy instructions.
 - **P2**: Verify MP3 recording on real mobile devices.
 - **P3**: Confetti celebration on Who's Got Rhythm / Ear Quest milestones.
+- **P3**: "Maestro's Map" board-game journey using existing minigames as tiles (idea stage).
+
+## Implemented (Feb 17, 2026 — Phase 3 Educational Wins)
+Four new mini-features designed to boost real music learning while keeping it fun:
+
+### 1. Practice Buddy (daily-return streak)
+- `hooks/usePracticeStreak.js` tracks `{count, lastDate}` in `localStorage.jma_practice_streak_v1`. Same-day visits don't bump; previous-day visits +1; gaps reset to 1.
+- Crossing 3 / 7 / 14 days unlocks **3 new collection stickers**: Practice Buddy / Weekly Wonder / Two-Week Trooper (under Fun Milestones — pure flair, doesn't gate rank).
+- `components/PracticeStreakChip.js` shows on the Home page once streak ≥ 2 (hidden day 1 to avoid pressure).
+
+### 2. Sight-Reading Sprint (new game in PLAY)
+- New page `pages/SightReadingPage.js` + reusable `components/SolfegeStaff.js`.
+- 3 difficulty tiers: Cadet (3 notes / 20 s / low bells), Pro (4 / 18 s / low bells), Master (5 / 16 s / full 8-bell range).
+- Flow: demo plays the sequence once → kid taps bells in order → time bonus on completion → win modal.
+- Earns **Music Scholar** achievement ladder (same domain as video lessons — proves reading-the-notation skill).
+- Tile added to Play menu (`/play`) and route `/sight-reading` wired in `App.js`.
+
+### 3. Rest Quiz (new Detective Dr. Jellybone mode)
+- 4th difficulty in `pages/DetectivePage.js`: instead of swapping one note to a wrong pitch, the suspect tune has an **EXTRA** note inserted.
+- 30-second countdown timer (`detective-timer`) starts when guess phase opens; timeout costs a life and reveals.
+- The chip row renders the corrupted sequence (one extra chip vs original).
+- Reveal text: *"Slot N (SOLFEGE) was the EXTRA note!"*
+
+### 4. Tempo Quiz (new Ear Quest sub-mode)
+- New component `components/TempoListeningGame.js`, accessible via the `ear-tempo-quiz-btn` on Ear Quest menu.
+- Plays two short clips of the same tune at different BPMs. Kid picks **Faster** or **Slower**.
+- 10 rounds per run with progressively narrower BPM deltas: ±40 → ±20 → ±10 BPM.
+- Earns **Rhythm Reader** achievement ladder: Cadet at 5+ correct, Pro at 8+, Master at 10/10.
+
+### Verified
+- Frontend testing agent: **100% pass (6/6 acceptance criteria)**, zero pageerror exceptions, all 13 routes navigate cleanly.
+- `CI=true yarn build` → Compiled successfully (263.25 KB gz, +8 KB for Phase 3).
 
 ## Testing Credentials
 N/A — frontend-only, no auth.
