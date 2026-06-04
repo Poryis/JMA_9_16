@@ -121,6 +121,36 @@ function notify(newlyEarnedId) {
  * For ACHIEVEMENT stickers, prefer earnAchievement() which enforces tier
  * prerequisites. This function will still work but skips the prereq check.
  */
+/**
+ * Wipe ALL sticker / achievement / rank progress for this device.
+ *
+ * Also clears related counters (loops played, bells played, songs completed,
+ * music facts seen, instruments played, lessons watched, rank "last seen"
+ * flag, and the legacy-migration flag — so a kid who resets after the
+ * upgrade migrates cleanly again with the now-empty earned list).
+ *
+ * Caller is responsible for confirming with the user; this function just
+ * does the wipe and triggers the listeners so the UI can react.
+ */
+export function resetAllStickers() {
+  const keysToClear = [
+    STORAGE_KEY,
+    MIGRATION_KEY,
+    FACT_COUNT_KEY,
+    'jma_rank_seen_v1',
+    'jma_loops_played_v1',
+    'jma_songs_completed_v1',
+    'jma_bells_played_v1',
+    'jma_instruments_played_v1',
+    'jma_lessons_watched_v1',
+  ];
+  try {
+    for (const k of keysToClear) localStorage.removeItem(k);
+  } catch (_) { /* ignore */ }
+  // Fire one notification so any open useStickers/useRank consumer re-renders.
+  notify(null);
+}
+
 export function earnSticker(id) {
   if (!STICKER_MAP[id]) return false;
   const earned = readEarned();

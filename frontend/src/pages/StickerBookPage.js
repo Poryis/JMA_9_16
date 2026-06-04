@@ -10,10 +10,10 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, X, Trophy } from 'lucide-react';
+import { Sparkles, X, Trophy, RotateCcw } from 'lucide-react';
 import { STICKER_MAP, COLLECTION_STICKERS, STICKER_CATEGORIES } from '../data/stickers';
 import { ACHIEVEMENT_DOMAINS, ACHIEVEMENT_TIERS, achievementId } from '../data/achievements';
-import useStickers from '../hooks/useStickers';
+import useStickers, { resetAllStickers } from '../hooks/useStickers';
 import { FullscreenButton } from '../components/FullscreenButton';
 import RankBadge from '../components/RankBadge';
 import AchievementBadge from '../components/AchievementBadge';
@@ -113,9 +113,17 @@ export default function StickerBookPage() {
   const navigate = useNavigate();
   const { earned, achievementCount, collectionCount } = useStickers();
   const [openSticker, setOpenSticker] = useState(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const totalAchievements = 18;
   const totalCollection = COLLECTION_STICKERS.length;
+
+  const handleResetConfirm = () => {
+    resetAllStickers();
+    setShowResetConfirm(false);
+    // Tiny scroll-to-top so the new empty rank badge is immediately visible
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Group collection stickers by category (achievements live in their own section)
   const collectionByCategory = useMemo(() => {
@@ -151,7 +159,7 @@ export default function StickerBookPage() {
         <h1 className="text-xl md:text-2xl font-black font-display flex-1 text-center" style={{ color: 'var(--jma-dark)' }}>
           Sticker Book
         </h1>
-        <div className="text-xs md:text-sm font-bold whitespace-nowrap text-right leading-tight" style={{ color: 'var(--jma-dark)' }}>
+        <div className="text-xs md:text-sm font-bold whitespace-nowrap text-right leading-tight mr-10 md:mr-12" style={{ color: 'var(--jma-dark)' }}>
           <div>🏅 {achievementCount}/{totalAchievements}</div>
           <div>🎁 {collectionCount}/{totalCollection}</div>
         </div>
@@ -244,6 +252,19 @@ export default function StickerBookPage() {
             </section>
           );
         })}
+        {/* Reset progress — small, low-key, lives at the bottom so it doesn't
+            invite accidental taps. Two-step confirm modal. */}
+        <div className="flex justify-center mt-8 mb-2">
+          <button
+            data-testid="sticker-reset-btn"
+            onClick={() => setShowResetConfirm(true)}
+            className="flex items-center gap-1.5 text-[11px] md:text-xs font-bold opacity-60 hover:opacity-100 transition-opacity px-3 py-1.5 rounded-full border border-dashed"
+            style={{ color: '#B91C1C', borderColor: '#B91C1C66', backgroundColor: 'rgba(255,255,255,0.5)' }}
+          >
+            <RotateCcw className="w-3 h-3" />
+            Reset all progress
+          </button>
+        </div>
       </main>
 
       <AnimatePresence>
@@ -253,6 +274,49 @@ export default function StickerBookPage() {
             earned={earned[openSticker.id]}
             onClose={() => setOpenSticker(null)}
           />
+        )}
+        {showResetConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setShowResetConfirm(false)}
+            data-testid="reset-confirm-modal"
+          >
+            <motion.div
+              className="relative bg-white rounded-3xl border-4 border-[var(--jma-dark)] max-w-sm w-full p-6 text-center shadow-[0_10px_0_0_var(--jma-dark)]"
+              initial={{ scale: 0.8, y: 30, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.8, y: 30, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-16 h-16 mx-auto rounded-full bg-red-50 border-3 border-red-200 flex items-center justify-center mb-3">
+                <RotateCcw className="w-8 h-8" style={{ color: '#B91C1C' }} />
+              </div>
+              <h3 className="text-2xl font-black font-display" style={{ color: 'var(--jma-dark)' }}>
+                Reset everything?
+              </h3>
+              <p className="text-sm mt-2 font-medium opacity-80" style={{ color: 'var(--jma-dark)' }}>
+                This wipes <b>all</b> stickers, achievement badges, rank progress, and play history on this device. It cannot be undone.
+              </p>
+              <div className="flex gap-2 mt-5 justify-center">
+                <button
+                  data-testid="reset-cancel-btn"
+                  onClick={() => setShowResetConfirm(false)}
+                  className="chunky-btn bg-white text-[var(--jma-dark)] border-2 border-[var(--jma-dark)] px-4 py-2 text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  data-testid="reset-confirm-btn"
+                  onClick={handleResetConfirm}
+                  className="chunky-btn px-4 py-2 text-sm flex items-center gap-2"
+                  style={{ backgroundColor: '#B91C1C', color: 'white' }}
+                >
+                  <RotateCcw className="w-4 h-4" /> Reset
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
