@@ -9,6 +9,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RankBadge from '../components/RankBadge';
 import StickerSpotlight from '../components/StickerSpotlight';
+import PracticeStreakChip from '../components/PracticeStreakChip';
 
 // Jelly Rocks blimp — 3-frame loop slowly drifting side-to-side behind everything.
 const BLIMP_FRAMES = [
@@ -504,6 +505,7 @@ function HomePage() {
       {/* Rank + Sticker spotlight */}
       <div className="relative z-10 mb-4 md:mb-5 w-full max-w-4xl flex flex-col sm:flex-row items-center justify-center gap-3">
         <RankBadge />
+        <PracticeStreakChip />
         <StickerSpotlight />
       </div>
 

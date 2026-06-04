@@ -110,6 +110,10 @@ export const COLLECTION_STICKERS = [
   { id: 'ach_streak_25',     name: 'Streak of 25!',      category: 'milestones', icon: 'assets/characters/jazzy.png',            color: '#FF3B30', hint: 'Hit 25 notes in a row' },
   { id: 'ach_fact_finder',   name: 'Fact Finder',        category: 'milestones', icon: 'assets/characters/dr-jellybone.png',     color: '#AF52DE', hint: 'Learn 10 music facts on the home page' },
   { id: 'detective_perfect', name: 'Perfect Case File',  category: 'milestones', icon: 'assets/characters/dr-jellybone.png',     color: '#34A853', hint: 'Solve all 5 cases in a row' },
+  // ---- Practice Buddy — daily return streaks ----
+  { id: 'practice_buddy_3',  name: 'Practice Buddy',     category: 'milestones', icon: 'assets/characters/finn-danger.png',      color: '#FF9500', hint: 'Come back and play 3 days in a row' },
+  { id: 'practice_buddy_7',  name: 'Weekly Wonder',      category: 'milestones', icon: 'assets/characters/jazzy.png',            color: '#FF3B30', hint: 'Come back and play 7 days in a row' },
+  { id: 'practice_buddy_14', name: 'Two-Week Trooper',   category: 'milestones', icon: 'assets/characters/charlie-grad.png',     color: '#FFD700', hint: 'Come back and play 14 days in a row' },
 ];
 
 // Build sticker arrays/maps. Achievements come from the achievements file

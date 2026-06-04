@@ -18,9 +18,10 @@ import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useS
 const BELL_BY_NOTE = Object.fromEntries(BELLS.map(b => [b.note, b]));
 
 const LEVELS = {
-  easy:   { name: 'Rookie',    description: 'Big mistakes, short tunes', noteMs: 600, swapMin: 3, swapMax: 4, melodyLevel: 'easy',   sticker: 'detective_rookie' },
-  medium: { name: 'Detective', description: 'Trickier, medium tunes',    noteMs: 500, swapMin: 2, swapMax: 3, melodyLevel: 'medium', sticker: 'detective_sleuth' },
-  hard:   { name: 'Master',    description: 'Sneaky, long tunes',         noteMs: 420, swapMin: 1, swapMax: 2, melodyLevel: 'hard',   sticker: 'detective_master' },
+  easy:   { name: 'Rookie',    description: 'Big mistakes, short tunes', noteMs: 600, swapMin: 3, swapMax: 4, melodyLevel: 'easy',   sticker: 'detective_rookie', mode: 'wrong' },
+  medium: { name: 'Detective', description: 'Trickier, medium tunes',    noteMs: 500, swapMin: 2, swapMax: 3, melodyLevel: 'medium', sticker: 'detective_sleuth', mode: 'wrong' },
+  hard:   { name: 'Master',    description: 'Sneaky, long tunes',         noteMs: 420, swapMin: 1, swapMax: 2, melodyLevel: 'hard',   sticker: 'detective_master', mode: 'wrong' },
+  restquiz: { name: 'Rest Quiz', description: '30 s · spot the EXTRA note', noteMs: 480, swapMin: 1, swapMax: 3, melodyLevel: 'easy', sticker: 'detective_rookie', mode: 'extra', timeLimit: 30 },
 };
 
 const STARTING_LIVES = 3;
@@ -49,6 +50,11 @@ function pickTune(level) {
 // Build a round. `notes` may contain `null` rests — those preserve rhythm but
 // are NOT corruptable and don't get clickable slots. Slots are indexed only
 // across the non-rest entries.
+//
+// Two modes:
+//   'wrong' — one existing note is swapped to a wrong pitch. Kid finds the off note.
+//   'extra' — an EXTRA note is inserted between two existing notes.
+//             Kid finds the slot that shouldn't be there (Rest Quiz).
 function buildRound(levelKey) {
   const lvl = LEVELS[levelKey];
   const tune = pickTune(lvl.melodyLevel);
@@ -65,8 +71,53 @@ function buildRound(levelKey) {
   const noteIndices = tune.notes.map((n, i) => (n == null ? -1 : i)).filter(i => i >= 0);
   // Avoid the very first note as the wrong one so kids have a reference.
   const corruptable = noteIndices.slice(1);
-  const corruptIdx = corruptable[Math.floor(Math.random() * corruptable.length)];
 
+  if (lvl.mode === 'extra') {
+    // Pick a slot AFTER which to insert an extra note. Avoid inserting right
+    // after the very first note (kids need a reference). Insert at index i
+    // means the new note becomes the (i+1)-th element of `corrupted`.
+    const insertableIndices = noteIndices.slice(1); // index of "previous" note
+    const insertAfterIdx = insertableIndices[Math.floor(Math.random() * insertableIndices.length)];
+    // Choose an "extra" note within the scale that differs from its neighbors
+    const prevNote = tune.notes[insertAfterIdx];
+    const candidates = SCALE_ORDER.filter(n => n !== prevNote);
+    const extraNote = candidates[Math.floor(Math.random() * candidates.length)];
+
+    // Build corrupted: copy original notes, splice in extra after insertAfterIdx.
+    // Track BOTH slot maps:
+    //   - corruptedSlotMap aligns with the corrupted array
+    //   - slotMap is the original (unchanged from above)
+    const corrupted = [];
+    const corruptedSlotMap = [];
+    let newS = 0;
+    let newCorrectSlot = -1;
+    tune.notes.forEach((n, i) => {
+      corrupted.push(n);
+      if (n == null) { corruptedSlotMap.push(-1); }
+      else { corruptedSlotMap.push(newS); newS += 1; }
+      if (i === insertAfterIdx) {
+        corrupted.push(extraNote);
+        corruptedSlotMap.push(newS);
+        newCorrectSlot = newS;
+        newS += 1;
+      }
+    });
+
+    return {
+      tune,
+      corruptIdx: -1,                   // not used in extra mode
+      correctSlot: newCorrectSlot,
+      original: null,
+      wrong: extraNote,
+      corrupted,
+      slotMap,                          // original tune.notes layout
+      corruptedSlotMap,                 // corrupted layout
+      totalSlots: newS,
+      mode: 'extra',
+    };
+  }
+
+  const corruptIdx = corruptable[Math.floor(Math.random() * corruptable.length)];
   const original = tune.notes[corruptIdx];
   const wrong = pickWrongNote(original, lvl.swapMin, lvl.swapMax);
   const corrupted = tune.notes.map((n, i) => (i === corruptIdx ? wrong : n));
@@ -79,7 +130,9 @@ function buildRound(levelKey) {
     wrong,
     corrupted,
     slotMap,
+    corruptedSlotMap: slotMap,         // identical in wrong-note mode
     totalSlots: s,
+    mode: 'wrong',
   };
 }
 
@@ -101,22 +154,45 @@ export default function DetectivePage() {
   const [phase, setPhase] = useState('listen_original'); // listen_original | gap | listen_corrupted | guess | reveal
   const [guessSlot, setGuessSlot] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
+  // Rest Quiz only — countdown for the guess phase
+  const [secsLeft, setSecsLeft] = useState(0);
 
   const playbackTimerRef = useRef(null);
   const cancelPlaybackRef = useRef(false);
+  const tickRef = useRef(null);
 
   // ------- Cleanup playback on unmount -------
   useEffect(() => () => {
     cancelPlaybackRef.current = true;
     if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+    if (tickRef.current) clearInterval(tickRef.current);
   }, []);
+
+  // ------- Rest Quiz timeout — auto-reveal as a miss when the clock hits 0 -------
+  useEffect(() => {
+    if (round?.mode !== 'extra') return;
+    if (phase !== 'guess') return;
+    if (secsLeft !== 0) return;
+    // Force the round to fail
+    if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
+    setIsCorrect(false);
+    setLives((l) => l - 1);
+    setStreak(0);
+    setPhase('reveal');
+    try { playFeedbackSound('miss'); } catch { /* ignore */ }
+  }, [secsLeft, phase, round, playFeedbackSound]);
 
   // ------- Playback driver. `mode` = 'original' | 'corrupted' -------
   // Plays each note of the sequence at `noteMs` intervals, lighting up the
   // corresponding slot. `null` entries are rests (silent, slot-less).
+  // In extra-note mode the corrupted sequence has an extra entry; we use the
+  // `corruptedSlotMap` so the lit-slot index matches the rendered chip row.
   const playSequence = useCallback((roundData, mode, onDone) => {
     if (!roundData) return;
     const seq = mode === 'corrupted' ? roundData.corrupted : roundData.tune.notes;
+    const sMap = mode === 'corrupted'
+      ? (roundData.corruptedSlotMap || roundData.slotMap)
+      : roundData.slotMap;
     const lvl = LEVELS[difficulty];
     const noteMs = lvl.noteMs;
 
@@ -132,7 +208,7 @@ export default function DetectivePage() {
         return;
       }
       const note = seq[i];
-      const slotIdx = roundData.slotMap[i];
+      const slotIdx = sMap[i];
       if (note != null) {
         setPlaybackIdx(slotIdx);
         playBellNote(note);
@@ -146,7 +222,9 @@ export default function DetectivePage() {
     tick();
   }, [difficulty, playBellNote]);
 
-  // Two-pass playback: original → gap → corrupted → guess phase
+  // Two-pass playback: original → gap → corrupted → guess phase.
+  // In Rest Quiz (extra-note) mode we also start a 30s countdown when the
+  // guess phase opens. Running out of time costs a life and reveals.
   const playRound = useCallback((roundData) => {
     if (!roundData) return;
     setPhase('listen_original');
@@ -157,16 +235,32 @@ export default function DetectivePage() {
         setPhase('listen_corrupted');
         playSequence(roundData, 'corrupted', () => {
           setPhase('guess');
+          // Start Rest Quiz timer
+          if (LEVELS[difficulty].timeLimit) {
+            setSecsLeft(LEVELS[difficulty].timeLimit);
+            if (tickRef.current) clearInterval(tickRef.current);
+            tickRef.current = setInterval(() => {
+              setSecsLeft((s) => {
+                if (s <= 1) {
+                  clearInterval(tickRef.current);
+                  tickRef.current = null;
+                  return 0;
+                }
+                return s - 1;
+              });
+            }, 1000);
+          }
         });
       }, 700);
     });
-  }, [playSequence]);
+  }, [playSequence, difficulty]);
 
   // ------- Round / game lifecycle -------
   const startGame = useCallback((diffOverride) => {
     initAudioContext();
     cancelPlaybackRef.current = true;
     if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+    if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
     const diff = typeof diffOverride === 'string' ? diffOverride : difficulty;
     setDifficulty(diff);
     setLives(STARTING_LIVES);
@@ -176,6 +270,7 @@ export default function DetectivePage() {
     setRoundNum(1);
     setGuessSlot(null);
     setIsCorrect(null);
+    setSecsLeft(LEVELS[diff].timeLimit || 0);
     const r = buildRound(diff);
     setRound(r);
     setGameState('playing');
@@ -197,6 +292,8 @@ export default function DetectivePage() {
     setGuessSlot(slotNum);
     setIsCorrect(correct);
     setPhase('reveal');
+    // Stop the Rest Quiz timer if it's running
+    if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
 
     if (correct) {
       const bonus = 20 + Math.max(0, (round.totalSlots - 5)) * 2;
@@ -241,9 +338,10 @@ export default function DetectivePage() {
       // 🎧 Note Detective achievement — completing the run on each difficulty
       // proves a tier of pitch-reading skill.
       try {
-        if (difficulty === 'easy')   earnAchievement('ear', 'cadet');
-        if (difficulty === 'medium') earnAchievementUpTo('ear', 'pro');
-        if (difficulty === 'hard')   earnAchievementUpTo('ear', 'master');
+        if (difficulty === 'easy')     earnAchievement('ear', 'cadet');
+        if (difficulty === 'medium')   earnAchievementUpTo('ear', 'pro');
+        if (difficulty === 'hard')     earnAchievementUpTo('ear', 'master');
+        if (difficulty === 'restquiz') earnAchievement('ear', 'cadet');
       } catch { /* ignore */ }
       if (bestStreak >= ROUNDS_PER_RUN) {
         try { earnSticker('detective_perfect'); } catch { /* ignore */ }
@@ -256,6 +354,7 @@ export default function DetectivePage() {
     setRoundNum((n) => n + 1);
     setGuessSlot(null);
     setIsCorrect(null);
+    setSecsLeft(LEVELS[difficulty].timeLimit || 0);
     setTimeout(() => playRound(r), 350);
   }, [lives, roundNum, difficulty, bestRecords, score, bestStreak, playRound]);
 
@@ -465,14 +564,31 @@ export default function DetectivePage() {
           >
             {phase === 'listen_original' && '🎵 Listen to the ORIGINAL tune'}
             {phase === 'gap' && '🤔 Now find what changed...'}
-            {phase === 'listen_corrupted' && '🔍 Tap the wrong note the moment you hear it!'}
-            {phase === 'guess' && '👇 Tap the note that sounded wrong'}
+            {phase === 'listen_corrupted' && (round?.mode === 'extra' ? '🔍 Tap the EXTRA note when you hear it!' : '🔍 Tap the wrong note the moment you hear it!')}
+            {phase === 'guess' && (round?.mode === 'extra' ? '👇 Which note shouldn\'t be there?' : '👇 Tap the note that sounded wrong')}
             {phase === 'reveal' && (isCorrect ? '🔍 Case solved!' : '😅 Try the next case!')}
           </div>
 
-          {/* Beat slots — rests are skipped, slots are numbered only across real notes */}
+          {/* Rest Quiz timer pill — only in extra mode while guessing */}
+          {round?.mode === 'extra' && (phase === 'guess' || phase === 'listen_corrupted') && (
+            <div
+              data-testid="detective-timer"
+              className="inline-block ml-2 px-3 py-1 rounded-full text-xs md:text-sm font-black border-2 mt-1"
+              style={{
+                backgroundColor: secsLeft <= 5 ? '#FF3B30' : 'white',
+                color: secsLeft <= 5 ? 'white' : 'var(--jma-dark)',
+                borderColor: 'var(--jma-dark)',
+              }}
+            >
+              ⏱ {secsLeft}s
+            </div>
+          )}
+
+          {/* Beat slots — rests are skipped, slots are numbered only across real notes.
+              In extra-note mode the chips render from the CORRUPTED sequence so the
+              extra note shows up as a chip the kid can pick. */}
           <div className="flex flex-wrap items-center justify-center gap-2 md:gap-2.5 mt-3">
-            {round && tune?.notes.map((note, i) => {
+            {round && (round.mode === 'extra' ? round.corrupted : tune?.notes)?.map((note, i) => {
               if (note == null) {
                 // Rest — show a subtle dash, not a clickable slot
                 return (
@@ -492,7 +608,8 @@ export default function DetectivePage() {
                   </div>
                 );
               }
-              const slotNum = round.slotMap[i];
+              const sMap = round.mode === 'extra' ? round.corruptedSlotMap : round.slotMap;
+              const slotNum = sMap[i];
               const bell = BELL_BY_NOTE[note];
               const isLit = playbackIdx === slotNum;
               const isGuessed = guessSlot === slotNum;
@@ -619,9 +736,13 @@ export default function DetectivePage() {
                   boxShadow: '0 3px 0 0 var(--jma-dark)',
                 }}
               >
-                {isCorrect
-                  ? `🔍 Beat ${round.correctSlot + 1} was the wrong one — should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`
-                  : `Beat ${round.correctSlot + 1} was off! Should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`
+                {round.mode === 'extra'
+                  ? (isCorrect
+                      ? `🔍 Slot ${round.correctSlot + 1} (${BELL_BY_NOTE[round.wrong]?.solfege || round.wrong}) was the EXTRA note!`
+                      : `Slot ${round.correctSlot + 1} (${BELL_BY_NOTE[round.wrong]?.solfege || round.wrong}) was the extra one. Listen again next round!`)
+                  : (isCorrect
+                      ? `🔍 Beat ${round.correctSlot + 1} was the wrong one — should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`
+                      : `Beat ${round.correctSlot + 1} was off! Should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`)
                 }
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">

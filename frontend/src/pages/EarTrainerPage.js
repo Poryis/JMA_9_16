@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Play, Ear, RotateCcw, Volume2, Trophy } from 'lucide-react';
+import { Play, Ear, RotateCcw, Volume2, Trophy, Rabbit } from 'lucide-react';
 import { JellyBellsRow, BELLS } from '../components/JellyBells';
 import { GameHeader, FeedbackPopup } from '../components/GameUI';
 import { PageCharacters } from '../components/PageCharacters';
@@ -10,6 +10,7 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { getEarTrainerStats, saveEarTrainerStats } from '../hooks/useScores';
+import TempoListeningGame from '../components/TempoListeningGame';
 
 // Difficulty levels
 const LEVELS = {
@@ -23,7 +24,7 @@ function EarTrainerPage() {
   const navigate = useNavigate();
   const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
 
-  const [gameState, setGameState] = useState('menu'); // menu, playing, feedback
+  const [gameState, setGameState] = useState('menu'); // menu, playing, feedback, tempo
   const [difficulty, setDifficulty] = useState('beginner');
   const [targetNote, setTargetNote] = useState(null);
   const [guess, setGuess] = useState(null);
@@ -169,6 +170,25 @@ function EarTrainerPage() {
     }
   }, [targetNote, isCorrect, playBellNote]);
 
+  // TEMPO QUIZ — sub-mode
+  if (gameState === 'tempo') {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center p-4 relative"
+        data-testid="ear-trainer-tempo"
+        style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      >
+        <GameHeader title="Tempo Quiz" showHomeButton={true} />
+        <FullscreenButton />
+        <RoomCharacters room="ear-quest" />
+        <motion.h1 className="text-2xl md:text-3xl font-black mb-4 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          Tempo Quiz
+        </motion.h1>
+        <TempoListeningGame onExit={() => setGameState('menu')} />
+      </div>
+    );
+  }
+
   // MENU screen
   if (gameState === 'menu') {
     return (
@@ -231,6 +251,23 @@ function EarTrainerPage() {
               <p className="text-xs opacity-60">{lvl.description} ({lvl.noteCount} notes)</p>
             </motion.button>
           ))}
+          {/* Tempo Quiz — separate sub-mode below the pitch ladder */}
+          <motion.button
+            data-testid="ear-tempo-quiz-btn"
+            className="level-card p-3 text-left flex items-center justify-between"
+            onClick={() => setGameState('tempo')}
+            initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #4285F4 100%)', color: 'white' }}
+          >
+            <div>
+              <h3 className="text-lg font-bold font-display flex items-center gap-1.5">
+                <Rabbit className="w-4 h-4" /> Tempo Quiz
+              </h3>
+              <p className="text-xs opacity-90">Faster or slower? 10 rounds</p>
+            </div>
+            <div className="text-xl">↔</div>
+          </motion.button>
         </div>
       </div>
     );

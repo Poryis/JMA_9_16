@@ -58,6 +58,20 @@ const PLAY_TILES = [
     charWidthPct: 32,
     sfx: 'assets/audio/sfx-detective.mp3',
   },
+  {
+    id: 'sight-reading',
+    title: 'Sight-Reading Sprint',
+    tagline: 'Read the staff, play it fast!',
+    path: '/sight-reading',
+    bg: 'assets/backgrounds/clubhouse.png',
+    color: '#34A853',
+    accent: '#1F7A36',
+    sign: 'GAME',
+    bubble: 'Can you read it?',
+    character: 'assets/characters/charlie-grad.png',
+    charWidthPct: 28,
+    sfx: 'assets/audio/sfx-bell-pair.mp3',
+  },
 ];
 
 export default function PlayMenuPage() {
