@@ -150,7 +150,7 @@ export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1
                   style={{
                     left: '50%',
                     top: `${y}%`,
-                    width: 'clamp(40px, 7vw, 56px)',
+                    width: 'clamp(48px, 8.4vw, 66px)',
                     height: '3px',
                     backgroundColor: 'rgba(10,37,64,0.85)',
                     transform: 'translate(-50%, -50%)',
