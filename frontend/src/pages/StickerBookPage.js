@@ -214,7 +214,7 @@ export default function StickerBookPage() {
                 title="Toggle teacher view"
               >
                 <GraduationCap className="w-3.5 h-3.5" />
-                {teacherView ? 'Teacher View' : 'Teacher View'}
+                {teacherView ? 'Kid View' : 'Teacher View'}
               </button>
             </div>
           </div>

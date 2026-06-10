@@ -30,12 +30,15 @@ function markUnlocked() {
 }
 
 // Performs the iOS audio-unlock dance: create a context, resume it, play a
-// silent buffer to fully wake the audio subsystem.
+// silent buffer to fully wake the audio subsystem. We close the context
+// afterward because each tab is capped (~6 in Chrome) at simultaneous
+// AudioContext instances.
 async function performUnlock() {
+  let ctx = null;
   try {
     const Ctor = window.AudioContext || window.webkitAudioContext;
     if (!Ctor) return false;
-    const ctx = new Ctor();
+    ctx = new Ctor();
     if (ctx.state === 'suspended') {
       await ctx.resume();
     }
@@ -49,6 +52,11 @@ async function performUnlock() {
     return true;
   } catch (_) {
     return false;
+  } finally {
+    // Schedule a close shortly after the silent buffer has played out.
+    if (ctx) {
+      setTimeout(() => { try { ctx.close(); } catch (_) { /* ignore */ } }, 200);
+    }
   }
 }
 
