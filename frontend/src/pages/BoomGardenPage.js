@@ -615,6 +615,53 @@ export default function BoomGardenPage() {
     startCurrentRound();
   }, [mode, level]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ----- TAP-ANYWHERE / KEYBOARD SUPPORT -----
+  // Boom Garden's Stew button is small relative to the screen and the kid's
+  // attention bounces between the strip, the count-in row, and Stew. Easy to
+  // misclick. So during input/countin in Copy Cat or Tap Trail, we treat
+  // pointerdown ANYWHERE on the page as a Stew tap (excluding actual buttons
+  // — back nav, level picker, summary buttons — and Stew himself, who has
+  // his own handler). The Spacebar also triggers a tap. Both feel huge on
+  // touch screens too: the kid can just slap the field.
+  useEffect(() => {
+    if (mode === 'match') return undefined; // Twin Beats picks strips, not Stew
+    if (phase !== 'input' && phase !== 'countin') return undefined;
+
+    const triggerStewTap = () => {
+      // Animate Stew + play snare via the same imperative handle the demo uses.
+      snareRef.current?.flash(120);
+      handleSnareTap();
+    };
+
+    const handleAnywhereDown = (e) => {
+      const t = e.target;
+      // Stew himself fires his own onPointerDown — don't double-fire here.
+      if (t.closest && t.closest('[data-testid="boom-stew-drummer"]')) return;
+      // Real interactive controls (back to modes, level picker, summary's
+      // "play another", replay, mode tabs, etc.) should keep working as
+      // they do. Treat anything else as a Stew tap.
+      if (t.closest && t.closest('button, a, input, select, textarea, [role="button"]')) return;
+      triggerStewTap();
+    };
+
+    const handleKeyDown = (e) => {
+      // Spacebar / Enter as alt input. Don't preempt typing in inputs.
+      if (e.target && e.target.tagName &&
+          ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        triggerStewTap();
+      }
+    };
+
+    document.addEventListener('pointerdown', handleAnywhereDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handleAnywhereDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mode, phase, handleSnareTap]);
+
   // ---- RENDER ----
 
   const modeConfig = useMemo(() => (mode ? MODE_MAP[mode] : null), [mode]);
@@ -834,10 +881,19 @@ export default function BoomGardenPage() {
             "1 → 2 → 3 → 4" on each click track beat. Lives BELOW the
             rhythm strip so it never covers what the kid has to tap. The
             cool-blue → green → orange → red color sweep is the visual
-            "heat building" toward beat 1 of their playing window. */}
-        {showCountIn && (
-          <CountInOverlay running={true} startAtMs={countinStartMs} />
-        )}
+            "heat building" toward beat 1 of their playing window.
+            Wrapped in a min-height container so the row's space is reserved
+            even when not visible — otherwise Stew would jump up into the
+            empty space the instant input begins, and the kid's intended
+            Stew tap would miss. */}
+        <div
+          className="flex items-center justify-center"
+          style={{ minHeight: 'clamp(80px, 14vw, 120px)' }}
+        >
+          {showCountIn && (
+            <CountInOverlay running={true} startAtMs={countinStartMs} />
+          )}
+        </div>
 
         {/* Stew the llama — performs every drum hit (demo + kid's input).
             On Twin Beats he animates during the demo (and stays disabled in
