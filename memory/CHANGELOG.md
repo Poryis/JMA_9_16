@@ -1,25 +1,20 @@
 # Changelog
 
-## Feb 20, 2026 — Boom Garden (rhythm-reading academy with 3 modes)
-Filled the curriculum gap user flagged: "we just don't have any rhythm reading games — performing or recognizing rhythm patterns."
+## Feb 20, 2026 — Boom Garden v2 — JMA art language + real snare + click track everywhere
+User feedback on the v1: "These games are SO lackluster... the ct and twins and trail crap is awful, not in line with our art at all... lets not do that... Instead of tap let's use my snare or something... When it's the student's turn to perform, have the beat in time... Also on twin beats, if it's rest-ta-ta-ta or ta-ta-ta-rest there is no way to tell the difference."
 
-### What got built
-- New page `BoomGardenPage.js` at route `/#/boom-garden` with **three modes**:
-  - **Copy Cat** — Doc claps a rhythm; kid taps the big drum to echo it back. Position-based timing scoring (±300 ms tolerance — generous for 5-year-olds, still requires real timing).
-  - **Twin Beats** — Three patterns displayed; one is played via audio; kid taps the matching strip. Replay button if they need to hear it again.
-  - **Tap Trail** — Pattern shown with NO demo; kid reads the notation and taps in time with a hi-hat click track. Reuses Copy Cat's tap-scoring logic.
-- New data file `data/rhythms.js`: NOTE_DEFS uses user's exact Lesson-4 syllables — Whole = "Toe-ee--O-ee", Half = "Toe-ee", Quarter = "Ta", Eighth = "Ti". 6 patterns × 3 difficulty tiers (Cadet/Pro/Master).
-- New component `RhythmStrip.js`: chunky colored blocks sized proportional to beat length. Seahorse PNG for rests (consistent with Song Studio). Click-handlers optional so the same component renders both static notation and tappable Twin-Beats options.
-- Wired into Learn menu as a new tile with Charlie-RunDMC mascot.
-- Audio: every demo note and every kid tap fires `playDrumSound('snare')` — kid hears identical percussion in demo and echo.
-- Achievement integration: clearing rounds earns the existing `Rhythm Reader` ladder (Cadet/Pro/Master) — no new sticker IDs invented.
-
-### Naming choices (per user "less schoolish" direction)
-- Room: **Boom Garden** (not "Academy" / "Lab" / "Studio")
-- Modes: **Copy Cat**, **Twin Beats**, **Tap Trail**
+### What changed
+- **Mode-picker artwork**: dropped the 🐱 👯 🛤️ emojis entirely. Each mode card now matches the LearnMenuPage tile recipe — background scene, chunky border, drop shadow, sign nameplate, character peeking from the bottom-right.
+  - **Copy Cat** — recording-studio bg + Dr. Jellybone (the listening / demoing octopus)
+  - **Twin Beats** — clubhouse bg + Llama Lou & Stew (the literal twins)
+  - **Tap Trail** — graffiti-wall bg + Charlie RunDMC (the rhythm performer)
+- **Big snare drum** replaces the generic red TAP button. New `BigSnare` component uses `assets/drums/Snare 1.png` and `Snare 2.png` with direct-DOM frame swap on press. Exposes an imperative `flash()` ref so the demo can pulse the snare in time with each scheduled snare-hit. Floating "HIT IT!" / "Listen..." / "1 · 2 · 3 · 4" hint badge under the drum.
+- **Click track during every input phase** — Copy Cat and Tap Trail now run a steady hi-hat tick on every beat while the kid is performing, so they have an audible pulse to lock onto. Tap Trail also plays a 1-measure (4-beat) count-in before the pattern starts.
+- **Twin Beats audio-ambiguity fixed** — the hi-hat click track now runs UNDERNEATH the demo snare hits too, so leading-rest vs trailing-rest mirror patterns are audibly distinguishable: kids hear all 4 clicks and can tell which beat was "covered" by a snare vs which was silent. No need to filter pattern pairs.
+- Hit window tightened slightly from ±300 ms → ±275 ms now that the kid has a click reference to follow.
 
 ### Verified
-- Build clean. All 3 modes load, demos play, taps register, 3 strips render for Twin Beats with proportional widths, syllables ("Ta" / "Ti" / "Toe-ee") display correctly on the right note types, rest seahorses contained to 70 % of block size (not stretched).
+- Build clean. Mode picker shows three JMA-style cards with character art and matching backgrounds. Copy Cat shows full big-snare with active red state. Twin Beats shows three distinct strips with proportional block widths (half = 2× wide, eighth = ½ wide). Tap Trail count-in banner + snare are visible.
 
 
 ## Feb 19, 2026 — Mobile playability boost in Who's Got the Rhythm

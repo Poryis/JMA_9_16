@@ -1,41 +1,78 @@
-// Boom Garden — a rhythm-reading playground with three modes:
-//   - Copy Cat   (echo): Doc claps a rhythm; kid taps it back.
+// Boom Garden — a rhythm-reading room with three modes:
+//   - Copy Cat   (echo): Doc claps a rhythm; kid hits the snare to copy it.
 //   - Twin Beats (match): Three patterns shown; kid picks the one they hear.
-//   - Tap Trail  (read): A pattern is shown; kid reads it & taps in time.
+//   - Tap Trail  (read): Pattern is shown; kid reads + plays it in time.
 //
-// All modes use the same NOTE_DEFS + PATTERNS data, and the same Kodály
-// counting syllables taught in Lesson 4 (Ta / Ti / Toe-ee / Toe-ee--O-ee).
+// All three modes share a steady hi-hat click track so the kid always has a
+// beat to lock into — and so audio-identical-without-metronome patterns like
+// [rest, ta, ta, ta] vs [ta, ta, ta, rest] become audibly distinguishable
+// (the click on the rest beat is no longer masked by a snare).
 //
-// Audio: a snare hit on every tap and every demo note — kids hear identical
-// percussion when watching the demo and when echoing it back.
+// Notation syllables match Lesson 4 exactly:
+//   Whole = Toe-ee--O-ee · Half = Toe-ee · Quarter = Ta · Eighth = Ti
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Volume2, RotateCcw, Sparkles } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import RhythmStrip from '../components/RhythmStrip';
+import BigSnare from '../components/BigSnare';
 import useAudio from '../hooks/useAudio';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import {
-  PATTERNS, DIFFICULTIES, NOTE_DEFS, BEAT_MS, patternBeats, noteStartTimes,
+  PATTERNS, DIFFICULTIES, BEAT_MS, patternBeats, noteStartTimes,
 } from '../data/rhythms';
 
+// Per-mode card config — each tile mirrors the LearnMenuPage tile aesthetic
+// (chunky border + sign nameplate + character peeking + tagline).
 const MODES = [
-  { id: 'copy',  label: 'Copy Cat',    blurb: 'Doc claps — you echo it back',     emoji: '🐱',  color: '#4285F4' },
-  { id: 'match', label: 'Twin Beats',  blurb: 'Hear it. Pick the matching beat.', emoji: '👯',  color: '#34A853' },
-  { id: 'trail', label: 'Tap Trail',   blurb: 'Read the rhythm. Tap it in time.', emoji: '🛤️', color: '#FF9500' },
+  {
+    id: 'copy',
+    label: 'Copy Cat',
+    blurb: 'Doc claps. You copy it back on the snare.',
+    sign: 'COPY CAT',
+    color: '#4285F4',
+    accent: '#1A4FAB',
+    bg: 'assets/backgrounds/recording-studio.jpg',
+    character: 'assets/characters/dr-jellybone.png',
+    charWidthPct: 36,
+  },
+  {
+    id: 'match',
+    label: 'Twin Beats',
+    blurb: 'Hear the rhythm. Pick the matching beat.',
+    sign: 'TWIN BEATS',
+    color: '#34A853',
+    accent: '#1F7A38',
+    bg: 'assets/backgrounds/clubhouse.png',
+    character: 'assets/characters/llama-lou-stew.png',
+    charWidthPct: 40,
+  },
+  {
+    id: 'trail',
+    label: 'Tap Trail',
+    blurb: 'Read the rhythm. Play it in time.',
+    sign: 'TAP TRAIL',
+    color: '#FF9500',
+    accent: '#C26200',
+    bg: 'assets/backgrounds/graffiti-wall.jpg',
+    character: 'assets/characters/charlie-rundmc.png',
+    charWidthPct: 32,
+  },
 ];
 
-// Pull a random pattern from the chosen difficulty bucket.
+const MODE_MAP = Object.fromEntries(MODES.map((m) => [m.id, m]));
+
 function randomPattern(level) {
   const pool = PATTERNS[level] || PATTERNS.cadet;
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-// Pick 3 distinct patterns at the same difficulty for Twin Beats.
+// Pick 3 distinct patterns at the same difficulty for Twin Beats. With the
+// shared click track running, even leading-vs-trailing-rest mirror patterns
+// are audibly distinguishable, so we don't need to filter mirror pairs.
 function threeDistinctPatterns(level) {
   const pool = [...(PATTERNS[level] || PATTERNS.cadet)];
   for (let i = pool.length - 1; i > 0; i--) {
@@ -45,136 +82,172 @@ function threeDistinctPatterns(level) {
   return pool.slice(0, 3);
 }
 
-// Big round tap button — the kid's single drum input.
-function DrumTapButton({ onTap, disabled, label = 'TAP' }) {
+// JMA-style mode-picker tile, modelled on SubMenuPage but triggers local
+// state instead of navigating.
+function ModeTile({ mode, index, onPick }) {
   return (
     <motion.button
-      data-testid="boom-tap-btn"
       type="button"
-      onPointerDown={(e) => {
-        if (disabled) return;
-        e.preventDefault();
-        try { e.target.setPointerCapture(e.pointerId); } catch (_) { /* noop */ }
-        onTap();
-      }}
-      disabled={disabled}
-      className="rounded-full border-4 select-none flex items-center justify-center font-black font-display"
+      data-testid={`boom-mode-${mode.id}`}
+      onClick={() => onPick(mode.id)}
+      className="relative w-full text-left rounded-3xl border-4 overflow-hidden cursor-pointer"
       style={{
-        width: 'clamp(110px, 28vw, 180px)',
-        height: 'clamp(110px, 28vw, 180px)',
-        backgroundColor: disabled ? '#9CA3AF' : '#FF3B30',
         borderColor: 'var(--jma-dark)',
-        color: 'white',
         boxShadow: '0 8px 0 0 var(--jma-dark)',
-        textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
-        fontSize: 'clamp(20px, 5vw, 32px)',
-        touchAction: 'none',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.55 : 1,
+        background: mode.color,
+        minHeight: 'clamp(220px, 36vw, 280px)',
       }}
-      whileTap={!disabled ? { y: 6, boxShadow: '0 2px 0 0 var(--jma-dark)' } : undefined}
+      initial={{ y: 40, opacity: 0, rotate: index % 2 === 0 ? -1.5 : 1.5 }}
+      animate={{ y: 0, opacity: 1, rotate: 0 }}
+      transition={{ delay: 0.12 + index * 0.08, type: 'spring', stiffness: 220 }}
+      whileHover={{ y: -6, boxShadow: '0 14px 0 0 var(--jma-dark)', scale: 1.01 }}
+      whileTap={{ y: 3, boxShadow: '0 4px 0 0 var(--jma-dark)', scale: 0.985 }}
     >
-      {label}
+      {/* Background scene */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${mode.bg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+      {/* Tint for legibility */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(135deg, ${mode.color}77 0%, ${mode.accent}33 55%, transparent 100%)`,
+        }}
+      />
+      {/* Sign nameplate */}
+      <div className="absolute top-3 left-3 z-10">
+        <div
+          className="px-3 py-1 rounded-full border-3 inline-block"
+          style={{
+            backgroundColor: 'white',
+            borderColor: 'var(--jma-dark)',
+            boxShadow: '0 3px 0 0 var(--jma-dark)',
+          }}
+        >
+          <span
+            className="text-[10px] md:text-xs font-black uppercase tracking-widest"
+            style={{ color: mode.accent }}
+          >
+            {mode.sign}
+          </span>
+        </div>
+      </div>
+      {/* Title + tagline */}
+      <div className="absolute left-4 md:left-5 bottom-3 md:bottom-4 right-[42%] z-10">
+        <h2
+          className="text-xl md:text-2xl font-black font-display leading-tight mb-1"
+          style={{
+            color: 'white',
+            textShadow: '2px 2px 0 rgba(10,37,64,0.85), 4px 4px 0 rgba(10,37,64,0.35)',
+          }}
+        >
+          {mode.label}
+        </h2>
+        <p
+          className="text-xs md:text-sm font-bold leading-snug"
+          style={{ color: 'white', textShadow: '1px 1px 0 rgba(10,37,64,0.7)' }}
+        >
+          {mode.blurb}
+        </p>
+      </div>
+      {/* Character */}
+      <motion.img
+        src={mode.character}
+        alt=""
+        draggable={false}
+        loading="lazy"
+        className="absolute right-2 bottom-0 pointer-events-none select-none z-10"
+        style={{
+          width: `${mode.charWidthPct}%`,
+          height: '92%',
+          objectFit: 'contain',
+          objectPosition: 'bottom right',
+          filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.45))',
+        }}
+        animate={{ y: [0, -6, 0], rotate: 0 }}
+        transition={{ y: { repeat: Infinity, duration: 2.4, ease: 'easeInOut' } }}
+      />
     </motion.button>
   );
 }
 
 export default function BoomGardenPage() {
-  const navigate = useNavigate();
   const { playDrumSound, initAudioContext } = useAudio();
 
-  const [mode, setMode] = useState(null);              // null | 'copy' | 'match' | 'trail'
+  const [mode, setMode] = useState(null);
   const [level, setLevel] = useState('cadet');
-  const [pattern, setPattern] = useState(null);        // current pattern (Copy Cat / Tap Trail)
-  const [matchOptions, setMatchOptions] = useState([]); // 3 patterns for Twin Beats
-  const [matchAnswer, setMatchAnswer] = useState(-1);   // index of correct answer
-  const [phase, setPhase] = useState('idle');           // idle | demo | input | reveal | done
+  const [pattern, setPattern] = useState(null);
+  const [matchOptions, setMatchOptions] = useState([]);
+  const [matchAnswer, setMatchAnswer] = useState(-1);
+  const [phase, setPhase] = useState('idle');       // idle | demo | input | reveal
   const [highlightIndex, setHighlightIndex] = useState(-1);
-  const [hitStates, setHitStates] = useState([]);       // per-note 'perfect' | 'miss' | undefined
-  const [tapCount, setTapCount] = useState(0);          // for Copy Cat input
+  const [hitStates, setHitStates] = useState([]);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
-  // Refs for scheduled timeouts so we can cancel cleanly.
+  // Refs.
   const timeoutsRef = useRef([]);
-  const inputStartRef = useRef(0); // wall-clock ms when "your turn" began
+  const inputStartRef = useRef(0);
   const expectedStartsRef = useRef([]);
   const patternRef = useRef(null);
   const tapResultsRef = useRef([]);
+  const snareRef = useRef(null);
 
   const clearTimeouts = useCallback(() => {
     timeoutsRef.current.forEach((t) => clearTimeout(t));
     timeoutsRef.current = [];
   }, []);
 
-  // Cleanup on unmount.
   useEffect(() => clearTimeouts, [clearTimeouts]);
 
-  const tapSound = useCallback(() => {
+  // Schedule a steady hi-hat click on every beat for `beatCount` beats,
+  // starting at `startDelayMs` from now. Returns the total span in ms.
+  const scheduleMetronome = useCallback((beatCount, startDelayMs = 0) => {
     initAudioContext();
-    playDrumSound('snare');
+    for (let b = 0; b < beatCount; b++) {
+      const t = setTimeout(() => playDrumSound('hihat'), startDelayMs + b * BEAT_MS);
+      timeoutsRef.current.push(t);
+    }
+    return beatCount * BEAT_MS;
   }, [initAudioContext, playDrumSound]);
 
-  // Schedule a demo playback of the given pattern. For each non-rest note we
-  // play a snare and highlight its block; rests just advance the playhead.
-  // Returns total ms of the playback.
-  const playPatternDemo = useCallback((pat) => {
-    initAudioContext();
-    clearTimeouts();
+  // Schedule a snare hit (with visual flash) on each non-rest note of the
+  // pattern, optionally highlighting the corresponding strip block.
+  const schedulePatternAudio = useCallback((pat, opts = {}) => {
+    const { withHighlight = true, startDelayMs = 0 } = opts;
     const starts = noteStartTimes(pat, BEAT_MS);
     pat.forEach((key, i) => {
       const t = setTimeout(() => {
-        setHighlightIndex(i);
-        if (key !== 'rest') playDrumSound('snare');
-      }, starts[i]);
+        if (withHighlight) setHighlightIndex(i);
+        if (key !== 'rest') {
+          playDrumSound('snare');
+          // Flash the big snare drum if it's visible (Copy Cat / Tap Trail).
+          snareRef.current?.flash(120);
+        }
+      }, startDelayMs + starts[i]);
       timeoutsRef.current.push(t);
     });
-    const totalMs = patternBeats(pat) * BEAT_MS;
-    const endT = setTimeout(() => setHighlightIndex(-1), totalMs);
-    timeoutsRef.current.push(endT);
-    return totalMs;
-  }, [initAudioContext, clearTimeouts, playDrumSound]);
+  }, [playDrumSound]);
 
-  // ---- COPY CAT MODE ----
-  const startCopy = useCallback(() => {
-    const pat = randomPattern(level);
-    setPattern(pat);
-    patternRef.current = pat;
-    setHitStates([]);
-    setHighlightIndex(-1);
-    setTapCount(0);
-    tapResultsRef.current = [];
-    setPhase('demo');
-    const demoMs = playPatternDemo(pat);
-    // After demo + a 600ms pause, hand over to the kid.
-    const handoff = setTimeout(() => {
-      setPhase('input');
-      inputStartRef.current = Date.now();
-      expectedStartsRef.current = noteStartTimes(pat, BEAT_MS);
-      // Auto-finish if kid doesn't finish in time (3x patternMs).
-      const failsafe = setTimeout(() => {
-        finishCopyRound();
-      }, patternBeats(pat) * BEAT_MS * 3 + 2000);
-      timeoutsRef.current.push(failsafe);
-    }, demoMs + 600);
-    timeoutsRef.current.push(handoff);
-  }, [level, playPatternDemo]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Finalize a Copy Cat round — assemble hit states from tapResultsRef and
-  // award score / achievements.
+  // ---- COPY CAT ----
   const finishCopyRound = useCallback(() => {
     clearTimeouts();
     const pat = patternRef.current || [];
     const results = tapResultsRef.current;
-    // Non-rest notes are the ones we expect a tap on.
-    const expectedTapIndices = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
+    const expectedTapIndices = pat
+      .map((k, i) => (k === 'rest' ? null : i))
+      .filter((x) => x !== null);
     const hits = pat.map((k) => (k === 'rest' ? undefined : 'miss'));
     let correct = 0;
     expectedTapIndices.forEach((idx, ord) => {
-      const r = results[ord];
-      if (r && r === 'perfect') {
+      if (results[ord] === 'perfect') {
         hits[idx] = 'perfect';
         correct += 1;
       }
@@ -201,13 +274,44 @@ export default function BoomGardenPage() {
     const next = setTimeout(() => {
       setFeedback(null);
       startCopy();
-    }, 1800);
+    }, 1900);
     timeoutsRef.current.push(next);
-  }, [clearTimeouts, level, startCopy]);
+  }, [clearTimeouts, level]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleCopyTap = useCallback(() => {
+  const startCopy = useCallback(() => {
+    const pat = randomPattern(level);
+    setPattern(pat);
+    patternRef.current = pat;
+    setHitStates([]);
+    setHighlightIndex(-1);
+    tapResultsRef.current = [];
+    setPhase('demo');
+    initAudioContext();
+    clearTimeouts();
+    const totalBeats = patternBeats(pat);
+    // Demo: click track + snare hits + visual playhead.
+    scheduleMetronome(totalBeats, 0);
+    schedulePatternAudio(pat, { withHighlight: true, startDelayMs: 0 });
+    // Hand off to kid AFTER demo + 1 measure of count-in (4 beats) so they
+    // hear the click steady before their input window opens.
+    const demoMs = totalBeats * BEAT_MS;
+    const handoff = setTimeout(() => {
+      setPhase('input');
+      setHighlightIndex(-1);
+      inputStartRef.current = Date.now();
+      expectedStartsRef.current = noteStartTimes(pat, BEAT_MS);
+      // Click keeps running during the kid's turn — they tap to the beat.
+      scheduleMetronome(totalBeats, 0);
+      // Failsafe: auto-finish if they don't hit everything in time.
+      const failsafe = setTimeout(finishCopyRound, totalBeats * BEAT_MS + 1200);
+      timeoutsRef.current.push(failsafe);
+    }, demoMs + 700);
+    timeoutsRef.current.push(handoff);
+  }, [level, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio, finishCopyRound]);
+
+  const handleSnareTap = useCallback(() => {
     if (phase !== 'input') return;
-    tapSound();
+    playDrumSound('snare');
     const tapTime = Date.now() - inputStartRef.current;
     const pat = patternRef.current || [];
     const expectedStarts = expectedStartsRef.current;
@@ -218,20 +322,18 @@ export default function BoomGardenPage() {
     const target = nonRestExpected[ord];
     if (!target) return;
     const diff = Math.abs(tapTime - target.time);
-    // Generous ±300 ms window for 5-year-olds. BEAT_MS is 750 ms so this is
-    // ~40 % of a beat — forgiving but still requires sense of timing.
-    const isPerfect = diff <= 300;
+    // ±275 ms ~ 37 % of a beat — forgiving for 5-year-olds, still requires
+    // sense of timing with the click track running.
+    const isPerfect = diff <= 275;
     tapResultsRef.current.push(isPerfect ? 'perfect' : 'miss');
-    setTapCount((c) => c + 1);
     setHighlightIndex(target.i);
     if (tapResultsRef.current.length >= nonRestExpected.length) {
-      // Small delay so the last highlight registers visually.
-      const fin = setTimeout(finishCopyRound, 250);
+      const fin = setTimeout(finishCopyRound, 280);
       timeoutsRef.current.push(fin);
     }
-  }, [phase, tapSound, finishCopyRound]);
+  }, [phase, playDrumSound, finishCopyRound]);
 
-  // ---- TWIN BEATS MODE ----
+  // ---- TWIN BEATS ----
   const startMatch = useCallback(() => {
     const opts = threeDistinctPatterns(level);
     const answerIdx = Math.floor(Math.random() * opts.length);
@@ -240,26 +342,20 @@ export default function BoomGardenPage() {
     setHitStates([]);
     setHighlightIndex(-1);
     setPhase('demo');
-    // Play the correct pattern's audio WITHOUT visual highlight on any strip
-    // (so the kid has to use their ears).
     initAudioContext();
     clearTimeouts();
     const pat = opts[answerIdx];
-    const starts = noteStartTimes(pat, BEAT_MS);
-    pat.forEach((key, i) => {
-      const t = setTimeout(() => {
-        if (key !== 'rest') playDrumSound('snare');
-      }, starts[i]);
-      timeoutsRef.current.push(t);
-    });
-    const totalMs = patternBeats(pat) * BEAT_MS;
-    const handoff = setTimeout(() => setPhase('input'), totalMs + 400);
+    const totalBeats = patternBeats(pat);
+    // Click track + snare hits (no visual highlight — kid uses ears).
+    scheduleMetronome(totalBeats, 0);
+    schedulePatternAudio(pat, { withHighlight: false, startDelayMs: 0 });
+    const handoff = setTimeout(() => setPhase('input'), totalBeats * BEAT_MS + 500);
     timeoutsRef.current.push(handoff);
-  }, [level, initAudioContext, clearTimeouts, playDrumSound]);
+  }, [level, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio]);
 
   const handleMatchPick = useCallback((idx) => {
     if (phase !== 'input') return;
-    tapSound();
+    playDrumSound('snare');
     const correct = idx === matchAnswer;
     setPhase('reveal');
     if (correct) {
@@ -279,29 +375,21 @@ export default function BoomGardenPage() {
     const next = setTimeout(() => {
       setFeedback(null);
       startMatch();
-    }, 1900);
+    }, 2000);
     timeoutsRef.current.push(next);
-  }, [phase, tapSound, matchAnswer, level, startMatch]);
+  }, [phase, playDrumSound, matchAnswer, level, startMatch]);
 
-  // Replay the demo audio for Twin Beats (kid wants to hear it again).
   const replayMatch = useCallback(() => {
     if (phase !== 'input') return;
     initAudioContext();
     const pat = matchOptions[matchAnswer] || [];
     clearTimeouts();
-    const starts = noteStartTimes(pat, BEAT_MS);
-    pat.forEach((key, i) => {
-      const t = setTimeout(() => {
-        if (key !== 'rest') playDrumSound('snare');
-      }, starts[i]);
-      timeoutsRef.current.push(t);
-    });
-  }, [phase, matchOptions, matchAnswer, initAudioContext, clearTimeouts, playDrumSound]);
+    const totalBeats = patternBeats(pat);
+    scheduleMetronome(totalBeats, 0);
+    schedulePatternAudio(pat, { withHighlight: false, startDelayMs: 0 });
+  }, [phase, matchOptions, matchAnswer, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio]);
 
-  // ---- TAP TRAIL MODE ----
-  // Same scoring shape as Copy Cat, but NO demo — the kid has to read the
-  // pattern and tap on the metronome beats. A click-track plays so they have
-  // a steady pulse to follow.
+  // ---- TAP TRAIL ----
   const startTrail = useCallback(() => {
     const pat = randomPattern(level);
     setPattern(pat);
@@ -309,34 +397,35 @@ export default function BoomGardenPage() {
     setHitStates([]);
     setHighlightIndex(-1);
     tapResultsRef.current = [];
-    setPhase('input');
-    inputStartRef.current = Date.now();
-    expectedStartsRef.current = noteStartTimes(pat, BEAT_MS);
     initAudioContext();
     clearTimeouts();
-    // Soft "tick" on every beat so the kid stays in tempo (low-volume hi-hat).
+    // 1-measure count-in (4 hi-hat clicks) so the kid locks into the tempo
+    // before the strip's playhead starts.
+    const COUNT_IN_BEATS = 4;
+    scheduleMetronome(COUNT_IN_BEATS, 0);
+    const startIn = COUNT_IN_BEATS * BEAT_MS;
     const totalBeats = patternBeats(pat);
-    for (let b = 0; b < totalBeats; b++) {
-      const t = setTimeout(() => playDrumSound('hihat'), b * BEAT_MS);
-      timeoutsRef.current.push(t);
-    }
-    // Visual playhead — light up each block as we pass through it.
-    pat.forEach((key, i) => {
-      const t = setTimeout(() => setHighlightIndex(i), expectedStartsRef.current[i]);
-      timeoutsRef.current.push(t);
-    });
-    // After the pattern + a 700ms grace, finish.
-    const fin = setTimeout(() => {
-      setHighlightIndex(-1);
-      finishCopyRound(); // reuse the same scoring logic
-    }, totalBeats * BEAT_MS + 700);
-    timeoutsRef.current.push(fin);
-  }, [level, initAudioContext, clearTimeouts, playDrumSound, finishCopyRound]); // eslint-disable-line react-hooks/exhaustive-deps
+    const trailStart = setTimeout(() => {
+      setPhase('input');
+      inputStartRef.current = Date.now();
+      expectedStartsRef.current = noteStartTimes(pat, BEAT_MS);
+      // Click continues through the pattern + visual playhead.
+      scheduleMetronome(totalBeats, 0);
+      pat.forEach((key, i) => {
+        const t = setTimeout(() => setHighlightIndex(i), expectedStartsRef.current[i]);
+        timeoutsRef.current.push(t);
+      });
+      const fin = setTimeout(() => {
+        setHighlightIndex(-1);
+        finishCopyRound();
+      }, totalBeats * BEAT_MS + 600);
+      timeoutsRef.current.push(fin);
+    }, startIn);
+    timeoutsRef.current.push(trailStart);
+    setPhase('countin');
+  }, [level, initAudioContext, clearTimeouts, scheduleMetronome, finishCopyRound]);
 
-  // Tap handler for Tap Trail (same scoring as Copy Cat).
-  const handleTrailTap = handleCopyTap;
-
-  // Reset state when switching mode or level.
+  // ---- LIFECYCLE ----
   const enterMode = useCallback((m) => {
     clearTimeouts();
     setMode(m);
@@ -366,58 +455,42 @@ export default function BoomGardenPage() {
     if (mode === 'trail') startTrail();
   }, [mode, startCopy, startMatch, startTrail, clearTimeouts]);
 
-  // Auto-start the first round when a mode is selected.
   useEffect(() => {
     if (!mode) return;
     startCurrentRound();
   }, [mode, level]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // -------------- RENDER --------------
+  // ---- RENDER ----
 
-  const modeConfig = useMemo(() => MODES.find((m) => m.id === mode), [mode]);
+  const modeConfig = useMemo(() => (mode ? MODE_MAP[mode] : null), [mode]);
 
-  // Mode picker screen.
+  // Mode picker.
   if (!mode) {
     return (
       <div
         data-testid="boom-garden-page"
         className="min-h-screen flex flex-col relative"
         style={{
-          background: 'radial-gradient(circle at 20% 20%, #FFE0F0 0%, transparent 55%), radial-gradient(circle at 80% 70%, #C9F0E0 0%, transparent 60%), linear-gradient(180deg, #FFF7E5 0%, #FFE5C9 100%)',
+          background:
+            'radial-gradient(circle at 20% 20%, #FFE0B2 0%, transparent 55%), ' +
+            'radial-gradient(circle at 80% 70%, #C9F0E0 0%, transparent 60%), ' +
+            'linear-gradient(180deg, #FFF7E5 0%, #FFE5C9 100%)',
         }}
       >
         <GameHeader title="Boom Garden" showHomeButton={true} />
         <FullscreenButton />
-        <main className="flex-1 pt-20 md:pt-24 pb-6 px-4 max-w-5xl mx-auto w-full flex flex-col">
+        <main className="flex-1 pt-16 md:pt-20 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col">
           <div className="text-center mb-4 md:mb-6">
             <p className="text-sm md:text-base font-bold opacity-80" style={{ color: 'var(--jma-dark)' }}>
               Three rhythm games. Pick your jam.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5 flex-1">
-            {MODES.map((m) => (
-              <motion.button
-                key={m.id}
-                data-testid={`boom-mode-${m.id}`}
-                type="button"
-                onClick={() => enterMode(m.id)}
-                className="rounded-3xl border-4 p-4 md:p-6 text-left flex flex-col gap-2 md:gap-3"
-                style={{
-                  backgroundColor: m.color,
-                  borderColor: 'var(--jma-dark)',
-                  color: 'white',
-                  boxShadow: '0 8px 0 0 var(--jma-dark)',
-                }}
-                whileHover={{ y: -4, boxShadow: '0 12px 0 0 var(--jma-dark)' }}
-                whileTap={{ y: 6, boxShadow: '0 2px 0 0 var(--jma-dark)' }}
-              >
-                <div className="text-4xl md:text-5xl leading-none">{m.emoji}</div>
-                <div className="text-xl md:text-2xl font-black font-display leading-tight">{m.label}</div>
-                <div className="text-xs md:text-sm font-bold opacity-95 leading-snug">{m.blurb}</div>
-              </motion.button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 flex-1">
+            {MODES.map((m, i) => (
+              <ModeTile key={m.id} mode={m} index={i} onPick={enterMode} />
             ))}
           </div>
-          {/* Difficulty selector — shared across all three modes. */}
+          {/* Difficulty selector */}
           <div className="mt-5 md:mt-7">
             <div className="text-center text-[10px] md:text-xs uppercase font-black opacity-60 mb-2" style={{ color: 'var(--jma-dark)' }}>
               Difficulty
@@ -450,7 +523,7 @@ export default function BoomGardenPage() {
     );
   }
 
-  // Mode play screen.
+  // Play screen.
   return (
     <div
       data-testid={`boom-mode-page-${mode}`}
@@ -462,7 +535,7 @@ export default function BoomGardenPage() {
       <GameHeader title={`Boom Garden · ${modeConfig.label}`} showHomeButton={true} score={score} streak={streak} />
       <FullscreenButton />
       <main className="flex-1 pt-20 md:pt-24 pb-4 px-3 md:px-6 max-w-4xl mx-auto w-full flex flex-col">
-        {/* Back + replay row */}
+        {/* Back + level row */}
         <div className="flex items-center justify-between mb-3 md:mb-4">
           <button
             data-testid="boom-back-modes"
@@ -508,19 +581,20 @@ export default function BoomGardenPage() {
             }}
             data-testid="boom-phase-banner"
           >
-            {mode === 'copy'  && phase === 'demo'   && '👂 Listen carefully...'}
-            {mode === 'copy'  && phase === 'input'  && '🥁 Your turn — copy it!'}
-            {mode === 'copy'  && phase === 'reveal' && '✨ Round complete'}
-            {mode === 'match' && phase === 'demo'   && '👂 Listen to this rhythm'}
-            {mode === 'match' && phase === 'input'  && '🎯 Pick the match'}
-            {mode === 'match' && phase === 'reveal' && '✨ Round complete'}
-            {mode === 'trail' && phase === 'input'  && '📖 Read & tap the beats'}
-            {mode === 'trail' && phase === 'reveal' && '✨ Round complete'}
+            {mode === 'copy'  && phase === 'demo'   && 'Listen carefully...'}
+            {mode === 'copy'  && phase === 'input'  && 'Your turn — hit the snare on the beat!'}
+            {mode === 'copy'  && phase === 'reveal' && 'Round complete'}
+            {mode === 'match' && phase === 'demo'   && 'Listen to this rhythm...'}
+            {mode === 'match' && phase === 'input'  && 'Pick the strip that matches'}
+            {mode === 'match' && phase === 'reveal' && 'Round complete'}
+            {mode === 'trail' && phase === 'countin'&& 'Count in... 1 · 2 · 3 · 4'}
+            {mode === 'trail' && phase === 'input'  && 'Read & play the rhythm'}
+            {mode === 'trail' && phase === 'reveal' && 'Round complete'}
           </div>
         </div>
 
         {/* Strip(s) */}
-        <div className="flex flex-col items-stretch justify-center gap-3 md:gap-4 mb-3">
+        <div className="flex flex-col items-stretch justify-center gap-3 md:gap-4 mb-4">
           {(mode === 'copy' || mode === 'trail') && pattern && (
             <RhythmStrip
               pattern={pattern}
@@ -551,13 +625,13 @@ export default function BoomGardenPage() {
                 <RhythmStrip
                   key={idx}
                   pattern={p}
-                  highlightIndex={phase === 'reveal' && idx === matchAnswer ? -2 : -1}
+                  highlightIndex={-1}
                   hitStates={
                     phase === 'reveal'
                       ? p.map(() => (idx === matchAnswer ? 'perfect' : undefined))
                       : null
                   }
-                  height={72}
+                  height={80}
                   testIdPrefix={`match-${idx}-block`}
                   onBlockTap={phase === 'input' ? () => handleMatchPick(idx) : null}
                 />
@@ -566,13 +640,14 @@ export default function BoomGardenPage() {
           )}
         </div>
 
-        {/* Drum tap button (Copy Cat + Tap Trail only) */}
+        {/* Big snare drum (Copy Cat + Tap Trail only) */}
         {(mode === 'copy' || mode === 'trail') && (
-          <div className="flex justify-center items-center py-2">
-            <DrumTapButton
-              onTap={mode === 'copy' ? handleCopyTap : handleTrailTap}
+          <div className="flex justify-center items-center py-3">
+            <BigSnare
+              ref={snareRef}
+              onTap={handleSnareTap}
               disabled={phase !== 'input'}
-              label={phase === 'input' ? 'TAP!' : phase === 'demo' ? '...' : 'WAIT'}
+              hint={phase === 'input' ? 'HIT IT!' : phase === 'demo' ? 'Listen...' : phase === 'countin' ? '1 · 2 · 3 · 4' : 'Wait'}
             />
           </div>
         )}
@@ -584,7 +659,7 @@ export default function BoomGardenPage() {
               key={feedback.text}
               data-testid="boom-feedback"
               initial={{ y: 30, opacity: 0, scale: 0.8 }}
-              animate={{ y: 0,  opacity: 1, scale: 1 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: -10, opacity: 0 }}
               className="fixed left-1/2 -translate-x-1/2 bottom-6 rounded-2xl border-4 px-4 py-2 font-black font-display z-30"
               style={{
