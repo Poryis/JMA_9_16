@@ -169,12 +169,33 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     const matchingNote = currentNotes.find(n => n.note === tappedNote && !n.hit);
 
     if (matchingNote) {
-      setScore(prev => prev + 100);
+      // Graduated timing feedback: how close was the tap to the ideal hit moment?
+      // Notes fall from top:-80px to top:calc(100% + 80px) linearly over `fallSpeed` ms.
+      // The bell sits at bottom:20px, so notes visually meet the bell when progress
+      // is ~0.85 of the total fall — that's our IDEAL_PROGRESS target.
+      // Windows scale with fallSpeed so kids on Chill (slow notes) get the same
+      // relative leniency as kids on Turbo.
+      const IDEAL_PROGRESS = 0.85;
+      const fallSpeed = speedConfig.fallSpeed;
+      const elapsed = Date.now() - matchingNote.spawnedAt;
+      const idealMs = IDEAL_PROGRESS * fallSpeed;
+      const diff = Math.abs(elapsed - idealMs);
+
+      let tier, points;
+      if (diff <= 0.07 * fallSpeed) {        // ~245ms on Chill, ~105ms on Turbo
+        tier = 'perfect'; points = 100;
+      } else if (diff <= 0.18 * fallSpeed) { // ~630ms on Chill, ~270ms on Turbo
+        tier = 'great'; points = 75;
+      } else {                                // any other on-screen hit (super early/late)
+        tier = 'good'; points = 50;
+      }
+
+      setScore(prev => prev + points);
       setGameStats(prev => ({
         ...prev, perfect: prev.perfect + 1, streak: prev.streak + 1,
         maxStreak: Math.max(prev.maxStreak, prev.streak + 1)
       }));
-      setFeedback('perfect');
+      setFeedback(tier);
       // Removed playFeedbackSound('perfect') - the synth chirp clashed with the bell/drum sound
       setFallingNotes(prev => prev.filter(n => n.id !== matchingNote.id));
     } else {
@@ -186,7 +207,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       setFeedback('miss');
     }
     setTimeout(() => setFeedback(null), 400);
-  }, [isDrumMode, playBellNote, playDrumSound, setScore, setGameStats]);
+  }, [isDrumMode, playBellNote, playDrumSound, setScore, setGameStats, speedConfig.fallSpeed]);
 
   // Keyboard controls - imperative image swap via ref (no React render)
   useEffect(() => {

@@ -1,5 +1,27 @@
 # Changelog
 
+## Feb 19, 2026 — Audio stop + Jam Session declutter + Rhythm graduated feedback
+
+### Charlie's Song Studio — Stop now actually stops the melody (P0)
+- **Root cause**: `playPianoNote` scheduled future Web Audio sources but didn't return them, so when Stop was pressed only the drum loop and visual timers got cancelled — melody + chord sources kept firing.
+- **Fix**: `usePianoAudio.playPianoNote` now returns the `AudioBufferSourceNode`. `SongStudioPage.playSong` pushes every scheduled chord triad and melody source into `scheduledSourcesRef`. `stopPlayback` iterates and calls `.stop()` on each, including future-scheduled ones (Web Audio honours this).
+
+### Jam Session — Jelly Bells decluttered (P1)
+- Removed solfège labels (Do/Re/Mi…) under each bell — they're already on the bell PNG.
+- Removed letter-note `(C)/(D)/…` labels under each bell.
+- Keyboard-hint badges (1–8) are now `hidden md:flex` — invisible on mobile/tablet, where touch is the primary input.
+- On desktop, each badge moved from outside top-right to bottom-center, which lands it INSIDE the bell circle (every bell's top points outward, so its bottom faces the center medallion). Counter-rotated by `-rotation` so the digit stays upright. Fixes the "1" overlapping the Jam Along button at the 12 o'clock position.
+
+### Who's Got the Rhythm — graduated timing feedback
+- Previously every successful hit said "PERFECT" and awarded 100 pts regardless of timing.
+- Now the tap's elapsed time is compared to the ideal hit moment (`0.85 × fallSpeed` ms after spawn — the moment the note visually meets the bell at the bottom).
+- Three tiers, scaled to fall speed so Chill kids and Turbo kids get the same relative leniency:
+  - **PERFECT!** (100 pts) — within ±7 % of fallSpeed (~245 ms Chill / ~105 ms Turbo)
+  - **GREAT!** (75 pts) — within ±18 %
+  - **GOOD!** (50 pts) — any other on-screen hit (way early or way late)
+- Wrong-note penalty unchanged (−50 pts, floor at 0). `gameStats.perfect` counter still increments for any hit so existing sticker/achievement thresholds keep working.
+
+
 ## Feb 18, 2026 — Polish round (visual + immersion fixes)
 Direct user feedback drove these:
 
