@@ -1,6 +1,26 @@
 # Changelog
 
-## Feb 20, 2026 — Boom Garden v3 — Stew on drums + real notation + scrolling Tap Trail + fixed timing
+## Feb 20, 2026 — Boom Garden v4 — football field, visual metronome, forward-walking timing, alternation fix, end-of-round card
+Round 4 of user feedback on Boom Garden:
+- "Can we make the background for all of these the football field?"
+- "At the end of the game nothing happens"
+- "He only animates on one of the two animations when I tap him, not alternating"
+- "I would like to see him perform the rhythms for Twin Beats as well"
+- "Copy Cat is still impossible for a human to play... we have to have some visual or audio metronome or something"
+- "I also think its bugged to expect the wrong note"
+
+### What changed
+- **Football field background** on every Boom-Garden play screen (Copy Cat, Twin Beats, Tap Trail) with a per-mode color tint laid over for legibility. Stew now sits ON the field, on the 50-yard line.
+- **Visual metronome (`BeatPulse`)** above Stew — four chunky-bordered dots (yellow downbeat + 3 orange offbeats), one brightens & pops on each beat. Driven by a single `requestAnimationFrame` loop reading from `Date.now() - metronomeStartMs` so it stays perfectly locked to the hi-hat click underneath. Active during count-in, demo, AND the kid's input window — they can SEE the tempo, not just hear it.
+- **Stew now performs in Twin Beats** too — same `schedulePatternAudio` call flashes him on every demo beat. He sits there disabled during the kid's pick (correct UX: they pick a strip, not tap Stew).
+- **Stew alternation fixed** — root cause was React StrictMode invalidating the `useRef` counter on every dev re-mount. Switched to a DOM-dataset counter (`imgRef.current.dataset.hits`) that survives any mount/strict-mode re-render. Verified by automation: dataHits increments cleanly, sides truly alternate.
+- **Forward-walking sequential timing detection** replaces the prior nearest-neighbour heuristic. At each tap, the system scans unclaimed non-rest notes IN ORDER: any whose expected time has already passed by more than `tol` are auto-marked MISS (the kid walked past them), then the tap is scored against the first beat that's still "current or upcoming". This mirrors how a real teacher judges timing — missed beats stay missed, and the next tap targets the NEXT beat, not the one the kid just abandoned. Fixes the "expect the wrong note" bug.
+- **End-of-round summary card** (`boom-round-summary`) — a chunky bordered card slides down on reveal with "ROUND COMPLETE / X of Y on time!" and a "Play another →" button. Green tint for ≥80 % hits, gold otherwise. Auto-advance after 3 s, but the button lets the kid skip ahead. No more silent restart.
+
+### Verified
+- Build clean. Screenshots show football-field bg, BeatPulse dots above Stew (active beat brighter), Stew rendered in Twin Beats demo with "Listening..." hint, alternation confirmed by automation (dataHits counter increments, src cycles left/right).
+
+
 Round 3 of user feedback:
 - "Snare has both states showing at the same time" — visual bug.
 - "When it's the student's turn to perform they need something to give them the timing... they can't just copy with perfect tempo, or whatever you currently have testing if its right or not" — timing detection broken + needs reference pulse.
@@ -8,8 +28,10 @@ Round 3 of user feedback:
 - "For rests lets keep my seahorse rest and put Shh under it. For all the others, accompany the rhythm words with these notes I've attached" — real musical notation per user-provided PNGs.
 - Final v3: "Instead of the snare, lets have Stew perform the drums. I have given you two animations... For each hit have him alternate between those animations."
 
-### What changed
-- **Real musical notation in every strip**. Imported user's PNGs (whole/half/quarter/eighth + highlighted variants) to `/assets/notes/rhythm/`. `RhythmStrip` now renders a real note PNG above the Kodály syllable in each block. Rest blocks keep the seahorse asset and now show "Shh" underneath.
+## Feb 20, 2026 — Boom Garden v3 (superseded by v4)
+Note: v4 above replaces the timing and visual elements below; the v3 notes are retained for changelog completeness.
+
+### Round 3 fixes (v3)
 - **Stew the drum-major now performs every drum hit**. New `StewDrummer` component uses the 8 PNG frames the user provided (left-stick + right-stick × 4 each, shared neutral pose). Each hit (demo or kid tap) alternates between left/right animations. Direct-DOM `src` swap chain at 45 ms/frame keeps the animation in sync with the audio with no React re-renders. Preloads all 8 frames so the first hit doesn't stutter. `BigSnare` retired.
 - **Tap Trail rewritten as a scrolling sight-reading reader**. New `ScrollingRhythmStrip` component shows notes scrolling right-to-left through a fixed gold "TAP HERE" strike line. Multi-measure patterns (8–12 beats Cadet, up to 16+ beats Master) via new `TRAIL_PATTERNS` data. The 4-beat count-in is now visually integrated — the strip starts 4 beats off-screen-right and scrolls into the strike line during the click count-in, so kids see the music approaching as they hear the pulse.
 - **Timing detection rewritten with nearest-neighbour matching**. Old logic forced strictly sequential taps — a missed beat broke the whole round because beat-2's tap was compared against beat-1's expected time. New logic finds the closest UNCLAIMED non-rest note in time at each tap and scores against that, so kids can recover from a missed beat without the round desyncing.

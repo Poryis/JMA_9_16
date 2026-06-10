@@ -29,7 +29,6 @@ const FRAME_MS = 45;
 
 export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hint }, ref) {
   const imgRef = useRef(null);
-  const lastWasLeftRef = useRef(false);
   const timersRef = useRef([]);
 
   // Preload every frame so the first hit doesn't stutter waiting on disk.
@@ -45,26 +44,28 @@ export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hi
     timersRef.current = [];
   };
 
-  // Play one full hit: choose the next side, swap through frames 2→3→4 → neutral.
+  // Play one full hit. Alternation counter lives on the <img>'s data-hits
+  // attribute — survives any React re-mount or strict-mode double-render, so
+  // we genuinely flip sides on every successive hit no matter where the call
+  // came from (kid tap, demo flash, etc).
   const playHit = () => {
     if (!imgRef.current) return;
-    const useLeft = !lastWasLeftRef.current;
-    lastWasLeftRef.current = useLeft;
+    const count = parseInt(imgRef.current.dataset.hits || '0', 10);
+    imgRef.current.dataset.hits = String(count + 1);
+    const useLeft = count % 2 === 0;
     const frames = useLeft ? LEFT_FRAMES : RIGHT_FRAMES;
     clearAnimTimers();
-    // Frame 2 immediately (stick begins coming down).
     imgRef.current.src = frames[1];
-    // Frame 3.
     timersRef.current.push(setTimeout(() => {
       if (imgRef.current) imgRef.current.src = frames[2];
     }, FRAME_MS));
-    // Frame 4 — the actual strike.
     timersRef.current.push(setTimeout(() => {
       if (imgRef.current) imgRef.current.src = frames[3];
     }, FRAME_MS * 2));
-    // Hold the strike a beat longer than the lift frames so the kid sees it land.
     timersRef.current.push(setTimeout(() => {
-      if (imgRef.current) imgRef.current.src = frames[0]; // back to neutral
+      // Snap back to whichever neutral pose matches the side we just hit so
+      // the bounce-back looks smooth rather than teleporting across sides.
+      if (imgRef.current) imgRef.current.src = frames[0];
     }, FRAME_MS * 4));
   };
 

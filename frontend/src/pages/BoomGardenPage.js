@@ -20,6 +20,7 @@ import Confetti from '../components/Confetti';
 import RhythmStrip from '../components/RhythmStrip';
 import ScrollingRhythmStrip from '../components/ScrollingRhythmStrip';
 import StewDrummer from '../components/StewDrummer';
+import BeatPulse from '../components/BeatPulse';
 import useAudio from '../hooks/useAudio';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import {
@@ -202,6 +203,13 @@ export default function BoomGardenPage() {
   const claimedNotesRef = useRef(new Set());     // indices of notes a tap has been matched to
   const tapResultsRef = useRef({});               // index → 'perfect' | 'miss'
   const snareRef = useRef(null);
+  // Wall-clock Date.now() of beat-0 of the click track currently running.
+  // Drives the BeatPulse visual metronome so it stays in lock-step with the
+  // hi-hat without any drift.
+  const [metronomeStartMs, setMetronomeStartMs] = useState(0);
+  const [metronomeRunning, setMetronomeRunning] = useState(false);
+  // Round summary shown during reveal.
+  const [roundSummary, setRoundSummary] = useState(null); // { correct, total }
 
   const clearTimeouts = useCallback(() => {
     timeoutsRef.current.forEach((t) => clearTimeout(t));
@@ -211,13 +219,21 @@ export default function BoomGardenPage() {
   useEffect(() => clearTimeouts, [clearTimeouts]);
 
   // Schedule a steady hi-hat click on every beat for `beatCount` beats,
-  // starting at `startDelayMs` from now. Returns the total span in ms.
+  // starting at `startDelayMs` from now. Also flips on the visual BeatPulse
+  // metronome so the kid can SEE the tempo in addition to hearing it.
   const scheduleMetronome = useCallback((beatCount, startDelayMs = 0) => {
     initAudioContext();
+    const startWall = Date.now() + startDelayMs;
+    setMetronomeStartMs(startWall);
+    setMetronomeRunning(true);
     for (let b = 0; b < beatCount; b++) {
       const t = setTimeout(() => playDrumSound('hihat'), startDelayMs + b * BEAT_MS);
       timeoutsRef.current.push(t);
     }
+    // Stop the visual pulse a beat after the last audio click so the last
+    // beat's flash doesn't get cut off.
+    const stopT = setTimeout(() => setMetronomeRunning(false), startDelayMs + (beatCount + 0.5) * BEAT_MS);
+    timeoutsRef.current.push(stopT);
     return beatCount * BEAT_MS;
   }, [initAudioContext, playDrumSound]);
 
@@ -243,24 +259,25 @@ export default function BoomGardenPage() {
   const finishCopyRound = useCallback(() => {
     clearTimeouts();
     const pat = patternRef.current || [];
-    const results = tapResultsRef.current; // index → 'perfect' | 'miss'
+    const results = tapResultsRef.current;
     const hits = pat.map((k, i) => {
       if (k === 'rest') return undefined;
       return results[i] || 'miss';
     });
     const expectedNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
     const correct = expectedNonRest.filter((i) => results[i] === 'perfect').length;
+    const total = expectedNonRest.length;
     setHitStates(hits);
     setHighlightIndex(-1);
+    setMetronomeRunning(false);
     setPhase('reveal');
-    // "All hit" means at least 80 % of non-rest notes were in the tolerance
-    // window — keeps the celebration achievable without giving it away.
-    const allHit = correct >= Math.max(1, Math.ceil(expectedNonRest.length * 0.8));
+    setRoundSummary({ correct, total });
+    const allHit = correct >= Math.max(1, Math.ceil(total * 0.8));
     if (allHit) {
       setScore((s) => s + 100);
       setStreak((s) => s + 1);
       setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 1400);
+      setTimeout(() => setShowCelebration(false), 2000);
       setFeedback({ tone: 'great', text: 'Nice rhythm!' });
       try {
         earnAchievement('rhythm', 'cadet');
@@ -271,11 +288,15 @@ export default function BoomGardenPage() {
       setStreak(0);
       setFeedback({ tone: 'miss', text: 'Almost! Try again.' });
     }
+    // Auto-advance after a longer reveal so the kid actually sees the
+    // result. The "Play Again" button in the round-summary card lets them
+    // skip ahead if they want to move faster.
     const next = setTimeout(() => {
       setFeedback(null);
+      setRoundSummary(null);
       if (mode === 'copy')  startCopy();
       if (mode === 'trail') startTrail();
-    }, 1900);
+    }, 3000);
     timeoutsRef.current.push(next);
   }, [clearTimeouts, level, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -318,10 +339,13 @@ export default function BoomGardenPage() {
     timeoutsRef.current.push(handoff);
   }, [level, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio, finishCopyRound]);
 
-  // Unified tap handler used by both Copy Cat and Tap Trail. Uses
-  // nearest-neighbour matching so a missed beat doesn't desync the round —
-  // the kid's tap is scored against whichever non-rest note (that hasn't
-  // already been claimed) sits closest in time.
+  // Unified tap handler used by both Copy Cat and Tap Trail. Forward-walking
+  // sequential matching: a tap is scored against the FIRST unclaimed non-rest
+  // note whose expected time is roughly "now or later" (current beat). Any
+  // earlier unclaimed beats are auto-marked as MISS (the kid walked past
+  // them). This is how a real teacher judges timing — you mark missed beats
+  // and the next note is still the next note, regardless of which beat the
+  // kid is on.
   const handleSnareTap = useCallback(() => {
     if (phase !== 'input') return;
     playDrumSound('snare');
@@ -330,21 +354,30 @@ export default function BoomGardenPage() {
     const pat = patternRef.current || [];
     const expectedStarts = expectedStartsRef.current;
     const claimed = claimedNotesRef.current;
-    let bestIdx = -1, bestDiff = Infinity;
-    pat.forEach((k, i) => {
-      if (k === 'rest' || claimed.has(i)) return;
-      const diff = Math.abs(tapTime - expectedStarts[i]);
-      if (diff < bestDiff) {
-        bestDiff = diff;
-        bestIdx = i;
-      }
-    });
-    if (bestIdx === -1) return; // every note already claimed
-    claimed.add(bestIdx);
     const tol = TOLERANCE_MS[level] ?? TOLERANCE_MS.cadet;
-    tapResultsRef.current[bestIdx] = bestDiff <= tol ? 'perfect' : 'miss';
-    setHighlightIndex(bestIdx);
-    // Round ends when every non-rest beat has been claimed.
+    // Forward walk: scan unclaimed notes in order; auto-miss any whose
+    // expected time has already passed by more than `tol`, then score this
+    // tap against the first beat that's still "current or upcoming".
+    let targetIdx = -1;
+    for (let i = 0; i < pat.length; i++) {
+      if (pat[i] === 'rest' || claimed.has(i)) continue;
+      if (expectedStarts[i] >= tapTime - tol) {
+        targetIdx = i;
+        break;
+      }
+      // Kid skipped past this beat.
+      claimed.add(i);
+      tapResultsRef.current[i] = 'miss';
+    }
+    if (targetIdx === -1) {
+      // All notes have already passed — spurious tail tap. Ignore so we
+      // don't double-claim or stutter the round.
+      return;
+    }
+    const diff = Math.abs(tapTime - expectedStarts[targetIdx]);
+    claimed.add(targetIdx);
+    tapResultsRef.current[targetIdx] = diff <= tol ? 'perfect' : 'miss';
+    setHighlightIndex(targetIdx);
     const allNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
     if (allNonRest.every((i) => claimed.has(i))) {
       const fin = setTimeout(finishCopyRound, 280);
@@ -360,12 +393,14 @@ export default function BoomGardenPage() {
     setMatchAnswer(answerIdx);
     setHitStates([]);
     setHighlightIndex(-1);
+    setRoundSummary(null);
     setPhase('demo');
     initAudioContext();
     clearTimeouts();
     const pat = opts[answerIdx];
     const totalBeats = patternBeats(pat);
-    // Click track + snare hits (no visual highlight — kid uses ears).
+    // Click track + Stew animating along + snare hits (no visual highlight
+    // on the strips themselves — kid uses ears).
     scheduleMetronome(totalBeats, 0);
     schedulePatternAudio(pat, { withHighlight: false, startDelayMs: 0 });
     const handoff = setTimeout(() => setPhase('input'), totalBeats * BEAT_MS + 500);
@@ -375,13 +410,15 @@ export default function BoomGardenPage() {
   const handleMatchPick = useCallback((idx) => {
     if (phase !== 'input') return;
     playDrumSound('snare');
+    snareRef.current?.flash(100);
     const correct = idx === matchAnswer;
     setPhase('reveal');
+    setRoundSummary({ correct: correct ? 1 : 0, total: 1 });
     if (correct) {
       setScore((s) => s + 100);
       setStreak((s) => s + 1);
       setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 1400);
+      setTimeout(() => setShowCelebration(false), 1800);
       setFeedback({ tone: 'great', text: 'Sharp ears!' });
       try {
         earnAchievement('rhythm', 'cadet');
@@ -393,8 +430,9 @@ export default function BoomGardenPage() {
     }
     const next = setTimeout(() => {
       setFeedback(null);
+      setRoundSummary(null);
       startMatch();
-    }, 2000);
+    }, 3000);
     timeoutsRef.current.push(next);
   }, [phase, playDrumSound, matchAnswer, level, startMatch]);
 
@@ -545,9 +583,20 @@ export default function BoomGardenPage() {
       data-testid={`boom-mode-page-${mode}`}
       className="min-h-screen flex flex-col relative"
       style={{
-        background: `radial-gradient(circle at 30% 20%, ${modeConfig.color}22 0%, transparent 55%), linear-gradient(180deg, #FFF7E5 0%, #FFE5C9 100%)`,
+        backgroundImage: 'url(assets/backgrounds/football-field.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
       }}
     >
+      {/* Soft tint over the football field so foreground UI stays legible. */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `linear-gradient(180deg, ${modeConfig.color}22 0%, rgba(255,255,255,0.55) 60%, ${modeConfig.color}33 100%)`,
+        }}
+      />
+      <div className="relative z-10 flex flex-col flex-1">
       <GameHeader title={`Boom Garden · ${modeConfig.label}`} showHomeButton={true} score={score} streak={streak} />
       <FullscreenButton />
       <main className="flex-1 pt-20 md:pt-24 pb-4 px-3 md:px-6 max-w-4xl mx-auto w-full flex flex-col">
@@ -664,22 +713,84 @@ export default function BoomGardenPage() {
           )}
         </div>
 
-        {/* Stew the llama — performs every drum hit (demo + kid's input). */}
-        {(mode === 'copy' || mode === 'trail') && (
-          <div className="flex justify-center items-center py-3">
-            <StewDrummer
-              ref={snareRef}
-              onTap={handleSnareTap}
-              disabled={phase !== 'input'}
-              hint={
-                phase === 'input'   ? 'TAP STEW!' :
-                phase === 'demo'    ? 'Listen...' :
-                phase === 'countin' ? '1 · 2 · 3 · 4' :
-                'Wait'
-              }
+        {/* Visual metronome — bright dot pulses on each beat so kids can SEE
+            the tempo, not just hear the click underneath. Active during
+            count-in, demo, AND the kid's input window. */}
+        {(phase === 'countin' || phase === 'demo' || phase === 'input') && (
+          <div className="flex justify-center mb-2">
+            <BeatPulse
+              running={metronomeRunning}
+              startAtMs={metronomeStartMs}
+              beatsPerMeasure={4}
+              size={18}
             />
           </div>
         )}
+
+        {/* Stew the llama — performs every drum hit (demo + kid's input).
+            On Twin Beats he animates during the demo (and stays disabled in
+            input since the kid picks a strip, not plays the snare). */}
+        <div className="flex justify-center items-center py-3">
+          <StewDrummer
+            ref={snareRef}
+            onTap={handleSnareTap}
+            disabled={phase !== 'input' || mode === 'match'}
+            hint={
+              mode === 'match' && phase === 'demo'    ? 'Listen...' :
+              mode === 'match' && phase === 'input'   ? 'Pick a strip ↑' :
+              mode === 'match' && phase === 'reveal'  ? 'Round complete' :
+              phase === 'input'   ? 'TAP STEW!' :
+              phase === 'demo'    ? 'Listen...' :
+              phase === 'countin' ? '1 · 2 · 3 · 4' :
+              'Wait'
+            }
+          />
+        </div>
+
+        {/* Round-summary card during reveal — actually CELEBRATES the result
+            instead of silently restarting. */}
+        <AnimatePresence>
+          {phase === 'reveal' && roundSummary && (
+            <motion.div
+              key="round-summary"
+              data-testid="boom-round-summary"
+              initial={{ y: 30, opacity: 0, scale: 0.92 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -10, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+              className="fixed left-1/2 -translate-x-1/2 top-24 md:top-28 z-30 rounded-3xl border-4 px-5 py-3 md:px-7 md:py-4 flex flex-col items-center gap-1.5 max-w-[92%]"
+              style={{
+                borderColor: 'var(--jma-dark)',
+                backgroundColor: roundSummary.correct >= Math.ceil(roundSummary.total * 0.8) ? '#34A853' : '#FFCC00',
+                color: roundSummary.correct >= Math.ceil(roundSummary.total * 0.8) ? 'white' : 'var(--jma-dark)',
+                boxShadow: '0 8px 0 0 var(--jma-dark)',
+              }}
+            >
+              <div className="text-xs md:text-sm uppercase font-black tracking-widest opacity-80">
+                Round complete
+              </div>
+              <div className="text-2xl md:text-3xl font-black font-display leading-none">
+                {roundSummary.correct} of {roundSummary.total} on time!
+              </div>
+              <button
+                data-testid="boom-play-again"
+                type="button"
+                onClick={() => {
+                  clearTimeouts();
+                  setFeedback(null);
+                  setRoundSummary(null);
+                  if (mode === 'copy')  startCopy();
+                  if (mode === 'trail') startTrail();
+                  if (mode === 'match') startMatch();
+                }}
+                className="mt-1 rounded-full border-3 bg-white px-4 py-1 font-black font-display text-sm"
+                style={{ borderColor: 'var(--jma-dark)', color: 'var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}
+              >
+                Play another →
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Feedback toast */}
         <AnimatePresence>
@@ -717,6 +828,7 @@ export default function BoomGardenPage() {
           )}
         </AnimatePresence>
       </main>
+      </div>
     </div>
   );
 }
