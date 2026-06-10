@@ -438,10 +438,12 @@ export default function SightReadingPage() {
           {gameState === 'run-complete' && '🎉 Run complete!'}
         </div>
 
-        {/* Staff — slides in/out between cards */}
+        {/* Staff — slides in/out between cards. The key only changes when
+            cardIndex changes (not on every gameState transition), so we get
+            exactly ONE swipe per card change, not two. */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={`card-${cardIndex}-${gameState === 'card-transition' ? 'out' : 'in'}`}
+            key={`card-${cardIndex}`}
             initial={{ x: 80, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -80, opacity: 0 }}
