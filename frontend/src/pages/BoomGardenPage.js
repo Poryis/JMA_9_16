@@ -353,10 +353,14 @@ export default function BoomGardenPage() {
   // them). This is how a real teacher judges timing — you mark missed beats
   // and the next note is still the next note, regardless of which beat the
   // kid is on.
+  //
+  // NOTE: do NOT call `snareRef.current?.flash()` here. The kid tapping Stew
+  // already triggers StewDrummer.handleDown → playHit, which animates him.
+  // Calling flash() here too would double-tick the L/R alternation counter
+  // and cause Stew to look like he's stuck on one side.
   const handleSnareTap = useCallback(() => {
     if (phase !== 'input') return;
     playDrumSound('snare');
-    snareRef.current?.flash(100);
     const tapTime = Date.now() - inputStartRef.current;
     const pat = patternRef.current || [];
     const expectedStarts = expectedStartsRef.current;
@@ -418,7 +422,6 @@ export default function BoomGardenPage() {
   const handleMatchPick = useCallback((idx) => {
     if (phase !== 'input') return;
     playDrumSound('snare');
-    snareRef.current?.flash(100);
     const correct = idx === matchAnswer;
     setPhase('reveal');
     setRoundSummary({ correct: correct ? 1 : 0, total: 1 });

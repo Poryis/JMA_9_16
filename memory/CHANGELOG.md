@@ -1,5 +1,26 @@
 # Changelog
 
+## Feb 20, 2026 (later +) — Stew double-tap fix in Boom Garden
+
+User report: *"stews animations is still breaking, and even when it works, it doesnt switch between left and right"*
+
+### Root cause
+Every kid-tap on Stew was triggering **TWO** `playHit()` calls in rapid succession:
+1. `StewDrummer.handleDown` → `playHit()` (kid pressed Stew → swing one stick)
+2. `onTap?.()` → `handleSnareTap` → `snareRef.current?.flash(100)` → `playHit()` (page handler asked Stew to flash AGAIN)
+
+`playHit()` reads `dataset.hits`, picks L or R based on parity, increments. With two calls per tap, the counter jumped by 2 each time → parity never flipped between taps → Stew stayed on one side. The second (right-stick) call also clobbered the first (left-stick) animation chain mid-frame, masking the visual swing entirely on slower devices.
+
+### Fix
+Removed the redundant `snareRef.current?.flash()` call from:
+- `handleSnareTap` (Copy Cat / Tap Trail input phase) — the kid's tap already animates Stew via `handleDown`.
+- `handleMatchPick` (Twin Beats input phase) — the kid is picking a strip, Stew shouldn't animate at all on a Twin Beats pick (he's disabled there too).
+
+Demo path is unchanged: `schedulePatternAudio` still calls `flash()` on every scheduled snare hit, so Doc's "play it for you" cycles cleanly through L/R.
+
+### Verified via DOM probe
+Pre-tap hits=3 (3 demo flashes). Taps then incremented `dataset.hits` by exactly +1, with src alternating `right-1 → left-1 → right-1 → left-1` across taps. Mid-test some +4 jumps appeared when a round auto-advanced and the next demo's flashes added to the counter — expected behaviour, not a bug.
+
 ## Feb 20, 2026 (later) — Boom Garden round-cycle fix + Stew Kazoo animation fix
 
 User report: *"fix boom garden and stew kazoo in the same. His animations arent working. Also Tap trail just does one level and breaks"*
