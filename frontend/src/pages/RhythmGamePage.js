@@ -48,11 +48,12 @@ function FallingBellNote({ note, laneIndex, totalLanes, speed, isDrum }) {
   const label = isDrum ? lane?.short : bell?.solfege;
   const color = isDrum ? lane?.color : bell?.color;
   const laneWidth = 100 / totalLanes;
-  // The bell is at the "tap-now" sweet spot from ~78% to ~95% of the fall —
-  // the halo CSS animation lights up the bell during that window. Keep
-  // pointer-events disabled so taps pass THROUGH the bell to the lane
-  // button below it (mobile big-finger lane).
-  const glowDelayMs = 0.78 * speed;
+  // The bell is at the "tap-now" sweet spot from ~68% to ~88% of the fall —
+  // the halo CSS animation lights up the bell during that window so it
+  // peaks at IDEAL_PROGRESS (~0.78) when the falling and target bells
+  // visually lock together. Keep pointer-events disabled so taps pass
+  // THROUGH the bell to the lane button below it (mobile big-finger lane).
+  const glowDelayMs = 0.68 * speed;
   const glowDurationMs = 0.20 * speed;
 
   return (
@@ -187,23 +188,41 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     if (matchingNote) {
       // Graduated timing feedback: how close was the tap to the ideal hit moment?
       // Notes fall from top:-80px to top:calc(100% + 80px) linearly over `fallSpeed` ms.
-      // The bell sits at bottom:20px, so notes visually meet the bell when progress
-      // is ~0.85 of the total fall — that's our IDEAL_PROGRESS target.
+      // The static target bell sits at bottom:20px with a ~96–144px-tall image,
+      // so the FALLING bell PNG visually OVERLAPS the target at progress ~0.78–0.80.
+      // We use 0.78 so PERFECT lands the instant the bells "lock together" instead
+      // of after the falling bell has already passed the target.
       // Windows scale with fallSpeed so kids on Chill (slow notes) get the same
       // relative leniency as kids on Turbo.
-      const IDEAL_PROGRESS = 0.85;
+      const IDEAL_PROGRESS = 0.78;
       const fallSpeed = speedConfig.fallSpeed;
       const elapsed = Date.now() - matchingNote.spawnedAt;
       const idealMs = IDEAL_PROGRESS * fallSpeed;
       const diff = Math.abs(elapsed - idealMs);
 
       let tier, points;
-      if (diff <= 0.07 * fallSpeed) {        // ~245ms on Chill, ~105ms on Turbo
+      if (diff <= 0.05 * fallSpeed) {        // ~175ms on Chill, ~75ms on Turbo
         tier = 'perfect'; points = 100;
-      } else if (diff <= 0.18 * fallSpeed) { // ~630ms on Chill, ~270ms on Turbo
+      } else if (diff <= 0.14 * fallSpeed) { // ~490ms on Chill, ~210ms on Turbo
         tier = 'great'; points = 75;
-      } else {                                // any other on-screen hit (super early/late)
+      } else {                                // any other on-screen hit (way early or way late)
         tier = 'good'; points = 50;
+      }
+
+      // Lock-in flash: when the timing is PERFECT, briefly flare the static
+      // target bell — kids see the falling bell "snap" onto the target.
+      // Direct-DOM ref write (no React render) keeps this zero-latency.
+      if (tier === 'perfect') {
+        const refs = bellImgRefs.current[matchingNote.note];
+        if (refs?.lockEl) {
+          refs.lockEl.style.animation = 'none';
+          // Force reflow so the animation can restart on rapid repeated PERFECTs
+          // eslint-disable-next-line no-unused-expressions
+          refs.lockEl.offsetHeight;
+          refs.lockEl.style.animation = '';
+          refs.lockEl.classList.add('bell-lock-in-active');
+          setTimeout(() => refs.lockEl?.classList.remove('bell-lock-in-active'), 320);
+        }
       }
 
       setScore(prev => prev + points);
@@ -689,9 +708,10 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
               const labelText = isDrumMode ? bell?.short : bell?.solfege;
               const keyHint = bell?.key;
               const tintColor = bell?.color;
-              if (!bellImgRefs.current[note]) bellImgRefs.current[note] = { current: null, pressedEl: null };
+              if (!bellImgRefs.current[note]) bellImgRefs.current[note] = { current: null, pressedEl: null, lockEl: null };
               const setIdleRef = (el) => { bellImgRefs.current[note].current = el; };
               const setPressedRef = (el) => { bellImgRefs.current[note].pressedEl = el; };
+              const setLockRef = (el) => { bellImgRefs.current[note].lockEl = el; };
               const doDown = (e) => {
                 e.preventDefault();
                 try { e.target.setPointerCapture(e.pointerId); } catch (_) {}
@@ -745,6 +765,14 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                     style={{ bottom: '20px', touchAction: 'none' }}
                   >
                     <div className="relative">
+                      {/* Lock-in flash overlay — invisible by default, briefly
+                          flares gold ring + scales when a PERFECT hit lands
+                          on this bell. Imperative class toggle, no React render. */}
+                      <div
+                        ref={setLockRef}
+                        className="bell-lock-in pointer-events-none absolute inset-0"
+                        aria-hidden="true"
+                      />
                       <img
                         ref={setIdleRef}
                         src={idleSrc}

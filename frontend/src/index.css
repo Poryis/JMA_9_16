@@ -266,6 +266,37 @@ h1, h2, h3, h4, h5, h6 {
   will-change: opacity, transform;
 }
 
+/* Lock-in flash on the static target bell when a PERFECT hit lands. A bright
+   gold ring expands outward + the bell briefly pops, so the kid feels the
+   falling bell "click" onto the target. Triggered by adding the
+   `.bell-lock-in-active` class via JS for ~320ms, then removed. */
+@keyframes bell-lock-in-ring {
+  0%   { opacity: 1; transform: scale(0.6); border-width: 6px; }
+  60%  { opacity: 0.9; transform: scale(1.45); border-width: 4px; }
+  100% { opacity: 0; transform: scale(1.85); border-width: 0; }
+}
+@keyframes bell-lock-in-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.bell-lock-in {
+  border-radius: 50%;
+  border: 6px solid rgba(255, 215, 0, 0);
+  opacity: 0;
+  z-index: 5;
+}
+.bell-lock-in-active {
+  animation: bell-lock-in-ring 320ms ease-out forwards;
+  border-color: rgba(255, 215, 0, 1);
+  box-shadow: 0 0 24px 6px rgba(255, 215, 0, 0.65);
+}
+/* When the lock-in ring fires, also pop the bell beside it. Targets the
+   <img.instrument-frame-idle> sibling that follows the .bell-lock-in div. */
+.bell-lock-in-active ~ .instrument-frame-idle {
+  animation: bell-lock-in-pop 320ms ease-out;
+}
+
 .progress-bar-container {
   background: #e0e0e0;
   border: 3px solid var(--jma-dark);

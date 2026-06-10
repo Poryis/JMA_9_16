@@ -3,6 +3,13 @@
 ## Feb 19, 2026 — Mobile playability boost in Who's Got the Rhythm
 Two compounding fixes for the "I don't know when to tap, and I want to tap the bell, not a button" mobile pain:
 
+### Round 2 follow-up — PERFECT now lands at the visual overlap, with a lock-in flash
+- User feedback: "it goes too low on the screen before it's perfect... maybe we time it so when its over the bell you play they lock together."
+- Recomputed the geometry: the falling bell PNG visually overlaps the static target around progress 0.78–0.80, not 0.85. Lowered `IDEAL_PROGRESS` from 0.85 → **0.78** so PERFECT lands the instant the bells visually meet.
+- Tightened the PERFECT window from ±7 % → ±5 % (now genuinely earned). GREAT tightened from ±18 % → ±14 %.
+- Shifted the gold tap-now halo from the 0.78–0.95 range to **0.68–0.88** so it peaks right at the new ideal moment.
+- New `bell-lock-in` flash: on a PERFECT hit, an expanding gold ring + bell pop animation fires on the static target bell (320 ms). Kids feel the falling bell "click" onto the target. Implementation is class-toggle via ref (zero React render), with a reflow trick so rapid successive PERFECTs all animate.
+
 ### "Tap-now!" halo on the falling bell
 - New CSS keyframe `bell-tap-now` + `.bell-tap-now-halo` class. Each falling bell now renders a hidden gold radial halo BEHIND the PNG that animates in at 78 % of the fall and out at 95 %, with the duration scaled to the fall speed via `--glow-delay` / `--glow-duration` CSS variables set per-note from React.
 - Result: the bell visibly glows gold right as it enters the hit window — kids see "now!" without reading a single word.
