@@ -98,7 +98,10 @@ function BellCircle({ onDown, onUp, nextGuidedNote, registerRef }) {
     <div
       className="relative mx-auto"
       style={{
-        width: 'min(80vh, 80vmin, 720px)',
+        // Bell circle size:
+        //   Mobile portrait (vmin = width): 92vmin gives a notably larger circle.
+        //   Desktop / tablet:               the 720px cap dominates so size stays unchanged.
+        width: 'min(80vh, 92vmin, 720px)',
         aspectRatio: '1 / 1',
       }}
       data-testid="jelly-bells-row"
@@ -768,8 +771,11 @@ function FreePlayPage() {
       <CharacterReaction streak={streak} />
       <RoomCharacters room="jam-hall" />
 
-      <main className="flex-1 flex flex-col items-center justify-start pt-16 md:pt-24 pb-2 px-2">
-        <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2 mb-4 md:mb-2">
+      {/* Mobile vertically centers content (was justify-start which left empty space
+          below the circle on phones, making it feel "bunched up" at the top).
+          Desktop keeps justify-start so the layout doesn't drift around. */}
+      <main className="flex-1 flex flex-col items-center justify-center md:justify-start pt-16 md:pt-24 pb-2 px-2">
+        <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2 mb-2 md:mb-2">
           <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-1">
             {INSTRUMENT_TABS.map(tab => (
               <button key={tab.id} data-testid={`sound-mode-${tab.id}`}
