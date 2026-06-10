@@ -3,6 +3,17 @@
 ## Feb 19, 2026 — Mobile playability boost in Who's Got the Rhythm
 Two compounding fixes for the "I don't know when to tap, and I want to tap the bell, not a button" mobile pain:
 
+### Round 3 — Threw out the time math, switched to position-based hit detection
+- User feedback: "I'm a professional musician and didn't get one perfect... very unintuitive now" + "can't have the target be that low on the screen visually, at least on the phone."
+- **Root cause**: my `IDEAL_PROGRESS` constant was a guess that depended on screen size, bell heights, breakpoints, etc. — fragile by design. A pro can FEEL when bells visually meet, so if the algorithm disagrees, the algorithm is wrong.
+- **Fix**: `FallingBellNote` now forwards its motion.div ref to the parent via `registerFallingRef`. At tap time, `handlePlayNote` measures the actual `getBoundingClientRect()` of the falling bell AND the static target, computes the vertical distance between centers, and awards:
+  - PERFECT (100) — distance ≤ 40 % of target-bell height (the bells visually overlap)
+  - GREAT (75) — distance ≤ 90 % (one bell-radius away)
+  - GOOD (50) — any other on-screen hit (forgiving fallback)
+- No magic constants. What you see is what you score. Works on any screen, any speed.
+- **Static target bell raised on mobile**: `bottom-24` (96 px) on mobile, `md:bottom-5` (20 px) on desktop. Bells now sit ~75 % down the screen instead of jammed at the bottom edge. Lane-target dashed band moved to `bottom: 100 px` on mobile to keep the bells inside the visual catch zone.
+- Halo timing widened to 55 %–95 % of fall (40 % duration) so kids get a long warning glow regardless of how the now-screen-relative target sits.
+
 ### Round 2 follow-up — PERFECT now lands at the visual overlap, with a lock-in flash
 - User feedback: "it goes too low on the screen before it's perfect... maybe we time it so when its over the bell you play they lock together."
 - Recomputed the geometry: the falling bell PNG visually overlaps the static target around progress 0.78–0.80, not 0.85. Lowered `IDEAL_PROGRESS` from 0.85 → **0.78** so PERFECT lands the instant the bells visually meet.

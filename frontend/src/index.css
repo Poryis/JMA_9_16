@@ -217,6 +217,15 @@ h1, h2, h3, h4, h5, h6 {
   pointer-events: none;
 }
 
+/* On mobile we raised the target bell to bottom:96px so it isn't jammed at
+   the bottom edge — move the dashed catch-zone band up with it so the bell
+   sits inside the band visually. */
+@media (max-width: 767px) {
+  .lane-target {
+    bottom: 100px;
+  }
+}
+
 .note-block {
   position: absolute;
   left: 50%;

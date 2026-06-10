@@ -41,23 +41,28 @@ const DRUM_KEY_TO_NOTE = Object.fromEntries(
 );
 
 // Falling note - works for both bell (note string like 'C') and drum (id like 'kick')
-function FallingBellNote({ note, laneIndex, totalLanes, speed, isDrum }) {
+// Forwards its motion.div ref to the parent via `registerRef(noteId, ref)` so the
+// parent can measure the actual on-screen position at the moment of tap. The
+// halo timing is also driven by the parent's measured `glowDelayMs` (it knows
+// where the target bell sits on this device, so the glow peaks at the visual
+// overlap moment regardless of screen size).
+function FallingBellNote({ note, noteId, laneIndex, totalLanes, speed, isDrum, registerRef, glowDelayMs, glowDurationMs }) {
   const lane = isDrum ? DRUM_LANES[note] : null;
   const bell = isDrum ? null : BELLS.find(b => b.note === note);
   const img = isDrum ? lane?.img1 : bell?.image1;
   const label = isDrum ? lane?.short : bell?.solfege;
   const color = isDrum ? lane?.color : bell?.color;
   const laneWidth = 100 / totalLanes;
-  // The bell is at the "tap-now" sweet spot from ~68% to ~88% of the fall —
-  // the halo CSS animation lights up the bell during that window so it
-  // peaks at IDEAL_PROGRESS (~0.78) when the falling and target bells
-  // visually lock together. Keep pointer-events disabled so taps pass
-  // THROUGH the bell to the lane button below it (mobile big-finger lane).
-  const glowDelayMs = 0.68 * speed;
-  const glowDurationMs = 0.20 * speed;
+  const elRef = useRef(null);
+
+  useEffect(() => {
+    if (registerRef) registerRef(noteId, elRef);
+    return () => { if (registerRef) registerRef(noteId, null); };
+  }, [noteId, registerRef]);
 
   return (
     <motion.div
+      ref={elRef}
       className="absolute flex flex-col items-center"
       style={{
         left: `${laneIndex * laneWidth + laneWidth / 2}%`,
@@ -112,6 +117,14 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
   // Imperative refs for instant bell frame swap (no React render involved)
   const bellImgRefs = useRef({});
   const pressedKeysRef = useRef(new Set()); // dedup keyboard repeats
+  // DOM refs to each in-flight FallingBellNote so we can measure its actual
+  // on-screen Y at the moment of tap (position-based hit detection — what you
+  // see is what you get, no fragile time math).
+  const fallingNoteRefs = useRef({});
+  const registerFallingRef = useCallback((id, ref) => {
+    if (ref) fallingNoteRefs.current[id] = ref;
+    else delete fallingNoteRefs.current[id];
+  }, []);
 
   const speedConfig = SPEED_SETTINGS[speed];
   // If the selected song has a bpm, override spawn interval to sync to the music.
@@ -186,40 +199,36 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     const matchingNote = currentNotes.find(n => n.note === tappedNote && !n.hit);
 
     if (matchingNote) {
-      // Graduated timing feedback: how close was the tap to the ideal hit moment?
-      // Notes fall from top:-80px to top:calc(100% + 80px) linearly over `fallSpeed` ms.
-      // The static target bell sits at bottom:20px with a ~96–144px-tall image,
-      // so the FALLING bell PNG visually OVERLAPS the target at progress ~0.78–0.80.
-      // We use 0.78 so PERFECT lands the instant the bells "lock together" instead
-      // of after the falling bell has already passed the target.
-      // Windows scale with fallSpeed so kids on Chill (slow notes) get the same
-      // relative leniency as kids on Turbo.
-      const IDEAL_PROGRESS = 0.78;
-      const fallSpeed = speedConfig.fallSpeed;
-      const elapsed = Date.now() - matchingNote.spawnedAt;
-      const idealMs = IDEAL_PROGRESS * fallSpeed;
-      const diff = Math.abs(elapsed - idealMs);
-
-      let tier, points;
-      if (diff <= 0.05 * fallSpeed) {        // ~175ms on Chill, ~75ms on Turbo
-        tier = 'perfect'; points = 100;
-      } else if (diff <= 0.14 * fallSpeed) { // ~490ms on Chill, ~210ms on Turbo
-        tier = 'great'; points = 75;
-      } else {                                // any other on-screen hit (way early or way late)
-        tier = 'good'; points = 50;
+      // Position-based hit detection. We measure the actual on-screen vertical
+      // distance between the FALLING bell's center and the STATIC target bell's
+      // center. Closer = better. This is screen-size agnostic and matches
+      // exactly what the kid sees — no magic timing constants.
+      const fallingRef = fallingNoteRefs.current[matchingNote.id];
+      const targetEl = bellImgRefs.current[tappedNote]?.current;
+      let tier = 'good', points = 50, distance = 9999;
+      if (fallingRef?.current && targetEl) {
+        const fRect = fallingRef.current.getBoundingClientRect();
+        const tRect = targetEl.getBoundingClientRect();
+        const fCenter = fRect.top + fRect.height / 2;
+        const tCenter = tRect.top + tRect.height / 2;
+        distance = Math.abs(fCenter - tCenter);
+        // PERFECT = the bells visually overlap (within ~40 % of the target
+        // bell's height). GREAT = falling bell is within a target-bell-radius
+        // of the target. GOOD = anything else on screen (forgiving).
+        const targetH = tRect.height || 100;
+        if (distance <= targetH * 0.40) { tier = 'perfect'; points = 100; }
+        else if (distance <= targetH * 0.90) { tier = 'great'; points = 75; }
       }
 
-      // Lock-in flash: when the timing is PERFECT, briefly flare the static
-      // target bell — kids see the falling bell "snap" onto the target.
-      // Direct-DOM ref write (no React render) keeps this zero-latency.
+      // Lock-in flash: on PERFECT, briefly flare the static target bell — kids
+      // see the falling bell "snap" onto the target. Class toggle via ref, no
+      // React render. The reflow read restarts the animation on rapid PERFECTs.
       if (tier === 'perfect') {
         const refs = bellImgRefs.current[matchingNote.note];
         if (refs?.lockEl) {
-          refs.lockEl.style.animation = 'none';
-          // Force reflow so the animation can restart on rapid repeated PERFECTs
+          refs.lockEl.classList.remove('bell-lock-in-active');
           // eslint-disable-next-line no-unused-expressions
           refs.lockEl.offsetHeight;
-          refs.lockEl.style.animation = '';
           refs.lockEl.classList.add('bell-lock-in-active');
           setTimeout(() => refs.lockEl?.classList.remove('bell-lock-in-active'), 320);
         }
@@ -242,7 +251,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       setFeedback('miss');
     }
     setTimeout(() => setFeedback(null), 400);
-  }, [isDrumMode, playBellNote, playDrumSound, setScore, setGameStats, speedConfig.fallSpeed]);
+  }, [isDrumMode, playBellNote, playDrumSound, setScore, setGameStats]);
 
   // Keyboard controls - imperative image swap via ref (no React render)
   useEffect(() => {
@@ -753,7 +762,9 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                     className="md:hidden absolute inset-0 bg-transparent border-0 p-0 z-0"
                     style={{ touchAction: 'none' }}
                   />
-                  {/* Target instrument at the bottom - notes land ON this */}
+                  {/* Target instrument — sits at the catch line. On mobile we
+                      raise it well off the bottom edge so kids can see the
+                      bell + the falling bell meeting clearly. */}
                   <button
                     data-testid={`game-${isDrumMode ? 'drum' : 'bell'}-${note}`}
                     type="button"
@@ -761,8 +772,8 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                     onPointerUp={doUp}
                     onPointerLeave={doUp}
                     onPointerCancel={doUp}
-                    className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center bg-transparent border-0 p-0 z-10"
-                    style={{ bottom: '20px', touchAction: 'none' }}
+                    className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center bg-transparent border-0 p-0 z-10 bottom-24 md:bottom-5"
+                    style={{ touchAction: 'none' }}
                   >
                     <div className="relative">
                       {/* Lock-in flash overlay — invisible by default, briefly
@@ -798,10 +809,23 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
                 </div>
               );
             })}
-            {/* Falling notes (bells or drums) */}
+            {/* Falling notes (bells or drums). Halo lights up the bell from
+                ~55 % of the fall through ~95 %, peaking around the visual
+                overlap with the target. Long warmup so kids see it coming. */}
             <AnimatePresence>
               {fallingNotes.map(note => (
-                <FallingBellNote key={note.id} note={note.note} laneIndex={note.laneIndex} totalLanes={activeBells.length} speed={speedConfig.fallSpeed} isDrum={isDrumMode} />
+                <FallingBellNote
+                  key={note.id}
+                  noteId={note.id}
+                  note={note.note}
+                  laneIndex={note.laneIndex}
+                  totalLanes={activeBells.length}
+                  speed={speedConfig.fallSpeed}
+                  isDrum={isDrumMode}
+                  registerRef={registerFallingRef}
+                  glowDelayMs={0.55 * speedConfig.fallSpeed}
+                  glowDurationMs={0.40 * speedConfig.fallSpeed}
+                />
               ))}
             </AnimatePresence>
           </div>
