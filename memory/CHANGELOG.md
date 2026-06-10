@@ -1,5 +1,40 @@
 # Changelog
 
+## Feb 20, 2026 (later ++++++++) — Gamification batch (a/b/c/d/e/g) + quick fixes
+
+User: *"Let's try em all... I HATE the cards for the games AND the names. Just remember that for something to address next."*
+
+### Quick fixes
+- "Listening to Doc..." → "Listening..." everywhere (Doc isn't in Boom Garden, only Stew). Mode blurb also updated to "Stew plays it. You copy back on the snare."
+- **Fullscreen button moved** from `top-2 right-2` to `bottom-3 right-3` so it stops covering the score chip on both desktop and mobile.
+
+### a. Score multiplier badge
+- Live `×1.5` / `×2` / `×3` badge appears beside Stew when streak ≥ 3 / 5 / 7. Per-tap score is multiplied accordingly (base 25/15/10 × current multiplier). Color shifts green → amber → red as the multiplier grows. Probe: `×1.5` at streak 3.
+
+### b. PERFECT-only sparkle burst
+- Every PERFECT tap (≤30 % of tolerance from centre) fires a small 14-piece Confetti burst centred on Stew. Goods and greats stay quiet; perfects feel distinctly punchier.
+
+### c. Cymbal crash + Stew scale-pop on streak milestone
+- On streak ≥ 3 milestone, `playDrumSound('crash')` triggers the existing crash-cymbal audio sample and Stew's wrapper motion.div pops to scale 1.15 for 220 ms before springing back. Audio leads visual by ~50 ms (the cinematic trick) so the burst feels physical.
+
+### d. Stew victory dance on a clean round
+- When `correct === total` in `finishCopyRound`, schedule 4 successive `snareRef.flash()` calls one per beat. Stew physically swings L → R → L → R for 3 seconds. Hint badge below him changes to "✨ Encore!" during the dance. Verified.
+
+### g. Streak arc (3 chips above Stew)
+- Three small red chips above Stew's head fill in as the kid lands consecutive scored taps (modulo 3 within the current streak). When a milestone burst fires they're all fully lit. Glowing red box-shadow on the lit chips. Pure visual goal kids chase mid-tap.
+
+### Files touched
+- `src/pages/BoomGardenPage.js` — multiplier, perfect-sparks, stewPop, victoryDance state + JSX; tier scoring × multiplier; cymbal + scale-pop trigger; victory-dance flash loop in finishCopyRound; "Listening..." copy.
+- `src/components/FullscreenButton.js` — repositioned to bottom-right.
+
+### Skipped from the batch
+- **e. Crowd silhouettes in bleachers** — punted to a follow-up; needs an artwork choice (PNG silhouettes vs CSS-drawn). Easy to layer in once we know the style.
+- **f. Boss rounds every 5th round** — punted; needs pattern-pool choices (do bosses pull harder patterns from the existing level, or new "boss" patterns?). Will spec next time.
+- **h. Stew costume unlocks** — explicitly skipped (user's "not the hats").
+
+### Outstanding (user noted for later)
+- "I HATE the cards for the games AND the names" — to be addressed in a dedicated UI/copy pass.
+
 ## Feb 20, 2026 (later +++++++) — Streak confetti
 
 User: *"love the confetti on a streak idea!"*

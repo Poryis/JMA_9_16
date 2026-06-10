@@ -35,7 +35,7 @@ const MODES = [
   {
     id: 'copy',
     label: 'Copy Cat',
-    blurb: 'Doc claps. You copy it back on the snare.',
+    blurb: 'Stew plays it. You copy back on the snare.',
     sign: 'COPY CAT',
     color: '#4285F4',
     accent: '#1A4FAB',
@@ -209,6 +209,21 @@ export default function BoomGardenPage() {
   // pops in. Cleared automatically after the celebration plays.
   const [streakBurst, setStreakBurst] = useState(null); // { count, mega, key } | null
   const streakBurstTimerRef = useRef(null);
+  // Stew physical reaction on a streak burst — quick scale-pop driven via
+  // inline CSS scale. Together with the cymbal crash this makes the burst
+  // feel like Stew himself caused the explosion.
+  const [stewPop, setStewPop] = useState(false);
+  const containerScalePopRef = useRef(null);
+  // Per-PERFECT mini sparkle bursts — every perfect tap pops a small
+  // confetti so perfects feel distinctly punchier than goods, even outside
+  // streak milestones.
+  const [perfectSparks, setPerfectSparks] = useState([]); // [{ id, key }]
+  const perfectSparkIdRef = useRef(0);
+  // Victory dance: when a round ends with EVERY non-rest beat scored,
+  // Stew breaks into a 4-frame loop dance for ~3 s. Driven from
+  // finishCopyRound when correct === total.
+  const [victoryDance, setVictoryDance] = useState(false);
+  const victoryDanceTimerRef = useRef(null);
 
   // Refs.
   const timeoutsRef = useRef([]);
@@ -339,6 +354,20 @@ export default function BoomGardenPage() {
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 2000);
       setFeedback({ tone: 'great', text: 'Nice rhythm!' });
+      // Victory dance: every-beat-perfect → Stew cycles all 4 left frames
+      // in tempo for ~3 s. Activates only on a TRULY clean round so kids
+      // chase the difference between "good enough" and "nailed it".
+      if (correct === total) {
+        if (victoryDanceTimerRef.current) clearTimeout(victoryDanceTimerRef.current);
+        setVictoryDance(true);
+        // Fire snareRef.flash() every beat for 4 beats so Stew physically
+        // swings his sticks L → R → L → R during the dance.
+        for (let b = 0; b < 4; b++) {
+          const t = setTimeout(() => snareRef.current?.flash(120), b * BEAT_MS);
+          timeoutsRef.current.push(t);
+        }
+        victoryDanceTimerRef.current = setTimeout(() => setVictoryDance(false), 3000);
+      }
       try {
         earnAchievement('rhythm', 'cadet');
         if (level === 'pro')    earnAchievementUpTo('rhythm', 'pro');
@@ -507,7 +536,14 @@ export default function BoomGardenPage() {
               : diff <= tol * 0.60 ? 'great'
               : 'good';
     tapResultsRef.current[targetIdx] = tier === 'good' ? 'perfect' : tier; // round-summary still cares "on time"
-    const scoreDelta = tier === 'perfect' ? 25 : tier === 'great' ? 15 : 10;
+    // Streak multiplier: 1× < 3 streak, 1.5× at 3-4, 2× at 5-6, 3× at 7+.
+    // Computed BEFORE we bump the streak so the tap that LANDS the
+    // threshold uses the previous tier (the multiplier kicks in on the
+    // NEXT tap, so the bonus is earned, not handed out). Common pattern
+    // in score-attack games.
+    const baseDelta = tier === 'perfect' ? 25 : tier === 'great' ? 15 : 10;
+    const mult = streak >= 7 ? 3 : streak >= 5 ? 2 : streak >= 3 ? 1.5 : 1;
+    const scoreDelta = Math.round(baseDelta * mult);
     setScore((s) => s + scoreDelta);
     setStreak((prev) => {
       const next = prev + 1;
@@ -517,17 +553,31 @@ export default function BoomGardenPage() {
         if (streakBurstTimerRef.current) clearTimeout(streakBurstTimerRef.current);
         setStreakBurst({ count: next, mega: next >= 7, key: Date.now() });
         streakBurstTimerRef.current = setTimeout(() => setStreakBurst(null), 1500);
+        // Cymbal crash + Stew scale-pop on the milestone. Audible 50 ms
+        // before the visual, which makes the burst feel physical
+        // (audio leads visual is the cinematic trick).
+        playDrumSound('crash');
+        if (containerScalePopRef.current) clearTimeout(containerScalePopRef.current);
+        setStewPop(true);
+        containerScalePopRef.current = setTimeout(() => setStewPop(false), 220);
       }
       return next;
     });
     setHighlightIndex(targetIdx);
     popHitFeedback(tier);
+    // Per-PERFECT sparkle burst — small confetti so PERFECT taps feel
+    // distinctly punchier than goods even outside streak milestones.
+    if (tier === 'perfect') {
+      const id = ++perfectSparkIdRef.current;
+      setPerfectSparks((prev) => [...prev, { id, key: Date.now() + id }]);
+      setTimeout(() => setPerfectSparks((prev) => prev.filter((s) => s.id !== id)), 900);
+    }
     const allNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
     if (allNonRest.every((i) => claimed.has(i))) {
       const fin = setTimeout(finishCopyRound, 280);
       timeoutsRef.current.push(fin);
     }
-  }, [phase, level, playDrumSound, finishCopyRound, popHitFeedback]);
+  }, [phase, level, playDrumSound, finishCopyRound, popHitFeedback, streak]);
 
   // ---- TWIN BEATS ----
   const startMatch = useCallback(() => {
@@ -967,6 +1017,76 @@ export default function BoomGardenPage() {
           className="flex justify-center items-end mt-auto pt-4 relative"
           style={{ paddingBottom: 'clamp(48px, 8vw, 96px)' }}
         >
+          {/* Multiplier badge — shows live x1.5/x2/x3 over Stew's left
+              shoulder when streak ≥ 3. Reinforces the "your streak is
+              earning you more" feedback loop. */}
+          <AnimatePresence>
+            {streak >= 3 && (
+              <motion.div
+                key={`mult-${streak >= 7 ? '3' : streak >= 5 ? '2' : '1.5'}`}
+                data-testid="streak-multiplier"
+                initial={{ scale: 0.5, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.5, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 480, damping: 16 }}
+                className="absolute rounded-2xl border-3 px-3 py-1 font-black font-display"
+                style={{
+                  bottom: 'calc(100% + 4px)',
+                  left: 'calc(50% - 130px)',
+                  background: streak >= 7
+                    ? 'linear-gradient(135deg,#FF3B30,#FF9500)'
+                    : streak >= 5
+                    ? 'linear-gradient(135deg,#FF9500,#FFCC00)'
+                    : 'linear-gradient(135deg,#34A853,#4CD964)',
+                  borderColor: 'var(--jma-dark)',
+                  color: 'white',
+                  fontSize: 'clamp(20px, 3vw, 28px)',
+                  textShadow: '2px 2px 0 rgba(10,37,64,0.45)',
+                  boxShadow: '0 5px 0 0 var(--jma-dark)',
+                  zIndex: 64,
+                }}
+              >
+                ×{streak >= 7 ? '3' : streak >= 5 ? '2' : '1.5'}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* Streak arc — 3 chips above Stew that light up one-by-one
+              as the kid lands consecutive perfects. Visual goal kids chase. */}
+          <div
+            data-testid="streak-arc"
+            className="absolute flex gap-2 pointer-events-none"
+            style={{ bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)', zIndex: 60 }}
+          >
+            {[0, 1, 2].map((i) => {
+              const lit = (streak % 3) > i || (streak >= 3 && i < 3 && streak % 3 === 0);
+              // Once any milestone (3,5,7,10..) is reached, the arc is fully lit during the burst.
+              const fullyLit = !!streakBurst;
+              const on = fullyLit || lit;
+              return (
+                <motion.div
+                  key={i}
+                  animate={{ scale: on ? 1.05 : 1 }}
+                  transition={{ type: 'spring', stiffness: 520, damping: 18 }}
+                  className="rounded-full border-3"
+                  style={{
+                    width: 18, height: 18,
+                    borderColor: 'var(--jma-dark)',
+                    backgroundColor: on ? '#FF3B30' : 'rgba(255,255,255,0.45)',
+                    boxShadow: on ? '0 0 14px rgba(255,59,48,0.7)' : 'none',
+                  }}
+                />
+              );
+            })}
+          </div>
+          {/* Per-PERFECT sparkle burst — small confetti */}
+          {perfectSparks.map((s) => (
+            <div
+              key={s.key}
+              className="pointer-events-none absolute inset-0 flex items-center justify-center"
+            >
+              <Confetti count={14} size={180} testId={`perfect-sparkle-${s.id}`} />
+            </div>
+          ))}
           {/* Confetti burst from Stew's drum on a streak milestone. Mega
               variant (more pieces + wider spread) at streaks of 7+. */}
           {streakBurst && (
@@ -1038,20 +1158,27 @@ export default function BoomGardenPage() {
               </motion.div>
             ))}
           </AnimatePresence>
-          <StewDrummer
-            ref={snareRef}
-            onTap={handleSnareTap}
-            disabled={mode === 'match'}
-            hint={
-              mode === 'match' && phase === 'demo'    ? 'Listen...' :
-              mode === 'match' && phase === 'input'   ? 'Pick a strip ↑' :
-              mode === 'match' && phase === 'reveal'  ? 'Round complete' :
-              phase === 'input'   ? 'TAP STEW!' :
-              phase === 'countin' ? 'Get ready...' :
-              phase === 'demo'    ? 'Listening to Doc...' :
-              'Round complete'
-            }
-          />
+          <motion.div
+            data-testid="stew-pop-wrap"
+            animate={{ scale: stewPop ? 1.15 : victoryDance ? 1.06 : 1 }}
+            transition={{ type: 'spring', stiffness: 480, damping: 14 }}
+          >
+            <StewDrummer
+              ref={snareRef}
+              onTap={handleSnareTap}
+              disabled={mode === 'match'}
+              hint={
+                mode === 'match' && phase === 'demo'    ? 'Listen...' :
+                mode === 'match' && phase === 'input'   ? 'Pick a strip ↑' :
+                mode === 'match' && phase === 'reveal'  ? 'Round complete' :
+                phase === 'input'   ? 'TAP STEW!' :
+                phase === 'countin' ? 'Get ready...' :
+                phase === 'demo'    ? 'Listening...' :
+                victoryDance ? '✨ Encore!' :
+                'Round complete'
+              }
+            />
+          </motion.div>
         </div>
 
         {/* Per-tap PERFECT! / GREAT! / GOOD! / MISS! popup — center of
