@@ -1177,6 +1177,7 @@ export default function BoomGardenPage() {
               startAtMs={metronomeStartMs}
               beatsPerMeasure={4}
               size={18}
+              beatMs={BEAT_MS}
             />
           </div>
         )}
@@ -1195,7 +1196,7 @@ export default function BoomGardenPage() {
           style={{ minHeight: 'clamp(80px, 14vw, 120px)' }}
         >
           {showCountIn && (
-            <CountInOverlay running={true} startAtMs={countinStartMs} />
+            <CountInOverlay running={true} startAtMs={countinStartMs} beatMs={BEAT_MS} />
           )}
         </div>
 

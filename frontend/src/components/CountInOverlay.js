@@ -13,13 +13,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BEAT_MS } from '../data/rhythms';
+import { BEAT_MS as DEFAULT_BEAT_MS } from '../data/rhythms';
 
 const BEAT_COUNT = 4;
 // Cool → warm gradient so the kid feels the heat building toward beat 4.
 const TILE_COLORS = ['#4285F4', '#34A853', '#FF9500', '#FF3B30'];
 
-export default function CountInOverlay({ running, startAtMs }) {
+export default function CountInOverlay({ running, startAtMs, beatMs = DEFAULT_BEAT_MS }) {
   const [activeBeat, setActiveBeat] = useState(-1);
 
   useEffect(() => {
@@ -34,19 +34,19 @@ export default function CountInOverlay({ running, startAtMs }) {
         raf = requestAnimationFrame(tick);
         return;
       }
-      // Beat 0 fires at t=0. Beat 3 fires at t=3*BEAT_MS. After
-      // 4*BEAT_MS the count-in is over (input starts) but we hold the
+      // Beat 0 fires at t=0. Beat 3 fires at t=3*beatMs. After
+      // 4*beatMs the count-in is over (input starts) but we hold the
       // last-beat highlight for 250 ms so it doesn't disappear before
       // the eye can register beat 4.
-      const idx = Math.min(BEAT_COUNT - 1, Math.floor(elapsed / BEAT_MS));
+      const idx = Math.min(BEAT_COUNT - 1, Math.floor(elapsed / beatMs));
       setActiveBeat(idx);
-      if (elapsed < BEAT_COUNT * BEAT_MS + 250) {
+      if (elapsed < BEAT_COUNT * beatMs + 250) {
         raf = requestAnimationFrame(tick);
       }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [running, startAtMs]);
+  }, [running, startAtMs, beatMs]);
 
   return (
     <div

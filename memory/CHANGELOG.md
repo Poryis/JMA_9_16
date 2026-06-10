@@ -1,5 +1,30 @@
 # Changelog
 
+## Feb 21, 2026 (even later) — Tempo bug FIXED: visual count-in + BeatPulse now respect tempo dial
+
+User: *"They metronome lights and the count in are at 80 bpm even if you are expecting and sounding everything at 100bpm..."*
+
+### The actual bug
+- `BeatPulse` and `CountInOverlay` both imported the **constant** `BEAT_MS` (750ms) directly from `data/rhythms.js` and used it as the timing divisor inside their requestAnimationFrame loops.
+- So no matter what tempo the player picked, the visual metronome dots and the 1-2-3-4 count-in tiles **always pulsed at 80 BPM**, while the audio (click track, snare hits, count-in beeps) ran at the tempo-adjusted speed.
+- Result: hearing 100 BPM but seeing 80 BPM = total cognitive whiplash for elementary kids trying to lock in the beat.
+
+### Fix
+- Both components now accept a `beatMs` prop (defaulting to the imported constant for safety).
+- `BoomGardenPage` passes the live `BEAT_MS` (already tempo-adjusted via `BASE_BEAT_MS / tempoMul`) to both `<BeatPulse beatMs={BEAT_MS} />` and `<CountInOverlay beatMs={BEAT_MS} />`.
+- The rAF loops inside both components now compute `Math.floor(elapsed / beatMs)` against the prop, so the visual cadence matches the audio cadence at every tempo.
+
+### Verified empirically via playwright
+- **Easy (60 BPM)**: count-in tile transitions at 1059ms / 1034ms / 999ms (target 1000ms). ✅
+- **Turbo (100 BPM)**: count-in tile transitions at 682ms / 601ms / 587ms (target 600ms). ✅
+- Before this fix both tempos showed ~750ms deltas regardless of dial.
+
+### Files touched
+- `src/components/BeatPulse.js` — accepts `beatMs` prop, threads it through the rAF closure deps.
+- `src/components/CountInOverlay.js` — accepts `beatMs` prop, same treatment.
+- `src/pages/BoomGardenPage.js` — passes `beatMs={BEAT_MS}` to both components.
+
+
 ## Feb 21, 2026 (later) — How-to-Play modal + tempo-bug investigation
 
 User: *"The tempo that checks if we're right or not is stuck at i think 80 bpm... so thats a bug. I also think we need instruction screen. Remember its for elementary. But jumping right into the game is probably too much?"*

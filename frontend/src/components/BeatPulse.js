@@ -9,9 +9,9 @@
 // matter how React's render loop is feeling that day.
 
 import { useEffect, useRef } from 'react';
-import { BEAT_MS } from '../data/rhythms';
+import { BEAT_MS as DEFAULT_BEAT_MS } from '../data/rhythms';
 
-export default function BeatPulse({ running, startAtMs, beatsPerMeasure = 4, size = 22 }) {
+export default function BeatPulse({ running, startAtMs, beatsPerMeasure = 4, size = 22, beatMs = DEFAULT_BEAT_MS }) {
   const dotRefs = useRef([]);
   const rafRef = useRef(null);
   const lastBeatRef = useRef(-1);
@@ -31,8 +31,8 @@ export default function BeatPulse({ running, startAtMs, beatsPerMeasure = 4, siz
         rafRef.current = requestAnimationFrame(tick);
         return;
       }
-      const currentBeat = Math.floor(elapsed / BEAT_MS);
-      const phase = (elapsed % BEAT_MS) / BEAT_MS; // 0..1 within the beat
+      const currentBeat = Math.floor(elapsed / beatMs);
+      const phase = (elapsed % beatMs) / beatMs; // 0..1 within the beat
       // Pulse the current beat dot — bright + pop in the first 35% of the beat.
       const activeIdx = currentBeat % beatsPerMeasure;
       if (currentBeat !== lastBeatRef.current) {
@@ -54,7 +54,7 @@ export default function BeatPulse({ running, startAtMs, beatsPerMeasure = 4, siz
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [running, startAtMs, beatsPerMeasure]);
+  }, [running, startAtMs, beatsPerMeasure, beatMs]);
 
   return (
     <div className="flex items-center justify-center gap-2 md:gap-3" data-testid="beat-pulse">
