@@ -44,7 +44,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
   const timeoutRef = useRef(null);
   const bellsRowRef = useRef(null); // Imperative handle to flash kazoos instantly
-  const stewImgRef = useRef(null);  // The single <img> we swap src on
+  const stewFrameRefs = useRef([null, null, null, null]);
   const stewContainerRef = useRef(null); // For head-tilt rotation
   const stewTimerRef = useRef(null);
   const [musicalNotes, setMusicalNotes] = useState([]); // Floating note emojis from Stew's beak
@@ -80,12 +80,19 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     setTimeout(() => setShowConfetti(prev => ({ ...prev, on: false })), 2000);
   }, [playFanfare]);
 
-  // Swap the single Stew <img> to the requested frame via direct DOM src
-  // mutation. This bypasses React reconciliation entirely so rapid swaps
-  // (110 ms apart during the demo cycle) don't fight any concurrent re-render
-  // triggered by setState in the same handler.
+  // Show frame `i` by flipping each <img>'s inline `style.display`. We mount
+  // all 4 frames simultaneously and toggle visibility (Beat Lab pattern). The
+  // *default* visibility lives in CSS (.stew-frame / .stew-frame-default) so
+  // React reconciliation NEVER touches `display` — the imperative overrides
+  // here survive every re-render, including ones triggered by setHighlighted-
+  // Note / setMusicalNotes in the same tick as cycleStew.
   const showStewFrame = useCallback((i) => {
-    if (stewImgRef.current) stewImgRef.current.src = STEW_FRAMES[i];
+    const refs = stewFrameRefs.current;
+    for (let idx = 0; idx < refs.length; idx++) {
+      const el = refs[idx];
+      if (!el) continue;
+      el.style.display = idx === i ? 'block' : 'none';
+    }
   }, []);
 
   const cycleStew = useCallback(() => {
@@ -437,27 +444,35 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           </div>
         )}
 
-        {/* Stew - cycles through frames each time a kazoo plays.
-            One <img> tag whose `src` we swap imperatively via ref. This is
-            simpler than the previous 4-img display-toggle (which lost frames
-            whenever React re-rendered and re-applied its JSX style attrs)
-            and matches the proven pattern used by StewDrummer in Boom Garden.
-            Container rotates on each note for a head-tilt effect.
-            Floating ♪ ♫ notes pop up from the beak area on each note. */}
-        <div className="relative w-32 h-32 md:w-44 md:h-44 mb-2">
+        {/* Stew — 4 frames mounted simultaneously, only one visible at a time.
+            We use CSS class defaults (`.stew-frame` is `display:none`,
+            `.stew-frame-default` overrides to `display:block`) so that
+            React's reconciliation NEVER touches `display` on these imgs.
+            cycleStew() then flips `style.display` imperatively via the
+            stewFrameRefs and those overrides survive every re-render —
+            even ones triggered by setState calls fired in the same tick.
+            Same proven pattern as the Beat Lab drum kit. */}
+        <div
+          key="stew-mascot-container"
+          className="relative w-32 h-32 md:w-44 md:h-44 mb-2"
+        >
           <div
             ref={stewContainerRef}
             data-testid="stew-mascot"
             className="w-full h-full relative"
             style={{ transition: 'transform 0.18s ease-out', transformOrigin: 'center bottom' }}
           >
-            <img
-              ref={stewImgRef}
-              src={STEW_FRAMES[0]}
-              alt="Stew"
-              draggable={false}
-              className="w-full h-full object-contain drop-shadow-xl pointer-events-none select-none"
-            />
+            {STEW_FRAMES.map((src, idx) => (
+              <img
+                key={idx}
+                ref={(el) => { stewFrameRefs.current[idx] = el; }}
+                src={src}
+                alt={idx === 0 ? 'Stew' : ''}
+                aria-hidden={idx === 0 ? undefined : 'true'}
+                draggable={false}
+                className={`stew-frame${idx === 0 ? ' stew-frame-default' : ''} absolute inset-0 w-full h-full object-contain drop-shadow-xl pointer-events-none select-none`}
+              />
+            ))}
           </div>
           {/* Floating musical notes from Stew's beak */}
           <AnimatePresence>

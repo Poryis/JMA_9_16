@@ -100,6 +100,27 @@ h1, h2, h3, h4, h5, h6 {
   transform-origin: center center;
 }
 
+/* Stew frame-cycle pattern — same approach as the drum kit:
+   Default visibility lives in CSS (not inline JSX style), so React
+   reconciliation never overwrites the imperative `style.display` overrides
+   that drive the animation. Frame 0 (neutral) is visible by default; all
+   other frames sit hidden until showStewFrame() flips them. */
+.stew-frame {
+  display: none;
+}
+.stew-frame-default {
+  display: block;
+}
+
+/* Same pattern for the Boom Garden StewDrummer (8 frames: 4 left + 4 right).
+   Frame 0 (left neutral) is the shared default pose visible at idle. */
+.stew-drum-frame {
+  display: none;
+}
+.stew-drum-frame-default {
+  display: block;
+}
+
 .bell-instrument {
   cursor: pointer;
   user-select: none;

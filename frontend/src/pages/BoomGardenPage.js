@@ -331,13 +331,21 @@ export default function BoomGardenPage() {
       setPhase('countin');
       setHighlightIndex(-1);
       scheduleMetronome(4, 0);
+      // OPEN THE TAP WINDOW NOW. inputStartRef + expectedStarts get pre-set
+      // so an anticipatory tap on the last count-in beat (just BEFORE the
+      // official 'input' phase) lands within tolerance of beat 1. Without
+      // this, the kid's tap was rejected as "before the unlock moment" —
+      // an objectively impossible standard for a human reacting to a click
+      // track. Notes' expected times are shifted forward by countInMs so
+      // beat 1 is still expected at the same wall-clock moment as before.
+      inputStartRef.current = Date.now();
+      expectedStartsRef.current = noteStartTimes(pat, BEAT_MS).map((t) => t + countInMs);
     }, countInDelay);
     timeoutsRef.current.push(countIn);
-    // Input opens right after the count-in.
+    // Input opens right after the count-in. inputStartRef / expectedStarts
+    // already configured at count-in start — we only flip the phase here.
     const handoff = setTimeout(() => {
       setPhase('input');
-      inputStartRef.current = Date.now();
-      expectedStartsRef.current = noteStartTimes(pat, BEAT_MS);
       // Click continues UNDERNEATH the kid's tapping.
       scheduleMetronome(totalBeats, 0);
       const failsafe = setTimeout(finishCopyRound, totalBeats * BEAT_MS + 1200);
@@ -358,8 +366,13 @@ export default function BoomGardenPage() {
   // already triggers StewDrummer.handleDown → playHit, which animates him.
   // Calling flash() here too would double-tick the L/R alternation counter
   // and cause Stew to look like he's stuck on one side.
+  //
+  // We accept taps during 'countin' too (NOT only 'input') so that an
+  // anticipatory tap during the last count-in beat — which is normal human
+  // reaction-time behaviour against a click track — lands within tolerance
+  // of beat 1 instead of being silently swallowed.
   const handleSnareTap = useCallback(() => {
-    if (phase !== 'input') return;
+    if (phase !== 'input' && phase !== 'countin') return;
     playDrumSound('snare');
     const tapTime = Date.now() - inputStartRef.current;
     const pat = patternRef.current || [];
@@ -386,8 +399,16 @@ export default function BoomGardenPage() {
       return;
     }
     const diff = Math.abs(tapTime - expectedStarts[targetIdx]);
+    if (diff > tol) {
+      // Tap is WAY ahead of the next note (very common during count-in or
+      // a wildly anticipatory in-input tap). Do NOT claim the note — the kid
+      // gets the audio + Stew animation feedback (already triggered above
+      // via the kazoo path), and the note is still available for a proper
+      // attempt within the tolerance window.
+      return;
+    }
     claimed.add(targetIdx);
-    tapResultsRef.current[targetIdx] = diff <= tol ? 'perfect' : 'miss';
+    tapResultsRef.current[targetIdx] = 'perfect';
     setHighlightIndex(targetIdx);
     const allNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
     if (allNonRest.every((i) => claimed.has(i))) {
@@ -473,21 +494,27 @@ export default function BoomGardenPage() {
     initAudioContext();
     clearTimeouts();
     const COUNT_IN_BEATS = 4;
+    const countInMs = COUNT_IN_BEATS * BEAT_MS;
     const totalBeats = patternBeats(pat);
     // Count-in: 4 hi-hat ticks while strip scrolls TO the strike line.
     setPhase('countin');
     scheduleMetronome(COUNT_IN_BEATS, 0);
+    // Open the tap window NOW so anticipatory taps on the last count-in beat
+    // (before the strike line) land within tolerance of beat 1. Expected note
+    // start times are shifted forward by the count-in length so beat 1's
+    // wall-clock target is unchanged.
+    inputStartRef.current = Date.now();
+    expectedStartsRef.current = noteStartTimes(pat, BEAT_MS).map((t) => t + countInMs);
     const trailStart = setTimeout(() => {
       setPhase('input');
-      inputStartRef.current = Date.now();
-      expectedStartsRef.current = noteStartTimes(pat, BEAT_MS);
+      // (inputStartRef + expectedStarts already configured)
       scheduleMetronome(totalBeats, 0);
       const fin = setTimeout(() => {
         setHighlightIndex(-1);
         finishCopyRound();
       }, totalBeats * BEAT_MS + 600);
       timeoutsRef.current.push(fin);
-    }, COUNT_IN_BEATS * BEAT_MS);
+    }, countInMs);
     timeoutsRef.current.push(trailStart);
   }, [level, initAudioContext, clearTimeouts, scheduleMetronome, finishCopyRound]);
 
@@ -748,14 +775,14 @@ export default function BoomGardenPage() {
           <StewDrummer
             ref={snareRef}
             onTap={handleSnareTap}
-            disabled={phase !== 'input' || mode === 'match'}
+            disabled={mode === 'match' || (phase !== 'input' && phase !== 'countin')}
             hint={
               mode === 'match' && phase === 'demo'    ? 'Listen...' :
               mode === 'match' && phase === 'input'   ? 'Pick a strip ↑' :
               mode === 'match' && phase === 'reveal'  ? 'Round complete' :
               phase === 'input'   ? 'TAP STEW!' :
+              phase === 'countin' ? 'Get ready...' :
               phase === 'demo'    ? 'Listen...' :
-              phase === 'countin' ? '1 · 2 · 3 · 4' :
               'Wait'
             }
           />

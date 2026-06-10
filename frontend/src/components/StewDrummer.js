@@ -1,11 +1,19 @@
 // StewDrummer — Stew the llama performs the drums for Boom Garden.
 //
 // Each hit alternates between his LEFT-stick and RIGHT-stick animations
-// (4 frames each, frame 1 = the shared neutral pose). The same animation
+// (4 frames each, frame 0 = the shared neutral pose). The same animation
 // flow runs whether the kid taps Stew himself (input phase) or whether
 // `.flash()` is called from the demo (Doc's claps in Copy Cat / metronome
-// in Tap Trail). Direct-DOM `src` swaps — zero React renders during the
-// animation so we stay in time with the audio.
+// in Tap Trail).
+//
+// Visibility pattern: ALL 8 frames are mounted in the DOM at once and
+// hidden by default via CSS class `.stew-drum-frame { display: none }`.
+// One frame at a time is flipped on via imperative `style.display = 'block'`.
+// Because the default visibility lives in CSS (not in inline JSX style),
+// React reconciliation NEVER touches `display`, and our imperative overrides
+// survive every re-render — even ones triggered by setState calls in the
+// same tick as a tap. (This is the same trick the Beat Lab drum kit uses,
+// and it eliminates the "Stew animates twice then freezes" regression.)
 
 import { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { motion } from 'framer-motion';
@@ -27,13 +35,18 @@ const RIGHT_FRAMES = [
 // at 80 BPM (750 ms/beat) without bleeding into the next downbeat.
 const FRAME_MS = 45;
 
+// All 8 frames in render order. Index 0 (left-1) is the visible default —
+// shared neutral pose for both sides.
+const ALL_FRAMES = [...LEFT_FRAMES, ...RIGHT_FRAMES];
+
 export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hint }, ref) {
-  const imgRef = useRef(null);
+  const frameRefs = useRef([]);
+  const containerRef = useRef(null); // for the dataset.hits counter
   const timersRef = useRef([]);
 
   // Preload every frame so the first hit doesn't stutter waiting on disk.
   useEffect(() => {
-    [...LEFT_FRAMES, ...RIGHT_FRAMES].forEach((src) => {
+    ALL_FRAMES.forEach((src) => {
       const i = new Image();
       i.src = src;
     });
@@ -44,29 +57,35 @@ export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hi
     timersRef.current = [];
   };
 
-  // Play one full hit. Alternation counter lives on the <img>'s data-hits
-  // attribute — survives any React re-mount or strict-mode double-render, so
-  // we genuinely flip sides on every successive hit no matter where the call
-  // came from (kid tap, demo flash, etc).
+  // Imperatively show ONE frame and hide the other 7. Uses `style.display`
+  // directly — the CSS class default is hidden for all but the default neutral
+  // (left-1) so React never overwrites this.
+  const showFrame = (frameIndex) => {
+    const refs = frameRefs.current;
+    for (let i = 0; i < refs.length; i++) {
+      const el = refs[i];
+      if (!el) continue;
+      el.style.display = i === frameIndex ? 'block' : 'none';
+    }
+  };
+
+  // Play one full hit. Alternation counter lives on the container's
+  // dataset.hits attribute so it survives any React re-mount or strict-mode
+  // double-render. We genuinely flip sides on every successive hit no matter
+  // where the call came from (kid tap, demo flash, etc).
   const playHit = () => {
-    if (!imgRef.current) return;
-    const count = parseInt(imgRef.current.dataset.hits || '0', 10);
-    imgRef.current.dataset.hits = String(count + 1);
+    if (!containerRef.current) return;
+    const count = parseInt(containerRef.current.dataset.hits || '0', 10);
+    containerRef.current.dataset.hits = String(count + 1);
     const useLeft = count % 2 === 0;
-    const frames = useLeft ? LEFT_FRAMES : RIGHT_FRAMES;
+    const offset = useLeft ? 0 : 4; // left frames are 0..3, right are 4..7
     clearAnimTimers();
-    imgRef.current.src = frames[1];
-    timersRef.current.push(setTimeout(() => {
-      if (imgRef.current) imgRef.current.src = frames[2];
-    }, FRAME_MS));
-    timersRef.current.push(setTimeout(() => {
-      if (imgRef.current) imgRef.current.src = frames[3];
-    }, FRAME_MS * 2));
-    timersRef.current.push(setTimeout(() => {
-      // Snap back to whichever neutral pose matches the side we just hit so
-      // the bounce-back looks smooth rather than teleporting across sides.
-      if (imgRef.current) imgRef.current.src = frames[0];
-    }, FRAME_MS * 4));
+    showFrame(offset + 1);
+    timersRef.current.push(setTimeout(() => showFrame(offset + 2), FRAME_MS));
+    timersRef.current.push(setTimeout(() => showFrame(offset + 3), FRAME_MS * 2));
+    // Snap back to whichever neutral pose matches the side we just hit so the
+    // bounce-back looks smooth rather than teleporting across sides.
+    timersRef.current.push(setTimeout(() => showFrame(offset + 0), FRAME_MS * 4));
   };
 
   useImperativeHandle(ref, () => ({ flash: playHit }), []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -84,6 +103,7 @@ export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hi
 
   return (
     <motion.button
+      ref={containerRef}
       type="button"
       data-testid="boom-stew-drummer"
       onPointerDown={handleDown}
@@ -99,13 +119,17 @@ export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hi
       }}
       whileTap={!disabled ? { y: 4 } : undefined}
     >
-      <img
-        ref={imgRef}
-        src={LEFT_FRAMES[0]}  // shared neutral pose for both sides
-        alt="Stew on drums"
-        draggable={false}
-        className="w-full h-auto object-contain pointer-events-none select-none"
-      />
+      {ALL_FRAMES.map((src, idx) => (
+        <img
+          key={idx}
+          ref={(el) => { frameRefs.current[idx] = el; }}
+          src={src}
+          alt={idx === 0 ? 'Stew on drums' : ''}
+          aria-hidden={idx === 0 ? undefined : 'true'}
+          draggable={false}
+          className={`stew-drum-frame${idx === 0 ? ' stew-drum-frame-default' : ''} ${idx === 0 ? '' : 'absolute inset-0'} w-full h-auto object-contain pointer-events-none select-none`}
+        />
+      ))}
       {hint && (
         <div
           className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border-3 px-3 py-0.5 text-xs font-black font-display whitespace-nowrap"

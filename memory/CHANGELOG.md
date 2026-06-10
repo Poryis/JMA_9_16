@@ -1,5 +1,36 @@
 # Changelog
 
+## Feb 20, 2026 (later +++) — Beat Lab pattern for Stew + lockout fix
+
+User report (in order): *"stews animations is still broken... He'll play twice at most, then freeze"* and *"stew is locked for too long. It's not really possible for a human to nail perfectly on the beat, and will often play even a couple miliseconds before you unlock"*
+
+### Root cause of the freeze
+React's reconciliation was clobbering imperative DOM updates. The previous "single img + src swap" pattern in SimonSaysPage relied on React's prop-diffing being smart enough to skip src updates when the JSX prop reference was unchanged — which mostly worked, but the parent's conditional `{gameState === 'playing' && <div>}` sibling was shifting the Stew container's position in the parent's child array, sometimes triggering a remount that reset the imperative src.
+
+### Fix: Beat Lab pattern
+Same trick the Beat Lab drum kit already used successfully — and exactly what the user suggested we look at:
+- Mount **all frames** at once (4 imgs for Stu Kazoo Says, 8 imgs for Boom Garden StewDrummer).
+- Put the default visibility in **CSS classes** (`.stew-frame` / `.stew-frame-default`, `.stew-drum-frame` / `.stew-drum-frame-default`), NOT in inline JSX `style={{ display }}`.
+- Imperative `el.style.display = 'block' / 'none'` flips visibility.
+- Because the JSX never has a `style.display`, React reconciliation never overwrites the imperative overrides. They survive every re-render — including ones triggered by setState calls in the same tick as the animation start.
+
+### "Stew locked too long" fix (count-in tap window)
+The kid was being silently rejected for tapping a few ms before the official `phase === 'input'` transition — an objectively impossible standard against a click track. Fixed:
+1. `inputStartRef.current` and `expectedStartsRef.current` are now set at **count-in start** (not at input start). Note expected times are shifted forward by `countInMs` so beat 1's wall-clock target is unchanged.
+2. `handleSnareTap` now fires during `'countin'` as well as `'input'`.
+3. The drummer's `disabled` prop now includes `'countin'` as an active phase, so Stew is tappable starting at the first count-in click.
+4. If a tap is more than `tol` ms outside the next note's expected time (e.g. a beat-1 click track tap), the note is **not claimed** — kid gets audio + Stew animation feedback and can still hit that note within the tolerance window.
+5. Hint text during count-in changed from `'1 · 2 · 3 · 4'` to `'Get ready...'` — clearer that they CAN tap now (warm-up taps) rather than implying they must wait.
+
+### Verified via programmatic single-pointerdown probe
+Across 5 input-phase taps, each delta was exactly +1 and visible frame alternated cleanly `right-1 → left-1 → right-1 → left-1 → right-1`. Round summary showed `3 of 3 on time!` despite test injecting anticipatory taps during the count-in — confirming the tap window now extends earlier. No freeze across multiple rounds.
+
+### Files touched
+- `src/components/StewDrummer.js` — rewritten with 8-frame Beat Lab pattern + dataset counter on the button container.
+- `src/pages/SimonSaysPage.js` — Stew rebuilt as 4-frame Beat Lab pattern, single img + src swap retired.
+- `src/pages/BoomGardenPage.js` — `startCopy` / `startTrail` open the tap window at count-in start; `handleSnareTap` accepts `'countin'` taps and skips claiming on out-of-tolerance early taps; StewDrummer `disabled` and hint updated.
+- `src/index.css` — added `.stew-frame{,-default}` and `.stew-drum-frame{,-default}` class defaults.
+
 ## Feb 20, 2026 (later +) — Stew double-tap fix in Boom Garden
 
 User report: *"stews animations is still breaking, and even when it works, it doesnt switch between left and right"*
