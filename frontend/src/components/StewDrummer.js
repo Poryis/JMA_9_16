@@ -115,10 +115,13 @@ export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hi
         // Explicit aspect-ratio so the button always has height even when
         // every <img> child is `position: absolute` — otherwise the moment
         // we flip frame 0 to display:none mid-animation, the parent
-        // collapses to 0 px high and Stew vanishes. THIS was the real bug.
+        // collapses to 0 px high and Stew vanishes.
         aspectRatio: '16 / 9',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.65 : 1,
+        cursor: 'pointer',
+        // No opacity dim when disabled — Stew should always look alive and
+        // ready (Twin Beats picks strips, not Stew, but he's still part of
+        // the band so we keep him at full brightness regardless).
+        opacity: 1,
         touchAction: 'none',
         filter: 'drop-shadow(0 10px 12px rgba(0,0,0,0.35))',
       }}

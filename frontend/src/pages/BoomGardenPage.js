@@ -948,7 +948,10 @@ export default function BoomGardenPage() {
             `mt-auto` pushes him down to the bottom of the flex column so
             his feet rest on the football field background instead of
             floating mid-air. */}
-        <div className="flex justify-center items-end mt-auto pt-4 pb-2 relative">
+        <div
+          className="flex justify-center items-end mt-auto pt-4 relative"
+          style={{ paddingBottom: 'clamp(48px, 8vw, 96px)' }}
+        >
           {/* Floating "+25 / +15 / +10 / Miss" chips that drift up from
               Stew on every scored tap — same instant-feedback vibe as
               Who's Got Rhythm's combo chips. */}
