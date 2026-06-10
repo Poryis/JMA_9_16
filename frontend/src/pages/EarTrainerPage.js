@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Play, Ear, RotateCcw, Volume2, Trophy, Rabbit } from 'lucide-react';
 import { JellyBellsRow, BELLS } from '../components/JellyBells';
 import { GameHeader, FeedbackPopup } from '../components/GameUI';
-import { PageCharacters } from '../components/PageCharacters';
 import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import useAudio from '../hooks/useAudio';
@@ -396,7 +395,6 @@ function EarTrainerPage() {
           ))}
         </div>
       </main>
-      <PageCharacters page="ear-trainer" />
     </div>
   );
 }

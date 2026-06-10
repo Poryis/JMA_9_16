@@ -3,6 +3,13 @@
 ## Feb 19, 2026 — Mobile playability boost in Who's Got the Rhythm
 Two compounding fixes for the "I don't know when to tap, and I want to tap the bell, not a button" mobile pain:
 
+### Beat Lab + Ear Trainer composition cleanup
+- User flagged Beat Lab as a "compositional nightmare" — two Charlies and two Chunks at the bottom-right, plus Chunk blocking the top-left of the beat lab area.
+- **Root cause**: two character systems stacked on the same page. `PageCharacters` (older, fixed bottom-3 corners, picked Charlie + Chunk for both Beat Lab and Ear Trainer) was rendering on top of `RoomCharacters` (newer per-room cast with outfit cycling and speech bubbles). Result: duplicates at the bottom corners.
+- **Fix**: removed `PageCharacters` import + render from `LoopStudioPage.js` and `EarTrainerPage.js`. The superior `RoomCharacters` system stays.
+- Beat Lab is intentionally left with an empty room-cast (`'beat-lab': []`) because the scene already has the drum kit, turntable, JMA-branded pulsing speakers, sequencer grid, and controls bar — adding floating characters made it cluttered instead of charming. `RoomCharacters` now early-returns null when the cast is empty.
+- Other rooms (Jam Hall, Rhythm Arcade, Kazoo Room, Ear Quest, Note Match, Detective) keep their RoomCharacters casts.
+
 ### Round 3 — Threw out the time math, switched to position-based hit detection
 - User feedback: "I'm a professional musician and didn't get one perfect... very unintuitive now" + "can't have the target be that low on the screen visually, at least on the phone."
 - **Root cause**: my `IDEAL_PROGRESS` constant was a guess that depended on screen size, bell heights, breakpoints, etc. — fragile by design. A pro can FEEL when bells visually meet, so if the algorithm disagrees, the algorithm is wrong.

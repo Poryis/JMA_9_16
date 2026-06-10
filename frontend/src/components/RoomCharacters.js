@@ -105,12 +105,11 @@ const ROOM_CAST = {
     { id: 'jazzy',   pos: { l: 92, t: 22, w: 6.5, anim: 'sway' }, line: 'Trust your ears.' },
     { id: 'charlie', pos: { l: 5,  t: 80, w: 7,   anim: 'bob' },  line: 'I always close my eyes.' },
   ],
-  // Beat Lab (Loop Studio)
-  'beat-lab': [
-    { id: 'chunk',   pos: { l: 3,  t: 20, w: 7.5, anim: 'bob' },  line: 'Stack those beats!' },
-    { id: 'jazzy',   pos: { l: 93, t: 22, w: 6.5, anim: 'sway' }, line: 'Make it funky!' },
-    { id: 'charlie', pos: { l: 95, t: 82, w: 6.5, anim: 'sway' }, line: 'Loop it!' },
-  ],
+  // Beat Lab (Loop Studio) — the scene is ALREADY packed with the drum kit,
+  // turntable, JMA speakers, sequencer grid, and controls bar. Floating
+  // peripheral characters here read as visual clutter instead of personality,
+  // so we keep this room intentionally empty of the room-cast.
+  'beat-lab': [],
   // Note Match — memory pairs game
   'note-match': [
     { id: 'doctor',  pos: { l: 5,  t: 22, w: 7,   anim: 'peek' }, line: 'Watch closely!' },
@@ -249,7 +248,7 @@ function CharacterImp({ id, pos, line }) {
  */
 export default function RoomCharacters({ room }) {
   const cast = ROOM_CAST[room];
-  if (!cast) return null;
+  if (!cast || cast.length === 0) return null;
   return (
     <div className="absolute inset-0 pointer-events-none z-20 hidden md:block" aria-hidden={false}>
       {cast.map((c) => (

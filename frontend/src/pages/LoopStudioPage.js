@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Play, Square, Trash2, Plus, Minus, Volume2, Circle, Download } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
-import { PageCharacters } from '../components/PageCharacters';
 import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import { DrumKitVisual, TurntableVisual } from '../components/Instruments';
@@ -563,7 +562,6 @@ function LoopStudioPage() {
           </div>
         </div>
       </main>
-      <PageCharacters page="loop-studio" />
     </div>
   );
 }
