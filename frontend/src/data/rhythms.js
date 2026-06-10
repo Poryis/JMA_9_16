@@ -27,6 +27,16 @@ export const NOTE_DEFS = {
 // slow enough for 5-year-olds to track yet fast enough to feel musical.
 export const BEAT_MS = 750;
 
+// All patterns sit in 4/4 — every 4 beats is one measure. Used by the strips
+// to draw a "barline" between measures so kids start to read music in
+// chunks, not as one long ribbon.
+export const BEATS_PER_MEASURE = 4;
+
+// How many rounds a player plays before we show a Session Summary screen.
+// 5 keeps the loop tight enough that little kids don't burn out, but long
+// enough that streaks + multipliers actually pay off.
+export const ROUNDS_PER_SESSION = 5;
+
 // Per-difficulty tap-timing tolerance windows (± ms from the expected beat).
 // Cadet is extra forgiving — a 5-year-old's "in time" is naturally loose.
 export const TOLERANCE_MS = {
@@ -56,13 +66,16 @@ export const PATTERNS = {
     ['half',    'eighth',  'eighth',  'quarter'],
     ['eighth',  'eighth',  'quarter', 'eighth',  'eighth',  'quarter'],
   ],
+  // Copy Cat hard = TWO measures (8 beats). Every pattern below is exactly
+  // 8 beats so the strip always shows a clean two-bar phrase — never a
+  // lop-sided 6-beat thing that lands mid-measure.
   master: [
-    ['whole'],
-    ['half', 'half'],
-    ['quarter', 'quarter', 'half', 'quarter', 'quarter', 'half'],
-    ['eighth',  'eighth',  'eighth', 'eighth', 'quarter', 'quarter', 'half'],
-    ['half', 'quarter', 'eighth', 'eighth', 'quarter', 'quarter'],
-    ['whole', 'half', 'half'],
+    ['whole', 'half', 'half'],                                                  // 4+2+2 = 8
+    ['half', 'half', 'quarter', 'quarter', 'half'],                             // 2+2+1+1+2 = 8
+    ['quarter', 'quarter', 'half', 'quarter', 'quarter', 'half'],               // 1+1+2+1+1+2 = 8
+    ['eighth', 'eighth', 'eighth', 'eighth', 'quarter', 'quarter', 'quarter', 'quarter', 'half'], // 2+1+1+1+1+2 = 8
+    ['half', 'quarter', 'eighth', 'eighth', 'quarter', 'half', 'quarter'],      // 2+1+1+1+2+1 = 8
+    ['quarter', 'quarter', 'half', 'whole'],                                    // 1+1+2+4 = 8
   ],
 };
 
@@ -110,4 +123,19 @@ export function noteStartTimes(pattern, beatMs = BEAT_MS) {
     acc += NOTE_DEFS[k].beats * beatMs;
   }
   return starts;
+}
+
+// For drawing barlines: returns a Set of note indices AFTER which a measure
+// ends (i.e. cumulative beats reaches a multiple of BEATS_PER_MEASURE).
+// The very last note isn't included — no trailing barline needed visually.
+export function measureBoundaryAfterIndices(pattern) {
+  const out = new Set();
+  let acc = 0;
+  for (let i = 0; i < pattern.length; i++) {
+    acc += NOTE_DEFS[pattern[i]].beats;
+    if (i < pattern.length - 1 && Math.abs(acc % BEATS_PER_MEASURE) < 1e-6) {
+      out.add(i);
+    }
+  }
+  return out;
 }

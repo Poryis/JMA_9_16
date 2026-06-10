@@ -26,8 +26,18 @@ import useAudio from '../hooks/useAudio';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import {
   PATTERNS, TRAIL_PATTERNS, DIFFICULTIES, BEAT_MS as BASE_BEAT_MS, TOLERANCE_MS,
-  patternBeats, noteStartTimes,
+  patternBeats, noteStartTimes, ROUNDS_PER_SESSION,
 } from '../data/rhythms';
+
+// Tempo dial values — chill / standard / turbo. Multiplies how FAST the
+// click track runs (i.e. inverse of BEAT_MS), so 1.25 = a quarter-note
+// every 600 ms = ~100 BPM. Kept tight so the gameplay still feels musical
+// at every step.
+const TEMPOS = [
+  { id: 0.75, label: 'Easy',   description: '60 BPM',  color: '#34A853' },
+  { id: 1.0,  label: 'Medium', description: '80 BPM',  color: '#FFCC00' },
+  { id: 1.25, label: 'Turbo',  description: '100 BPM', color: '#FF3B30' },
+];
 
 // Per-mode card config — each tile mirrors the LearnMenuPage tile aesthetic
 // (chunky border + sign nameplate + character peeking + tagline).
@@ -193,6 +203,16 @@ export default function BoomGardenPage() {
   const [hitStates, setHitStates] = useState([]);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
+  // Round tracking for the fixed-length session. ROUNDS_PER_SESSION (5)
+  // rounds per visit, then a Session Summary card pops with total score +
+  // a "Play another round of 5" button. Kids respond well to a known
+  // finish line, and a fixed length is also what unlocks fair scoreboards.
+  const [currentRound, setCurrentRound] = useState(1);
+  const [sessionComplete, setSessionComplete] = useState(false);
+  const [sessionStats, setSessionStats] = useState(null); // { perfects, totalNotes, score } | null
+  // Running tally of perfects and total notes across the session — fed
+  // into sessionStats when the run ends.
+  const sessionTallyRef = useRef({ perfects: 0, totalNotes: 0 });
   const [showCelebration, setShowCelebration] = useState(false);
   const [feedback, setFeedback] = useState(null);
   // Tempo multiplier: 1 = full speed, 0.75 = chill, 0.5 = practice. Slowing
@@ -203,6 +223,12 @@ export default function BoomGardenPage() {
   // component's existing `BEAT_MS` math keeps working unchanged.
   const [tempoMul, setTempoMul] = useState(1);
   const BEAT_MS = Math.round(BASE_BEAT_MS / tempoMul);
+  // Ref-backed mirror of BEAT_MS so the scheduleMetronome / pattern-audio /
+  // visual-playhead useCallbacks read the LATEST tempo on every fire,
+  // without us having to bust their identities (and re-bind every parent
+  // callback that uses them) every time the dial changes.
+  const beatMsRef = useRef(BEAT_MS);
+  useEffect(() => { beatMsRef.current = BEAT_MS; }, [BEAT_MS]);
   // Per-tap feedback tier for the big PERFECT! / GREAT! / GOOD! / MISS!
   // popup mid-input. Mirrors Who's Got Rhythm so kids get instant feel for
   // how locked-in their tap was instead of waiting for the round summary.
@@ -281,6 +307,7 @@ export default function BoomGardenPage() {
   // metronome so the kid can SEE the tempo in addition to hearing it.
   const scheduleMetronome = useCallback((beatCount, startDelayMs = 0) => {
     initAudioContext();
+    const beatMs = beatMsRef.current;
     // Cancel the previous metronome session's stop timer — otherwise the
     // demo's stop (fired ~375 ms after a new count-in session began) would
     // flip metronomeRunning back to false mid-count-in and kill the
@@ -293,7 +320,7 @@ export default function BoomGardenPage() {
     setMetronomeStartMs(startWall);
     setMetronomeRunning(true);
     for (let b = 0; b < beatCount; b++) {
-      const t = setTimeout(() => playDrumSound('hihat'), startDelayMs + b * BEAT_MS);
+      const t = setTimeout(() => playDrumSound('hihat'), startDelayMs + b * beatMs);
       timeoutsRef.current.push(t);
     }
     // Stop the visual pulse a beat after the last audio click so the last
@@ -301,17 +328,17 @@ export default function BoomGardenPage() {
     const stopT = setTimeout(() => {
       setMetronomeRunning(false);
       metronomeStopTimerRef.current = null;
-    }, startDelayMs + (beatCount + 0.5) * BEAT_MS);
+    }, startDelayMs + (beatCount + 0.5) * beatMs);
     metronomeStopTimerRef.current = stopT;
     timeoutsRef.current.push(stopT);
-    return beatCount * BEAT_MS;
+    return beatCount * beatMs;
   }, [initAudioContext, playDrumSound]);
 
   // Schedule a snare hit (with visual flash) on each non-rest note of the
   // pattern, optionally highlighting the corresponding strip block.
   const schedulePatternAudio = useCallback((pat, opts = {}) => {
     const { withHighlight = true, startDelayMs = 0 } = opts;
-    const starts = noteStartTimes(pat, BEAT_MS);
+    const starts = noteStartTimes(pat, beatMsRef.current);
     pat.forEach((key, i) => {
       const t = setTimeout(() => {
         if (withHighlight) setHighlightIndex(i);
@@ -331,7 +358,7 @@ export default function BoomGardenPage() {
   // demo highlight aesthetic). The kid can SEE where they are even if they
   // haven't tapped yet.
   const scheduleVisualPlayhead = useCallback((pat, startDelayMs = 0) => {
-    const starts = noteStartTimes(pat, BEAT_MS);
+    const starts = noteStartTimes(pat, beatMsRef.current);
     pat.forEach((_, i) => {
       const t = setTimeout(() => setHighlightIndex(i), startDelayMs + starts[i]);
       timeoutsRef.current.push(t);
@@ -350,6 +377,10 @@ export default function BoomGardenPage() {
     const expectedNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
     const correct = expectedNonRest.filter((i) => results[i] === 'perfect').length;
     const total = expectedNonRest.length;
+    // Roll the round into the session tally — used by the Session Summary
+    // card to compute an overall accuracy %.
+    sessionTallyRef.current.perfects += correct;
+    sessionTallyRef.current.totalNotes += total;
     setHitStates(hits);
     setHighlightIndex(-1);
     setMetronomeRunning(false);
@@ -371,7 +402,7 @@ export default function BoomGardenPage() {
         // Fire snareRef.flash() every beat for 4 beats so Stew physically
         // swings his sticks L → R → L → R during the dance.
         for (let b = 0; b < 4; b++) {
-          const t = setTimeout(() => snareRef.current?.flash(120), b * BEAT_MS);
+          const t = setTimeout(() => snareRef.current?.flash(120), b * beatMsRef.current);
           timeoutsRef.current.push(t);
         }
         victoryDanceTimerRef.current = setTimeout(() => setVictoryDance(false), 3000);
@@ -387,15 +418,28 @@ export default function BoomGardenPage() {
     }
     // Auto-advance after a longer reveal so the kid actually sees the
     // result. The "Play Again" button in the round-summary card lets them
-    // skip ahead if they want to move faster.
+    // skip ahead if they want to move faster. After ROUNDS_PER_SESSION
+    // rounds we flip to the Session Summary screen instead of restarting.
+    const isLastRound = currentRound >= ROUNDS_PER_SESSION;
     const next = setTimeout(() => {
       setFeedback(null);
       setRoundSummary(null);
+      if (isLastRound) {
+        setSessionStats({
+          perfects: sessionTallyRef.current.perfects,
+          totalNotes: sessionTallyRef.current.totalNotes,
+          score,
+        });
+        setSessionComplete(true);
+        setPhase('idle');
+        return;
+      }
+      setCurrentRound((r) => r + 1);
       if (mode === 'copy')  startCopy();
       if (mode === 'trail') startTrail();
     }, 3000);
     timeoutsRef.current.push(next);
-  }, [clearTimeouts, level, mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clearTimeouts, level, mode, currentRound, score]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startCopy = useCallback(() => {
     const pat = randomPattern(level, PATTERNS);
@@ -413,12 +457,12 @@ export default function BoomGardenPage() {
     // Demo: click track + snare hits + visual playhead.
     scheduleMetronome(totalBeats, 0);
     schedulePatternAudio(pat, { withHighlight: true, startDelayMs: 0 });
-    const demoMs = totalBeats * BEAT_MS;
+    const demoMs = totalBeats * beatMsRef.current;
     // Count-in immediately follows the demo (no 600ms breath — that gap
     // had Stew disabled but no audio cue, so kids would anticipate "my turn
-    // now" and tap into the void). 4 hi-hat ticks at BEAT_MS spacing form
+    // now" and tap into the void). 4 hi-hat ticks at beatMsRef.current spacing form
     // the count-in. Stew is tappable from the moment count-in starts.
-    const countInMs = 4 * BEAT_MS;
+    const countInMs = 4 * beatMsRef.current;
     const countIn = setTimeout(() => {
       setPhase('countin');
       setHighlightIndex(-1);
@@ -427,13 +471,13 @@ export default function BoomGardenPage() {
       // Beat 4 jumps a fifth higher ("ready, ready, ready, GO!").
       for (let b = 0; b < 4; b++) {
         const isLast = b === 3;
-        const t = setTimeout(() => playCountInBeep(isLast), b * BEAT_MS);
+        const t = setTimeout(() => playCountInBeep(isLast), b * beatMsRef.current);
         timeoutsRef.current.push(t);
       }
       // Drive the visual count-in overlay timing via metronomeStartMs.
       setMetronomeStartMs(Date.now());
       setMetronomeRunning(true);
-      const stopT = setTimeout(() => setMetronomeRunning(false), 4.5 * BEAT_MS);
+      const stopT = setTimeout(() => setMetronomeRunning(false), 4.5 * beatMsRef.current);
       timeoutsRef.current.push(stopT);
       if (metronomeStopTimerRef.current) clearTimeout(metronomeStopTimerRef.current);
       metronomeStopTimerRef.current = stopT;
@@ -443,7 +487,7 @@ export default function BoomGardenPage() {
       // so an anticipatory tap on the last count-in beat (just BEFORE the
       // official 'input' phase) lands within tolerance of beat 1.
       inputStartRef.current = Date.now();
-      expectedStartsRef.current = noteStartTimes(pat, BEAT_MS).map((t) => t + countInMs);
+      expectedStartsRef.current = noteStartTimes(pat, beatMsRef.current).map((t) => t + countInMs);
     }, demoMs);
     timeoutsRef.current.push(countIn);
     // Input opens right after the count-in. inputStartRef / expectedStarts
@@ -463,7 +507,7 @@ export default function BoomGardenPage() {
       // kid would never actually SEE "GO!".
       const goHold = setTimeout(() => setShowCountIn(false), 600);
       timeoutsRef.current.push(goHold);
-      const failsafe = setTimeout(finishCopyRound, totalBeats * BEAT_MS + 1200);
+      const failsafe = setTimeout(finishCopyRound, totalBeats * beatMsRef.current + 1200);
       timeoutsRef.current.push(failsafe);
     }, demoMs + countInMs);
     timeoutsRef.current.push(handoff);
@@ -620,7 +664,7 @@ export default function BoomGardenPage() {
     // on the strips themselves — kid uses ears).
     scheduleMetronome(totalBeats, 0);
     schedulePatternAudio(pat, { withHighlight: false, startDelayMs: 0 });
-    const handoff = setTimeout(() => setPhase('input'), totalBeats * BEAT_MS + 500);
+    const handoff = setTimeout(() => setPhase('input'), totalBeats * beatMsRef.current + 500);
     timeoutsRef.current.push(handoff);
   }, [level, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio]);
 
@@ -630,6 +674,8 @@ export default function BoomGardenPage() {
     const correct = idx === matchAnswer;
     setPhase('reveal');
     setRoundSummary({ correct: correct ? 1 : 0, total: 1 });
+    sessionTallyRef.current.perfects += correct ? 1 : 0;
+    sessionTallyRef.current.totalNotes += 1;
     if (correct) {
       setScore((s) => s + 100);
       setStreak((s) => s + 1);
@@ -644,13 +690,25 @@ export default function BoomGardenPage() {
       setStreak(0);
       setFeedback({ tone: 'miss', text: `Not quite — option ${matchAnswer + 1} was right!` });
     }
+    const isLastRound = currentRound >= ROUNDS_PER_SESSION;
     const next = setTimeout(() => {
       setFeedback(null);
       setRoundSummary(null);
+      if (isLastRound) {
+        setSessionStats({
+          perfects: sessionTallyRef.current.perfects,
+          totalNotes: sessionTallyRef.current.totalNotes,
+          score: score + (correct ? 100 : 0),
+        });
+        setSessionComplete(true);
+        setPhase('idle');
+        return;
+      }
+      setCurrentRound((r) => r + 1);
       startMatch();
     }, 3000);
     timeoutsRef.current.push(next);
-  }, [phase, playDrumSound, matchAnswer, level, startMatch]);
+  }, [phase, playDrumSound, matchAnswer, level, startMatch, currentRound, score]);
 
   const replayMatch = useCallback(() => {
     if (phase !== 'input') return;
@@ -678,19 +736,19 @@ export default function BoomGardenPage() {
     initAudioContext();
     clearTimeouts();
     const COUNT_IN_BEATS = 4;
-    const countInMs = COUNT_IN_BEATS * BEAT_MS;
+    const countInMs = COUNT_IN_BEATS * beatMsRef.current;
     const totalBeats = patternBeats(pat);
     // Count-in: 4 BEEPS while strip scrolls TO the strike line. Distinct
     // tones (last beat a fifth higher) so kids can't miss when input opens.
     setPhase('countin');
     for (let b = 0; b < COUNT_IN_BEATS; b++) {
       const isLast = b === COUNT_IN_BEATS - 1;
-      const t = setTimeout(() => playCountInBeep(isLast), b * BEAT_MS);
+      const t = setTimeout(() => playCountInBeep(isLast), b * beatMsRef.current);
       timeoutsRef.current.push(t);
     }
     setMetronomeStartMs(Date.now());
     setMetronomeRunning(true);
-    const beepStop = setTimeout(() => setMetronomeRunning(false), (COUNT_IN_BEATS + 0.5) * BEAT_MS);
+    const beepStop = setTimeout(() => setMetronomeRunning(false), (COUNT_IN_BEATS + 0.5) * beatMsRef.current);
     timeoutsRef.current.push(beepStop);
     if (metronomeStopTimerRef.current) clearTimeout(metronomeStopTimerRef.current);
     metronomeStopTimerRef.current = beepStop;
@@ -701,7 +759,7 @@ export default function BoomGardenPage() {
     // start times are shifted forward by the count-in length so beat 1's
     // wall-clock target is unchanged.
     inputStartRef.current = Date.now();
-    expectedStartsRef.current = noteStartTimes(pat, BEAT_MS).map((t) => t + countInMs);
+    expectedStartsRef.current = noteStartTimes(pat, beatMsRef.current).map((t) => t + countInMs);
     const trailStart = setTimeout(() => {
       setPhase('input');
       // (inputStartRef + expectedStarts already configured)
@@ -716,7 +774,7 @@ export default function BoomGardenPage() {
       const fin = setTimeout(() => {
         setHighlightIndex(-1);
         finishCopyRound();
-      }, totalBeats * BEAT_MS + 600);
+      }, totalBeats * beatMsRef.current + 600);
       timeoutsRef.current.push(fin);
     }, countInMs);
     timeoutsRef.current.push(trailStart);
@@ -733,7 +791,29 @@ export default function BoomGardenPage() {
     setPhase('idle');
     setFeedback(null);
     setShowCountIn(false);
+    setCurrentRound(1);
+    setSessionComplete(false);
+    setSessionStats(null);
+    sessionTallyRef.current = { perfects: 0, totalNotes: 0 };
   }, [clearTimeouts]);
+
+  // Start a fresh session of N rounds with the SAME mode / level / tempo.
+  // Wired to the "Play another 5" button on the Session Summary card.
+  const restartSession = useCallback(() => {
+    clearTimeouts();
+    setScore(0);
+    setStreak(0);
+    setCurrentRound(1);
+    setSessionComplete(false);
+    setSessionStats(null);
+    sessionTallyRef.current = { perfects: 0, totalNotes: 0 };
+    setFeedback(null);
+    setRoundSummary(null);
+    setShowCountIn(false);
+    if (mode === 'copy')  startCopy();
+    if (mode === 'match') startMatch();
+    if (mode === 'trail') startTrail();
+  }, [clearTimeouts, mode, startCopy, startMatch, startTrail]);
 
   const exitMode = useCallback(() => {
     clearTimeouts();
@@ -865,6 +945,45 @@ export default function BoomGardenPage() {
               ))}
             </div>
           </div>
+
+          {/* Tempo dial — Easy (slow) / Medium / Turbo (fast). Stretches the
+              underlying BEAT_MS so the entire experience (demo, click
+              track, expected timings, visual playhead) scales together.
+              Lets struggling 5-year-olds slow it down without changing the
+              musical idea, and lets show-offs crank it up to Turbo. */}
+          <div className="mt-4 md:mt-5">
+            <div className="text-center text-[10px] md:text-xs uppercase font-black opacity-60 mb-2" style={{ color: 'var(--jma-dark)' }}>
+              Tempo
+            </div>
+            <div className="flex justify-center gap-2 md:gap-3 flex-wrap">
+              {TEMPOS.map((t) => (
+                <button
+                  key={t.id}
+                  data-testid={`boom-tempo-${t.label.toLowerCase()}`}
+                  type="button"
+                  onClick={() => setTempoMul(t.id)}
+                  className="rounded-2xl border-3 px-3 md:px-4 py-2 font-black font-display text-sm md:text-base"
+                  style={{
+                    backgroundColor: tempoMul === t.id ? t.color : 'white',
+                    color: tempoMul === t.id ? 'white' : 'var(--jma-dark)',
+                    borderColor: 'var(--jma-dark)',
+                    boxShadow: tempoMul === t.id ? '0 4px 0 0 var(--jma-dark)' : '0 2px 0 0 var(--jma-dark)',
+                    transform: tempoMul === t.id ? 'translateY(-2px)' : 'none',
+                    transition: 'transform 0.15s, background-color 0.15s, box-shadow 0.15s',
+                  }}
+                >
+                  {t.label}
+                  <div className="text-[9px] md:text-[10px] font-bold opacity-80 mt-0.5">{t.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Session-length blurb — sets expectations so the kid knows the
+              session has a defined end. */}
+          <div className="text-center mt-3 text-[10px] md:text-xs font-bold opacity-70" style={{ color: 'var(--jma-dark)' }}>
+            {ROUNDS_PER_SESSION} rounds per session — beat your high score!
+          </div>
         </main>
       </div>
     );
@@ -927,8 +1046,20 @@ export default function BoomGardenPage() {
           </div>
         </div>
 
-        {/* Phase banner */}
-        <div className="text-center mb-3 md:mb-4">
+        {/* Phase banner + round counter */}
+        <div className="text-center mb-3 md:mb-4 flex items-center justify-center gap-2 md:gap-3 flex-wrap">
+          <div
+            data-testid="boom-round-counter"
+            className="inline-block rounded-full border-3 px-3 py-1.5 font-black font-display text-xs md:text-sm"
+            style={{
+              borderColor: 'var(--jma-dark)',
+              backgroundColor: modeConfig?.color || 'white',
+              color: 'white',
+              boxShadow: '0 3px 0 0 var(--jma-dark)',
+            }}
+          >
+            Round {Math.min(currentRound, ROUNDS_PER_SESSION)} / {ROUNDS_PER_SESSION}
+          </div>
           <div
             className="inline-block rounded-full border-3 px-4 py-1.5 font-black font-display text-sm md:text-base"
             style={{
@@ -969,6 +1100,7 @@ export default function BoomGardenPage() {
               pattern={pattern}
               kickOff={phase === 'countin' || phase === 'input' || phase === 'reveal'}
               height={170}
+              beatMs={BEAT_MS}
             />
           )}
           {mode === 'match' && matchOptions.length === 3 && (
@@ -1260,6 +1392,20 @@ export default function BoomGardenPage() {
                   clearTimeouts();
                   setFeedback(null);
                   setRoundSummary(null);
+                  // Manual skip-ahead — same session-end logic the auto
+                  // timer uses so the round counter and Session Summary
+                  // stay consistent whether the kid waits or taps next.
+                  if (currentRound >= ROUNDS_PER_SESSION) {
+                    setSessionStats({
+                      perfects: sessionTallyRef.current.perfects,
+                      totalNotes: sessionTallyRef.current.totalNotes,
+                      score,
+                    });
+                    setSessionComplete(true);
+                    setPhase('idle');
+                    return;
+                  }
+                  setCurrentRound((r) => r + 1);
                   if (mode === 'copy')  startCopy();
                   if (mode === 'trail') startTrail();
                   if (mode === 'match') startMatch();
@@ -1267,8 +1413,89 @@ export default function BoomGardenPage() {
                 className="mt-1 rounded-full border-3 bg-white px-4 py-1 font-black font-display text-sm"
                 style={{ borderColor: 'var(--jma-dark)', color: 'var(--jma-dark)', boxShadow: '0 3px 0 0 var(--jma-dark)' }}
               >
-                Play another →
+                {currentRound >= ROUNDS_PER_SESSION ? 'See session score →' : 'Play another →'}
               </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Session Summary — pops after ROUNDS_PER_SESSION rounds with the
+            total score, accuracy %, and a "Play another 5" button. Modal
+            backdrop so nothing else is tappable until the kid picks an
+            action. Kids respond well to a celebratory finish line. */}
+        <AnimatePresence>
+          {sessionComplete && sessionStats && (
+            <motion.div
+              key="session-summary-backdrop"
+              data-testid="boom-session-summary"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center px-4"
+              style={{ backgroundColor: 'rgba(10,37,64,0.55)' }}
+            >
+              <motion.div
+                key="session-summary-card"
+                initial={{ y: 40, opacity: 0, scale: 0.85 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -20, opacity: 0, scale: 0.9 }}
+                transition={{ type: 'spring', stiffness: 240, damping: 20 }}
+                className="rounded-3xl border-4 px-6 py-5 md:px-8 md:py-6 flex flex-col items-center gap-3 max-w-sm w-full bg-white"
+                style={{
+                  borderColor: 'var(--jma-dark)',
+                  boxShadow: '0 10px 0 0 var(--jma-dark)',
+                  color: 'var(--jma-dark)',
+                }}
+              >
+                <div className="text-xs uppercase font-black tracking-widest opacity-70">
+                  Session Complete!
+                </div>
+                <div className="text-3xl md:text-4xl font-black font-display leading-none text-center">
+                  {ROUNDS_PER_SESSION} rounds done
+                </div>
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] uppercase font-black opacity-60">Score</span>
+                    <span data-testid="session-final-score" className="text-2xl font-black font-display">{sessionStats.score}</span>
+                  </div>
+                  <div className="w-px h-8" style={{ backgroundColor: 'var(--jma-dark)', opacity: 0.3 }} />
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] uppercase font-black opacity-60">On Time</span>
+                    <span className="text-2xl font-black font-display">
+                      {sessionStats.totalNotes > 0
+                        ? Math.round((sessionStats.perfects / sessionStats.totalNotes) * 100)
+                        : 0}%
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 w-full mt-2">
+                  <button
+                    data-testid="boom-session-restart"
+                    type="button"
+                    onClick={restartSession}
+                    className="rounded-full border-3 px-5 py-2 font-black font-display text-base"
+                    style={{
+                      borderColor: 'var(--jma-dark)',
+                      backgroundColor: modeConfig?.color || '#34A853',
+                      color: 'white',
+                      boxShadow: '0 4px 0 0 var(--jma-dark)',
+                    }}
+                  >
+                    Play another {ROUNDS_PER_SESSION} →
+                  </button>
+                  <button
+                    data-testid="boom-session-modes"
+                    type="button"
+                    onClick={exitMode}
+                    className="rounded-full border-3 bg-white px-5 py-2 font-black font-display text-sm"
+                    style={{
+                      borderColor: 'var(--jma-dark)',
+                      color: 'var(--jma-dark)',
+                      boxShadow: '0 3px 0 0 var(--jma-dark)',
+                    }}
+                  >
+                    Back to modes
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

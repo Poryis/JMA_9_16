@@ -10,7 +10,8 @@
 // playhead in Copy Cat and Tap Trail. Highlighted blocks swap to the user's
 // "highlighted" note PNG variants for a real notation-style emphasis.
 
-import { NOTE_DEFS, patternBeats } from '../data/rhythms';
+import { Fragment } from 'react';
+import { NOTE_DEFS, patternBeats, measureBoundaryAfterIndices } from '../data/rhythms';
 
 export default function RhythmStrip({
   pattern,
@@ -21,6 +22,7 @@ export default function RhythmStrip({
   onBlockTap = null,   // optional handler: called with index when a block is tapped
 }) {
   const totalBeats = patternBeats(pattern);
+  const barlines = measureBoundaryAfterIndices(pattern);
 
   return (
     <div
@@ -52,9 +54,10 @@ export default function RhythmStrip({
               'aria-label': `Pattern option ${i + 1}`,
             }
           : {};
+        const isBarline = barlines.has(i);
         return (
+          <Fragment key={i}>
           <Tag
-            key={i}
             data-testid={`${testIdPrefix}-${i}`}
             {...tapProps}
             className="flex flex-col items-center justify-between rounded-xl border-3 select-none overflow-hidden py-1"
@@ -94,6 +97,25 @@ export default function RhythmStrip({
               {def.syllable}
             </span>
           </Tag>
+          {/* Barline — drawn AFTER any block whose cumulative beats hit a
+              measure boundary. Solid dark vertical line is the universal
+              music-notation cue that says "end of bar". */}
+          {isBarline && (
+            <div
+              aria-hidden="true"
+              data-testid={`${testIdPrefix}-barline-${i}`}
+              className="self-stretch flex-shrink-0 relative"
+              style={{
+                width: 6,
+                backgroundColor: 'var(--jma-dark)',
+                marginLeft: 4,
+                marginRight: 4,
+                borderRadius: 3,
+                boxShadow: '0 0 0 2px rgba(255,255,255,0.6)',
+              }}
+            />
+          )}
+          </Fragment>
         );
       })}
     </div>

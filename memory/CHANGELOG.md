@@ -1,5 +1,42 @@
 # Changelog
 
+## Feb 21, 2026 — Tempo Dial + Fixed-length Sessions + Measure-aligned Patterns
+
+User: *"I like a tempo dial... for the count-in only, I think it should be beeps. I fear the user STILL potentially being a bit confused on when to start."*
+User: *"finish tempo dial. Count in beeps are good, I think tempo dial should be .75 1.0 and 1.25 easy med and turbo. Also I think there should be a specified amount of rounds. Lastly I dont like that so many patterns are 6 beats long. Maybe the copycat hard is 2 measures? It would be nice, if not too hard to have some marking of measures as well..."*
+
+### Tempo Dial (Boom Garden)
+- New three-button tempo dial on the mode-pick screen below Difficulty: **Easy 0.75x (60 BPM)**, **Medium 1.0x (80 BPM)**, **Turbo 1.25x (100 BPM)**. Each button shows the BPM as a subtitle and uses the same chunky-pill aesthetic as the level picker.
+- Multiplier flows through every timing path: `scheduleMetronome`, `schedulePatternAudio`, `scheduleVisualPlayhead`, `noteStartTimes` and all count-in beep schedulers.
+- Used a `beatMsRef = useRef(BEAT_MS)` so the existing useCallbacks pick up the live tempo without bumping their dep-arrays (avoids cascading re-binds across `startCopy` / `startTrail` / `finishCopyRound`).
+- `ScrollingRhythmStrip` now accepts a `beatMs` prop so Tap Trail's scroll duration scales with tempo too.
+
+### Synthesised Beep Count-In (already wired in previous job, verified)
+- 4-beat count-in uses `playCountInBeep` (synthesised oscillator: 660 Hz on beats 1-3, 990 Hz "GO" tone on beat 4) instead of the hi-hat click track. Kids can now hear the distinct shift from "count-in beeps" → "play-along clicks" the instant input opens.
+
+### Fixed-Length Sessions
+- `ROUNDS_PER_SESSION = 5` constant exported from `data/rhythms.js`.
+- Live `Round X / 5` counter chip in the play screen (next to the phase banner, colored to the active mode).
+- Round-summary "Play another →" button auto-flips to "See session score →" on the final round.
+- New Session Summary modal: total score, on-time %, "Play another 5" + "Back to modes" CTAs.
+- `sessionTallyRef` tracks perfects + total notes across rounds; reset on `enterMode` / `restartSession`.
+
+### Measure-Aligned Patterns
+- Master (Copy Cat hard) patterns rewritten to be **exactly 8 beats (2 measures)** each — no more lop-sided 6-beat phrases.
+- Pro patterns already 4 beats; verified.
+- Added `BEATS_PER_MEASURE = 4` constant and `measureBoundaryAfterIndices()` helper for visual barline placement.
+
+### Visual Barlines
+- `RhythmStrip` (Copy Cat / Twin Beats): chunky 6px-wide solid dark barline with a white outline pops between blocks where a measure ends. Uses `Fragment` so layout proportions stay accurate.
+- `ScrollingRhythmStrip` (Tap Trail): the dashed inter-note divider swaps to a 4px solid dark `border-right` at measure boundaries — preserves the exact `BEAT_PX` width so audio/visual timing stays locked.
+
+### Files touched
+- `src/data/rhythms.js` — `ROUNDS_PER_SESSION`, `BEATS_PER_MEASURE`, `measureBoundaryAfterIndices()`, rewritten master PATTERNS to 8 beats.
+- `src/pages/BoomGardenPage.js` — TEMPOS array, tempo-dial JSX, `beatMsRef`, round counter chip, session summary modal, `restartSession`, session tally.
+- `src/components/RhythmStrip.js` — barline rendering between measure-ending blocks.
+- `src/components/ScrollingRhythmStrip.js` — `beatMs` prop, solid-barline border swap.
+
+
 ## Feb 20, 2026 (later ++++++++) — Gamification batch (a/b/c/d/e/g) + quick fixes
 
 User: *"Let's try em all... I HATE the cards for the games AND the names. Just remember that for something to address next."*

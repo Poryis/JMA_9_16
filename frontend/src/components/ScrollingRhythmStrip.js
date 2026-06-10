@@ -16,18 +16,18 @@
 // scroll, and timing detection lives in the parent (elapsed vs expected).
 
 import { motion } from 'framer-motion';
-import { NOTE_DEFS, BEAT_MS, patternBeats } from '../data/rhythms';
+import { NOTE_DEFS, BEAT_MS as DEFAULT_BEAT_MS, patternBeats, BEATS_PER_MEASURE } from '../data/rhythms';
 
 const STRIKE_PCT = 25;     // strike line lives 25% from the left edge
 const COUNT_IN_BEATS = 4;
 const BEAT_PX = 90;        // px allocated per beat — quarter = 90px, half = 180px
 
-export default function ScrollingRhythmStrip({ pattern, kickOff, height = 170 }) {
+export default function ScrollingRhythmStrip({ pattern, kickOff, height = 170, beatMs = DEFAULT_BEAT_MS }) {
   const totalBeats = patternBeats(pattern);
   const totalPx = totalBeats * BEAT_PX;
   const startX = COUNT_IN_BEATS * BEAT_PX;       // park position (during count-in)
   const endX = -totalPx;                          // last-note-passed position
-  const totalDurationMs = (COUNT_IN_BEATS + totalBeats) * BEAT_MS;
+  const totalDurationMs = (COUNT_IN_BEATS + totalBeats) * beatMs;
 
   return (
     <div
@@ -91,6 +91,16 @@ export default function ScrollingRhythmStrip({ pattern, kickOff, height = 170 })
             const def = NOTE_DEFS[key];
             const w = def.beats * BEAT_PX;
             const isRest = key === 'rest';
+            // Cumulative beats up to AND INCLUDING this note. If it lands
+            // exactly on a measure boundary AND we're not at the very last
+            // note, swap the dashed dotted divider for a SOLID dark barline
+            // (still drawn as a border so layout width stays exact and the
+            // scroll timing remains perfectly synced to BEAT_PX).
+            let cum = 0;
+            for (let j = 0; j <= i; j++) cum += NOTE_DEFS[pattern[j]].beats;
+            const isBarline =
+              i < pattern.length - 1 &&
+              Math.abs(cum % BEATS_PER_MEASURE) < 1e-6;
             return (
               <div
                 key={i}
@@ -99,7 +109,9 @@ export default function ScrollingRhythmStrip({ pattern, kickOff, height = 170 })
                 style={{
                   width: w,
                   height: height - 24,
-                  borderRight: '2px dashed rgba(10,37,64,0.18)',
+                  borderRight: isBarline
+                    ? '4px solid rgba(10,37,64,0.85)'
+                    : '2px dashed rgba(10,37,64,0.18)',
                 }}
               >
                 <img
