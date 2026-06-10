@@ -79,10 +79,18 @@ Driven by total stickers earned. Warm, non-competitive.
 ## Backlog
 - **P1**: Replace `HarpIcon.js` SVG with user's custom harp artwork once uploaded → `assets/ui/harp.png`.
 - **P2**: Score multiplier (×2) for streaks of 5+ in Rhythm Arcade.
+- **P2**: 0.5x / 1x tempo dial on Boom Garden mode-pick screen for struggling students.
+- **P2**: Split `FreePlayPage.js` (>900 lines) and `BoomGardenPage.js` (>800 lines) into sub-components.
 - **P2**: README.md with GitHub Pages deploy instructions.
 - **P2**: Verify MP3 recording on real mobile devices.
 - **P3**: Confetti celebration on Who's Got Rhythm / Ear Quest milestones.
 - **P3**: "Maestro's Map" board-game journey using existing minigames as tiles (idea stage).
+
+## Implemented (Feb 20, 2026 — later) — Boom Garden round-cycle + Stew Kazoo animations
+- **Tap Trail no longer breaks after one round** — added `roundKey` on `RhythmStrip` / `ScrollingRhythmStrip` so the framer-motion node fully remounts between rounds and re-applies `initial={{ x: startX }}`. Verified via DOM probe across 3 consecutive Tap Trail rounds.
+- **Stew Kazoo Says animations fire reliably on every note** — replaced 4-stacked-img display-toggle (which got clobbered by React re-applying JSX style on every re-render) with a single `<img>` whose `src` is swapped imperatively. Same pattern proven by `StewDrummer` in Boom Garden. Verified 9 src cycles in 3 s of demo with correct frame order.
+- **CI build unblocked** — added eslint-disable for the stable `useImperativeHandle` in `StewDrummer.js`.
+
 
 ## Implemented (Feb 17, 2026 — Phase 3 Educational Wins)
 Four new mini-features designed to boost real music learning while keeping it fun:

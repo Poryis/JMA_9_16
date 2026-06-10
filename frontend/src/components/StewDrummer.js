@@ -69,7 +69,7 @@ export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hi
     }, FRAME_MS * 4));
   };
 
-  useImperativeHandle(ref, () => ({ flash: playHit }), []);
+  useImperativeHandle(ref, () => ({ flash: playHit }), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDown = (e) => {
     if (disabled) return;

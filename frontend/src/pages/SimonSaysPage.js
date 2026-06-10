@@ -44,13 +44,22 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
   const timeoutRef = useRef(null);
   const bellsRowRef = useRef(null); // Imperative handle to flash kazoos instantly
-  const stewFrameRefs = useRef([null, null, null, null]); // 4 stew frame <img> elements
+  const stewImgRef = useRef(null);  // The single <img> we swap src on
   const stewContainerRef = useRef(null); // For head-tilt rotation
   const stewTimerRef = useRef(null);
   const [musicalNotes, setMusicalNotes] = useState([]); // Floating note emojis from Stew's beak
   const noteIdRef = useRef(0);
   const [showConfetti, setShowConfetti] = useState({ on: false, mega: false, key: 0 });
   const currentPattern = PATTERNS[level] || PATTERNS[8];
+
+  // Preload every frame on mount so the first hit doesn't stutter waiting on
+  // the disk fetch.
+  useEffect(() => {
+    STEW_FRAMES.forEach((src) => {
+      const i = new Image();
+      i.src = src;
+    });
+  }, []);
 
   // Plays an ascending kazoo arpeggio Do-Mi-So-HighDo for level-clear celebration.
   const playFanfare = useCallback(() => {
@@ -71,13 +80,12 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
     setTimeout(() => setShowConfetti(prev => ({ ...prev, on: false })), 2000);
   }, [playFanfare]);
 
-  // Cycles Stew through frames 1→2→3→0(neutral) using direct DOM swaps so it
-  // works even when fired rapidly during Stu's demo phase. All 4 frames are
-  // mounted simultaneously; we just toggle which one is `display: block`.
+  // Swap the single Stew <img> to the requested frame via direct DOM src
+  // mutation. This bypasses React reconciliation entirely so rapid swaps
+  // (110 ms apart during the demo cycle) don't fight any concurrent re-render
+  // triggered by setState in the same handler.
   const showStewFrame = useCallback((i) => {
-    stewFrameRefs.current.forEach((el, idx) => {
-      if (el) el.style.display = idx === i ? 'block' : 'none';
-    });
+    if (stewImgRef.current) stewImgRef.current.src = STEW_FRAMES[i];
   }, []);
 
   const cycleStew = useCallback(() => {
@@ -430,8 +438,10 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         )}
 
         {/* Stew - cycles through frames each time a kazoo plays.
-            All 4 frames are mounted at once; we toggle `display` directly via
-            refs so swaps fire instantly without React render delay.
+            One <img> tag whose `src` we swap imperatively via ref. This is
+            simpler than the previous 4-img display-toggle (which lost frames
+            whenever React re-rendered and re-applied its JSX style attrs)
+            and matches the proven pattern used by StewDrummer in Boom Garden.
             Container rotates on each note for a head-tilt effect.
             Floating ♪ ♫ notes pop up from the beak area on each note. */}
         <div className="relative w-32 h-32 md:w-44 md:h-44 mb-2">
@@ -441,17 +451,13 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
             className="w-full h-full relative"
             style={{ transition: 'transform 0.18s ease-out', transformOrigin: 'center bottom' }}
           >
-            {STEW_FRAMES.map((src, idx) => (
-              <img
-                key={idx}
-                ref={(el) => { stewFrameRefs.current[idx] = el; }}
-                src={src}
-                alt={idx === 0 ? 'Stew' : ''}
-                draggable={false}
-                className="absolute inset-0 w-full h-full object-contain drop-shadow-xl pointer-events-none"
-                style={{ display: idx === 0 ? 'block' : 'none' }}
-              />
-            ))}
+            <img
+              ref={stewImgRef}
+              src={STEW_FRAMES[0]}
+              alt="Stew"
+              draggable={false}
+              className="w-full h-full object-contain drop-shadow-xl pointer-events-none select-none"
+            />
           </div>
           {/* Floating musical notes from Stew's beak */}
           <AnimatePresence>

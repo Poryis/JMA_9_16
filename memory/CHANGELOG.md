@@ -1,5 +1,25 @@
 # Changelog
 
+## Feb 20, 2026 (later) — Boom Garden round-cycle fix + Stew Kazoo animation fix
+
+User report: *"fix boom garden and stew kazoo in the same. His animations arent working. Also Tap trail just does one level and breaks"*
+
+### Tap Trail — strip now resets between rounds
+- **Root cause**: `ScrollingRhythmStrip`'s inner `<motion.div>` is driven by `kickOff` (true during countin/input/reveal). Between rounds, `kickOff` stayed true (round-1 ended in `reveal`, round-2 started in `countin`), so the framer-motion node never re-applied its `initial={{x: startX}}`. Result: the new pattern was already parked at `endX` from the previous round and no notes scrolled into view.
+- **Fix**: Added a `roundKey` counter in `BoomGardenPage` that bumps every time `startCopy / startMatch / startTrail` runs. Passed as `key={roundKey}` on both `RhythmStrip` and `ScrollingRhythmStrip`, forcing React to unmount + remount the strip between rounds. The motion node then properly initialises to `startX` and scrolls cleanly into the strike line on round 2, 3, 4, …
+- **Verified via DOM probe**: transform jumps from `matrix(1, 0, 0, 1, -720, 0)` (round-1 end) → `matrix(1, 0, 0, 1, +337, 0)` (round-2 start) → scrolls through to -720 again over 8 beats. Repeats for round 3.
+
+### Boom Garden — Copy Cat / Twin Beats auto-advance verified working
+- Confirmed the 3 s auto-advance from `finishCopyRound` (Copy Cat / Tap Trail) and `handleMatchPick` (Twin Beats) properly transitions `reveal → listen/countin/demo` on the next round. The `Play another →` button inside `boom-round-summary` lets kids skip ahead. Lifecycle probe: phase cycles `Listen → Count in → Your turn → Round complete → Listen` continuously without a soft-lock.
+
+### Stew Kazoo Says — animations fire on every note again
+- **Root cause**: the demo + tap handler called `cycleStew()` which imperatively toggled `display: block/none` on 4 stacked `<img>` refs. But each `<img>` had an inline `style={{ display: idx === 0 ? 'block' : 'none' }}` in its JSX. Whenever React re-rendered (which happens at the start of each demo step because `setHighlightedNote()` and `setMusicalNotes()` fire setState in the same handler), React re-applied the JSX style and clobbered the imperative DOM changes — frame 0 snapped back to visible, frames 1/2/3 went hidden. Kid saw the neutral pose almost the entire time.
+- **Fix**: Refactored to a single `<img ref={stewImgRef}>` whose `src` is swapped imperatively. Same pattern that `StewDrummer` already uses successfully. React doesn't reconcile prop values that match the previous render, so imperative `.src = STEW_FRAMES[i]` survives re-renders. Preload of all 4 frames stays so the first hit doesn't stutter.
+- **Verified via DOM probe**: `<img>.src` cycles cleanly `neutral → plays-1 → plays-2 → plays-3 → neutral` at 110 ms intervals during the demo, and again on every kid's tap. Detected 9 src changes in 3 s with the expected timing.
+
+### Pre-existing CI lint
+- Added `// eslint-disable-line react-hooks/exhaustive-deps` to the `useImperativeHandle` line in `StewDrummer.js` (the static `flash` ref doesn't need re-binding to a fresh `playHit` closure — refs to ImperativeHandle are intentionally stable). Build was broken at HEAD before my changes due to this; unblocking it was necessary to verify the fixes compile.
+
 ## Feb 20, 2026 — Boom Garden v4 — football field, visual metronome, forward-walking timing, alternation fix, end-of-round card
 Round 4 of user feedback on Boom Garden:
 - "Can we make the background for all of these the football field?"

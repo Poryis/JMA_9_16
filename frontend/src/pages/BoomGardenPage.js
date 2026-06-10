@@ -210,6 +210,12 @@ export default function BoomGardenPage() {
   const [metronomeRunning, setMetronomeRunning] = useState(false);
   // Round summary shown during reveal.
   const [roundSummary, setRoundSummary] = useState(null); // { correct, total }
+  // Round counter — bumps every time a fresh round starts. Used as a React
+  // `key` on the strip(s) so they fully remount between rounds (otherwise
+  // the framer-motion <motion.div> stays parked at the previous round's
+  // `endX` and the new pattern never scrolls into view — the Tap Trail
+  // "one-and-done" bug the user reported).
+  const [roundKey, setRoundKey] = useState(0);
 
   const clearTimeouts = useCallback(() => {
     timeoutsRef.current.forEach((t) => clearTimeout(t));
@@ -308,6 +314,7 @@ export default function BoomGardenPage() {
     setHighlightIndex(-1);
     tapResultsRef.current = {};
     claimedNotesRef.current = new Set();
+    setRoundKey((k) => k + 1);
     setPhase('demo');
     initAudioContext();
     clearTimeouts();
@@ -394,6 +401,7 @@ export default function BoomGardenPage() {
     setHitStates([]);
     setHighlightIndex(-1);
     setRoundSummary(null);
+    setRoundKey((k) => k + 1);
     setPhase('demo');
     initAudioContext();
     clearTimeouts();
@@ -458,6 +466,7 @@ export default function BoomGardenPage() {
     setHighlightIndex(-1);
     tapResultsRef.current = {};
     claimedNotesRef.current = new Set();
+    setRoundKey((k) => k + 1);
     initAudioContext();
     clearTimeouts();
     const COUNT_IN_BEATS = 4;
@@ -663,6 +672,7 @@ export default function BoomGardenPage() {
         <div className="flex flex-col items-stretch justify-center gap-3 md:gap-4 mb-4">
           {mode === 'copy' && pattern && (
             <RhythmStrip
+              key={`copy-${roundKey}`}
               pattern={pattern}
               highlightIndex={highlightIndex}
               hitStates={hitStates}
@@ -671,6 +681,7 @@ export default function BoomGardenPage() {
           )}
           {mode === 'trail' && pattern && (
             <ScrollingRhythmStrip
+              key={`trail-${roundKey}`}
               pattern={pattern}
               kickOff={phase === 'countin' || phase === 'input' || phase === 'reveal'}
               height={170}
