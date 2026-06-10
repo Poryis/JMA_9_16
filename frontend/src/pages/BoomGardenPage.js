@@ -14,7 +14,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Volume2, RotateCcw, Sparkles } from 'lucide-react';
-import { GameHeader } from '../components/GameUI';
+import { GameHeader, FeedbackPopup } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import RhythmStrip from '../components/RhythmStrip';
@@ -195,6 +195,15 @@ export default function BoomGardenPage() {
   const [streak, setStreak] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  // Per-tap feedback tier for the big PERFECT! / GREAT! / GOOD! / MISS!
+  // popup mid-input. Mirrors Who's Got Rhythm so kids get instant feel for
+  // how locked-in their tap was instead of waiting for the round summary.
+  const [hitFeedback, setHitFeedback] = useState(null);
+  const hitFeedbackTimerRef = useRef(null);
+  // Floating "+25" score chips that drift up from Stew when a tap lands.
+  // Same visual punch as Who's Got Rhythm's combo numbers.
+  const [floatingScores, setFloatingScores] = useState([]); // [{ id, label, color }]
+  const floatingScoreIdRef = useRef(0);
 
   // Refs.
   const timeoutsRef = useRef([]);
@@ -404,6 +413,28 @@ export default function BoomGardenPage() {
     timeoutsRef.current.push(handoff);
   }, [level, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio, scheduleVisualPlayhead, finishCopyRound]);
 
+  // Helper: pop a per-tap feedback popup (PERFECT! / GREAT! / GOOD! / MISS!)
+  // and a floating score chip (+25 / +15 / +10) that drifts up. Both auto
+  // clear themselves. Centralised so handleSnareTap and the auto-miss path
+  // can both call it without duplicating timer logic.
+  const popHitFeedback = useCallback((tier) => {
+    setHitFeedback({ tier, key: Date.now() + Math.random() });
+    if (hitFeedbackTimerRef.current) clearTimeout(hitFeedbackTimerRef.current);
+    hitFeedbackTimerRef.current = setTimeout(() => setHitFeedback(null), 380);
+    const chipMap = {
+      perfect: { label: '+25', color: '#4CD964' },
+      great:   { label: '+15', color: '#4285F4' },
+      good:    { label: '+10', color: '#FFCC00' },
+      miss:    { label: 'Miss', color: '#FF3B30' },
+    };
+    const chip = chipMap[tier] || chipMap.good;
+    const id = ++floatingScoreIdRef.current;
+    setFloatingScores((prev) => [...prev, { id, label: chip.label, color: chip.color }]);
+    setTimeout(() => {
+      setFloatingScores((prev) => prev.filter((f) => f.id !== id));
+    }, 900);
+  }, []);
+
   // Unified tap handler used by both Copy Cat and Tap Trail. Forward-walking
   // sequential matching: a tap is scored against the FIRST unclaimed non-rest
   // note whose expected time is roughly "now or later" (current beat). Any
@@ -433,6 +464,7 @@ export default function BoomGardenPage() {
     // expected time has already passed by more than `tol`, then score this
     // tap against the first beat that's still "current or upcoming".
     let targetIdx = -1;
+    let autoMissed = false;
     for (let i = 0; i < pat.length; i++) {
       if (pat[i] === 'rest' || claimed.has(i)) continue;
       if (expectedStarts[i] >= tapTime - tol) {
@@ -442,10 +474,15 @@ export default function BoomGardenPage() {
       // Kid skipped past this beat.
       claimed.add(i);
       tapResultsRef.current[i] = 'miss';
+      autoMissed = true;
     }
     if (targetIdx === -1) {
       // All notes have already passed — spurious tail tap. Ignore so we
       // don't double-claim or stutter the round.
+      if (autoMissed) {
+        popHitFeedback('miss');
+        setStreak(0);
+      }
       return;
     }
     const diff = Math.abs(tapTime - expectedStarts[targetIdx]);
@@ -458,14 +495,24 @@ export default function BoomGardenPage() {
       return;
     }
     claimed.add(targetIdx);
-    tapResultsRef.current[targetIdx] = 'perfect';
+    // Tier the tap by how close to the centre it landed. Mirrors Who's Got
+    // Rhythm's instant feel — kids get a louder "PERFECT!" when they nail
+    // the centre vs a softer "GOOD!" when they barely scrape the window.
+    const tier = diff <= tol * 0.30 ? 'perfect'
+              : diff <= tol * 0.60 ? 'great'
+              : 'good';
+    tapResultsRef.current[targetIdx] = tier === 'good' ? 'perfect' : tier; // round-summary still cares "on time"
+    const scoreDelta = tier === 'perfect' ? 25 : tier === 'great' ? 15 : 10;
+    setScore((s) => s + scoreDelta);
+    setStreak((s) => s + 1);
     setHighlightIndex(targetIdx);
+    popHitFeedback(tier);
     const allNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
     if (allNonRest.every((i) => claimed.has(i))) {
       const fin = setTimeout(finishCopyRound, 280);
       timeoutsRef.current.push(fin);
     }
-  }, [phase, level, playDrumSound, finishCopyRound]);
+  }, [phase, level, playDrumSound, finishCopyRound, popHitFeedback]);
 
   // ---- TWIN BEATS ----
   const startMatch = useCallback(() => {
@@ -897,8 +944,36 @@ export default function BoomGardenPage() {
 
         {/* Stew the llama — performs every drum hit (demo + kid's input).
             On Twin Beats he animates during the demo (and stays disabled in
-            input since the kid picks a strip, not plays the snare). */}
-        <div className="flex justify-center items-center py-3">
+            input since the kid picks a strip, not plays the snare).
+            `mt-auto` pushes him down to the bottom of the flex column so
+            his feet rest on the football field background instead of
+            floating mid-air. */}
+        <div className="flex justify-center items-end mt-auto pt-4 pb-2 relative">
+          {/* Floating "+25 / +15 / +10 / Miss" chips that drift up from
+              Stew on every scored tap — same instant-feedback vibe as
+              Who's Got Rhythm's combo chips. */}
+          <AnimatePresence>
+            {floatingScores.map((f) => (
+              <motion.div
+                key={f.id}
+                data-testid={`floating-score-${f.id}`}
+                initial={{ y: 10, opacity: 0, scale: 0.8 }}
+                animate={{ y: -90, opacity: 1, scale: 1 }}
+                exit={{ y: -160, opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.85, ease: 'easeOut' }}
+                className="absolute bottom-1/2 rounded-2xl border-3 px-3 py-1 font-black font-display text-xl md:text-2xl pointer-events-none"
+                style={{
+                  backgroundColor: f.color,
+                  color: f.color === '#FFCC00' ? 'var(--jma-dark)' : 'white',
+                  borderColor: 'var(--jma-dark)',
+                  boxShadow: '0 4px 0 0 var(--jma-dark)',
+                  textShadow: f.color === '#FFCC00' ? 'none' : '2px 2px 0 rgba(10,37,64,0.45)',
+                }}
+              >
+                {f.label}
+              </motion.div>
+            ))}
+          </AnimatePresence>
           <StewDrummer
             ref={snareRef}
             onTap={handleSnareTap}
@@ -914,6 +989,20 @@ export default function BoomGardenPage() {
             }
           />
         </div>
+
+        {/* Per-tap PERFECT! / GREAT! / GOOD! / MISS! popup — center of
+            screen, lifts from `hitFeedback` state set inside handleSnareTap.
+            Same component used by Who's Got Rhythm so the visual language
+            is consistent across games. */}
+        <AnimatePresence>
+          {hitFeedback && (
+            <FeedbackPopup
+              key={hitFeedback.key}
+              feedback={hitFeedback.tier}
+              onComplete={() => { /* timer-based clear handles this */ }}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Round-summary card during reveal — actually CELEBRATES the result
             instead of silently restarting. */}

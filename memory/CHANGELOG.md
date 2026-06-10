@@ -1,5 +1,30 @@
 # Changelog
 
+## Feb 20, 2026 (later ++++++) — Boom Garden fun-factor pass
+
+User report: *"k we need these games to be more fun! Maybe feedback like who's got the rhtyhm game? Also, its time to let you know stew is floating in midair, and not at all on the field. He is two of his body lengths too high"*
+
+### Stew on the field (no more midair float)
+The Stew section was just `flex justify-center items-center py-3` with no vertical bias — he settled wherever the flex column landed him. Wrapped him in `flex justify-center items-end mt-auto pt-4 pb-2` so flex pushes him to the **bottom** of the play column. His drum now visually touches the football field background.
+
+### Per-tap PERFECT! / GREAT! / GOOD! / MISS! popup (Who's Got Rhythm style)
+- New `[hitFeedback, setHitFeedback]` state, populated in `handleSnareTap`.
+- Tier from how close the tap was to the centre: `≤30% tol → perfect`, `≤60% tol → great`, `≤100% tol → good`. Anything outside tol doesn't claim (kid keeps trying).
+- Re-uses the existing `FeedbackPopup` component from `components/GameUI.js` so the visual language matches Who's Got Rhythm exactly.
+- Auto-clears after 380 ms via a single tracked timer ref so rapid taps don't pile up.
+
+### Floating "+25 / +15 / +10 / Miss" score chips
+- `floatingScores` queue with unique IDs. Each tap pushes a chip that drifts up 90 px over 0.85 s and self-destructs.
+- Per-tap score bump: +25 perfect, +15 great, +10 good, 0 miss. Stacks on top of the existing end-of-round +100 bonus.
+- Per-tap streak bump too — `setStreak(s => s + 1)` on every scored tap, `setStreak(0)` on any auto-miss.
+
+### Verified
+- DOM probe across 4 taps: each tap → popup text `"GOOD!"` rendered + a `+10` chip mounted. Multiple chips stack and animate up. Tap 2 hit the 80 ms window between popups (timer cleared but new one not yet set) — not a bug.
+- Round summary still fires (`"3 of 3 on time!"`) + the Tadpole rank-up unlocks after the first clean round, confirming the existing achievement plumbing still works alongside the new per-tap feedback.
+
+### Files touched
+- `src/pages/BoomGardenPage.js` — `hitFeedback`, `floatingScores`, `popHitFeedback`, tap tiering, FeedbackPopup wired into JSX, Stew section uses `mt-auto items-end`.
+
 ## Feb 20, 2026 (later +++++) — The REAL Stew bug + musical count-in row
 
 User report: *"stew is still completely broken. Ive now dropped 200 credits on this one bug. Also, I like the idea of the 4,3,2,1 GO, but it doesnt quite work either. It's too unmusical of a count in, and the GO is covering what i have to tap"*
