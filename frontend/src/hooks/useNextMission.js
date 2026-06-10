@@ -108,10 +108,11 @@ function pickAchievementId(earnedSet) {
   }
 
   // Fallback: rank wants a tier the kid can't immediately earn (e.g. needs
-  // a Pro but has no Cadets yet). Walk DOWN the tiers to find something
-  // earnable. This shouldn't normally happen because the rank engine matches
-  // the kid's progress, but it makes the engine robust.
-  for (const fallbackTier of ['cadet', 'pro', 'master']) {
+  // a Pro but has no Cadets yet). Walk DOWN the tier ladder so we always
+  // recommend something the kid CAN realistically earn next. (Walking the
+  // ladder up could skip past the genuinely-earnable tier.)
+  const tierWalk = { cadet: ['cadet'], pro: ['cadet', 'pro'], master: ['cadet', 'pro', 'master'] };
+  for (const fallbackTier of tierWalk[targetTier] || ['cadet']) {
     if (fallbackTier === targetTier) continue;
     const candidates = ACHIEVEMENT_DOMAINS.filter(d => {
       const id = achievementId(d.id, fallbackTier);
