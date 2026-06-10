@@ -188,32 +188,42 @@ const DRUM_FRAMES = {
   snare:  { img1: 'assets/drums/Snare 1.png',  img2: 'assets/drums/Snare 2.png',  style: { left: '60px',  bottom: '10px',  width:  '85px',  zIndex: 6 } },
 };
 
-export const DrumKitVisual = forwardRef(function DrumKitVisual(_props, ref) {
+export const DrumKitVisual = forwardRef(function DrumKitVisual({ onHit }, ref) {
   const idleRefs = useRef({});
   const pressedRefs = useRef({});
   const timersRef = useRef({});
 
-  useImperativeHandle(ref, () => ({
-    flash: (id, ms = 120) => {
-      const idle = idleRefs.current[id];
-      const pressed = pressedRefs.current[id];
-      if (!idle || !pressed) return;
-      idle.style.opacity = '0';
-      pressed.style.display = 'block';
-      pressed.style.transform = 'scale(0.95)';
-      clearTimeout(timersRef.current[id]);
-      timersRef.current[id] = setTimeout(() => {
-        pressed.style.display = '';
-        pressed.style.transform = '';
-        idle.style.opacity = '';
-      }, ms);
-    },
-  }));
+  // Shared flash routine — used by BOTH the imperative ref (sequencer plays a
+  // step) AND by the kid's direct tap on a drum piece. Keeps visual feedback
+  // identical regardless of trigger source.
+  const flashDrum = useCallback((id, ms = 120) => {
+    const idle = idleRefs.current[id];
+    const pressed = pressedRefs.current[id];
+    if (!idle || !pressed) return;
+    idle.style.opacity = '0';
+    pressed.style.display = 'block';
+    pressed.style.transform = 'scale(0.95)';
+    clearTimeout(timersRef.current[id]);
+    timersRef.current[id] = setTimeout(() => {
+      pressed.style.display = '';
+      pressed.style.transform = '';
+      idle.style.opacity = '';
+    }, ms);
+  }, []);
+
+  useImperativeHandle(ref, () => ({ flash: flashDrum }), [flashDrum]);
 
   useEffect(() => {
     const timers = timersRef.current;
     return () => Object.values(timers).forEach(t => clearTimeout(t));
   }, []);
+
+  const handleTap = useCallback((id) => (e) => {
+    e.preventDefault();
+    try { e.target.setPointerCapture(e.pointerId); } catch (_) { /* noop */ }
+    flashDrum(id);
+    onHit?.(id);
+  }, [flashDrum, onHit]);
 
   return (
     <div className="relative mx-auto" style={{ width: '380px', height: '240px' }}>
@@ -223,8 +233,9 @@ export const DrumKitVisual = forwardRef(function DrumKitVisual(_props, ref) {
             ref={(el) => { if (el) idleRefs.current[id] = el; }}
             src={frame.img1}
             alt={id}
-            className="instrument-frame-idle absolute object-contain"
-            style={frame.style}
+            className="instrument-frame-idle absolute object-contain cursor-pointer select-none"
+            style={{ ...frame.style, touchAction: 'none' }}
+            onPointerDown={handleTap(id)}
             draggable={false}
           />
           <img
@@ -239,31 +250,46 @@ export const DrumKitVisual = forwardRef(function DrumKitVisual(_props, ref) {
         </div>
       ))}
       {/* Toms base - static decoration */}
-      <img src="assets/drums/toms-base.png" alt="Toms base" className="absolute object-contain"
+      <img src="assets/drums/toms-base.png" alt="Toms base" className="absolute object-contain pointer-events-none"
         style={{ left: '172px', bottom: '118px', width: '38px', zIndex: 4 }} />
     </div>
   );
 });
 
 // --- TURNTABLE (records spin continuously; keep spin animation - part of identity)
-export function TurntableVisual({ activeHits }) {
+export function TurntableVisual({ activeHits, onScratch }) {
   const isScratchLeft = activeHits?.has('scratchPull') || activeHits?.has('scratchPushPull');
   const isScratchRight = activeHits?.has('scratchPush') || activeHits?.has('scratchPushPull');
 
+  const handleLeftTap = (e) => {
+    e.preventDefault();
+    try { e.target.setPointerCapture(e.pointerId); } catch (_) { /* noop */ }
+    onScratch?.('scratchPull');
+  };
+  const handleRightTap = (e) => {
+    e.preventDefault();
+    try { e.target.setPointerCapture(e.pointerId); } catch (_) { /* noop */ }
+    onScratch?.('scratchPush');
+  };
+
   return (
     <div className="relative mx-auto" style={{ width: '260px', height: '180px' }}>
-      <img src="assets/turntable/bg.png" alt="Turntable" className="absolute inset-0 w-full h-full object-contain" style={{ zIndex: 1 }} />
+      <img src="assets/turntable/bg.png" alt="Turntable" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ zIndex: 1 }} />
       <motion.img src="assets/turntable/record-left.png" alt="Record L"
-        className="absolute object-contain"
-        style={{ left: '10%', top: '22%', width: '34%', zIndex: 2 }}
+        className="absolute object-contain cursor-pointer select-none"
+        style={{ left: '10%', top: '22%', width: '34%', zIndex: 2, touchAction: 'none' }}
         animate={isScratchLeft ? { rotate: 0 } : { rotate: 360 }}
         transition={isScratchLeft ? { duration: 0.1 } : { repeat: Infinity, duration: 2, ease: 'linear' }}
+        onPointerDown={handleLeftTap}
+        draggable={false}
       />
       <motion.img src="assets/turntable/record-right.png" alt="Record R"
-        className="absolute object-contain"
-        style={{ right: '10%', top: '22%', width: '34%', zIndex: 2 }}
+        className="absolute object-contain cursor-pointer select-none"
+        style={{ right: '10%', top: '22%', width: '34%', zIndex: 2, touchAction: 'none' }}
         animate={isScratchRight ? { rotate: 0 } : { rotate: 360 }}
         transition={isScratchRight ? { duration: 0.1 } : { repeat: Infinity, duration: 2, ease: 'linear' }}
+        onPointerDown={handleRightTap}
+        draggable={false}
       />
     </div>
   );

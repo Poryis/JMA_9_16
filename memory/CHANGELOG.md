@@ -3,6 +3,13 @@
 ## Feb 19, 2026 — Mobile playability boost in Who's Got the Rhythm
 Two compounding fixes for the "I don't know when to tap, and I want to tap the bell, not a button" mobile pain:
 
+### Beat Lab — direct-tap on drum kit and turntable
+- Kids can now jam on Beat Lab WITHOUT touching the sequencer grid. Each individual drum piece (kick, snare, hi-hat, crash, ride, tom, low-tom) is tappable and fires its sound + visual flash. Same `playDrumSound` audio path as the loop sequencer — zero new audio plumbing.
+- Turntable records are tappable too: left record → `scratchPull`, right record → `scratchPush`. The record briefly halts spinning via the existing `activeHits` mechanism so the kid sees the scratch land.
+- `DrumKitVisual` now takes an `onHit(drumId)` prop and exposes the shared `flashDrum` routine via the existing imperative ref (so the sequencer's flash trigger stays identical).
+- `TurntableVisual` takes an `onScratch(scratchId)` prop.
+- Both visuals: `cursor-pointer`, `touchAction: 'none'`, pointer capture to prevent mid-tap interruption. Toms-base decoration explicitly `pointer-events: none` so it never intercepts a tom tap.
+
 ### Beat Lab + Ear Trainer composition cleanup
 - User flagged Beat Lab as a "compositional nightmare" — two Charlies and two Chunks at the bottom-right, plus Chunk blocking the top-left of the beat lab area.
 - **Root cause**: two character systems stacked on the same page. `PageCharacters` (older, fixed bottom-3 corners, picked Charlie + Chunk for both Beat Lab and Ear Trainer) was rendering on top of `RoomCharacters` (newer per-room cast with outfit cycling and speech bubbles). Result: duplicates at the bottom corners.

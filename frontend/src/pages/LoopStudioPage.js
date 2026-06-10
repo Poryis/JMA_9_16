@@ -182,6 +182,32 @@ function LoopStudioPage() {
     else playDrumSound(preset.note);
   }, [initAudioContext, playBellNote, playDrumSound]);
 
+  // Direct tap on the drum kit visual — kids fire individual drum hits without
+  // needing to use the sequencer grid. Same audio path as the loop player.
+  const handleDrumTap = useCallback((drumId) => {
+    initAudioContext();
+    playDrumSound(drumId);
+  }, [initAudioContext, playDrumSound]);
+
+  // Direct tap on a turntable record — fires the matching scratch sample and
+  // briefly halts the record spin via the existing `activeHits` mechanism.
+  const handleScratchTap = useCallback((scratchId) => {
+    initAudioContext();
+    playDrumSound(scratchId);
+    setActiveHits((prev) => {
+      const next = new Set(prev);
+      next.add(scratchId);
+      return next;
+    });
+    setTimeout(() => {
+      setActiveHits((prev) => {
+        const next = new Set(prev);
+        next.delete(scratchId);
+        return next;
+      });
+    }, 200);
+  }, [initAudioContext, playDrumSound]);
+
   const playStep = useCallback((step) => {
     const currentGrid = gridRef.current;
     const muted = mutedRef.current;
@@ -550,15 +576,17 @@ function LoopStudioPage() {
           </div>
         </div>
 
-        {/* Instruments in the scene - desktop: drums left + turntable right; mobile: stacked vertically */}
+        {/* Instruments in the scene - desktop: drums left + turntable right; mobile: stacked vertically.
+            Both visuals are TAP-PLAYABLE — kids can jam directly on a kick drum or
+            scratch a record without using the sequencer grid. */}
         <div className="max-w-5xl mx-auto mt-3 flex flex-col md:flex-row md:items-end md:justify-between md:px-12 gap-6 md:gap-0 items-center">
           {/* Drum kit */}
           <div className="flex-shrink-0">
-            <DrumKitVisual ref={drumKitRef} />
+            <DrumKitVisual ref={drumKitRef} onHit={handleDrumTap} />
           </div>
           {/* Turntable */}
           <div className="flex-shrink-0">
-            <TurntableVisual activeHits={activeHits} />
+            <TurntableVisual activeHits={activeHits} onScratch={handleScratchTap} />
           </div>
         </div>
       </main>
