@@ -109,9 +109,14 @@ export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hi
       onPointerDown={handleDown}
       disabled={disabled}
       aria-label="Tap Stew to play the drum"
-      className="relative bg-transparent border-0 p-0 select-none"
+      className="relative bg-transparent border-0 p-0 select-none block"
       style={{
         width: 'clamp(220px, 42vw, 360px)',
+        // Explicit aspect-ratio so the button always has height even when
+        // every <img> child is `position: absolute` — otherwise the moment
+        // we flip frame 0 to display:none mid-animation, the parent
+        // collapses to 0 px high and Stew vanishes. THIS was the real bug.
+        aspectRatio: '16 / 9',
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.65 : 1,
         touchAction: 'none',
@@ -127,7 +132,7 @@ export const StewDrummer = forwardRef(function StewDrummer({ onTap, disabled, hi
           alt={idx === 0 ? 'Stew on drums' : ''}
           aria-hidden={idx === 0 ? undefined : 'true'}
           draggable={false}
-          className={`stew-drum-frame${idx === 0 ? ' stew-drum-frame-default' : ''} ${idx === 0 ? '' : 'absolute inset-0'} w-full h-auto object-contain pointer-events-none select-none`}
+          className={`stew-drum-frame${idx === 0 ? ' stew-drum-frame-default' : ''} absolute inset-0 w-full h-full object-contain pointer-events-none select-none`}
         />
       ))}
       {hint && (

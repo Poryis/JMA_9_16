@@ -830,10 +830,11 @@ export default function BoomGardenPage() {
           </div>
         )}
 
-        {/* Big dummy-proof count-in. 4 → 3 → 2 → 1 → GO! on each click.
-            Lives as a fixed overlay above the strip so it can't be missed.
-            Driven by countinStartMs (set when count-in begins) and stays
-            mounted ~600 ms into input so the "GO!" badge has time to land. */}
+        {/* Musical count-in: a row of 4 numbered tiles that light up
+            "1 → 2 → 3 → 4" on each click track beat. Lives BELOW the
+            rhythm strip so it never covers what the kid has to tap. The
+            cool-blue → green → orange → red color sweep is the visual
+            "heat building" toward beat 1 of their playing window. */}
         {showCountIn && (
           <CountInOverlay running={true} startAtMs={countinStartMs} />
         )}

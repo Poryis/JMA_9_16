@@ -1,43 +1,46 @@
-// CountInOverlay — big, can't-miss-it count-in display for Boom Garden.
+// CountInOverlay — musical 4-beat count-in display for Boom Garden.
 //
-// Shows a sequence of huge numbers ("4 → 3 → 2 → 1") followed by a "GO!"
-// burst, perfectly synced to the BEAT_MS click track. Each number pops in,
-// scales up, fades out as the next beat arrives. Color shifts from cool
-// blue → warm yellow → green "GO" so kids feel the heat building.
+// Renders as a horizontal row of 4 big numbered tiles ("1 · 2 · 3 · 4"),
+// sized to live just below the rhythm strip without covering it. The tile
+// for the current count-in beat pops large + bright + colored; the others
+// sit muted. Synced to the click track via a single rAF loop reading
+// `startAtMs`.
 //
-// Driven by a wall-clock reference (`startAtMs` = Date.now() of the first
-// click) and `running` boolean. Pure CSS / framer-motion animations — no
-// React state per beat, so we stay in lockstep with the audio.
+// Why a row of numbers (not a centered "4 → 3 → 2 → 1 → GO!" badge):
+// Real music teachers count UP in tempo before the kid plays ("1, 2, 3, 4,
+// PLAY"), not down like a movie countdown. The row of tiles also keeps the
+// strip visible — kids need to see what they're about to tap.
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { BEAT_MS } from '../data/rhythms';
 
-const STEPS = [
-  { label: '4', color: '#4285F4', textColor: 'white' },
-  { label: '3', color: '#FF9500', textColor: 'white' },
-  { label: '2', color: '#FFCC00', textColor: '#0A2540' },
-  { label: '1', color: '#FF3B30', textColor: 'white' },
-  { label: 'GO!', color: '#34A853', textColor: 'white' },
-];
+const BEAT_COUNT = 4;
+// Cool → warm gradient so the kid feels the heat building toward beat 4.
+const TILE_COLORS = ['#4285F4', '#34A853', '#FF9500', '#FF3B30'];
 
 export default function CountInOverlay({ running, startAtMs }) {
-  const [stepIdx, setStepIdx] = useState(-1);
+  const [activeBeat, setActiveBeat] = useState(-1);
 
   useEffect(() => {
     if (!running || !startAtMs) {
-      setStepIdx(-1);
+      setActiveBeat(-1);
       return undefined;
     }
     let raf;
     const tick = () => {
       const elapsed = Date.now() - startAtMs;
-      // Step 0 (number "4") fires AT t=0. Step 4 ("GO!") fires at t=4*BEAT_MS
-      // — the exact moment the input window opens / beat-1 is expected.
-      const idx = Math.min(4, Math.max(-1, Math.floor(elapsed / BEAT_MS)));
-      setStepIdx(idx);
-      // Stop polling once we've shown "GO!" plus a brief hold.
-      if (elapsed < 4 * BEAT_MS + 600) {
+      if (elapsed < 0) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      // Beat 0 fires at t=0. Beat 3 fires at t=3*BEAT_MS. After
+      // 4*BEAT_MS the count-in is over (input starts) but we hold the
+      // last-beat highlight for 250 ms so it doesn't disappear before
+      // the eye can register beat 4.
+      const idx = Math.min(BEAT_COUNT - 1, Math.floor(elapsed / BEAT_MS));
+      setActiveBeat(idx);
+      if (elapsed < BEAT_COUNT * BEAT_MS + 250) {
         raf = requestAnimationFrame(tick);
       }
     };
@@ -45,44 +48,46 @@ export default function CountInOverlay({ running, startAtMs }) {
     return () => cancelAnimationFrame(raf);
   }, [running, startAtMs]);
 
-  const current = stepIdx >= 0 ? STEPS[stepIdx] : null;
-
   return (
     <div
       data-testid="count-in-overlay"
-      className="pointer-events-none fixed inset-0 flex items-start justify-center z-20"
-      style={{ paddingTop: 'clamp(120px, 26vh, 220px)' }}
+      className="pointer-events-none flex items-center justify-center gap-3 md:gap-4 mb-3"
     >
-      <AnimatePresence>
-        {current && (
+      {Array.from({ length: BEAT_COUNT }).map((_, i) => {
+        const isActive = i === activeBeat;
+        return (
           <motion.div
-            key={stepIdx}
-            initial={{ scale: 0.3, opacity: 0, rotate: -8 }}
-            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-            exit={{ scale: 1.5, opacity: 0, rotate: 0 }}
-            transition={{
-              scale:   { type: 'spring', stiffness: 520, damping: 16, mass: 0.55 },
-              opacity: { duration: 0.18, ease: 'easeOut' },
-              rotate:  { type: 'spring', stiffness: 520, damping: 18 },
-              exit:    { duration: 0.22, ease: 'easeIn' },
+            key={i}
+            data-testid={`count-in-tile-${i + 1}`}
+            animate={{
+              scale: isActive ? 1.18 : 1,
+              opacity: isActive ? 1 : 0.45,
+              y: isActive ? -4 : 0,
             }}
-            className="absolute rounded-3xl border-4 flex items-center justify-center font-black font-display select-none"
+            transition={{
+              scale: { type: 'spring', stiffness: 560, damping: 16 },
+              opacity: { duration: 0.12 },
+              y: { type: 'spring', stiffness: 560, damping: 18 },
+            }}
+            className="rounded-2xl border-4 flex items-center justify-center font-black font-display select-none"
             style={{
-              width: 'clamp(180px, 36vw, 320px)',
-              height: 'clamp(180px, 36vw, 320px)',
-              backgroundColor: current.color,
+              width: 'clamp(60px, 11vw, 96px)',
+              height: 'clamp(60px, 11vw, 96px)',
+              backgroundColor: isActive ? TILE_COLORS[i] : '#F4F7FA',
               borderColor: 'var(--jma-dark)',
-              color: current.textColor,
-              fontSize: 'clamp(80px, 18vw, 180px)',
+              color: isActive ? 'white' : 'var(--jma-dark)',
+              fontSize: 'clamp(32px, 6vw, 52px)',
               lineHeight: 1,
-              boxShadow: '0 14px 0 0 var(--jma-dark), 0 22px 36px rgba(0,0,0,0.28)',
-              textShadow: '4px 4px 0 rgba(10,37,64,0.4)',
+              boxShadow: isActive
+                ? '0 9px 0 0 var(--jma-dark), 0 14px 26px rgba(0,0,0,0.28)'
+                : '0 4px 0 0 var(--jma-dark)',
+              textShadow: isActive ? '2px 2px 0 rgba(10,37,64,0.35)' : 'none',
             }}
           >
-            {current.label}
+            {i + 1}
           </motion.div>
-        )}
-      </AnimatePresence>
+        );
+      })}
     </div>
   );
 }

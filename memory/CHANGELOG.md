@@ -1,5 +1,33 @@
 # Changelog
 
+## Feb 20, 2026 (later +++++) — The REAL Stew bug + musical count-in row
+
+User report: *"stew is still completely broken. Ive now dropped 200 credits on this one bug. Also, I like the idea of the 4,3,2,1 GO, but it doesnt quite work either. It's too unmusical of a count in, and the GO is covering what i have to tap"*
+
+### The actual Stew bug — container-collapse on display swap
+After multiple rounds of Beat-Lab refactors and L/R-counter fixes, the *root cause* of "Stew is broken" turned out to be a **layout collapse**, not React reconciliation. In `StewDrummer.js`:
+
+- Frame 0 (left-1.png) had `className="... w-full h-auto"` (no `absolute`) → it sat in normal flow and **defined the button's height** (PNG is 1920×1080 = 16:9, so 360 px wide → 202 px tall).
+- Frames 1–7 had `className="... absolute inset-0"` → they overlapped frame 0 but contributed nothing to layout.
+
+The instant `showFrame(N>0)` set frame 0's `display: none`, the button collapsed to **0 px tall**. Frames 1–7 (positioned absolutely against a 0-height parent) had nothing to render into → Stew literally vanished. Subsequent showFrame calls flipped invisible elements. The animation chain ran, but the visual result was "Stew freezes" or "Stew disappears".
+
+### Fix
+1. All 8 frames now `absolute inset-0 w-full h-full`.
+2. The `<motion.button>` gets an explicit `aspectRatio: '16 / 9'` style so it always has height regardless of which child is visible.
+3. Verified: across 5 sequential taps, button stays 360×202 px, each tap increments `dataset.hits` by exactly +1, and `right-3 → left-3 → right-2 → left-3 → right-3` alternates cleanly. Visible image is always the full button size — no collapse.
+
+### Count-in rewrite — musical row of 4 numbered tiles
+Replaced the centered "4 → 3 → 2 → 1 → GO!" badge with a **horizontal row of 4 numbered tiles** (`1 · 2 · 3 · 4`) that lives directly below the rhythm strip. Each tile pops large + brightens + lifts on its own beat (cool blue → green → orange → red as the heat builds toward beat 1). Reasons:
+
+- **Musical**: real teachers count UP in tempo ("1, 2, 3, 4, *play*"), not down like a movie. Kids feel the meter instead of a panic countdown.
+- **Doesn't cover the strip**: the previous fixed-overlay badge sat dead-center, hiding the Ta/Ta/Shh/Ta pattern the kid is about to tap. The new row sits beneath the strip in dedicated vertical space.
+- **No "GO!" needed**: the strip's input-phase visual playhead (added last iteration) lights up beat 1 the instant the kid's window opens. "GO" was redundant and worse, was the thing covering the strip.
+
+### Files touched
+- `src/components/StewDrummer.js` — `aspectRatio: '16 / 9'` on the button + all 8 frames `absolute inset-0 w-full h-full`.
+- `src/components/CountInOverlay.js` — rewritten as a horizontal row of 4 motion.div tiles, no longer a fixed full-screen overlay.
+
 ## Feb 20, 2026 (later ++++) — Boom Garden 4 P0 fixes
 
 User report: *"Stew is a new kind of broken. You play only once or twice and he becomes totally un tappable. Also it still doesnt let me start before the exact downbeat. Also, i see all the efforts made to help the kids know when to start, and where they are. I want those even MORE obvious."*
