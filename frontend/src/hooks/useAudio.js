@@ -220,6 +220,27 @@ export function useAudio() {
     oscillator.stop(ctx.currentTime + 0.3);
   }, [initAudioContext]);
 
+  // Count-in beep — pure tone via oscillator, distinctly different from the
+  // hi-hat used in the gameplay click track. `isLast` raises the pitch a
+  // perfect 5th on beat 4 so the kid hears "ready... ready... ready... GO"
+  // and naturally tap on the next downbeat.
+  const playCountInBeep = useCallback((isLast = false) => {
+    const ctx = initAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    // Beat 1–3: A5 (880 Hz). Beat 4: E6 (1320 Hz) — a fifth higher,
+    // unmistakably "go time".
+    osc.frequency.setValueAtTime(isLast ? 1320 : 880, ctx.currentTime);
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.32, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (isLast ? 0.22 : 0.14));
+    osc.connect(gain);
+    gain.connect(masterGainRef.current);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.28);
+  }, [initAudioContext]);
+
   // Preload on mount
   useEffect(() => {
     preloadAudio();
@@ -230,6 +251,7 @@ export function useAudio() {
     playDrumSound,
     playKazooNote,
     playFeedbackSound,
+    playCountInBeep,
     preloadAudio,
     initAudioContext,
     getAudioGraph,

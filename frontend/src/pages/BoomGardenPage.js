@@ -25,7 +25,7 @@ import CountInOverlay from '../components/CountInOverlay';
 import useAudio from '../hooks/useAudio';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import {
-  PATTERNS, TRAIL_PATTERNS, DIFFICULTIES, BEAT_MS, TOLERANCE_MS,
+  PATTERNS, TRAIL_PATTERNS, DIFFICULTIES, BEAT_MS as BASE_BEAT_MS, TOLERANCE_MS,
   patternBeats, noteStartTimes,
 } from '../data/rhythms';
 
@@ -181,7 +181,7 @@ function ModeTile({ mode, index, onPick }) {
 }
 
 export default function BoomGardenPage() {
-  const { playDrumSound, initAudioContext } = useAudio();
+  const { playDrumSound, playCountInBeep, initAudioContext } = useAudio();
 
   const [mode, setMode] = useState(null);
   const [level, setLevel] = useState('cadet');
@@ -195,6 +195,14 @@ export default function BoomGardenPage() {
   const [streak, setStreak] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  // Tempo multiplier: 1 = full speed, 0.75 = chill, 0.5 = practice. Slowing
+  // the tempo stretches BEAT_MS proportionally for everything (demo,
+  // count-in, expected times, visual playhead) so kids can scale the
+  // challenge without losing the musical feel. We re-derive the local
+  // `BEAT_MS` from the base import + multiplier so the rest of the
+  // component's existing `BEAT_MS` math keeps working unchanged.
+  const [tempoMul, setTempoMul] = useState(1);
+  const BEAT_MS = Math.round(BASE_BEAT_MS / tempoMul);
   // Per-tap feedback tier for the big PERFECT! / GREAT! / GOOD! / MISS!
   // popup mid-input. Mirrors Who's Got Rhythm so kids get instant feel for
   // how locked-in their tap was instead of waiting for the round summary.
@@ -414,7 +422,21 @@ export default function BoomGardenPage() {
     const countIn = setTimeout(() => {
       setPhase('countin');
       setHighlightIndex(-1);
-      scheduleMetronome(4, 0);
+      // Count-in is BEEPS, not hi-hats — pure tones so the kid can tell
+      // them apart from the gameplay click track that starts at input.
+      // Beat 4 jumps a fifth higher ("ready, ready, ready, GO!").
+      for (let b = 0; b < 4; b++) {
+        const isLast = b === 3;
+        const t = setTimeout(() => playCountInBeep(isLast), b * BEAT_MS);
+        timeoutsRef.current.push(t);
+      }
+      // Drive the visual count-in overlay timing via metronomeStartMs.
+      setMetronomeStartMs(Date.now());
+      setMetronomeRunning(true);
+      const stopT = setTimeout(() => setMetronomeRunning(false), 4.5 * BEAT_MS);
+      timeoutsRef.current.push(stopT);
+      if (metronomeStopTimerRef.current) clearTimeout(metronomeStopTimerRef.current);
+      metronomeStopTimerRef.current = stopT;
       setCountinStartMs(Date.now());
       setShowCountIn(true);
       // OPEN THE TAP WINDOW NOW. inputStartRef + expectedStarts get pre-set
@@ -658,9 +680,20 @@ export default function BoomGardenPage() {
     const COUNT_IN_BEATS = 4;
     const countInMs = COUNT_IN_BEATS * BEAT_MS;
     const totalBeats = patternBeats(pat);
-    // Count-in: 4 hi-hat ticks while strip scrolls TO the strike line.
+    // Count-in: 4 BEEPS while strip scrolls TO the strike line. Distinct
+    // tones (last beat a fifth higher) so kids can't miss when input opens.
     setPhase('countin');
-    scheduleMetronome(COUNT_IN_BEATS, 0);
+    for (let b = 0; b < COUNT_IN_BEATS; b++) {
+      const isLast = b === COUNT_IN_BEATS - 1;
+      const t = setTimeout(() => playCountInBeep(isLast), b * BEAT_MS);
+      timeoutsRef.current.push(t);
+    }
+    setMetronomeStartMs(Date.now());
+    setMetronomeRunning(true);
+    const beepStop = setTimeout(() => setMetronomeRunning(false), (COUNT_IN_BEATS + 0.5) * BEAT_MS);
+    timeoutsRef.current.push(beepStop);
+    if (metronomeStopTimerRef.current) clearTimeout(metronomeStopTimerRef.current);
+    metronomeStopTimerRef.current = beepStop;
     setCountinStartMs(Date.now());
     setShowCountIn(true);
     // Open the tap window NOW so anticipatory taps on the last count-in beat
