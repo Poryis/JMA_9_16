@@ -19,6 +19,7 @@ import NoteMatchPage from "./pages/NoteMatchPage";
 import DetectivePage from "./pages/DetectivePage";
 import SongStudioPage from "./pages/SongStudioPage";
 import SightReadingPage from "./pages/SightReadingPage";
+import BoomGardenPage from "./pages/BoomGardenPage";
 import StickerToast from "./components/StickerToast";
 import RankUpCelebration from "./components/RankUpCelebration";
 import AudioUnlockOverlay from "./components/AudioUnlockOverlay";
@@ -68,6 +69,7 @@ function App() {
             <Route path="/detective" element={<DetectivePage />} />
             <Route path="/song-studio" element={<SongStudioPage />} />
             <Route path="/sight-reading" element={<SightReadingPage />} />
+            <Route path="/boom-garden" element={<BoomGardenPage />} />
             <Route path="/sticker-book" element={<StickerBookPage />} />
           </Routes>
         </AnimatePresence>

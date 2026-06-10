@@ -1,5 +1,27 @@
 # Changelog
 
+## Feb 20, 2026 — Boom Garden (rhythm-reading academy with 3 modes)
+Filled the curriculum gap user flagged: "we just don't have any rhythm reading games — performing or recognizing rhythm patterns."
+
+### What got built
+- New page `BoomGardenPage.js` at route `/#/boom-garden` with **three modes**:
+  - **Copy Cat** — Doc claps a rhythm; kid taps the big drum to echo it back. Position-based timing scoring (±300 ms tolerance — generous for 5-year-olds, still requires real timing).
+  - **Twin Beats** — Three patterns displayed; one is played via audio; kid taps the matching strip. Replay button if they need to hear it again.
+  - **Tap Trail** — Pattern shown with NO demo; kid reads the notation and taps in time with a hi-hat click track. Reuses Copy Cat's tap-scoring logic.
+- New data file `data/rhythms.js`: NOTE_DEFS uses user's exact Lesson-4 syllables — Whole = "Toe-ee--O-ee", Half = "Toe-ee", Quarter = "Ta", Eighth = "Ti". 6 patterns × 3 difficulty tiers (Cadet/Pro/Master).
+- New component `RhythmStrip.js`: chunky colored blocks sized proportional to beat length. Seahorse PNG for rests (consistent with Song Studio). Click-handlers optional so the same component renders both static notation and tappable Twin-Beats options.
+- Wired into Learn menu as a new tile with Charlie-RunDMC mascot.
+- Audio: every demo note and every kid tap fires `playDrumSound('snare')` — kid hears identical percussion in demo and echo.
+- Achievement integration: clearing rounds earns the existing `Rhythm Reader` ladder (Cadet/Pro/Master) — no new sticker IDs invented.
+
+### Naming choices (per user "less schoolish" direction)
+- Room: **Boom Garden** (not "Academy" / "Lab" / "Studio")
+- Modes: **Copy Cat**, **Twin Beats**, **Tap Trail**
+
+### Verified
+- Build clean. All 3 modes load, demos play, taps register, 3 strips render for Twin Beats with proportional widths, syllables ("Ta" / "Ti" / "Toe-ee") display correctly on the right note types, rest seahorses contained to 70 % of block size (not stretched).
+
+
 ## Feb 19, 2026 — Mobile playability boost in Who's Got the Rhythm
 Two compounding fixes for the "I don't know when to tap, and I want to tap the bell, not a button" mobile pain:
 
