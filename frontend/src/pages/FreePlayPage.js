@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Music, Circle, Square, Play, RotateCcw, ChevronRight, Headphones, Download } from 'lucide-react';
+import { Music, Circle, Square, Play, RotateCcw, ChevronRight, Headphones, Download, Mic } from 'lucide-react';
 import { BELLS, KEY_TO_NOTE } from '../components/JellyBells';
 import { GameHeader } from '../components/GameUI';
 import RoomCharacters from '../components/RoomCharacters';
@@ -783,20 +783,6 @@ function FreePlayPage() {
                 onClick={() => setActiveTab(tab.id)}>{tab.label}</button>
             ))}
           </div>
-          <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-2">
-            {!isRecording ? (
-              <button data-testid="record-btn" className="chunky-btn bg-[var(--jma-red)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation" onClick={startRecording}>
-                <Circle className="w-3 h-3 fill-current" /> REC</button>
-            ) : (
-              <button data-testid="stop-record-btn" className="chunky-btn bg-[var(--jma-dark)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation" onClick={stopRecording}>
-                <Square className="w-3 h-3 fill-current" /> STOP</button>
-            )}
-            {recording.length > 0 && !isRecording && (
-              <button data-testid="playback-btn" className="chunky-btn bg-[var(--jma-green)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
-                onClick={playBack} disabled={isPlayingBack}>
-                <Play className="w-3 h-3" /> {isPlayingBack ? 'Playing...' : `Play (${recording.length})`}</button>
-            )}
-          </div>
           {/* "Learn a Song" removed from Jam Hall to declutter the top
               toolbar on mobile. Guided mode is still wired up under the hood
               if it's ever re-introduced. */}
@@ -806,36 +792,66 @@ function FreePlayPage() {
             audioRef={jamAudioRef}
             getAudioGraph={getAudioGraph}
           />
-          {/* MP3 capture - records anything you play (bells, drums, plus jam-along backing) */}
-          <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-1">
-            {!recorder.isRecording ? (
+          {/* Unified "Capture this Jam" — starts BOTH the in-app note loop
+              and the audio MP3 recorder in lockstep. After stopping, an inline
+              panel offers two clear choices: listen back here, or save the
+              MP3 to take home. The kid can do both or either. */}
+          <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-1 flex-wrap">
+            {!isRecording && !recorder.isRecording ? (
               <button
-                data-testid="mp3-record-btn"
-                className="chunky-btn bg-[var(--jma-purple)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
+                data-testid="capture-jam-btn"
+                className="chunky-btn bg-[var(--jma-red)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
                 style={{ backgroundColor: '#AF52DE' }}
-                onClick={() => { initAudioContext(); recorder.start(); }}
+                onClick={() => {
+                  initAudioContext();
+                  // Clear any previous loop + MP3 so the new capture is fresh
+                  startRecording();
+                  recorder.start();
+                }}
                 disabled={recorder.isProcessing}
               >
-                <Circle className="w-3 h-3 fill-current" /> Save
+                <Mic className="w-3 h-3" /> Capture this Jam
               </button>
             ) : (
               <button
-                data-testid="mp3-stop-rec-btn"
+                data-testid="capture-stop-btn"
                 className="chunky-btn bg-[var(--jma-dark)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold animate-pulse touch-manipulation"
-                onClick={async () => { await recorder.stop(); }}
+                onClick={async () => {
+                  stopRecording();
+                  try { await recorder.stop(); } catch { /* ignore */ }
+                }}
               >
-                <Square className="w-3 h-3 fill-current" /> {recorder.secondsLeft}s
+                <Square className="w-3 h-3 fill-current" /> Stop · {recorder.secondsLeft}s
               </button>
             )}
-            {recorder.isProcessing && <span className="text-xs font-bold opacity-70">...</span>}
-            {recorder.lastMp3Url && !recorder.isRecording && !recorder.isProcessing && (
-              <button
-                data-testid="mp3-download-btn"
-                className="chunky-btn bg-[var(--jma-green)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
-                onClick={() => recorder.download(`my-jam-${Date.now()}.mp3`)}
-              >
-                <Download className="w-3 h-3" /> MP3
-              </button>
+            {recorder.isProcessing && (
+              <span className="text-[10px] md:text-xs font-bold opacity-70" style={{ color: 'var(--jma-dark)' }}>
+                cooking your jam...
+              </span>
+            )}
+            {/* Choice panel — appears only when we have something the kid can do */}
+            {!isRecording && !recorder.isRecording && !recorder.isProcessing && (recording.length > 0 || recorder.lastMp3Url) && (
+              <>
+                {recording.length > 0 && (
+                  <button
+                    data-testid="capture-listen-btn"
+                    className="chunky-btn bg-[var(--jma-green)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
+                    onClick={playBack}
+                    disabled={isPlayingBack}
+                  >
+                    <Play className="w-3 h-3" /> {isPlayingBack ? 'Playing...' : `Listen Here (${recording.length})`}
+                  </button>
+                )}
+                {recorder.lastMp3Url && (
+                  <button
+                    data-testid="capture-save-btn"
+                    className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
+                    onClick={() => recorder.download(`my-jam-${Date.now()}.mp3`)}
+                  >
+                    <Download className="w-3 h-3" /> Save as MP3
+                  </button>
+                )}
+              </>
             )}
           </div>
           <audio
