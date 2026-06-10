@@ -101,7 +101,6 @@ export const SONG_LIBRARY = [
     beatsPerNote: 1, // quarter notes
     mode: 'A-minor',
     originalKey: 'A minor',
-    shift: 1,
     // Chord prog: G - Em - C - D (i-relative-IV-V folk feel in G minor key).
     // 5 cycles × 4 bars.
     notes: [
