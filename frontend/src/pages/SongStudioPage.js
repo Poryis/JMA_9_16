@@ -85,6 +85,7 @@ export default function SongStudioPage() {
   const [chordsOn, setChordsOn] = useState(true);
 
   const drumSourceRef = useRef(null);   // Web Audio source for current drum loop
+  const scheduledSourcesRef = useRef([]); // every melody+chord source scheduled for the current playSong
   const playTimeoutsRef = useRef([]);
   const cancelPlayRef = useRef(false);
 
@@ -176,6 +177,12 @@ export default function SongStudioPage() {
       try { drumSourceRef.current.stop(); } catch { /* ignore */ }
       drumSourceRef.current = null;
     }
+    // Cut every scheduled melody/chord source — including ones that haven't
+    // started yet (Web Audio honours .stop() on future-scheduled sources too).
+    scheduledSourcesRef.current.forEach((s) => {
+      try { s.stop(); } catch { /* ignore */ }
+    });
+    scheduledSourcesRef.current = [];
     setIsPlaying(false);
     setPlayingSlot(-1);
   }, []);
@@ -224,10 +231,16 @@ export default function SongStudioPage() {
 
       if (chordsOn && measureBeat === 0 && mood.chordProgression) {
         const chord = mood.chordProgression[measureIdx];
-        if (chord) chord.notes.forEach((n) => playPianoNote(n, 0.35, tCtx));
+        if (chord) chord.notes.forEach((n) => {
+          const src = playPianoNote(n, 0.35, tCtx);
+          if (src) scheduledSourcesRef.current.push(src);
+        });
       }
       // Only play the melody note if it's an actual pitch (rests stay silent)
-      if (noteId && noteId !== REST) playPianoNote(noteId, 0.85, tCtx);
+      if (noteId && noteId !== REST) {
+        const src = playPianoNote(noteId, 0.85, tCtx);
+        if (src) scheduledSourcesRef.current.push(src);
+      }
 
       // Visual playhead — best-effort, lit at wall-clock time matching the
       // scheduled audio. A few ms of jitter is fine for the UI.
@@ -658,7 +671,7 @@ export default function SongStudioPage() {
                   💾 Name your song!
                 </h2>
                 <p className="text-sm text-center mb-3 opacity-70" style={{ color: 'var(--jma-dark)' }}>
-                  Then we'll add it to your gallery.
+                  Then we&apos;ll add it to your gallery.
                 </p>
                 <input
                   data-testid="song-name-input"

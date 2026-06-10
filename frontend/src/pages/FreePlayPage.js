@@ -222,12 +222,20 @@ function PlayableBell({ bell, onDown, onUp, isHighlighted, registerRef, rotation
           className="instrument-frame-pressed w-full h-full object-contain pointer-events-none absolute inset-0"
           draggable={false}
         />
-        <div className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-white border-2 border-[var(--jma-dark)] flex items-center justify-center text-sm font-bold pointer-events-none"
-          style={{ color: bell.color }}>{bell.key}</div>
-      </div>
-      <div className="bell-note-label text-center">
-        <span className="text-lg md:text-xl font-bold" style={{ color: bell.color }}>{bell.solfege}</span>
-        <span className="block text-xs opacity-70">({bell.note})</span>
+        {/* Keyboard-hint badge: hidden on mobile/tablet (touch-first), shown on
+            desktop only. Pinned to the bottom-center of the bell (which is the
+            INSIDE of the bell circle since each bell's top points outward),
+            with a counter-rotation so the digit stays upright. */}
+        <div
+          className="hidden md:flex absolute -bottom-1 left-1/2 w-7 h-7 rounded-full bg-white border-2 border-[var(--jma-dark)] items-center justify-center text-sm font-bold pointer-events-none"
+          style={{
+            color: bell.color,
+            transform: `translateX(-50%) rotate(${-rotation}deg)`,
+            transformOrigin: 'center center',
+          }}
+        >
+          {bell.key}
+        </div>
       </div>
     </div>
   );

@@ -58,6 +58,8 @@ export default function usePianoAudio() {
   }, [decodeUrl]);
 
   // Play a piano note. Polyphonic. `when` is an AudioContext timestamp; 0 = now.
+  // Returns the underlying AudioBufferSourceNode (or null on fallback path) so
+  // the caller can `.stop()` scheduled future notes if the user hits Stop.
   const playPianoNote = useCallback((id, gain = 0.7, when = 0) => {
     const ctx = initContext();
     const startAt = when || ctx.currentTime;
@@ -66,13 +68,13 @@ export default function usePianoAudio() {
       // Fallback for the very first taps before preload finishes.
       // We can't honor `when` precisely here, but for the immediate-tap path
       // it's fine (no scheduling involved).
-      if (!ALL_PIANO_NOTE_IDS.includes(id)) return;
+      if (!ALL_PIANO_NOTE_IDS.includes(id)) return null;
       try {
         const a = new Audio(noteFile(id));
         a.volume = gain;
         a.play().catch(() => { /* ignore */ });
       } catch { /* ignore */ }
-      return;
+      return null;
     }
     const source = ctx.createBufferSource();
     const g = ctx.createGain();
@@ -80,6 +82,7 @@ export default function usePianoAudio() {
     g.gain.setValueAtTime(gain, startAt);
     source.connect(g).connect(masterGainRef.current);
     source.start(startAt);
+    return source;
   }, [initContext]);
 
   // Start a looped drum buffer at a precise AudioContext timestamp.
