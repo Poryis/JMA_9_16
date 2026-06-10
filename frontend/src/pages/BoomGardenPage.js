@@ -18,11 +18,13 @@ import { GameHeader } from '../components/GameUI';
 import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import RhythmStrip from '../components/RhythmStrip';
-import BigSnare from '../components/BigSnare';
+import ScrollingRhythmStrip from '../components/ScrollingRhythmStrip';
+import StewDrummer from '../components/StewDrummer';
 import useAudio from '../hooks/useAudio';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import {
-  PATTERNS, DIFFICULTIES, BEAT_MS, patternBeats, noteStartTimes,
+  PATTERNS, TRAIL_PATTERNS, DIFFICULTIES, BEAT_MS, TOLERANCE_MS,
+  patternBeats, noteStartTimes,
 } from '../data/rhythms';
 
 // Per-mode card config — each tile mirrors the LearnMenuPage tile aesthetic
@@ -65,8 +67,8 @@ const MODES = [
 
 const MODE_MAP = Object.fromEntries(MODES.map((m) => [m.id, m]));
 
-function randomPattern(level) {
-  const pool = PATTERNS[level] || PATTERNS.cadet;
+function randomPattern(level, source = PATTERNS) {
+  const pool = source[level] || source.cadet;
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -197,7 +199,8 @@ export default function BoomGardenPage() {
   const inputStartRef = useRef(0);
   const expectedStartsRef = useRef([]);
   const patternRef = useRef(null);
-  const tapResultsRef = useRef([]);
+  const claimedNotesRef = useRef(new Set());     // indices of notes a tap has been matched to
+  const tapResultsRef = useRef({});               // index → 'perfect' | 'miss'
   const snareRef = useRef(null);
 
   const clearTimeouts = useCallback(() => {
@@ -240,28 +243,25 @@ export default function BoomGardenPage() {
   const finishCopyRound = useCallback(() => {
     clearTimeouts();
     const pat = patternRef.current || [];
-    const results = tapResultsRef.current;
-    const expectedTapIndices = pat
-      .map((k, i) => (k === 'rest' ? null : i))
-      .filter((x) => x !== null);
-    const hits = pat.map((k) => (k === 'rest' ? undefined : 'miss'));
-    let correct = 0;
-    expectedTapIndices.forEach((idx, ord) => {
-      if (results[ord] === 'perfect') {
-        hits[idx] = 'perfect';
-        correct += 1;
-      }
+    const results = tapResultsRef.current; // index → 'perfect' | 'miss'
+    const hits = pat.map((k, i) => {
+      if (k === 'rest') return undefined;
+      return results[i] || 'miss';
     });
+    const expectedNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
+    const correct = expectedNonRest.filter((i) => results[i] === 'perfect').length;
     setHitStates(hits);
     setHighlightIndex(-1);
     setPhase('reveal');
-    const allHit = correct === expectedTapIndices.length;
+    // "All hit" means at least 80 % of non-rest notes were in the tolerance
+    // window — keeps the celebration achievable without giving it away.
+    const allHit = correct >= Math.max(1, Math.ceil(expectedNonRest.length * 0.8));
     if (allHit) {
       setScore((s) => s + 100);
       setStreak((s) => s + 1);
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 1400);
-      setFeedback({ tone: 'great', text: 'Nice copy!' });
+      setFeedback({ tone: 'great', text: 'Nice rhythm!' });
       try {
         earnAchievement('rhythm', 'cadet');
         if (level === 'pro')    earnAchievementUpTo('rhythm', 'pro');
@@ -273,18 +273,20 @@ export default function BoomGardenPage() {
     }
     const next = setTimeout(() => {
       setFeedback(null);
-      startCopy();
+      if (mode === 'copy')  startCopy();
+      if (mode === 'trail') startTrail();
     }, 1900);
     timeoutsRef.current.push(next);
-  }, [clearTimeouts, level]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clearTimeouts, level, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startCopy = useCallback(() => {
-    const pat = randomPattern(level);
+    const pat = randomPattern(level, PATTERNS);
     setPattern(pat);
     patternRef.current = pat;
     setHitStates([]);
     setHighlightIndex(-1);
-    tapResultsRef.current = [];
+    tapResultsRef.current = {};
+    claimedNotesRef.current = new Set();
     setPhase('demo');
     initAudioContext();
     clearTimeouts();
@@ -292,46 +294,63 @@ export default function BoomGardenPage() {
     // Demo: click track + snare hits + visual playhead.
     scheduleMetronome(totalBeats, 0);
     schedulePatternAudio(pat, { withHighlight: true, startDelayMs: 0 });
-    // Hand off to kid AFTER demo + 1 measure of count-in (4 beats) so they
-    // hear the click steady before their input window opens.
     const demoMs = totalBeats * BEAT_MS;
+    // 4-beat count-in BEFORE the kid's input opens — gives them a steady
+    // pulse to anchor to so they're not guessing at the tempo cold.
+    const countInDelay = demoMs + 600;
+    const countInMs = 4 * BEAT_MS;
+    const countIn = setTimeout(() => {
+      setPhase('countin');
+      setHighlightIndex(-1);
+      scheduleMetronome(4, 0);
+    }, countInDelay);
+    timeoutsRef.current.push(countIn);
+    // Input opens right after the count-in.
     const handoff = setTimeout(() => {
       setPhase('input');
-      setHighlightIndex(-1);
       inputStartRef.current = Date.now();
       expectedStartsRef.current = noteStartTimes(pat, BEAT_MS);
-      // Click keeps running during the kid's turn — they tap to the beat.
+      // Click continues UNDERNEATH the kid's tapping.
       scheduleMetronome(totalBeats, 0);
-      // Failsafe: auto-finish if they don't hit everything in time.
       const failsafe = setTimeout(finishCopyRound, totalBeats * BEAT_MS + 1200);
       timeoutsRef.current.push(failsafe);
-    }, demoMs + 700);
+    }, countInDelay + countInMs);
     timeoutsRef.current.push(handoff);
   }, [level, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio, finishCopyRound]);
 
+  // Unified tap handler used by both Copy Cat and Tap Trail. Uses
+  // nearest-neighbour matching so a missed beat doesn't desync the round —
+  // the kid's tap is scored against whichever non-rest note (that hasn't
+  // already been claimed) sits closest in time.
   const handleSnareTap = useCallback(() => {
     if (phase !== 'input') return;
     playDrumSound('snare');
+    snareRef.current?.flash(100);
     const tapTime = Date.now() - inputStartRef.current;
     const pat = patternRef.current || [];
     const expectedStarts = expectedStartsRef.current;
-    const nonRestExpected = pat
-      .map((k, i) => (k === 'rest' ? null : { i, time: expectedStarts[i] }))
-      .filter((x) => x !== null);
-    const ord = tapResultsRef.current.length;
-    const target = nonRestExpected[ord];
-    if (!target) return;
-    const diff = Math.abs(tapTime - target.time);
-    // ±275 ms ~ 37 % of a beat — forgiving for 5-year-olds, still requires
-    // sense of timing with the click track running.
-    const isPerfect = diff <= 275;
-    tapResultsRef.current.push(isPerfect ? 'perfect' : 'miss');
-    setHighlightIndex(target.i);
-    if (tapResultsRef.current.length >= nonRestExpected.length) {
+    const claimed = claimedNotesRef.current;
+    let bestIdx = -1, bestDiff = Infinity;
+    pat.forEach((k, i) => {
+      if (k === 'rest' || claimed.has(i)) return;
+      const diff = Math.abs(tapTime - expectedStarts[i]);
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        bestIdx = i;
+      }
+    });
+    if (bestIdx === -1) return; // every note already claimed
+    claimed.add(bestIdx);
+    const tol = TOLERANCE_MS[level] ?? TOLERANCE_MS.cadet;
+    tapResultsRef.current[bestIdx] = bestDiff <= tol ? 'perfect' : 'miss';
+    setHighlightIndex(bestIdx);
+    // Round ends when every non-rest beat has been claimed.
+    const allNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
+    if (allNonRest.every((i) => claimed.has(i))) {
       const fin = setTimeout(finishCopyRound, 280);
       timeoutsRef.current.push(fin);
     }
-  }, [phase, playDrumSound, finishCopyRound]);
+  }, [phase, level, playDrumSound, finishCopyRound]);
 
   // ---- TWIN BEATS ----
   const startMatch = useCallback(() => {
@@ -390,39 +409,36 @@ export default function BoomGardenPage() {
   }, [phase, matchOptions, matchAnswer, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio]);
 
   // ---- TAP TRAIL ----
+  // Scrolling multi-measure reader. The scrolling visual is handled by
+  // <ScrollingRhythmStrip/>; here we just sync the click track + input
+  // window so the strike line and the audio downbeat agree.
   const startTrail = useCallback(() => {
-    const pat = randomPattern(level);
+    const pat = randomPattern(level, TRAIL_PATTERNS);
     setPattern(pat);
     patternRef.current = pat;
     setHitStates([]);
     setHighlightIndex(-1);
-    tapResultsRef.current = [];
+    tapResultsRef.current = {};
+    claimedNotesRef.current = new Set();
     initAudioContext();
     clearTimeouts();
-    // 1-measure count-in (4 hi-hat clicks) so the kid locks into the tempo
-    // before the strip's playhead starts.
     const COUNT_IN_BEATS = 4;
-    scheduleMetronome(COUNT_IN_BEATS, 0);
-    const startIn = COUNT_IN_BEATS * BEAT_MS;
     const totalBeats = patternBeats(pat);
+    // Count-in: 4 hi-hat ticks while strip scrolls TO the strike line.
+    setPhase('countin');
+    scheduleMetronome(COUNT_IN_BEATS, 0);
     const trailStart = setTimeout(() => {
       setPhase('input');
       inputStartRef.current = Date.now();
       expectedStartsRef.current = noteStartTimes(pat, BEAT_MS);
-      // Click continues through the pattern + visual playhead.
       scheduleMetronome(totalBeats, 0);
-      pat.forEach((key, i) => {
-        const t = setTimeout(() => setHighlightIndex(i), expectedStartsRef.current[i]);
-        timeoutsRef.current.push(t);
-      });
       const fin = setTimeout(() => {
         setHighlightIndex(-1);
         finishCopyRound();
       }, totalBeats * BEAT_MS + 600);
       timeoutsRef.current.push(fin);
-    }, startIn);
+    }, COUNT_IN_BEATS * BEAT_MS);
     timeoutsRef.current.push(trailStart);
-    setPhase('countin');
   }, [level, initAudioContext, clearTimeouts, scheduleMetronome, finishCopyRound]);
 
   // ---- LIFECYCLE ----
@@ -581,26 +597,34 @@ export default function BoomGardenPage() {
             }}
             data-testid="boom-phase-banner"
           >
-            {mode === 'copy'  && phase === 'demo'   && 'Listen carefully...'}
-            {mode === 'copy'  && phase === 'input'  && 'Your turn — hit the snare on the beat!'}
-            {mode === 'copy'  && phase === 'reveal' && 'Round complete'}
-            {mode === 'match' && phase === 'demo'   && 'Listen to this rhythm...'}
-            {mode === 'match' && phase === 'input'  && 'Pick the strip that matches'}
-            {mode === 'match' && phase === 'reveal' && 'Round complete'}
-            {mode === 'trail' && phase === 'countin'&& 'Count in... 1 · 2 · 3 · 4'}
-            {mode === 'trail' && phase === 'input'  && 'Read & play the rhythm'}
-            {mode === 'trail' && phase === 'reveal' && 'Round complete'}
+            {mode === 'copy'  && phase === 'demo'    && 'Listen carefully...'}
+            {mode === 'copy'  && phase === 'countin' && 'Count in... 1 · 2 · 3 · 4'}
+            {mode === 'copy'  && phase === 'input'   && 'Your turn — play it on the snare!'}
+            {mode === 'copy'  && phase === 'reveal'  && 'Round complete'}
+            {mode === 'match' && phase === 'demo'    && 'Listen to this rhythm...'}
+            {mode === 'match' && phase === 'input'   && 'Pick the strip that matches'}
+            {mode === 'match' && phase === 'reveal'  && 'Round complete'}
+            {mode === 'trail' && phase === 'countin' && 'Count in... 1 · 2 · 3 · 4'}
+            {mode === 'trail' && phase === 'input'   && 'Read & play as each note hits the line'}
+            {mode === 'trail' && phase === 'reveal'  && 'Round complete'}
           </div>
         </div>
 
         {/* Strip(s) */}
         <div className="flex flex-col items-stretch justify-center gap-3 md:gap-4 mb-4">
-          {(mode === 'copy' || mode === 'trail') && pattern && (
+          {mode === 'copy' && pattern && (
             <RhythmStrip
               pattern={pattern}
               highlightIndex={highlightIndex}
               hitStates={hitStates}
-              height={110}
+              height={120}
+            />
+          )}
+          {mode === 'trail' && pattern && (
+            <ScrollingRhythmStrip
+              pattern={pattern}
+              kickOff={phase === 'countin' || phase === 'input' || phase === 'reveal'}
+              height={170}
             />
           )}
           {mode === 'match' && matchOptions.length === 3 && (
@@ -640,14 +664,19 @@ export default function BoomGardenPage() {
           )}
         </div>
 
-        {/* Big snare drum (Copy Cat + Tap Trail only) */}
+        {/* Stew the llama — performs every drum hit (demo + kid's input). */}
         {(mode === 'copy' || mode === 'trail') && (
           <div className="flex justify-center items-center py-3">
-            <BigSnare
+            <StewDrummer
               ref={snareRef}
               onTap={handleSnareTap}
               disabled={phase !== 'input'}
-              hint={phase === 'input' ? 'HIT IT!' : phase === 'demo' ? 'Listen...' : phase === 'countin' ? '1 · 2 · 3 · 4' : 'Wait'}
+              hint={
+                phase === 'input'   ? 'TAP STEW!' :
+                phase === 'demo'    ? 'Listen...' :
+                phase === 'countin' ? '1 · 2 · 3 · 4' :
+                'Wait'
+              }
             />
           </div>
         )}

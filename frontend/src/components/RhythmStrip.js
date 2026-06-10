@@ -1,24 +1,24 @@
-// RhythmStrip — horizontal notation strip for Boom Garden.
+// RhythmStrip — horizontal rhythm-notation strip for Boom Garden.
 //
-// Renders each note as a colored block, sized proportionally to its beat
-// length. The Kodály counting syllable (Ta, Ti, Toe-ee, Toe-ee--O-ee) is
-// printed inside each block. Rests use the existing seahorse asset to stay
-// visually consistent with the rest of the JMA world.
+// Each block shows:
+//   - A real musical note PNG (whole / half / quarter / eighth — provided by
+//     the user) for non-rest notes, OR the seahorse-rest illustration.
+//   - The Kodály counting syllable underneath (Ta / Ti / Toe-ee /
+//     Toe-ee--O-ee / Shh). Match the JMA's chunky-block aesthetic.
 //
-// `highlightIndex` lifts and brightens one block — used by Copy Cat to show
-// the demo playhead, and by Tap Trail to mark the current beat target.
+// `highlightIndex` lifts and brightens one block — used for the demo
+// playhead in Copy Cat and Tap Trail. Highlighted blocks swap to the user's
+// "highlighted" note PNG variants for a real notation-style emphasis.
 
 import { NOTE_DEFS, patternBeats } from '../data/rhythms';
-
-const REST_IMG = 'assets/ui/seahorse-rest.png';
 
 export default function RhythmStrip({
   pattern,
   highlightIndex = -1,
-  hitStates = null,   // optional array of 'perfect' | 'miss' per index
-  height = 90,
+  hitStates = null,    // optional array of 'perfect' | 'miss' per index
+  height = 110,
   testIdPrefix = 'rhythm-block',
-  onBlockTap = null,  // optional handler: called with index when a block is tapped
+  onBlockTap = null,   // optional handler: called with index when a block is tapped
 }) {
   const totalBeats = patternBeats(pattern);
 
@@ -40,11 +40,10 @@ export default function RhythmStrip({
         const isHi = i === highlightIndex;
         const isRest = key === 'rest';
         const hit = hitStates?.[i];
-        const tintBg = hit === 'perfect'
-          ? '#34A85388'
-          : hit === 'miss'
-            ? '#FF3B3088'
-            : (isHi ? def.color : `${def.color}66`);
+        const tintBg =
+          hit === 'perfect' ? '#34A85355'
+          : hit === 'miss'   ? '#FF3B3055'
+          : (isHi ? `${def.color}AA` : `${def.color}33`);
         const Tag = onBlockTap ? 'button' : 'div';
         const tapProps = onBlockTap
           ? {
@@ -58,7 +57,7 @@ export default function RhythmStrip({
             key={i}
             data-testid={`${testIdPrefix}-${i}`}
             {...tapProps}
-            className="flex flex-col items-center justify-center rounded-xl border-3 select-none overflow-hidden"
+            className="flex flex-col items-center justify-between rounded-xl border-3 select-none overflow-hidden py-1"
             style={{
               width: `${widthPct}%`,
               backgroundColor: tintBg,
@@ -68,26 +67,32 @@ export default function RhythmStrip({
               transform: isHi ? 'translateY(-3px) scale(1.04)' : 'none',
               transition: 'transform 0.15s ease-out, background-color 0.15s, box-shadow 0.15s',
               cursor: onBlockTap ? 'pointer' : 'default',
-              padding: 0,
+              padding: '6px 4px',
               minWidth: `${Math.max(40, widthPct * 3)}px`,
             }}
           >
-            {isRest ? (
-              <img
-                src={REST_IMG}
-                alt="rest"
-                draggable={false}
-                className="object-contain select-none pointer-events-none"
-                style={{ maxHeight: '70%', maxWidth: '70%' }}
-              />
-            ) : (
-              <span
-                className="text-[10px] sm:text-xs md:text-sm font-black font-display leading-tight px-1 text-center pointer-events-none"
-                style={{ textShadow: '1px 1px 0 rgba(255,255,255,0.5)' }}
-              >
-                {def.syllable}
-              </span>
-            )}
+            {/* Note PNG (or seahorse rest) */}
+            <img
+              src={isHi ? def.imgHi : def.img}
+              alt={isRest ? 'rest' : def.label}
+              draggable={false}
+              className="object-contain pointer-events-none select-none"
+              style={{
+                maxHeight: '60%',
+                maxWidth: '80%',
+                filter: isRest ? 'none' : 'drop-shadow(0 1px 0 rgba(255,255,255,0.6))',
+              }}
+            />
+            {/* Counting syllable */}
+            <span
+              className="text-[10px] sm:text-xs md:text-sm font-black font-display leading-none text-center pointer-events-none"
+              style={{
+                textShadow: '1px 1px 0 rgba(255,255,255,0.5)',
+                marginTop: 2,
+              }}
+            >
+              {def.syllable}
+            </span>
           </Tag>
         );
       })}

@@ -1,6 +1,27 @@
 # Changelog
 
-## Feb 20, 2026 — Boom Garden v2 — JMA art language + real snare + click track everywhere
+## Feb 20, 2026 — Boom Garden v3 — Stew on drums + real notation + scrolling Tap Trail + fixed timing
+Round 3 of user feedback:
+- "Snare has both states showing at the same time" — visual bug.
+- "When it's the student's turn to perform they need something to give them the timing... they can't just copy with perfect tempo, or whatever you currently have testing if its right or not" — timing detection broken + needs reference pulse.
+- "Tap Trail to be reading in time. For more than a measure at a time. So have something scrolling or something?" — Tap Trail needs to be a real sight-reading exercise.
+- "For rests lets keep my seahorse rest and put Shh under it. For all the others, accompany the rhythm words with these notes I've attached" — real musical notation per user-provided PNGs.
+- Final v3: "Instead of the snare, lets have Stew perform the drums. I have given you two animations... For each hit have him alternate between those animations."
+
+### What changed
+- **Real musical notation in every strip**. Imported user's PNGs (whole/half/quarter/eighth + highlighted variants) to `/assets/notes/rhythm/`. `RhythmStrip` now renders a real note PNG above the Kodály syllable in each block. Rest blocks keep the seahorse asset and now show "Shh" underneath.
+- **Stew the drum-major now performs every drum hit**. New `StewDrummer` component uses the 8 PNG frames the user provided (left-stick + right-stick × 4 each, shared neutral pose). Each hit (demo or kid tap) alternates between left/right animations. Direct-DOM `src` swap chain at 45 ms/frame keeps the animation in sync with the audio with no React re-renders. Preloads all 8 frames so the first hit doesn't stutter. `BigSnare` retired.
+- **Tap Trail rewritten as a scrolling sight-reading reader**. New `ScrollingRhythmStrip` component shows notes scrolling right-to-left through a fixed gold "TAP HERE" strike line. Multi-measure patterns (8–12 beats Cadet, up to 16+ beats Master) via new `TRAIL_PATTERNS` data. The 4-beat count-in is now visually integrated — the strip starts 4 beats off-screen-right and scrolls into the strike line during the click count-in, so kids see the music approaching as they hear the pulse.
+- **Timing detection rewritten with nearest-neighbour matching**. Old logic forced strictly sequential taps — a missed beat broke the whole round because beat-2's tap was compared against beat-1's expected time. New logic finds the closest UNCLAIMED non-rest note in time at each tap and scores against that, so kids can recover from a missed beat without the round desyncing.
+- **Per-difficulty timing tolerance** in `TOLERANCE_MS`: Cadet ±400 ms (~53 % of a beat — very forgiving for 5-year-olds with a click reference), Pro ±275 ms, Master ±175 ms.
+- **Round-pass threshold loosened** from "every note perfect" to "≥80 % of non-rest notes in window" — celebration is now achievable without being given away.
+- **Copy Cat now has its own 4-beat count-in** between demo and input — kids hear the click for a full measure before they're expected to play, anchoring them to the tempo.
+- **BigSnare double-state bug fixed**: pressed-frame `display` was being cleared to `''` on pointerUp (defaulting to `block`); explicitly set to `'none'` now. Component retired in favour of `StewDrummer` regardless.
+
+### Verified
+- Build clean. Copy Cat strip shows real quarter-note PNGs with "Ta" syllables; demo highlights the playhead block in bright yellow. Stew drum-major character renders below with "TAP STEW!" / "Listen..." / "1 · 2 · 3 · 4" hint badge per phase. Tap Trail scrolling strip shows notes parked to the right of the gold strike line during count-in, with "TAP HERE" gold badge labelling the strike line. Pro patterns visibly mix half / eighth-pair / quarter notes with proportional widths.
+
+
 User feedback on the v1: "These games are SO lackluster... the ct and twins and trail crap is awful, not in line with our art at all... lets not do that... Instead of tap let's use my snare or something... When it's the student's turn to perform, have the beat in time... Also on twin beats, if it's rest-ta-ta-ta or ta-ta-ta-rest there is no way to tell the difference."
 
 ### What changed

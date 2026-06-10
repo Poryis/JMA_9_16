@@ -26,7 +26,7 @@ export const BigSnare = forwardRef(function BigSnare({ onTap, disabled, hint }, 
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         if (pressedRef.current) {
-          pressedRef.current.style.display = '';
+          pressedRef.current.style.display = 'none';
           pressedRef.current.style.transform = '';
         }
         if (idleRef.current) idleRef.current.style.opacity = '';
@@ -47,7 +47,7 @@ export const BigSnare = forwardRef(function BigSnare({ onTap, disabled, hint }, 
   };
   const handleUp = () => {
     if (pressedRef.current) {
-      pressedRef.current.style.display = '';
+      pressedRef.current.style.display = 'none';
       pressedRef.current.style.transform = '';
     }
     if (idleRef.current) idleRef.current.style.opacity = '';
