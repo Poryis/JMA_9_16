@@ -48,6 +48,12 @@ function FallingBellNote({ note, laneIndex, totalLanes, speed, isDrum }) {
   const label = isDrum ? lane?.short : bell?.solfege;
   const color = isDrum ? lane?.color : bell?.color;
   const laneWidth = 100 / totalLanes;
+  // The bell is at the "tap-now" sweet spot from ~78% to ~95% of the fall —
+  // the halo CSS animation lights up the bell during that window. Keep
+  // pointer-events disabled so taps pass THROUGH the bell to the lane
+  // button below it (mobile big-finger lane).
+  const glowDelayMs = 0.78 * speed;
+  const glowDurationMs = 0.20 * speed;
 
   return (
     <motion.div
@@ -55,17 +61,27 @@ function FallingBellNote({ note, laneIndex, totalLanes, speed, isDrum }) {
       style={{
         left: `${laneIndex * laneWidth + laneWidth / 2}%`,
         transform: 'translateX(-50%)',
+        pointerEvents: 'none',
       }}
       initial={{ top: -80 }}
       animate={{ top: 'calc(100% + 80px)' }}
       transition={{ duration: speed / 1000, ease: 'linear' }}
     >
-      <img
-        src={img}
-        alt={label}
-        className="w-10 h-12 md:w-12 md:h-14 object-contain drop-shadow-md"
-        draggable={false}
-      />
+      <div className="relative">
+        <div
+          className="bell-tap-now-halo"
+          style={{
+            '--glow-delay': `${glowDelayMs}ms`,
+            '--glow-duration': `${glowDurationMs}ms`,
+          }}
+        />
+        <img
+          src={img}
+          alt={label}
+          className="relative w-10 h-12 md:w-12 md:h-14 object-contain drop-shadow-md"
+          draggable={false}
+        />
+      </div>
       <span className="text-xs font-bold mt-0.5 px-1.5 rounded-full text-white"
         style={{ backgroundColor: color, textShadow: '1px 1px 0 rgba(0,0,0,0.3)' }}>
         {label}
@@ -701,6 +717,22 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
               return (
                 <div key={note} className="rhythm-lane" style={{ backgroundColor: `${tintColor}10` }}>
                   <div className="lane-target" />
+                  {/* Mobile big-finger lane: invisible button covering the
+                      entire lane on small screens, so kids can jab anywhere
+                      in the column to score. Hidden (`md:hidden`) on
+                      tablet+. Lower z-index than the static bell so taps
+                      ON the bell still go to the bell. */}
+                  <button
+                    data-testid={`game-lane-${note}`}
+                    type="button"
+                    aria-label={`Tap to play ${labelText}`}
+                    onPointerDown={doDown}
+                    onPointerUp={doUp}
+                    onPointerLeave={doUp}
+                    onPointerCancel={doUp}
+                    className="md:hidden absolute inset-0 bg-transparent border-0 p-0 z-0"
+                    style={{ touchAction: 'none' }}
+                  />
                   {/* Target instrument at the bottom - notes land ON this */}
                   <button
                     data-testid={`game-${isDrumMode ? 'drum' : 'bell'}-${note}`}

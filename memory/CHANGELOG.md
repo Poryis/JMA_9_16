@@ -1,5 +1,18 @@
 # Changelog
 
+## Feb 19, 2026 — Mobile playability boost in Who's Got the Rhythm
+Two compounding fixes for the "I don't know when to tap, and I want to tap the bell, not a button" mobile pain:
+
+### "Tap-now!" halo on the falling bell
+- New CSS keyframe `bell-tap-now` + `.bell-tap-now-halo` class. Each falling bell now renders a hidden gold radial halo BEHIND the PNG that animates in at 78 % of the fall and out at 95 %, with the duration scaled to the fall speed via `--glow-delay` / `--glow-duration` CSS variables set per-note from React.
+- Result: the bell visibly glows gold right as it enters the hit window — kids see "now!" without reading a single word.
+- Zero-JS per frame; pure CSS animation with delay → no perf cost.
+
+### Mobile big-finger lanes
+- New invisible `md:hidden` button covering the full lane on small screens, `data-testid="game-lane-{note}"`, sharing the same `doDown`/`doUp` handlers as the static bell.
+- Falling bells now have `pointer-events: none` so a tap anywhere in the column lands on the lane button below — kids tap "where the bell is" and score, no precision required.
+- Lower z-index (z-0) than the static target bell (z-10), so taps directly on the bell still go to the bell.
+
 ## Feb 19, 2026 — Audio stop + Jam Session declutter + Rhythm graduated feedback
 
 ### Charlie's Song Studio — Stop now actually stops the melody (P0)
