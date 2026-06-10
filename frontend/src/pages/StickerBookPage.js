@@ -10,7 +10,7 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, X, Trophy, RotateCcw } from 'lucide-react';
+import { Sparkles, X, Trophy, RotateCcw, GraduationCap } from 'lucide-react';
 import { STICKER_MAP, COLLECTION_STICKERS, STICKER_CATEGORIES } from '../data/stickers';
 import { ACHIEVEMENT_DOMAINS, ACHIEVEMENT_TIERS, achievementId } from '../data/achievements';
 import useStickers, { resetAllStickers } from '../hooks/useStickers';
@@ -18,6 +18,8 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import RankBadge from '../components/RankBadge';
 import AchievementBadge from '../components/AchievementBadge';
 import HarpIcon from '../components/HarpIcon';
+
+const TEACHER_VIEW_KEY = 'jma_teacher_view_v1';
 
 // Detail modal for ANY sticker (round or badge).
 function StickerDetailModal({ sticker, earned, onClose }) {
@@ -114,6 +116,19 @@ export default function StickerBookPage() {
   const { earned, achievementCount, collectionCount } = useStickers();
   const [openSticker, setOpenSticker] = useState(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  // Teacher View — when on, the achievement section swaps kid blurbs for
+  // standards-aligned skill descriptions. Persisted so a teacher demo'ing the
+  // app to a principal can leave it on between visits.
+  const [teacherView, setTeacherView] = useState(() => {
+    try { return localStorage.getItem(TEACHER_VIEW_KEY) === '1'; } catch { return false; }
+  });
+  const toggleTeacherView = () => {
+    setTeacherView((v) => {
+      const next = !v;
+      try { localStorage.setItem(TEACHER_VIEW_KEY, next ? '1' : '0'); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
   const totalAchievements = 18;
   const totalCollection = COLLECTION_STICKERS.length;
@@ -175,38 +190,73 @@ export default function StickerBookPage() {
 
         {/* ============ ACHIEVEMENT BADGES (top — the rank-driving section) ============ */}
         <section className="mb-10" data-testid="category-achievements">
-          <div className="flex items-center justify-between mb-3 px-1">
+          <div className="flex items-center justify-between gap-2 mb-3 px-1">
             <h2 className="text-lg md:text-xl font-black font-display flex items-center gap-2" style={{ color: 'var(--jma-dark)' }}>
               <Trophy className="w-5 h-5" style={{ color: '#D89B00' }} />
               Achievement Badges
               <span className="text-xs font-bold opacity-60 ml-1">({achievementCount}/{totalAchievements})</span>
             </h2>
-            <span className="hidden sm:inline text-[11px] md:text-xs font-bold opacity-70 italic" style={{ color: 'var(--jma-dark)' }}>
-              These badges unlock your rank!
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="hidden lg:inline text-[11px] md:text-xs font-bold opacity-70 italic" style={{ color: 'var(--jma-dark)' }}>
+                These badges unlock your rank!
+              </span>
+              {/* Teacher View toggle — swaps kid blurbs for standards-aligned descriptions */}
+              <button
+                data-testid="teacher-view-toggle"
+                onClick={toggleTeacherView}
+                className="chunky-btn px-2 py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
+                style={{
+                  backgroundColor: teacherView ? '#4285F4' : 'white',
+                  color: teacherView ? 'white' : 'var(--jma-dark)',
+                  borderColor: 'var(--jma-dark)',
+                }}
+                aria-pressed={teacherView}
+                title="Toggle teacher view"
+              >
+                <GraduationCap className="w-3.5 h-3.5" />
+                {teacherView ? 'Teacher View' : 'Teacher View'}
+              </button>
+            </div>
           </div>
 
           {/* One row per domain, three badges across (Cadet · Pro · Master) */}
           <div className="rounded-2xl border-3 border-[var(--jma-dark)] bg-white/80 backdrop-blur-sm divide-y-2 divide-[var(--jma-dark)]/15 overflow-hidden">
             {ACHIEVEMENT_DOMAINS.map((dom) => (
-              <div key={dom.id} className="flex items-center gap-2 md:gap-4 p-2.5 md:p-4">
-                {/* Domain label column */}
-                <div className="flex-shrink-0 w-[110px] md:w-[150px]">
-                  <div className="flex items-center gap-2">
+              <div key={dom.id} className="flex items-start gap-2 md:gap-4 p-2.5 md:p-4" data-testid={`domain-row-${dom.id}`}>
+                {/* Domain label column — width grows in teacher view so the
+                    longer skill description has somewhere to live. */}
+                <div className={`flex-shrink-0 ${teacherView ? 'w-[180px] md:w-[260px]' : 'w-[110px] md:w-[150px]'} transition-all`}>
+                  <div className="flex items-start gap-2">
                     <div
-                      className="w-9 h-9 md:w-11 md:h-11 rounded-full border-2 flex-shrink-0"
+                      className="w-9 h-9 md:w-11 md:h-11 rounded-full border-2 flex-shrink-0 mt-0.5"
                       style={{ borderColor: 'var(--jma-dark)', backgroundColor: `${dom.color}33`, overflow: 'hidden' }}
                     >
                       <img src={dom.icon} alt={dom.label} className="w-full h-full object-contain" draggable={false} />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="text-xs md:text-sm font-black font-display leading-tight" style={{ color: 'var(--jma-dark)' }}>{dom.label}</div>
-                      <div className="text-[9px] md:text-[10px] opacity-60 leading-tight" style={{ color: 'var(--jma-dark)' }}>{dom.blurb}</div>
+                      {teacherView ? (
+                        <div
+                          data-testid={`domain-teacher-desc-${dom.id}`}
+                          className="text-[10px] md:text-[11px] opacity-80 leading-tight mt-0.5"
+                          style={{ color: 'var(--jma-dark)' }}
+                        >
+                          {dom.teacherDescription}
+                        </div>
+                      ) : (
+                        <div
+                          data-testid={`domain-blurb-${dom.id}`}
+                          className="text-[9px] md:text-[10px] opacity-60 leading-tight"
+                          style={{ color: 'var(--jma-dark)' }}
+                        >
+                          {dom.blurb}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
                 {/* Three tier badges */}
-                <div className="flex-1 flex justify-around gap-1 md:gap-2">
+                <div className="flex-1 flex justify-around gap-1 md:gap-2 items-center min-h-[60px]">
                   {ACHIEVEMENT_TIERS.map((t) => {
                     const sticker = STICKER_MAP[achievementId(dom.id, t.id)];
                     const isEarned = !!earned[sticker.id];

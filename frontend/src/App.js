@@ -21,6 +21,7 @@ import SongStudioPage from "./pages/SongStudioPage";
 import SightReadingPage from "./pages/SightReadingPage";
 import StickerToast from "./components/StickerToast";
 import RankUpCelebration from "./components/RankUpCelebration";
+import AudioUnlockOverlay from "./components/AudioUnlockOverlay";
 
 function App() {
   const [score, setScore] = useState(0);
@@ -35,6 +36,7 @@ function App() {
 
   return (
     <div className="App min-h-screen">
+      <AudioUnlockOverlay />
       <HashRouter>
         <StickerToast />
         <RankUpCelebration />
