@@ -795,14 +795,12 @@ function FreePlayPage() {
           {/* Unified "Capture this Jam" — starts BOTH the in-app note loop
               and the audio MP3 recorder in lockstep. After stopping, an inline
               panel offers two clear choices: listen back here, or save the
-              MP3 to take home. The kid can do both or either.
-              Buttons here are intentionally bigger than the rest of the toolbar
-              because they're the most important kid-facing actions. */}
-          <div className="game-card px-2 py-1 md:px-2 md:py-1 flex items-center gap-1.5 flex-wrap">
+              MP3 to take home. The kid can do both or either. */}
+          <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-1 flex-wrap">
             {!isRecording && !recorder.isRecording ? (
               <button
                 data-testid="capture-jam-btn"
-                className="chunky-btn text-white px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-1.5 text-xs md:text-sm font-bold touch-manipulation"
+                className="chunky-btn text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
                 style={{ backgroundColor: '#AF52DE' }}
                 onClick={() => {
                   initAudioContext();
@@ -812,22 +810,22 @@ function FreePlayPage() {
                 }}
                 disabled={recorder.isProcessing}
               >
-                <Mic className="w-4 h-4" /> Capture this Jam
+                <Mic className="w-3 h-3" /> Capture this Jam
               </button>
             ) : (
               <button
                 data-testid="capture-stop-btn"
-                className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-1.5 text-xs md:text-sm font-bold animate-pulse touch-manipulation"
+                className="chunky-btn bg-[var(--jma-dark)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold animate-pulse touch-manipulation"
                 onClick={async () => {
                   stopRecording();
                   try { await recorder.stop(); } catch { /* ignore */ }
                 }}
               >
-                <Square className="w-4 h-4 fill-current" /> Stop · {recorder.secondsLeft}s
+                <Square className="w-3 h-3 fill-current" /> Stop · {recorder.secondsLeft}s
               </button>
             )}
             {recorder.isProcessing && (
-              <span className="text-xs md:text-sm font-bold opacity-70" style={{ color: 'var(--jma-dark)' }}>
+              <span className="text-[10px] md:text-xs font-bold opacity-70" style={{ color: 'var(--jma-dark)' }}>
                 cooking your jam...
               </span>
             )}
@@ -837,20 +835,20 @@ function FreePlayPage() {
                 {recording.length > 0 && (
                   <button
                     data-testid="capture-listen-btn"
-                    className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-1.5 text-xs md:text-sm font-bold touch-manipulation"
+                    className="chunky-btn bg-[var(--jma-green)] text-white px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
                     onClick={playBack}
                     disabled={isPlayingBack}
                   >
-                    <Play className="w-4 h-4" /> {isPlayingBack ? 'Playing...' : `Listen Here (${recording.length})`}
+                    <Play className="w-3 h-3" /> {isPlayingBack ? 'Playing...' : `Listen Here (${recording.length})`}
                   </button>
                 )}
                 {recorder.lastMp3Url && (
                   <button
                     data-testid="capture-save-btn"
-                    className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-1.5 text-xs md:text-sm font-bold touch-manipulation"
+                    className="chunky-btn bg-[var(--jma-yellow)] text-[var(--jma-dark)] px-2 py-0.5 md:py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
                     onClick={() => recorder.download(`my-jam-${Date.now()}.mp3`)}
                   >
-                    <Download className="w-4 h-4" /> Save as MP3
+                    <Download className="w-3 h-3" /> Save as MP3
                   </button>
                 )}
               </>

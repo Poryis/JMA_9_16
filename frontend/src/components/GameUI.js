@@ -7,7 +7,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
   const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-2 md:px-4 py-1 md:py-3">
+    <header className="fixed top-0 left-0 right-0 z-50 px-2 md:px-4 py-1 md:py-3 pointer-events-none">
       <div className="max-w-7xl mx-auto flex items-start justify-between gap-2">
         {/* Home button - harp icon + "Home" label below */}
         {showHomeButton && (
@@ -15,7 +15,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
             data-testid="home-button"
             aria-label="Home"
             onClick={() => navigate('/')}
-            className="group flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer flex-shrink-0"
+            className="group flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer flex-shrink-0 pointer-events-auto"
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95, y: 2 }}
           >
@@ -46,7 +46,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
         {/* Title */}
         {title && (
           <motion.h1 
-            className="text-sm md:text-2xl font-bold text-center font-display pt-1 md:pt-0"
+            className="text-sm md:text-2xl font-bold text-center font-display pt-1 md:pt-0 pointer-events-auto"
             style={{ color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(0,0,0,0.3)' }}
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -56,7 +56,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
         )}
 
         {/* Score display */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 pointer-events-auto">
           {streak > 0 && (
             <motion.div
               className="game-card px-3 py-2 flex items-center gap-2"
