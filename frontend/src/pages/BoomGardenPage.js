@@ -21,6 +21,7 @@ import RhythmStrip from '../components/RhythmStrip';
 import ScrollingRhythmStrip from '../components/ScrollingRhythmStrip';
 import StewDrummer from '../components/StewDrummer';
 import BeatPulse from '../components/BeatPulse';
+import CountInOverlay from '../components/CountInOverlay';
 import useAudio from '../hooks/useAudio';
 import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import {
@@ -208,6 +209,20 @@ export default function BoomGardenPage() {
   // hi-hat without any drift.
   const [metronomeStartMs, setMetronomeStartMs] = useState(0);
   const [metronomeRunning, setMetronomeRunning] = useState(false);
+  // ID of the LATEST setMetronomeRunning(false) timer. When a new metronome
+  // session starts before the previous one's stop timer fires, the previous
+  // timer would clobber the new session's running state — that's exactly
+  // what happened when the demo's stop fired ~375 ms into the count-in,
+  // killing the rest of the "4 → 3 → 2 → 1 → GO!" overlay. We now cancel
+  // the previous stop timer whenever a new metronome session begins.
+  const metronomeStopTimerRef = useRef(null);
+  // Wall-clock moment the current round's count-in started. The big
+  // CountInOverlay reads this to compute which step (4/3/2/1/GO!) to show.
+  // We track it separately from `metronomeStartMs` so the overlay can stay
+  // mounted ~600 ms INTO the input phase (long enough for "GO!" to bounce
+  // out cleanly) without restarting when scheduleMetronome is re-called.
+  const [countinStartMs, setCountinStartMs] = useState(0);
+  const [showCountIn, setShowCountIn] = useState(false);
   // Round summary shown during reveal.
   const [roundSummary, setRoundSummary] = useState(null); // { correct, total }
   // Round counter — bumps every time a fresh round starts. Used as a React
@@ -229,6 +244,14 @@ export default function BoomGardenPage() {
   // metronome so the kid can SEE the tempo in addition to hearing it.
   const scheduleMetronome = useCallback((beatCount, startDelayMs = 0) => {
     initAudioContext();
+    // Cancel the previous metronome session's stop timer — otherwise the
+    // demo's stop (fired ~375 ms after a new count-in session began) would
+    // flip metronomeRunning back to false mid-count-in and kill the
+    // count-in overlay's number sequence.
+    if (metronomeStopTimerRef.current) {
+      clearTimeout(metronomeStopTimerRef.current);
+      metronomeStopTimerRef.current = null;
+    }
     const startWall = Date.now() + startDelayMs;
     setMetronomeStartMs(startWall);
     setMetronomeRunning(true);
@@ -238,7 +261,11 @@ export default function BoomGardenPage() {
     }
     // Stop the visual pulse a beat after the last audio click so the last
     // beat's flash doesn't get cut off.
-    const stopT = setTimeout(() => setMetronomeRunning(false), startDelayMs + (beatCount + 0.5) * BEAT_MS);
+    const stopT = setTimeout(() => {
+      setMetronomeRunning(false);
+      metronomeStopTimerRef.current = null;
+    }, startDelayMs + (beatCount + 0.5) * BEAT_MS);
+    metronomeStopTimerRef.current = stopT;
     timeoutsRef.current.push(stopT);
     return beatCount * BEAT_MS;
   }, [initAudioContext, playDrumSound]);
@@ -260,6 +287,19 @@ export default function BoomGardenPage() {
       timeoutsRef.current.push(t);
     });
   }, [playDrumSound]);
+
+  // Visual-only playhead — same setHighlightIndex schedule as the demo, but
+  // no audio. Used during the kid's input phase so the strip block they're
+  // SUPPOSED to be tapping is visibly highlighted in real time (matches the
+  // demo highlight aesthetic). The kid can SEE where they are even if they
+  // haven't tapped yet.
+  const scheduleVisualPlayhead = useCallback((pat, startDelayMs = 0) => {
+    const starts = noteStartTimes(pat, BEAT_MS);
+    pat.forEach((_, i) => {
+      const t = setTimeout(() => setHighlightIndex(i), startDelayMs + starts[i]);
+      timeoutsRef.current.push(t);
+    });
+  }, []);
 
   // ---- COPY CAT ----
   const finishCopyRound = useCallback(() => {
@@ -323,24 +363,23 @@ export default function BoomGardenPage() {
     scheduleMetronome(totalBeats, 0);
     schedulePatternAudio(pat, { withHighlight: true, startDelayMs: 0 });
     const demoMs = totalBeats * BEAT_MS;
-    // 4-beat count-in BEFORE the kid's input opens — gives them a steady
-    // pulse to anchor to so they're not guessing at the tempo cold.
-    const countInDelay = demoMs + 600;
+    // Count-in immediately follows the demo (no 600ms breath — that gap
+    // had Stew disabled but no audio cue, so kids would anticipate "my turn
+    // now" and tap into the void). 4 hi-hat ticks at BEAT_MS spacing form
+    // the count-in. Stew is tappable from the moment count-in starts.
     const countInMs = 4 * BEAT_MS;
     const countIn = setTimeout(() => {
       setPhase('countin');
       setHighlightIndex(-1);
       scheduleMetronome(4, 0);
+      setCountinStartMs(Date.now());
+      setShowCountIn(true);
       // OPEN THE TAP WINDOW NOW. inputStartRef + expectedStarts get pre-set
       // so an anticipatory tap on the last count-in beat (just BEFORE the
-      // official 'input' phase) lands within tolerance of beat 1. Without
-      // this, the kid's tap was rejected as "before the unlock moment" —
-      // an objectively impossible standard for a human reacting to a click
-      // track. Notes' expected times are shifted forward by countInMs so
-      // beat 1 is still expected at the same wall-clock moment as before.
+      // official 'input' phase) lands within tolerance of beat 1.
       inputStartRef.current = Date.now();
       expectedStartsRef.current = noteStartTimes(pat, BEAT_MS).map((t) => t + countInMs);
-    }, countInDelay);
+    }, demoMs);
     timeoutsRef.current.push(countIn);
     // Input opens right after the count-in. inputStartRef / expectedStarts
     // already configured at count-in start — we only flip the phase here.
@@ -348,11 +387,22 @@ export default function BoomGardenPage() {
       setPhase('input');
       // Click continues UNDERNEATH the kid's tapping.
       scheduleMetronome(totalBeats, 0);
+      // Visual playhead matches the click: each block lights up as its
+      // beat plays, so the kid SEES where they should be tapping. The
+      // claim-based highlight (handleSnareTap → setHighlightIndex on
+      // successful tap) overrides this when the kid is on time.
+      scheduleVisualPlayhead(pat, 0);
+      // Keep the big count-in overlay mounted for an extra 600 ms so the
+      // "GO!" badge has time to bounce in and fade out — otherwise the
+      // overlay would unmount the same instant beat 1 is expected and the
+      // kid would never actually SEE "GO!".
+      const goHold = setTimeout(() => setShowCountIn(false), 600);
+      timeoutsRef.current.push(goHold);
       const failsafe = setTimeout(finishCopyRound, totalBeats * BEAT_MS + 1200);
       timeoutsRef.current.push(failsafe);
-    }, countInDelay + countInMs);
+    }, demoMs + countInMs);
     timeoutsRef.current.push(handoff);
-  }, [level, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio, finishCopyRound]);
+  }, [level, initAudioContext, clearTimeouts, scheduleMetronome, schedulePatternAudio, scheduleVisualPlayhead, finishCopyRound]);
 
   // Unified tap handler used by both Copy Cat and Tap Trail. Forward-walking
   // sequential matching: a tap is scored against the FIRST unclaimed non-rest
@@ -499,6 +549,8 @@ export default function BoomGardenPage() {
     // Count-in: 4 hi-hat ticks while strip scrolls TO the strike line.
     setPhase('countin');
     scheduleMetronome(COUNT_IN_BEATS, 0);
+    setCountinStartMs(Date.now());
+    setShowCountIn(true);
     // Open the tap window NOW so anticipatory taps on the last count-in beat
     // (before the strike line) land within tolerance of beat 1. Expected note
     // start times are shifted forward by the count-in length so beat 1's
@@ -509,6 +561,13 @@ export default function BoomGardenPage() {
       setPhase('input');
       // (inputStartRef + expectedStarts already configured)
       scheduleMetronome(totalBeats, 0);
+      // Tap Trail already has the scrolling visual reader. Adding the strip
+      // highlight here mirrors the demo's playhead so even kids who lose
+      // their place on the scroll can see the current beat called out.
+      scheduleVisualPlayhead(pat, 0);
+      // Hold the count-in overlay 600 ms into input so "GO!" can land.
+      const goHold = setTimeout(() => setShowCountIn(false), 600);
+      timeoutsRef.current.push(goHold);
       const fin = setTimeout(() => {
         setHighlightIndex(-1);
         finishCopyRound();
@@ -516,7 +575,7 @@ export default function BoomGardenPage() {
       timeoutsRef.current.push(fin);
     }, countInMs);
     timeoutsRef.current.push(trailStart);
-  }, [level, initAudioContext, clearTimeouts, scheduleMetronome, finishCopyRound]);
+  }, [level, initAudioContext, clearTimeouts, scheduleMetronome, scheduleVisualPlayhead, finishCopyRound]);
 
   // ---- LIFECYCLE ----
   const enterMode = useCallback((m) => {
@@ -528,6 +587,7 @@ export default function BoomGardenPage() {
     setHighlightIndex(-1);
     setPhase('idle');
     setFeedback(null);
+    setShowCountIn(false);
   }, [clearTimeouts]);
 
   const exitMode = useCallback(() => {
@@ -536,6 +596,7 @@ export default function BoomGardenPage() {
     setPhase('idle');
     setHighlightIndex(-1);
     setFeedback(null);
+    setShowCountIn(false);
   }, [clearTimeouts]);
 
   const startCurrentRound = useCallback(() => {
@@ -543,6 +604,7 @@ export default function BoomGardenPage() {
     setHitStates([]);
     setHighlightIndex(-1);
     setFeedback(null);
+    setShowCountIn(false);
     if (mode === 'copy')  startCopy();
     if (mode === 'match') startMatch();
     if (mode === 'trail') startTrail();
@@ -768,6 +830,14 @@ export default function BoomGardenPage() {
           </div>
         )}
 
+        {/* Big dummy-proof count-in. 4 → 3 → 2 → 1 → GO! on each click.
+            Lives as a fixed overlay above the strip so it can't be missed.
+            Driven by countinStartMs (set when count-in begins) and stays
+            mounted ~600 ms into input so the "GO!" badge has time to land. */}
+        {showCountIn && (
+          <CountInOverlay running={true} startAtMs={countinStartMs} />
+        )}
+
         {/* Stew the llama — performs every drum hit (demo + kid's input).
             On Twin Beats he animates during the demo (and stays disabled in
             input since the kid picks a strip, not plays the snare). */}
@@ -775,15 +845,15 @@ export default function BoomGardenPage() {
           <StewDrummer
             ref={snareRef}
             onTap={handleSnareTap}
-            disabled={mode === 'match' || (phase !== 'input' && phase !== 'countin')}
+            disabled={mode === 'match'}
             hint={
               mode === 'match' && phase === 'demo'    ? 'Listen...' :
               mode === 'match' && phase === 'input'   ? 'Pick a strip ↑' :
               mode === 'match' && phase === 'reveal'  ? 'Round complete' :
               phase === 'input'   ? 'TAP STEW!' :
               phase === 'countin' ? 'Get ready...' :
-              phase === 'demo'    ? 'Listen...' :
-              'Wait'
+              phase === 'demo'    ? 'Listening to Doc...' :
+              'Round complete'
             }
           />
         </div>

@@ -1,5 +1,29 @@
 # Changelog
 
+## Feb 20, 2026 (later ++++) — Boom Garden 4 P0 fixes
+
+User report: *"Stew is a new kind of broken. You play only once or twice and he becomes totally un tappable. Also it still doesnt let me start before the exact downbeat. Also, i see all the efforts made to help the kids know when to start, and where they are. I want those even MORE obvious."*
+
+### 1. Stew is now ALWAYS tappable (except Twin Beats picking mode)
+The previous `disabled={phase !== 'input' && phase !== 'countin'}` meant Stew was inert during demo / reveal — but kids tapping in anticipation experience that as "Stew is broken". `disabled` is now only `mode === 'match'`. Audio + L/R-alternating animation fires on every tap regardless of phase. `handleSnareTap` silently no-ops during demo/reveal so non-scoring taps don't corrupt the round.
+
+### 2. 600 ms gap between demo and count-in removed
+The breath that lived between "Doc finishes playing" and "click track starts" had `phase='demo'` (Stew disabled). Kids tap-anticipating during the silence got nothing. Now the count-in starts the *instant* the demo audio ends — `countInDelay` is just `demoMs`, no `+ 600`.
+
+### 3. Stop-timer race-condition in the metronome
+A subtler bug introduced by the back-to-back metronome sessions: when the **demo's** `setMetronomeRunning(false)` timer fired ~375 ms INTO the count-in, it killed `metronomeRunning` and silenced the CountInOverlay halfway through (you'd see "4" pop up then nothing). `scheduleMetronome` now tracks its latest stop timer in `metronomeStopTimerRef` and **cancels the previous one** before scheduling a new one. The 4/3/2/1/GO! sequence now plays out fully.
+
+### 4. Big "4 → 3 → 2 → 1 → GO!" count-in overlay
+New component: `CountInOverlay.js`. A huge, can't-miss-it colored badge bounces in on each count-in beat, color-shifts cool→warm→green, then pops out as the next number arrives. Replaces the tiny 4-dot BeatPulse as the primary visual cue during count-in (BeatPulse still pulses underneath). Dedicated `countinStartMs` + `showCountIn` state in BoomGardenPage so the overlay can stay mounted ~600 ms into the input phase — long enough for "GO!" to actually land before unmounting.
+
+### 5. Visual playhead during INPUT phase (kids see where they are)
+Added `scheduleVisualPlayhead(pat, 0)` to both `startCopy` and `startTrail` at the handoff into input. Same `setHighlightIndex(i)` schedule as the demo, just without the audio — so the strip block the kid is SUPPOSED to be tapping lights up in real-time, mirroring the demo's playhead. The claim-based highlight (handleSnareTap → setHighlightIndex on a successful tap) takes precedence when the kid is on time.
+
+### Verified
+- Programmatic single-pointerdown test: every tap increments `dataset.hits` by exactly +1, alternation runs `right-1 → left-1 → right-1 → left-1 → right-1` across the round AND across multiple rounds. No "untappable" — pointer events fire on every phase.
+- Count-in overlay polled at 50 ms across two rounds: full sequence `4 → 3 → 2 → 1 → GO!` rendered every time. "GO!" lands ~600 ms into input then auto-unmounts.
+- Visual playhead during input: strip blocks highlight `0 → 1 → 2 → 3` in lockstep with the click track during the kid's input window.
+
 ## Feb 20, 2026 (later +++) — Beat Lab pattern for Stew + lockout fix
 
 User report (in order): *"stews animations is still broken... He'll play twice at most, then freeze"* and *"stew is locked for too long. It's not really possible for a human to nail perfectly on the beat, and will often play even a couple miliseconds before you unlock"*
