@@ -52,6 +52,11 @@ const MODES = [
     bg: 'assets/backgrounds/recording-studio.jpg',
     character: 'assets/characters/dr-jellybone.png',
     charWidthPct: 36,
+    howToPlay: [
+      { icon: '👂', text: 'Listen to Stew play the rhythm.' },
+      { icon: '🥁', text: 'When you hear "GO!", play it back on the drum.' },
+      { icon: '⏰', text: 'Try to tap right on each beat!' },
+    ],
   },
   {
     id: 'match',
@@ -63,6 +68,11 @@ const MODES = [
     bg: 'assets/backgrounds/clubhouse.png',
     character: 'assets/characters/llama-lou-stew.png',
     charWidthPct: 40,
+    howToPlay: [
+      { icon: '👂', text: 'Listen to the secret rhythm.' },
+      { icon: '🎵', text: 'Three rhythm strips will appear.' },
+      { icon: '🎯', text: 'Tap the strip that matches what you heard!' },
+    ],
   },
   {
     id: 'trail',
@@ -74,6 +84,11 @@ const MODES = [
     bg: 'assets/backgrounds/graffiti-wall.jpg',
     character: 'assets/characters/charlie-rundmc.png',
     charWidthPct: 32,
+    howToPlay: [
+      { icon: '👀', text: 'Watch the notes scroll toward the gold line.' },
+      { icon: '🥁', text: 'Tap Stew when each note crosses the line.' },
+      { icon: '🔥', text: 'Keep your streak going for bonus points!' },
+    ],
   },
 ];
 
@@ -214,6 +229,11 @@ export default function BoomGardenPage() {
   // into sessionStats when the run ends.
   const sessionTallyRef = useRef({ perfects: 0, totalNotes: 0 });
   const [showCelebration, setShowCelebration] = useState(false);
+  // Pre-round How-to-Play modal — pops the first time a kid enters a mode
+  // in this session so elementary students aren't dumped straight into the
+  // count-in without knowing what they're supposed to do. "Got it!" button
+  // kicks off the actual round. Resets on every enterMode call.
+  const [showInstructions, setShowInstructions] = useState(false);
   const [feedback, setFeedback] = useState(null);
   // Tempo multiplier: 1 = full speed, 0.75 = chill, 0.5 = practice. Slowing
   // the tempo stretches BEAT_MS proportionally for everything (demo,
@@ -795,6 +815,9 @@ export default function BoomGardenPage() {
     setSessionComplete(false);
     setSessionStats(null);
     sessionTallyRef.current = { perfects: 0, totalNotes: 0 };
+    // Show the How-to-Play overlay BEFORE the demo/count-in. The kid
+    // dismisses with "Got it!" → round starts.
+    setShowInstructions(true);
   }, [clearTimeouts]);
 
   // Start a fresh session of N rounds with the SAME mode / level / tempo.
@@ -837,8 +860,12 @@ export default function BoomGardenPage() {
 
   useEffect(() => {
     if (!mode) return;
+    // Hold the round start until the kid dismisses the How-to-Play card.
+    // Without this gate, the demo + count-in would play UNDER the overlay
+    // and the kid would miss the first round entirely.
+    if (showInstructions) return;
     startCurrentRound();
-  }, [mode, level]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode, level, showInstructions]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ----- TAP-ANYWHERE / KEYBOARD SUPPORT -----
   // Boom Garden's Stew button is small relative to the screen and the kid's
@@ -1495,6 +1522,120 @@ export default function BoomGardenPage() {
                     Back to modes
                   </button>
                 </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* How-to-Play overlay — first thing a kid sees when they enter a
+            mode. Big character, three numbered steps, and a "Got it, let's
+            go!" CTA. Designed for elementary readers: short sentences,
+            chunky emoji bullets, and the mode color as the background so
+            the kid stays grounded in WHICH game they're about to play. */}
+        <AnimatePresence>
+          {showInstructions && modeConfig && (
+            <motion.div
+              key="how-to-play-backdrop"
+              data-testid="boom-how-to-play"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center px-4"
+              style={{ backgroundColor: 'rgba(10,37,64,0.65)' }}
+            >
+              <motion.div
+                initial={{ y: 40, opacity: 0, scale: 0.9 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -20, opacity: 0, scale: 0.9 }}
+                transition={{ type: 'spring', stiffness: 240, damping: 20 }}
+                className="rounded-3xl border-4 px-6 py-5 md:px-8 md:py-7 flex flex-col items-center gap-4 max-w-md w-full bg-white"
+                style={{
+                  borderColor: 'var(--jma-dark)',
+                  boxShadow: '0 10px 0 0 var(--jma-dark)',
+                  color: 'var(--jma-dark)',
+                }}
+              >
+                {/* Mode header chip + character */}
+                <div
+                  className="rounded-full border-3 px-4 py-1 font-black font-display text-xs uppercase tracking-widest"
+                  style={{
+                    backgroundColor: modeConfig.color,
+                    color: 'white',
+                    borderColor: 'var(--jma-dark)',
+                    boxShadow: '0 3px 0 0 var(--jma-dark)',
+                    textShadow: '1px 1px 0 rgba(10,37,64,0.4)',
+                  }}
+                >
+                  How to play
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black font-display leading-none text-center">
+                  {modeConfig.label}
+                </h2>
+                {modeConfig.character && (
+                  <img
+                    src={modeConfig.character}
+                    alt=""
+                    draggable={false}
+                    className="object-contain pointer-events-none select-none"
+                    style={{ maxHeight: 130, filter: 'drop-shadow(0 4px 0 rgba(10,37,64,0.25))' }}
+                  />
+                )}
+
+                {/* Three numbered steps */}
+                <ol className="w-full flex flex-col gap-2">
+                  {(modeConfig.howToPlay || []).map((step, i) => (
+                    <li
+                      key={i}
+                      data-testid={`how-to-play-step-${i}`}
+                      className="flex items-center gap-3 rounded-2xl border-3 px-3 py-2"
+                      style={{
+                        borderColor: 'var(--jma-dark)',
+                        backgroundColor: '#FFF7E5',
+                      }}
+                    >
+                      <div
+                        className="flex-shrink-0 rounded-full border-3 flex items-center justify-center font-black font-display"
+                        style={{
+                          width: 36, height: 36,
+                          borderColor: 'var(--jma-dark)',
+                          backgroundColor: modeConfig.color,
+                          color: 'white',
+                          fontSize: 18,
+                        }}
+                      >
+                        {i + 1}
+                      </div>
+                      <div className="text-2xl flex-shrink-0" aria-hidden="true">{step.icon}</div>
+                      <div className="text-sm md:text-base font-bold leading-snug">{step.text}</div>
+                    </li>
+                  ))}
+                </ol>
+
+                <button
+                  data-testid="boom-how-to-play-start"
+                  type="button"
+                  onClick={() => setShowInstructions(false)}
+                  className="mt-1 rounded-full border-3 px-6 py-2.5 font-black font-display text-base md:text-lg w-full"
+                  style={{
+                    borderColor: 'var(--jma-dark)',
+                    backgroundColor: modeConfig.color,
+                    color: 'white',
+                    boxShadow: '0 4px 0 0 var(--jma-dark)',
+                    textShadow: '1px 1px 0 rgba(10,37,64,0.4)',
+                  }}
+                >
+                  Got it — let&apos;s go! →
+                </button>
+                <button
+                  data-testid="boom-how-to-play-back"
+                  type="button"
+                  onClick={() => {
+                    setShowInstructions(false);
+                    exitMode();
+                  }}
+                  className="text-xs font-bold underline opacity-70 -mt-1"
+                  style={{ color: 'var(--jma-dark)' }}
+                >
+                  ← Back to modes
+                </button>
               </motion.div>
             </motion.div>
           )}

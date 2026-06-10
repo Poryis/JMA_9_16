@@ -1,5 +1,24 @@
 # Changelog
 
+## Feb 21, 2026 (later) — How-to-Play modal + tempo-bug investigation
+
+User: *"The tempo that checks if we're right or not is stuck at i think 80 bpm... so thats a bug. I also think we need instruction screen. Remember its for elementary. But jumping right into the game is probably too much?"*
+
+### How-to-Play modal (Boom Garden)
+- Brand-new pre-round overlay that pops the moment the kid enters a mode. Shows the mode title, the relevant character (Stew / Dr. Jellybone / Charlie), and three numbered kid-friendly steps with emoji bullets.
+- Each mode has its own `howToPlay` array (3 steps each) defined on the MODES config.
+- Big "Got it — let's go! →" CTA + a small "← Back to modes" escape hatch.
+- `useEffect` gate ensures the demo + count-in does NOT auto-start while the modal is visible — otherwise the kid would miss round 1 entirely.
+
+### Tempo investigation
+- User reported the tap-timing check feels "stuck at 80 BPM" regardless of tempo dial.
+- Live runtime probe (`window.__boomDebug` capturing `tapTime`, `expectedStarts`, `beatMs`, `tol`) confirms expected times scale correctly: at Easy `beatMs=1000`, `expectedStarts=[4000,5000,6000,7000]` (1000ms apart). At Turbo, input phase opens at ~4.8s (4 demo beats + 4 count-in beats × 600ms). So the timing MATH is correctly applied.
+- Likely "feel" reasons the user perceived a bug: (1) `TOLERANCE_MS` is fixed in absolute ms (400/275/175 by level) and does NOT scale with tempo, so at slower tempos the tolerance window covers a smaller % of each beat; (2) the round-summary "X of Y on time" only counts taps with diff ≤ 30% of tolerance (PERFECT tier), GREAT/GOOD taps don't count. Both worth iterating on if the user confirms the feel issue.
+
+### Files touched
+- `src/pages/BoomGardenPage.js` — `MODES[i].howToPlay`, `showInstructions` state, useEffect gating, How-to-Play overlay JSX.
+
+
 ## Feb 21, 2026 — Tempo Dial + Fixed-length Sessions + Measure-aligned Patterns
 
 User: *"I like a tempo dial... for the count-in only, I think it should be beeps. I fear the user STILL potentially being a bit confused on when to start."*
