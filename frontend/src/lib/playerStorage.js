@@ -162,5 +162,28 @@ export function downloadSnapshotJson(filename = 'jma-progress.json') {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+// Wipe ALL player progress + identity. Device settings (teacherView, audio
+// unlock) are PRESERVED — those are properties of the device, not the player.
+// Returns true on success so callers can show a confirmation.
+export function resetAllPlayerData() {
+  const playerScopedKeys = [
+    KEYS.player,
+    KEYS.stickers,
+    KEYS.stickersMigrated,
+    KEYS.streak,
+    KEYS.playTime,
+    KEYS.rankSeen,
+    KEYS.sightReadBest,
+    KEYS.tempoQuizBest,
+    KEYS.nameSkipped,
+  ];
+  try {
+    playerScopedKeys.forEach(k => localStorage.removeItem(k));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 // Exported for tests / dev tools.
 export const _LEGACY_KEYS = KEYS;

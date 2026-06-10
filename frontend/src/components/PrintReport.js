@@ -15,12 +15,12 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Printer, Download } from 'lucide-react';
+import { X, Printer } from 'lucide-react';
 import { ACHIEVEMENT_DOMAINS, ACHIEVEMENT_TIERS, achievementId } from '../data/achievements';
 import useStickers from '../hooks/useStickers';
 import useRank from '../hooks/useRank';
 import { formatPlayTime } from '../hooks/usePlayTime';
-import { getPlayerSnapshot, downloadSnapshotJson } from '../lib/playerStorage';
+import { getPlayerSnapshot } from '../lib/playerStorage';
 
 function todayFormatted() {
   const d = new Date();
@@ -96,15 +96,6 @@ export default function PrintReport({ open, onClose }) {
           >
             {/* Top action bar — visible in app, hidden in print */}
             <div className="no-print absolute top-3 right-3 flex items-center gap-2">
-              <button
-                data-testid="print-report-backup"
-                onClick={() => downloadSnapshotJson(`jma-progress-${(snapshot.displayName || 'student').replace(/\s+/g, '-').toLowerCase()}.json`)}
-                className="chunky-btn flex items-center gap-1 text-xs md:text-sm font-black px-3 py-1.5"
-                style={{ backgroundColor: 'var(--jma-yellow)', color: 'var(--jma-dark)' }}
-                title="Download a JSON backup of all progress (move it to another device later)"
-              >
-                <Download className="w-4 h-4" /> Backup
-              </button>
               <button
                 data-testid="print-report-print-btn"
                 onClick={print}
