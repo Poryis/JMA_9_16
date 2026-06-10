@@ -73,7 +73,6 @@ export const SONG_LIBRARY = [
     beatsPerNote: 1, // quarter notes - lots of rests create the rhythmic variance
     mode: 'C-mixolydian',
     originalKey: 'C major',
-    shift: 1,
     // Chord prog I-V-vi-IV in G: G | D | Em | C (4-bar cycle × 7)
     // Heavy rhythmic variance - syncopation, rests, arpeggio-chord-tones-only melody.
     notes: [
