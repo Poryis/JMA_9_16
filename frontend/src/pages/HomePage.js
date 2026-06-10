@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import RankBadge from '../components/RankBadge';
 import StickerSpotlight from '../components/StickerSpotlight';
 import PracticeStreakChip from '../components/PracticeStreakChip';
+import NextMissionPanel from '../components/NextMissionPanel';
 
 // Jelly Rocks blimp — 3-frame loop slowly drifting side-to-side behind everything.
 const BLIMP_FRAMES = [
@@ -503,10 +504,18 @@ function HomePage() {
       </div>
 
       {/* Rank + Sticker spotlight */}
-      <div className="relative z-10 mb-4 md:mb-5 w-full max-w-4xl flex flex-col sm:flex-row items-center justify-center gap-3">
+      <div className="relative z-10 mb-3 md:mb-4 w-full max-w-4xl flex flex-col sm:flex-row items-center justify-center gap-3">
         <RankBadge />
         <PracticeStreakChip />
         <StickerSpotlight />
+      </div>
+
+      {/* Next Mission — single recommended action driven off the rank engine.
+          Sits BETWEEN the rank row and the 3 main category cards because
+          it's the most important kid-facing signal: "do this one thing next."
+          Hidden when the kid has earned every achievement. */}
+      <div className="relative z-10 mb-4 md:mb-5 w-full max-w-4xl px-2">
+        <NextMissionPanel />
       </div>
 
       {/* THREE PRIMARY CARDS */}
