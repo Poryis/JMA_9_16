@@ -204,6 +204,11 @@ export default function BoomGardenPage() {
   // Same visual punch as Who's Got Rhythm's combo numbers.
   const [floatingScores, setFloatingScores] = useState([]); // [{ id, label, color }]
   const floatingScoreIdRef = useRef(0);
+  // Streak burst: when the kid hits 3 / 5 / 7 / 10+ perfects-in-a-row,
+  // a confetti volley fires from Stew's drum and a "🔥 N IN A ROW!" banner
+  // pops in. Cleared automatically after the celebration plays.
+  const [streakBurst, setStreakBurst] = useState(null); // { count, mega, key } | null
+  const streakBurstTimerRef = useRef(null);
 
   // Refs.
   const timeoutsRef = useRef([]);
@@ -504,7 +509,17 @@ export default function BoomGardenPage() {
     tapResultsRef.current[targetIdx] = tier === 'good' ? 'perfect' : tier; // round-summary still cares "on time"
     const scoreDelta = tier === 'perfect' ? 25 : tier === 'great' ? 15 : 10;
     setScore((s) => s + scoreDelta);
-    setStreak((s) => s + 1);
+    setStreak((prev) => {
+      const next = prev + 1;
+      // 🔥 streak celebration. 3/5/7 = standard fire; 10+ multiples of 5 = mega.
+      const isMilestone = next === 3 || next === 5 || next === 7 || (next >= 10 && next % 5 === 0);
+      if (isMilestone) {
+        if (streakBurstTimerRef.current) clearTimeout(streakBurstTimerRef.current);
+        setStreakBurst({ count: next, mega: next >= 7, key: Date.now() });
+        streakBurstTimerRef.current = setTimeout(() => setStreakBurst(null), 1500);
+      }
+      return next;
+    });
     setHighlightIndex(targetIdx);
     popHitFeedback(tier);
     const allNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
@@ -952,6 +967,52 @@ export default function BoomGardenPage() {
           className="flex justify-center items-end mt-auto pt-4 relative"
           style={{ paddingBottom: 'clamp(48px, 8vw, 96px)' }}
         >
+          {/* Confetti burst from Stew's drum on a streak milestone. Mega
+              variant (more pieces + wider spread) at streaks of 7+. */}
+          {streakBurst && (
+            <div
+              key={streakBurst.key}
+              className="pointer-events-none absolute inset-0 flex items-center justify-center"
+              data-testid="streak-confetti-wrap"
+            >
+              <Confetti
+                count={streakBurst.mega ? 60 : 36}
+                size={streakBurst.mega ? 380 : 280}
+                mega={streakBurst.mega}
+                testId="streak-confetti"
+              />
+            </div>
+          )}
+          {/* "🔥 N IN A ROW!" banner that pops in above Stew, lifts up
+              with the confetti, then fades. Different gradient at 7+ so
+              kids feel the rarity. */}
+          <AnimatePresence>
+            {streakBurst && (
+              <motion.div
+                key={streakBurst.key}
+                data-testid="streak-banner"
+                initial={{ scale: 0.4, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: -10 }}
+                exit={{ scale: 1.2, opacity: 0, y: -60 }}
+                transition={{ type: 'spring', stiffness: 480, damping: 16 }}
+                className="absolute rounded-2xl border-4 px-5 py-2 font-black font-display whitespace-nowrap"
+                style={{
+                  bottom: 'calc(100% - 40px)',
+                  background: streakBurst.mega
+                    ? 'linear-gradient(135deg, #FF3B30 0%, #FF9500 50%, #FFCC00 100%)'
+                    : 'linear-gradient(135deg, #FF9500 0%, #FFCC00 100%)',
+                  borderColor: 'var(--jma-dark)',
+                  color: 'white',
+                  fontSize: 'clamp(22px, 4vw, 36px)',
+                  textShadow: '3px 3px 0 rgba(10,37,64,0.45)',
+                  boxShadow: '0 8px 0 0 var(--jma-dark), 0 16px 28px rgba(0,0,0,0.32)',
+                  zIndex: 65,
+                }}
+              >
+                🔥 {streakBurst.count} IN A ROW!
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* Floating "+25 / +15 / +10 / Miss" chips that drift up from
               Stew on every scored tap — same instant-feedback vibe as
               Who's Got Rhythm's combo chips. */}

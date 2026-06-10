@@ -1,5 +1,21 @@
 # Changelog
 
+## Feb 20, 2026 (later +++++++) — Streak confetti
+
+User: *"love the confetti on a streak idea!"*
+
+### Streak burst at 3 / 5 / 7 / 10 perfects in a row
+- New `streakBurst` state in BoomGardenPage, populated inside the `setStreak` updater when the next streak value crosses a milestone (3, 5, 7, then every multiple of 5 thereafter).
+- Re-uses the existing `Confetti.js` component (the same one used by Who's Got Rhythm's full-round celebration). Mega variant — double the pieces, wider spread — at streaks of 7 +.
+- "🔥 N IN A ROW!" banner pops in above Stew with a spring scale-in, lifts up, fades out. Color gradient shifts from amber (3, 5) to red-amber-yellow (7+) so kids see the rarity.
+- Self-clearing via a tracked timer ref so rapid streaks don't queue indefinitely.
+
+### Verified
+- Programmatic 4-tap test landed a 3-streak: `streakConfetti = true`, banner text `"🔥 3 IN A ROW!"`, +10 chips for each scored tap. Round summary + Tadpole rank-up celebration fire alongside without conflict.
+
+### Files touched
+- `src/pages/BoomGardenPage.js` — `streakBurst` state + streak-milestone detection inside `setStreak` updater + Confetti and banner render slots in the Stew section.
+
 ## Feb 20, 2026 (later ++++++) — Boom Garden fun-factor pass
 
 User report: *"k we need these games to be more fun! Maybe feedback like who's got the rhtyhm game? Also, its time to let you know stew is floating in midair, and not at all on the field. He is two of his body lengths too high"*
