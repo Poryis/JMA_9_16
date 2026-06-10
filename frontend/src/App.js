@@ -22,6 +22,8 @@ import SightReadingPage from "./pages/SightReadingPage";
 import StickerToast from "./components/StickerToast";
 import RankUpCelebration from "./components/RankUpCelebration";
 import AudioUnlockOverlay from "./components/AudioUnlockOverlay";
+import PlayerNamePrompt from "./components/PlayerNamePrompt";
+import usePlayTime from "./hooks/usePlayTime";
 
 function App() {
   const [score, setScore] = useState(0);
@@ -34,9 +36,13 @@ function App() {
     setGameStats({ perfect: 0, great: 0, good: 0, miss: 0, streak: 0, maxStreak: 0 });
   }, []);
 
+  // Tracks active time-on-app for the print report. Mounted once at App root.
+  usePlayTime();
+
   return (
     <div className="App min-h-screen">
       <AudioUnlockOverlay />
+      <PlayerNamePrompt />
       <HashRouter>
         <StickerToast />
         <RankUpCelebration />

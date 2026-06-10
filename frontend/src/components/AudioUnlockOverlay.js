@@ -5,7 +5,7 @@
 // audio-context-resume dance so subsequent bell taps actually play sound.
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Music, Hand } from 'lucide-react';
+import { Hand } from 'lucide-react';
 import useAudioUnlock from '../hooks/useAudioUnlock';
 
 export default function AudioUnlockOverlay() {
@@ -28,9 +28,9 @@ export default function AudioUnlockOverlay() {
           transition={{ duration: 0.35 }}
           aria-label="Tap anywhere to start the music"
         >
-          {/* Pulsing musical note ring */}
+          {/* Pulsing JMA shield ring */}
           <motion.div
-            className="rounded-full border-4 flex items-center justify-center mb-6"
+            className="rounded-full border-4 flex items-center justify-center mb-6 overflow-hidden"
             style={{
               width: 'clamp(120px, 22vw, 180px)',
               height: 'clamp(120px, 22vw, 180px)',
@@ -41,14 +41,16 @@ export default function AudioUnlockOverlay() {
             animate={{ scale: [1, 1.08, 1] }}
             transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <Music
-              className="text-white"
+            <img
+              src="assets/ui/logo.png"
+              alt="JMA"
+              draggable={false}
               style={{
-                width: 'clamp(56px, 11vw, 96px)',
-                height: 'clamp(56px, 11vw, 96px)',
+                width: '78%',
+                height: '78%',
+                objectFit: 'contain',
                 filter: 'drop-shadow(2px 2px 0 rgba(0,0,0,0.4))',
               }}
-              strokeWidth={2.5}
             />
           </motion.div>
 

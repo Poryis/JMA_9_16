@@ -327,3 +327,23 @@ h1, h2, h3, h4, h5, h6 {
   * { @apply border-border; }
   body { @apply bg-background text-foreground; }
 }
+
+/* =====================================================================
+   PRINT — only the .jma-print-report block prints. Everything else is
+   hidden so a teacher can "Print" a one-page student progress report.
+   ===================================================================== */
+@media print {
+  @page { size: letter; margin: 0.5in; }
+  html, body { background: white !important; color: black !important; }
+  body * { visibility: hidden !important; }
+  .jma-print-report, .jma-print-report * { visibility: visible !important; }
+  .jma-print-report {
+    position: absolute !important;
+    inset: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  .jma-print-report .no-print { display: none !important; }
+}

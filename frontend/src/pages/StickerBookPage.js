@@ -10,7 +10,7 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, X, Trophy, RotateCcw, GraduationCap } from 'lucide-react';
+import { Sparkles, X, Trophy, RotateCcw, GraduationCap, Printer } from 'lucide-react';
 import { STICKER_MAP, COLLECTION_STICKERS, STICKER_CATEGORIES } from '../data/stickers';
 import { ACHIEVEMENT_DOMAINS, ACHIEVEMENT_TIERS, achievementId } from '../data/achievements';
 import useStickers, { resetAllStickers } from '../hooks/useStickers';
@@ -18,6 +18,7 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import RankBadge from '../components/RankBadge';
 import AchievementBadge from '../components/AchievementBadge';
 import HarpIcon from '../components/HarpIcon';
+import PrintReport from '../components/PrintReport';
 
 const TEACHER_VIEW_KEY = 'jma_teacher_view_v1';
 
@@ -116,6 +117,7 @@ export default function StickerBookPage() {
   const { earned, achievementCount, collectionCount } = useStickers();
   const [openSticker, setOpenSticker] = useState(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [printReportOpen, setPrintReportOpen] = useState(false);
   // Teacher View — when on, the achievement section swaps kid blurbs for
   // standards-aligned skill descriptions. Persisted so a teacher demo'ing the
   // app to a principal can leave it on between visits.
@@ -185,7 +187,7 @@ export default function StickerBookPage() {
       <main className="flex-1 pt-16 pb-10 px-3 md:px-6 max-w-6xl mx-auto w-full">
         {/* Rank badge with progress meter inside it */}
         <div className="flex justify-center mt-4 mb-6">
-          <RankBadge showProgress />
+          <RankBadge showProgress clickable={false} />
         </div>
 
         {/* ============ ACHIEVEMENT BADGES (top — the rank-driving section) ============ */}
@@ -216,6 +218,24 @@ export default function StickerBookPage() {
                 <GraduationCap className="w-3.5 h-3.5" />
                 {teacherView ? 'Kid View' : 'Teacher View'}
               </button>
+              {/* Print Report — only shows when Teacher View is on. Opens a
+                  one-page printable summary with rank, streaks, play time and
+                  per-domain skill demonstrations. */}
+              {teacherView && (
+                <button
+                  data-testid="open-print-report"
+                  onClick={() => setPrintReportOpen(true)}
+                  className="chunky-btn px-2 py-1 flex items-center gap-1 text-[10px] md:text-xs font-bold touch-manipulation"
+                  style={{
+                    backgroundColor: 'var(--jma-green)',
+                    color: 'white',
+                    borderColor: 'var(--jma-dark)',
+                  }}
+                  title="Print student progress report"
+                >
+                  <Printer className="w-3.5 h-3.5" /> Print Report
+                </button>
+              )}
             </div>
           </div>
 
@@ -369,6 +389,9 @@ export default function StickerBookPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Print-report modal — opens via the Teacher-View Print button */}
+      <PrintReport open={printReportOpen} onClose={() => setPrintReportOpen(false)} />
     </div>
   );
 }

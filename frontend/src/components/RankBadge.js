@@ -6,19 +6,38 @@
 // explicitly says what's needed next (great for the Sticker Book).
 
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import useRank from '../hooks/useRank';
 
-export default function RankBadge({ compact = false, showProgress = false }) {
+// On the home page the badge is also a navigation shortcut to the Sticker Book
+// (the hub where the kid sees every badge and rank progress). On internal
+// pages we don't navigate — passing `clickable={false}` opts out.
+export default function RankBadge({ compact = false, showProgress = false, clickable = true }) {
   const { currentRank, nextRank, progress, achievementCount } = useRank();
+  const navigate = useNavigate();
+
+  // Same visual shell whether it's a button or a div — switching tag lets us
+  // keep keyboard a11y for free when clickable, and stay semantic on the
+  // Sticker Book page (where the badge isn't a link).
+  const Tag = clickable ? motion.button : motion.div;
+  const interactiveProps = clickable
+    ? {
+        onClick: () => navigate('/sticker-book'),
+        whileHover: { y: -2, scale: 1.02 },
+        whileTap: { y: 2, scale: 0.98 },
+        'aria-label': `${currentRank.title} — open Sticker Book`,
+      }
+    : {};
 
   return (
-    <motion.div
+    <Tag
       data-testid="rank-badge"
-      className="flex items-center gap-3 rounded-full bg-white border-4 px-3 py-1.5 md:px-4 md:py-2 shadow-[0_4px_0_0_var(--jma-dark)]"
+      className={`flex items-center gap-3 rounded-full bg-white border-4 px-3 py-1.5 md:px-4 md:py-2 shadow-[0_4px_0_0_var(--jma-dark)] ${clickable ? 'cursor-pointer touch-manipulation' : ''}`}
       style={{ borderColor: currentRank.color, maxWidth: showProgress ? '520px' : undefined }}
       initial={{ y: -10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.4, type: 'spring' }}
+      {...interactiveProps}
     >
       <div
         className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 flex items-center justify-center flex-shrink-0 overflow-hidden"
@@ -68,6 +87,6 @@ export default function RankBadge({ compact = false, showProgress = false }) {
           </div>
         </div>
       )}
-    </motion.div>
+    </Tag>
   );
 }
