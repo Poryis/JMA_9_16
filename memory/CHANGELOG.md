@@ -1,5 +1,33 @@
 # Changelog
 
+## Feb 21, 2026 (later still) — Sticker Toast: batching + corner positioning
+
+User: *"there are just too many sticker popups to first start. I LOVE the sticker system... it's just that it's too overwhelming when first exploring through the app."*
+
+User picked option (d): batch consecutive earns AND make the toast quieter / smaller / corner-positioned.
+
+### Batching mechanism (`useStickers.js`)
+- Replaced single-id `notify(id)` with a module-level queue + 700 ms debounce. Any `notify(id)` calls landing within that window are coalesced into a single batch.
+- Listeners now receive an **array of newly-earned IDs** (or `null` for the reset path) instead of a single ID. Single earns naturally arrive as `[id]`, multi-earns like `earnAchievementUpTo('rhythm', 'master')` (which fires cadet+pro+master back-to-back) arrive as `[cadet, pro, master]`.
+- Reset path (`resetAllStickers`) fires `notify(null)` immediately, clearing both the pending batch and any visible toast.
+
+### Toast (`StickerToast.js`)
+- Repositioned from center-top to **top-right corner** with slide-in-from-right animation. Doesn't sit on top of gameplay anymore.
+- Shrunk: 3px border (was 4), smaller icon (40×40 single / 36×36 batch), tighter padding, `max-w-[280px]`.
+- Auto-dismiss reduced from 3.2 s → **2.5 s** for less on-screen time per pop.
+- **Two render modes** keyed on batch size:
+  - **Single (1 sticker)**: rotating icon + "New Sticker!" + sticker name. Same dopamine hit, just quieter and out-of-the-way.
+  - **Batch (2+ stickers)**: row of overlapping mini icons (up to 4 visible) + "N unlocked" + "Tap to view →". One toast for the whole onboarding earn-cluster.
+- Tap-anywhere navigates to `/sticker-book` so the kid can savour the new collection in context.
+
+### Files touched
+- `src/hooks/useStickers.js` — batch queue, debounce, listener payload swap, reset clear.
+- `src/components/StickerToast.js` — full rewrite for corner positioning + single/batch render modes.
+
+### If still too much
+User said: *"if thats too crazy, remind me of c if I offer the same complain later"* — option (c) is the **first-session quiet mode** (suppress toasts entirely on a fresh device, show one consolidated "You earned N stickers! Check your Sticker Book →" celebration when the session ends).
+
+
 ## Feb 21, 2026 (even later) — Tempo bug FIXED: visual count-in + BeatPulse now respect tempo dial
 
 User: *"They metronome lights and the count in are at 80 bpm even if you are expecting and sounding everything at 100bpm..."*

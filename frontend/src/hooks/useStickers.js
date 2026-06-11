@@ -106,11 +106,42 @@ function runMigration() {
 runMigration();
 
 // Subscribe listeners fire on every earn() call so the UI can react.
+// The listener receives a BATCH of newly-earned sticker IDs — single earns
+// arrive as `[id]`, rapid-fire earns (e.g. earnAchievementUpTo() firing 3
+// tiers at once, or first-session exploration triggering several earns
+// within a heartbeat) are coalesced into one batch via a short debounce.
+// This keeps the early-app onboarding from buzzing the kid with 4 popups
+// back-to-back while still preserving the dopamine hit of a single earn.
 const listeners = new Set();
-function notify(newlyEarnedId) {
+
+// Module-level batching state. Sticker earns within BATCH_WINDOW_MS of
+// each other are collapsed into a single notification with all IDs.
+const BATCH_WINDOW_MS = 700;
+let pendingBatch = [];
+let pendingBatchTimer = null;
+
+function flushBatch() {
+  const ids = pendingBatch;
+  pendingBatch = [];
+  pendingBatchTimer = null;
+  if (ids.length === 0) return;
   listeners.forEach(fn => {
-    try { fn(newlyEarnedId); } catch (_) {}
+    try { fn(ids); } catch (_) {}
   });
+}
+
+function notify(newlyEarnedId) {
+  // null = "data wiped, please re-read" — fire immediately and clear any
+  // pending batch (the old IDs no longer make sense after a reset).
+  if (newlyEarnedId === null) {
+    pendingBatch = [];
+    if (pendingBatchTimer) { clearTimeout(pendingBatchTimer); pendingBatchTimer = null; }
+    listeners.forEach(fn => { try { fn(null); } catch (_) {} });
+    return;
+  }
+  pendingBatch.push(newlyEarnedId);
+  if (pendingBatchTimer) clearTimeout(pendingBatchTimer);
+  pendingBatchTimer = setTimeout(flushBatch, BATCH_WINDOW_MS);
 }
 
 /**
@@ -223,13 +254,27 @@ export function noteFactSeen() {
 
 export default function useStickers() {
   const [earned, setEarned] = useState(() => readEarned());
-  const [toast, setToast] = useState(null); // { id, name, icon, color }
+  // Toast shape: { ids: string[], primary: meta } where `primary` is the
+  // metadata for ids[0] (used as the headline sticker). For a single earn
+  // ids.length === 1 and the toast renders as a single-sticker card; for
+  // a batch (e.g. earnAchievementUpTo() firing all 3 tiers, or initial
+  // exploration earning a handful inside one second) it renders as a
+  // compact "🎉 N New Stickers!" pill with a row of mini icons.
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    const handler = (id) => {
+    const handler = (idsOrNull) => {
+      // null = a hard reset (resetAllStickers). Re-read storage so any
+      // open consumer drops its cached `earned` map, but don't pop a toast.
+      if (idsOrNull === null) {
+        setEarned(readEarned());
+        setToast(null);
+        return;
+      }
       setEarned(readEarned());
-      const meta = STICKER_MAP[id];
-      if (meta) setToast({ ...meta });
+      const ids = Array.isArray(idsOrNull) ? idsOrNull : [idsOrNull];
+      const primary = STICKER_MAP[ids[0]];
+      if (primary) setToast({ ids, primary });
     };
     listeners.add(handler);
     return () => { listeners.delete(handler); };
@@ -237,7 +282,9 @@ export default function useStickers() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 3200);
+    // Quieter onboarding: 2.5 s on-screen instead of 3.2 s. Batches naturally
+    // stay longer because each batch is a single toast (no re-trigger).
+    const t = setTimeout(() => setToast(null), 2500);
     return () => clearTimeout(t);
   }, [toast]);
 
