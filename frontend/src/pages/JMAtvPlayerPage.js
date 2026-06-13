@@ -150,9 +150,9 @@ export default function JMAtvPlayerPage() {
             background:
               'repeating-linear-gradient(90deg, #8B5A2B 0px, #8B5A2B 2px, #A0673A 2px, #A0673A 5px), linear-gradient(180deg, #A0673A, #6B4423)',
             backgroundBlendMode: 'multiply',
-            border: '6px solid var(--jma-dark)',
+            border: '6px solid #000',
             boxShadow:
-              '0 14px 0 0 var(--jma-dark), inset 0 0 0 4px #3F2A14, inset 0 0 0 7px rgba(255,255,255,0.08)',
+              '0 14px 0 0 #000, inset 0 0 0 4px #3F2A14, inset 0 0 0 7px rgba(255,255,255,0.08)',
             padding: 'clamp(12px, 2vw, 22px)',
           }}
         >
