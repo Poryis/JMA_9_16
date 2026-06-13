@@ -95,9 +95,13 @@ export const ACHIEVEMENT_TIERS = [
 // `id` is the legacy-style id we store in localStorage: `ach_<domain>_<tier>`.
 export const ACHIEVEMENT_STICKERS = [
   // ---------- Rhythm Reader ----------
-  { id: 'ach_rhythm_cadet',    domain: 'rhythm',   tier: 'cadet',  name: 'Rhythm Rookie',  hint: 'Hit 20 perfect notes in the Rhythm Arcade' },
-  { id: 'ach_rhythm_pro',      domain: 'rhythm',   tier: 'pro',    name: 'Rhythm Pro',     hint: 'Hit a streak of 15 in the Rhythm Arcade' },
-  { id: 'ach_rhythm_master',   domain: 'rhythm',   tier: 'master', name: 'Rhythm Master',  hint: 'Complete a song at Turbo speed' },
+  // Earned via either Stew's Rhythm Academy (Echo Stew / Beat Finder /
+  // Rhythm Run) at the matching difficulty OR the Rhythm Arcade falling-
+  // notes game. Two distinct doorways into the same domain so kids who
+  // hate one game still have a path.
+  { id: 'ach_rhythm_cadet',    domain: 'rhythm',   tier: 'cadet',  name: 'Rhythm Rookie',  hint: "Ace any round in Stew's Rhythm Academy (or hit 20 perfects in the Rhythm Arcade)" },
+  { id: 'ach_rhythm_pro',      domain: 'rhythm',   tier: 'pro',    name: 'Rhythm Pro',     hint: "Pass an SRA round at Pro level (or hit a streak of 15 in the Rhythm Arcade)" },
+  { id: 'ach_rhythm_master',   domain: 'rhythm',   tier: 'master', name: 'Rhythm Master',  hint: 'Pass an SRA round at Master level (or finish a song at Turbo speed)' },
   // ---------- Note Detective ----------
   { id: 'ach_ear_cadet',       domain: 'ear',      tier: 'cadet',  name: 'Ear Cadet',      hint: 'Solve a case in Detective Dr. Jellybone' },
   { id: 'ach_ear_pro',         domain: 'ear',      tier: 'pro',    name: 'Ear Pro',        hint: 'Clear Note Match on Medium' },
@@ -115,9 +119,11 @@ export const ACHIEVEMENT_STICKERS = [
   { id: 'ach_song_pro',        domain: 'song',     tier: 'pro',    name: 'Song Pro',       hint: 'Save songs in 3 different moods' },
   { id: 'ach_song_master',     domain: 'song',     tier: 'master', name: 'Song Master',    hint: 'Save a fully filled song (all 16 slots) in any mood' },
   // ---------- Music Scholar ----------
-  { id: 'ach_scholar_cadet',   domain: 'scholar',  tier: 'cadet',  name: 'Scholar Cadet',  hint: 'Finish Lesson 1' },
-  { id: 'ach_scholar_pro',     domain: 'scholar',  tier: 'pro',    name: 'Scholar Pro',    hint: 'Finish Lessons 1–4' },
-  { id: 'ach_scholar_master',  domain: 'scholar',  tier: 'master', name: 'Scholar Master', hint: 'Finish all 7 lessons' },
+  // Two doors here too: the formal Lessons series for theory + the
+  // Sight-Reading Sprint for applied staff-reading.
+  { id: 'ach_scholar_cadet',   domain: 'scholar',  tier: 'cadet',  name: 'Scholar Cadet',  hint: 'Finish Lesson 1 (or clear a Sight-Read sprint on Cadet)' },
+  { id: 'ach_scholar_pro',     domain: 'scholar',  tier: 'pro',    name: 'Scholar Pro',    hint: 'Finish Lessons 1–4 (or clear Sight-Read on Pro)' },
+  { id: 'ach_scholar_master',  domain: 'scholar',  tier: 'master', name: 'Scholar Master', hint: 'Finish all 7 lessons (or clear Sight-Read on Master)' },
 ];
 
 export const ACHIEVEMENT_MAP = Object.fromEntries(ACHIEVEMENT_STICKERS.map(a => [a.id, a]));

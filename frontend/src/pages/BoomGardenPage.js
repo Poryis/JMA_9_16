@@ -399,6 +399,7 @@ export default function BoomGardenPage() {
     // up to the PERFECT base (25 pts before multipliers).
     const PERFECT_BASE = 25;
     let restBonusPts = 0;
+    let restsHeld = 0;
     pat.forEach((k, i) => {
       if (k !== 'rest') return;
       const restCenter = expectedStarts[i];
@@ -411,10 +412,25 @@ export default function BoomGardenPage() {
         // matching the in-game x1.5 chip.
         const mult = streak >= 5 ? 1.5 : 1;
         restBonusPts += Math.round(PERFECT_BASE * mult);
+        restsHeld += 1;
       }
       // If tapped during, results[i] stays undefined — strip shows neutral.
     });
     if (restBonusPts > 0) setScore((s) => s + restBonusPts);
+    // Fire a "REST! +25" floating chip per held rest, staggered ~140 ms
+    // apart so multiple rests in one pattern each get their own visible
+    // pop. Inlined here (vs. calling popHitFeedback which is defined later
+    // in the file and would cause a TDZ if referenced in this callback's
+    // deps array).
+    for (let r = 0; r < restsHeld; r++) {
+      setTimeout(() => {
+        const id = ++floatingScoreIdRef.current;
+        setFloatingScores((prev) => [...prev, { id, label: 'REST! +25', color: '#9B6DE0' }]);
+        setTimeout(() => {
+          setFloatingScores((prev) => prev.filter((f) => f.id !== id));
+        }, 1100);
+      }, 80 + r * 140);
+    }
 
     // hitStates now includes rests with their held/missed status so the
     // strip shows green tints over correctly-held rests too.
@@ -579,6 +595,10 @@ export default function BoomGardenPage() {
       great:   { label: '+15', color: '#4285F4' },
       good:    { label: '+10', color: '#FFCC00' },
       miss:    { label: 'Miss', color: '#FF3B30' },
+      // "REST!" chip — fired by finishCopyRound's rest post-processing
+      // when a rest beat was held cleanly. Uses purple to visually distinguish
+      // it from tap-earned chips so kids learn "purple = held a silence".
+      rest:    { label: 'REST! +25', color: '#9B6DE0' },
     };
     const chip = chipMap[tier] || chipMap.good;
     const id = ++floatingScoreIdRef.current;

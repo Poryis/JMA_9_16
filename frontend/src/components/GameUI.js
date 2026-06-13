@@ -25,15 +25,24 @@ function GameHeader({ title, score, streak, showHomeButton = true, backLink = nu
                 whileTap={{ scale: 0.95, y: 2 }}
               >
                 <div
-                  className="rounded-xl md:rounded-2xl border-2 md:border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] md:shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow p-0.5 md:p-1 w-12 h-12 md:w-20 md:h-20"
+                  className="rounded-xl md:rounded-2xl border-2 md:border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] md:shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow w-12 h-12 md:w-20 md:h-20 overflow-hidden"
                   style={{
                     backgroundColor: 'var(--jma-dark)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    // Negative padding (via padding: 0 on the wrapper plus
+                    // a scale-up inside) lets the JMA harp punch right out
+                    // to the chunky border, taking ~95 % of the visible
+                    // surface instead of the previous ~80 %. User
+                    // specifically asked for a bigger harp inside the
+                    // same-size button.
+                    padding: 0,
                   }}
                 >
-                  <HarpIcon />
+                  <div style={{ width: '118%', height: '118%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <HarpIcon />
+                  </div>
                 </div>
                 <span
                   className="text-[10px] md:text-sm font-black uppercase tracking-wide mt-1 px-2 md:px-2.5 rounded-full"
