@@ -70,7 +70,9 @@ export default function RetroTV() {
         style={{ width: 'clamp(220px, 32vw, 320px)' }}
       >
         {/* Rabbit ears — purely decorative. Sit BEHIND the TV body via z-index
-            so the ear bases tuck under the wood frame. */}
+            so the ear bases tuck under the wood frame. Flat grey sticks
+            without the metallic gradient or ball tips so they match the
+            simpler hand-drawn look of the rest of the universe. */}
         <div
           aria-hidden="true"
           className="absolute"
@@ -88,7 +90,7 @@ export default function RetroTV() {
               position: 'absolute',
               top: 0, left: '18%',
               width: 6, height: '100%',
-              background: 'linear-gradient(#9CA3AF, #4B5563)',
+              background: '#6B7280',
               transform: 'rotate(-22deg)',
               transformOrigin: 'bottom center',
               borderRadius: 4,
@@ -100,16 +102,13 @@ export default function RetroTV() {
               position: 'absolute',
               top: 0, right: '18%',
               width: 6, height: '100%',
-              background: 'linear-gradient(#9CA3AF, #4B5563)',
+              background: '#6B7280',
               transform: 'rotate(22deg)',
               transformOrigin: 'bottom center',
               borderRadius: 4,
               boxShadow: '2px 2px 0 rgba(0,0,0,0.25)',
             }}
           />
-          {/* Ear tips */}
-          <div style={{ position: 'absolute', top: '-4%', left: '8%', width: 12, height: 12, borderRadius: '50%', background: '#4B5563' }} />
-          <div style={{ position: 'absolute', top: '-4%', right: '8%', width: 12, height: 12, borderRadius: '50%', background: '#4B5563' }} />
         </div>
 
         {/* Wood-grain TV body — uses CSS gradients for "wood grain" without
