@@ -33,7 +33,7 @@ const DRUM_KEY_MAP = { q: 'hihat', w: 'crash', e: 'ride', a: 'snare', s: 'tom', 
 const DRUM_INFO = {
   hihat:  { label: 'Hi-Hat', key: 'Q', color: '#F1C40F', img1: 'assets/drums/Hi hat 1.png', img2: 'assets/drums/Hi hat 2.png' },
   crash:  { label: 'Crash',  key: 'W', color: '#E67E22', img1: 'assets/drums/Crash 1.png',  img2: 'assets/drums/Crash 2.png'  },
-  ride:   { label: 'Ride',   key: 'E', color: '#E74C3C', img1: 'assets/drums/Ride 2.png',   img2: 'assets/drums/Ride 1.png'   },
+  ride:   { label: 'Ride',   key: 'E', color: '#E74C3C', img1: 'assets/drums/Ride 1.png',   img2: 'assets/drums/Ride 2.png'   },
   snare:  { label: 'Snare',  key: 'A', color: '#3498DB', img1: 'assets/drums/Snare 1.png',  img2: 'assets/drums/Snare 2.png'  },
   tom:    { label: 'Tom 1',  key: 'S', color: '#9B59B6', img1: 'assets/drums/tOM 1 1.png',  img2: 'assets/drums/tOM 1 2.png'  },
   lowTom: { label: 'Tom 2',  key: 'D', color: '#1ABC9C', img1: 'assets/drums/tOM 2 1.png',  img2: 'assets/drums/tOM 2 2.png'  },
