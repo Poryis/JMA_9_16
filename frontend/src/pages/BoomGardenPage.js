@@ -1,7 +1,7 @@
-// Boom Garden — a rhythm-reading room with three modes:
-//   - Copy Cat   (echo): Doc claps a rhythm; kid hits the snare to copy it.
-//   - Twin Beats (match): Three patterns shown; kid picks the one they hear.
-//   - Tap Trail  (read): Pattern is shown; kid reads + plays it in time.
+// Stew's Rhythm Academy — a rhythm-reading room with three modes:
+//   - Echo Stew    (echo): Doc claps a rhythm; kid hits the snare to copy it.
+//   - Beat Finder  (match): Three patterns shown; kid picks the one they hear.
+//   - Rhythm Run   (read): Pattern is shown; kid reads + plays it in time.
 //
 // All three modes share a steady hi-hat click track so the kid always has a
 // beat to lock into — and so audio-identical-without-metronome patterns like
@@ -44,9 +44,9 @@ const TEMPOS = [
 const MODES = [
   {
     id: 'copy',
-    label: 'Copy Cat',
-    blurb: 'Stew plays it. You copy back on the snare.',
-    sign: 'COPY CAT',
+    label: 'Echo Stew',
+    blurb: 'Stew plays it. You echo it back on the snare.',
+    sign: 'ECHO STEW',
     color: '#4285F4',
     accent: '#1A4FAB',
     bg: 'assets/backgrounds/recording-studio.jpg',
@@ -60,9 +60,9 @@ const MODES = [
   },
   {
     id: 'match',
-    label: 'Twin Beats',
-    blurb: 'Hear the rhythm. Pick the matching beat.',
-    sign: 'TWIN BEATS',
+    label: 'Beat Finder',
+    blurb: 'Hear the rhythm. Find the matching beat.',
+    sign: 'BEAT FINDER',
     color: '#34A853',
     accent: '#1F7A38',
     bg: 'assets/backgrounds/clubhouse.png',
@@ -76,9 +76,9 @@ const MODES = [
   },
   {
     id: 'trail',
-    label: 'Tap Trail',
+    label: 'Rhythm Run',
     blurb: 'Read the rhythm. Play it in time.',
-    sign: 'TAP TRAIL',
+    sign: 'RHYTHM RUN',
     color: '#FF9500',
     accent: '#C26200',
     bg: 'assets/backgrounds/graffiti-wall.jpg',
@@ -931,7 +931,7 @@ export default function BoomGardenPage() {
             'linear-gradient(180deg, #FFF7E5 0%, #FFE5C9 100%)',
         }}
       >
-        <GameHeader title="Boom Garden" showHomeButton={true} />
+        <GameHeader title="Stew's Rhythm Academy" showHomeButton={true} />
         <FullscreenButton />
         <main className="flex-1 pt-16 md:pt-20 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col">
           <div className="text-center mb-4 md:mb-6">
@@ -1036,7 +1036,7 @@ export default function BoomGardenPage() {
         }}
       />
       <div className="relative z-10 flex flex-col flex-1">
-      <GameHeader title={`Boom Garden · ${modeConfig.label}`} showHomeButton={true} score={score} streak={streak} />
+      <GameHeader title={`Stew's Rhythm Academy · ${modeConfig.label}`} showHomeButton={true} score={score} streak={streak} />
       <FullscreenButton />
       <main className="flex-1 pt-20 md:pt-24 pb-4 px-3 md:px-6 max-w-4xl mx-auto w-full flex flex-col">
         {/* Back + level row */}
