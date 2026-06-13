@@ -437,7 +437,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           background: 'linear-gradient(180deg, #BCE5F2 0%, #E5F2F8 55%, #FFEEC5 100%)',
         }}
       >
-        <GameHeader showHomeButton={true} />
+        <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
 
         {/* Title block */}
         <motion.div
@@ -694,7 +694,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
       {selectedSong.audioUrl && (
         <audio ref={audioRef} src={selectedSong.audioUrl} preload="auto" data-testid="backing-track" />
       )}
-      <GameHeader title={selectedSong.name} score={score} streak={gameStats.streak} showHomeButton={true} />
+      <GameHeader title={selectedSong.name} score={score} streak={gameStats.streak} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <div className="fixed top-20 left-0 right-0 px-4 py-1 z-40">
         <ProgressBar current={currentNoteIndex} total={selectedSong.notes.length} color={speedConfig.color} />
       </div>

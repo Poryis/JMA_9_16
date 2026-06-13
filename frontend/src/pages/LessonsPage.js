@@ -109,7 +109,7 @@ export default function LessonsPage() {
         backgroundPosition: 'center',
       }}
     >
-      <GameHeader showHomeButton={true} />
+      <GameHeader showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
 
       <motion.div
         className="relative z-10 text-center mb-4"

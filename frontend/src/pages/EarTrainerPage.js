@@ -177,7 +177,7 @@ function EarTrainerPage() {
         data-testid="ear-trainer-tempo"
         style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
-        <GameHeader title="Snail or Cheetah?" showHomeButton={true} />
+        <GameHeader title="Snail or Cheetah?" showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
         <FullscreenButton />
         <RoomCharacters room="ear-quest" />
         <motion.h1 className="text-2xl md:text-3xl font-black mb-4 text-center font-display" style={{ color: 'var(--jma-dark)' }} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
@@ -196,7 +196,7 @@ function EarTrainerPage() {
         data-testid="ear-trainer-menu"
         style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
-        <GameHeader showHomeButton={true} />
+        <GameHeader showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
         <FullscreenButton />
         <RoomCharacters room="ear-quest" />
 
@@ -279,7 +279,7 @@ function EarTrainerPage() {
       data-testid="ear-trainer-playing"
       style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      <GameHeader title={`Round ${round} / ${totalRounds}`} score={score} streak={streak} showHomeButton={true} />
+      <GameHeader title={`Round ${round} / ${totalRounds}`} score={score} streak={streak} showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
       <RoomCharacters room="ear-quest" />
 
       <main className="flex-1 flex flex-col items-center justify-center pt-20 pb-8 px-4">

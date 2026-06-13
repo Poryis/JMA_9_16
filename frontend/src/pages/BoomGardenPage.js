@@ -54,7 +54,7 @@ const MODES = [
     charWidthPct: 36,
     howToPlay: [
       { icon: '👂', text: 'Listen to Stew play the rhythm.' },
-      { icon: '🥁', text: 'When you hear "GO!", play it back on the drum.' },
+      { icon: '🥁', text: 'After the 4-beat count-in, play the same rhythm on the drum.' },
       { icon: '⏰', text: 'Try to tap right on each beat!' },
     ],
   },
@@ -924,7 +924,7 @@ export default function BoomGardenPage() {
             'linear-gradient(180deg, #FFF7E5 0%, #FFE5C9 100%)',
         }}
       >
-        <GameHeader title="Stew's Rhythm Academy" showHomeButton={true} />
+        <GameHeader title="Stew's Rhythm Academy" showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
         <FullscreenButton />
         <main className="flex-1 pt-16 md:pt-20 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col">
           <div className="text-center mb-4 md:mb-6">

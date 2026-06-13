@@ -144,7 +144,7 @@ function FunFactsPage() {
       data-testid="fun-facts-page"
       style={{ backgroundColor: '#3D2E1F' }}
     >
-      <GameHeader title="Fun Facts Clubhouse" showHomeButton={true} />
+      <GameHeader title="Fun Facts Clubhouse" showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
 
       <main className="flex-1 min-h-0 pt-20 md:pt-24 pb-2 md:pb-6 px-2 sm:px-3 flex flex-col items-center">
         {/* Progress / "find-them-all" prompt */}

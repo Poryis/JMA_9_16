@@ -138,7 +138,7 @@ export default function LessonPlayerPage() {
           backgroundSize: 'cover',
         }}
       >
-        <GameHeader showHomeButton={true} />
+        <GameHeader showHomeButton={true} backLink={{ to: '/lessons', label: 'Lessons' }} />
         <motion.div
           className="bg-white rounded-3xl border-4 p-6 max-w-md w-full"
           style={{ borderColor: 'var(--jma-dark)', boxShadow: '0 8px 0 0 var(--jma-dark)' }}
@@ -177,7 +177,7 @@ export default function LessonPlayerPage() {
         backgroundPosition: 'center',
       }}
     >
-      <GameHeader showHomeButton={true} />
+      <GameHeader showHomeButton={true} backLink={{ to: '/lessons', label: 'Lessons' }} />
 
       <motion.div
         className="relative z-10 text-center mb-4"

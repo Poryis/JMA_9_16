@@ -437,7 +437,7 @@ export default function DetectivePage() {
           backgroundPosition: 'center',
         }}
       >
-        <GameHeader showHomeButton={true} />
+        <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
         <FullscreenButton />
         <RoomCharacters room="detective" />
 
@@ -527,7 +527,7 @@ export default function DetectivePage() {
         backgroundPosition: 'center',
       }}
     >
-      <GameHeader title={`Detective · ${LEVELS[difficulty].name}`} showHomeButton={true} />
+      <GameHeader title={`Detective · ${LEVELS[difficulty].name}`} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <RoomCharacters room="detective" />
 
       <main className="flex-1 flex flex-col items-center pt-16 md:pt-20 pb-6 px-3">

@@ -306,7 +306,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
           backgroundPosition: 'center'
         }}
       >
-        <GameHeader showHomeButton={true} />
+        <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
         <FullscreenButton />
         <RoomCharacters room="kazoo-room" />
 
@@ -379,6 +379,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
         score={score}
         streak={gameStats.streak}
         showHomeButton={true}
+        backLink={{ to: '/play', label: 'Play' }}
       />
       <RoomCharacters room="kazoo-room" />
 

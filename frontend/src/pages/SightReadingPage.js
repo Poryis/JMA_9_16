@@ -273,7 +273,7 @@ export default function SightReadingPage() {
           backgroundPosition: 'center',
         }}
       >
-        <GameHeader showHomeButton={true} />
+        <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
         <FullscreenButton />
         <RoomCharacters room="sight-reading" />
 
@@ -356,7 +356,7 @@ export default function SightReadingPage() {
         backgroundPosition: 'center',
       }}
     >
-      <GameHeader title={`Sight-Read · ${level.name}`} showHomeButton={true} />
+      <GameHeader title={`Sight-Read · ${level.name}`} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <RoomCharacters room="sight-reading" />
 
       <main className="flex-1 flex flex-col items-center pt-16 md:pt-20 pb-6 px-3">

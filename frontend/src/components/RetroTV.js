@@ -27,7 +27,11 @@ export default function RetroTV() {
   return (
     <motion.div
       data-testid="home-retro-tv"
-      className="relative z-10 mt-8 mb-2 flex flex-col items-center"
+      // pt-16 reserves vertical space for the rabbit ears, which extend
+      // ~58px above the TV body via negative top positioning. Without this
+      // padding, on the homepage the ears were poking up into the bottom of
+      // the PLAY/LEARN/CREATE card grid above.
+      className="relative z-10 mt-12 md:mt-16 mb-2 pt-12 flex flex-col items-center"
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}

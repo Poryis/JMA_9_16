@@ -773,7 +773,7 @@ function FreePlayPage() {
       style={{
         background: 'radial-gradient(circle at 15% 20%, rgba(255, 204, 0, 0.28) 0%, transparent 35%), radial-gradient(circle at 85% 25%, rgba(76, 217, 100, 0.28) 0%, transparent 40%), radial-gradient(circle at 50% 90%, rgba(66, 133, 244, 0.28) 0%, transparent 45%), radial-gradient(circle at 25% 80%, rgba(255, 59, 48, 0.22) 0%, transparent 40%), radial-gradient(circle at 75% 75%, rgba(175, 82, 222, 0.22) 0%, transparent 38%), linear-gradient(135deg, #FFF9E6 0%, #FFF4F4 50%, #F0F9FF 100%)'
       }}>
-      <GameHeader title="Jam Session" showHomeButton={true} />
+      <GameHeader title="Jam Session" showHomeButton={true} backLink={{ to: '/create', label: 'Create' }} />
       <FullscreenButton />
       <AnimatePresence>{particles.map(p => <ParticleBurst key={p.id} color={p.color} />)}</AnimatePresence>
       <CharacterReaction streak={streak} />

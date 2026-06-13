@@ -2,45 +2,59 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Volume2 } from 'lucide-react';
 import HarpIcon from './HarpIcon';
+import BackButton from './BackButton';
 
-function GameHeader({ title, score, streak, showHomeButton = true }) {
+function GameHeader({ title, score, streak, showHomeButton = true, backLink = null }) {
   const navigate = useNavigate();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-2 md:px-4 py-1 md:py-3 pointer-events-none">
       <div className="max-w-7xl mx-auto flex items-start justify-between gap-2">
-        {/* Home button - harp icon + "Home" label below */}
-        {showHomeButton && (
-          <motion.button
-            data-testid="home-button"
-            aria-label="Home"
-            onClick={() => navigate('/')}
-            className="group flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer flex-shrink-0 pointer-events-auto"
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95, y: 2 }}
-          >
-            <div
-              className="rounded-xl md:rounded-2xl border-2 md:border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] md:shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow p-0.5 md:p-1 w-12 h-12 md:w-20 md:h-20"
-              style={{
-                backgroundColor: 'var(--jma-dark)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <HarpIcon />
-            </div>
-            <span
-              className="text-[10px] md:text-sm font-black uppercase tracking-wide mt-1 px-2 md:px-2.5 rounded-full"
-              style={{
-                color: 'white',
-                backgroundColor: 'var(--jma-dark)',
-                textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
-              }}
-            >
-              Home
-            </span>
-          </motion.button>
+        {/* Home button + optional Back-to-parent chip stacked left. The Back
+            chip is small and sits just below the Home tile so the kid has
+            two clear escape hatches: "all the way home" + "one level up". */}
+        {(showHomeButton || backLink) && (
+          <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+            {showHomeButton && (
+              <motion.button
+                data-testid="home-button"
+                aria-label="Home"
+                onClick={() => navigate('/')}
+                className="group flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer pointer-events-auto"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95, y: 2 }}
+              >
+                <div
+                  className="rounded-xl md:rounded-2xl border-2 md:border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] md:shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow p-0.5 md:p-1 w-12 h-12 md:w-20 md:h-20"
+                  style={{
+                    backgroundColor: 'var(--jma-dark)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <HarpIcon />
+                </div>
+                <span
+                  className="text-[10px] md:text-sm font-black uppercase tracking-wide mt-1 px-2 md:px-2.5 rounded-full"
+                  style={{
+                    color: 'white',
+                    backgroundColor: 'var(--jma-dark)',
+                    textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
+                  }}
+                >
+                  Home
+                </span>
+              </motion.button>
+            )}
+            {backLink && (
+              <BackButton
+                to={backLink.to}
+                label={backLink.label}
+                testId={backLink.testId || 'header-back-button'}
+              />
+            )}
+          </div>
         )}
 
         {/* Title */}
