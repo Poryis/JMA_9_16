@@ -485,70 +485,112 @@ function LoopStudioPage() {
           </div>
         </div>
 
-        {/* Step indicator */}
-        <div className="max-w-6xl mx-auto mb-1">
-          <div className="flex ml-24 md:ml-32 overflow-x-auto">
-            {Array.from({ length: totalSteps }, (_, i) => (
-              <div key={i} className="text-center" style={{ minWidth: totalSteps > 16 ? '20px' : 'auto', flex: totalSteps <= 16 ? 1 : 'none' }}>
-                <div className={`w-2.5 h-2.5 mx-auto rounded-full ${currentStep === i ? 'bg-[var(--jma-yellow)]' : 'bg-transparent'}`}
-                  style={{ boxShadow: currentStep === i ? '0 0 8px var(--jma-yellow)' : 'none' }} />
-                {i % 16 === 0 && totalSteps > 16 && (
-                  <span className="text-[8px] font-bold opacity-40">{Math.floor(i/16)+1}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Grid */}
+        {/* Grid — one frozen label column on the left + ONE master scroll
+            area on the right that contains the step indicator AND every
+            track row, so all tracks slide together when the kid scrolls.
+            (Previously each row + the step indicator had their own
+            overflow-x-auto which produced N independent scrollbars and
+            de-aligned the columns.) */}
         <div className="max-w-6xl mx-auto">
-          <div className="game-card p-3 overflow-x-auto">
-            {activeTracks.map(trackId => {
-              const preset = TRACK_PRESETS.find(p => p.id === trackId);
-              const steps = grid[trackId] || new Array(totalSteps).fill(0);
-              const isMuted = mutedTracks.has(trackId);
-
-              return (
-                <div key={trackId} className="flex items-center gap-1 mb-1" data-testid={`track-${trackId}`}>
-                  {/* Track label with preview button */}
-                  <div className="w-24 md:w-32 flex-shrink-0 flex items-center gap-0.5">
-                    {/* Preview sound button */}
-                    <button
-                      className="w-5 h-5 rounded flex items-center justify-center hover:bg-white/50 flex-shrink-0"
-                      onClick={() => previewSound(trackId)}
-                      data-testid={`preview-${trackId}`}
-                      title={`Preview ${preset?.label}`}
+          <div className="game-card p-3">
+            <div className="flex gap-1">
+              {/* Frozen label column */}
+              <div className="w-24 md:w-32 flex-shrink-0 flex flex-col gap-1">
+                {/* Spacer matches the step-indicator row's height so labels
+                    line up with their cell rows. */}
+                <div className="h-3.5" aria-hidden="true" />
+                {activeTracks.map(trackId => {
+                  const preset = TRACK_PRESETS.find(p => p.id === trackId);
+                  const isMuted = mutedTracks.has(trackId);
+                  return (
+                    <div
+                      key={`label-${trackId}`}
+                      className="h-7 md:h-9 flex items-center gap-0.5"
+                      data-testid={`track-label-${trackId}`}
                     >
-                      <Volume2 className="w-3 h-3" style={{ color: preset?.color }} />
-                    </button>
-                    <button className={`px-1.5 py-1 rounded-lg text-xs font-bold border-2 truncate flex-1 ${isMuted ? 'opacity-40' : ''}`}
-                      style={{ backgroundColor: preset?.color + '30', borderColor: preset?.color, color: 'var(--jma-dark)' }}
-                      onClick={() => toggleMute(trackId)}
-                      data-testid={`mute-${trackId}`}>
-                      {preset?.label}
-                    </button>
-                    <button className="text-xs opacity-50 hover:opacity-100 flex-shrink-0" onClick={() => removeTrack(trackId)}>x</button>
-                  </div>
+                      <button
+                        className="w-5 h-5 rounded flex items-center justify-center hover:bg-white/50 flex-shrink-0"
+                        onClick={() => previewSound(trackId)}
+                        data-testid={`preview-${trackId}`}
+                        title={`Preview ${preset?.label}`}
+                      >
+                        <Volume2 className="w-3 h-3" style={{ color: preset?.color }} />
+                      </button>
+                      <button
+                        className={`px-1.5 py-1 rounded-lg text-xs font-bold border-2 truncate flex-1 ${isMuted ? 'opacity-40' : ''}`}
+                        style={{ backgroundColor: preset?.color + '30', borderColor: preset?.color, color: 'var(--jma-dark)' }}
+                        onClick={() => toggleMute(trackId)}
+                        data-testid={`mute-${trackId}`}
+                      >
+                        {preset?.label}
+                      </button>
+                      <button
+                        className="text-xs opacity-50 hover:opacity-100 flex-shrink-0"
+                        onClick={() => removeTrack(trackId)}
+                        aria-label={`Remove ${preset?.label}`}
+                      >
+                        x
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
 
-                  {/* Steps */}
-                  <div className="flex gap-[2px] flex-1 overflow-x-auto">
-                    {steps.slice(0, totalSteps).map((active, stepIdx) => (
-                      <button key={stepIdx} data-testid={`cell-${trackId}-${stepIdx}`}
-                        className={`loop-grid-cell h-7 md:h-9 ${active ? 'active' : ''} ${currentStep === stepIdx && isPlaying ? 'playing' : ''}`}
-                        style={{
-                          minWidth: totalSteps > 16 ? '18px' : 'auto',
-                          flex: totalSteps <= 16 ? 1 : 'none',
-                          backgroundColor: active ? (preset?.color || '#ccc') : (stepIdx % 4 === 0 ? '#f0f0f0' : '#fafafa'),
-                          opacity: isMuted ? 0.3 : 1,
-                          borderLeft: stepIdx % 16 === 0 && stepIdx > 0 ? '2px solid var(--jma-dark)' : undefined
-                        }}
-                        onClick={() => toggleCell(trackId, stepIdx)}
-                      />
+              {/* Single scrollable cell area — step indicator + all track
+                  rows live in here so they share ONE scrollbar and stay
+                  perfectly column-aligned. */}
+              <div className="flex-1 overflow-x-auto">
+                <div className="flex flex-col gap-1" style={{ minWidth: totalSteps > 16 ? `${totalSteps * 20}px` : '100%' }}>
+                  {/* Step indicator row */}
+                  <div className="flex">
+                    {Array.from({ length: totalSteps }, (_, i) => (
+                      <div
+                        key={i}
+                        className="text-center"
+                        style={{ minWidth: totalSteps > 16 ? '20px' : 'auto', flex: totalSteps <= 16 ? 1 : 'none' }}
+                      >
+                        <div
+                          className={`w-2.5 h-2.5 mx-auto rounded-full ${currentStep === i ? 'bg-[var(--jma-yellow)]' : 'bg-transparent'}`}
+                          style={{ boxShadow: currentStep === i ? '0 0 8px var(--jma-yellow)' : 'none' }}
+                        />
+                        {i % 16 === 0 && totalSteps > 16 && (
+                          <span className="text-[8px] font-bold opacity-40">{Math.floor(i/16)+1}</span>
+                        )}
+                      </div>
                     ))}
                   </div>
+                  {/* Track step rows */}
+                  {activeTracks.map(trackId => {
+                    const preset = TRACK_PRESETS.find(p => p.id === trackId);
+                    const steps = grid[trackId] || new Array(totalSteps).fill(0);
+                    const isMuted = mutedTracks.has(trackId);
+                    return (
+                      <div
+                        key={`steps-${trackId}`}
+                        className="flex gap-[2px]"
+                        data-testid={`track-${trackId}`}
+                      >
+                        {steps.slice(0, totalSteps).map((active, stepIdx) => (
+                          <button
+                            key={stepIdx}
+                            data-testid={`cell-${trackId}-${stepIdx}`}
+                            className={`loop-grid-cell h-7 md:h-9 ${active ? 'active' : ''} ${currentStep === stepIdx && isPlaying ? 'playing' : ''}`}
+                            style={{
+                              minWidth: totalSteps > 16 ? '18px' : 'auto',
+                              flex: totalSteps <= 16 ? 1 : 'none',
+                              backgroundColor: active ? (preset?.color || '#ccc') : (stepIdx % 4 === 0 ? '#f0f0f0' : '#fafafa'),
+                              opacity: isMuted ? 0.3 : 1,
+                              borderLeft: stepIdx % 16 === 0 && stepIdx > 0 ? '2px solid var(--jma-dark)' : undefined
+                            }}
+                            onClick={() => toggleCell(trackId, stepIdx)}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            </div>
 
             {/* Add track with preview */}
             {availableTracks.length > 0 && (

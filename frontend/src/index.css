@@ -434,3 +434,46 @@ h1, h2, h3, h4, h5, h6 {
   }
   .jma-print-report .no-print { display: none !important; }
 }
+
+/* ============================================================
+   App-wide retro scrollbar
+   ------------------------------------------------------------
+   Chunky cartoon-glossy scrollbar that mirrors the JMAtv
+   "Up Next" carousel pattern but uses the JMA-yellow + JMA-dark
+   palette as the default. Surfaces that want their own accent
+   (JMAtv channel pages) override via CSS vars on the scroller.
+
+   Applies to BOTH axes and EVERY scrollable element by default,
+   so the Sticker Book grid, Loop Studio track strip, the page
+   itself, etc all read with the same playful finish instead of
+   the default OS grey. Custom-styled scrollers (.jmatv-upnext-
+   scroller) keep their bespoke styling because their rules are
+   declared after this block via the inline <style> on the
+   relevant page.
+   ============================================================ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--jma-yellow) rgba(10, 37, 64, 0.18);
+}
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+*::-webkit-scrollbar-track {
+  background:
+    linear-gradient(180deg, rgba(10,37,64,0.35), rgba(10,37,64,0.15)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0 2px, transparent 2px 5px);
+  border-radius: 999px;
+  border: 1.5px solid rgba(10,37,64,0.22);
+}
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--jma-yellow), #E5A600);
+  border-radius: 999px;
+  border: 2px solid var(--jma-dark);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    inset 0 -2px 0 rgba(0,0,0,0.22);
+}
+*::-webkit-scrollbar-thumb:hover  { filter: brightness(1.12); }
+*::-webkit-scrollbar-thumb:active { filter: brightness(0.94); }
+*::-webkit-scrollbar-corner       { background: transparent; }
