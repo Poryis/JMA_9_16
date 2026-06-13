@@ -279,6 +279,11 @@ export default function BoomGardenPage() {
   const patternRef = useRef(null);
   const claimedNotesRef = useRef(new Set());     // indices of notes a tap has been matched to
   const tapResultsRef = useRef({});               // index → 'perfect' | 'miss'
+  // Every tap time (relative to inputStartRef) for the active round — used
+  // at finishCopyRound to decide whether each REST beat was held cleanly
+  // (no tap in its tolerance window = perfect rest) or violated (a tap
+  // fell on the rest = no rest reward).
+  const tapTimesRef = useRef([]);
   const snareRef = useRef(null);
   // Wall-clock Date.now() of beat-0 of the click track currently running.
   // Drives the BeatPulse visual metronome so it stays in lock-step with the
@@ -383,15 +388,49 @@ export default function BoomGardenPage() {
     clearTimeouts();
     const pat = patternRef.current || [];
     const results = tapResultsRef.current;
+    const tol = TOLERANCE_MS[level] ?? TOLERANCE_MS.cadet;
+    const expectedStarts = expectedStartsRef.current || [];
+    const tapTimes = tapTimesRef.current || [];
+    // Post-process REST beats: if no tap landed inside ±tol of the rest's
+    // expected time, the kid held the rest cleanly — reward it as a
+    // PERFECT. If a tap DID land on the rest, no reward (the rest is just
+    // "missed"). User explicitly asked for this so that scores feel
+    // consistent — every beat in a pattern, including silences, is worth
+    // up to the PERFECT base (25 pts before multipliers).
+    const PERFECT_BASE = 25;
+    let restBonusPts = 0;
+    pat.forEach((k, i) => {
+      if (k !== 'rest') return;
+      const restCenter = expectedStarts[i];
+      if (restCenter === undefined) return;
+      const tappedDuring = tapTimes.some((t) => Math.abs(t - restCenter) <= tol);
+      if (!tappedDuring) {
+        results[i] = 'perfect';
+        // Apply the active multiplier exactly like a live PERFECT tap would
+        // (so streaks reward you on rests too). Multiplier cap is 1.5,
+        // matching the in-game x1.5 chip.
+        const mult = streak >= 5 ? 1.5 : 1;
+        restBonusPts += Math.round(PERFECT_BASE * mult);
+      }
+      // If tapped during, results[i] stays undefined — strip shows neutral.
+    });
+    if (restBonusPts > 0) setScore((s) => s + restBonusPts);
+
+    // hitStates now includes rests with their held/missed status so the
+    // strip shows green tints over correctly-held rests too.
     const hits = pat.map((k, i) => {
-      if (k === 'rest') return undefined;
+      if (k === 'rest') {
+        return results[i] === 'perfect' ? 'perfect' : undefined;
+      }
       return results[i] || 'miss';
     });
-    const expectedNonRest = pat.map((k, i) => (k === 'rest' ? null : i)).filter((x) => x !== null);
-    const correct = expectedNonRest.filter((i) => results[i] === 'perfect').length;
-    const total = expectedNonRest.length;
-    // Roll the round into the session tally — used by the Session Summary
-    // card to compute an overall accuracy %.
+
+    // Every beat — note OR rest — counts toward the round's "on time" tally
+    // now that rests are scored. A pattern of 2 quarters + 2 rests = 4 beats,
+    // and a kid who taps the quarters and holds the rests gets 4 of 4.
+    const allIndices = pat.map((_, i) => i);
+    const correct = allIndices.filter((i) => results[i] === 'perfect').length;
+    const total = pat.length;
     sessionTallyRef.current.perfects += correct;
     sessionTallyRef.current.totalNotes += total;
     setHitStates(hits);
@@ -452,7 +491,7 @@ export default function BoomGardenPage() {
       if (mode === 'trail') startTrail();
     }, 3000);
     timeoutsRef.current.push(next);
-  }, [clearTimeouts, level, mode, currentRound, score]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clearTimeouts, level, mode, currentRound, score, streak]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startCopy = useCallback(() => {
     const pat = randomPattern(level, PATTERNS);
@@ -462,6 +501,7 @@ export default function BoomGardenPage() {
     setHighlightIndex(-1);
     tapResultsRef.current = {};
     claimedNotesRef.current = new Set();
+    tapTimesRef.current = [];
     setRoundKey((k) => k + 1);
     setPhase('demo');
     initAudioContext();
@@ -569,6 +609,11 @@ export default function BoomGardenPage() {
     if (phase !== 'input' && phase !== 'countin') return;
     playDrumSound('snare');
     const tapTime = Date.now() - inputStartRef.current;
+    // Log every tap, regardless of whether it ends up matched to a non-rest
+    // note. finishCopyRound uses this list to decide whether each REST beat
+    // was held cleanly (no tap landed in its window → perfect rest reward)
+    // or accidentally tapped (tap fell on the rest → no reward).
+    tapTimesRef.current.push(tapTime);
     const pat = patternRef.current || [];
     const expectedStarts = expectedStartsRef.current;
     const claimed = claimedNotesRef.current;
@@ -745,6 +790,7 @@ export default function BoomGardenPage() {
     setHighlightIndex(-1);
     tapResultsRef.current = {};
     claimedNotesRef.current = new Set();
+    tapTimesRef.current = [];
     setRoundKey((k) => k + 1);
     initAudioContext();
     clearTimeouts();
