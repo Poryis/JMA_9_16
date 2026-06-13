@@ -113,15 +113,18 @@ export default function RetroTV() {
         </div>
 
         {/* Wood-grain TV body — uses CSS gradients for "wood grain" without
-            shipping an extra texture asset. */}
+            shipping an extra texture asset. Outer JMA-dark stroke matches
+            the chunky black outline on every other cartoon element in
+            this universe. */}
         <div
           className="relative rounded-3xl"
           style={{
             background:
               'repeating-linear-gradient(90deg, #8B5A2B 0px, #8B5A2B 2px, #A0673A 2px, #A0673A 5px), linear-gradient(180deg, #A0673A, #6B4423)',
             backgroundBlendMode: 'multiply',
-            border: '5px solid #3F2A14',
-            boxShadow: '0 10px 0 0 #3F2A14, inset 0 0 0 3px rgba(255,255,255,0.08)',
+            border: '5px solid var(--jma-dark)',
+            boxShadow:
+              '0 10px 0 0 var(--jma-dark), inset 0 0 0 3px #3F2A14, inset 0 0 0 5px rgba(255,255,255,0.08)',
             padding: '14px 14px 10px 14px',
             zIndex: 1,
           }}
