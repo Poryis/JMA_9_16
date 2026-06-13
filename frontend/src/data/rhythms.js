@@ -38,11 +38,16 @@ export const BEATS_PER_MEASURE = 4;
 export const ROUNDS_PER_SESSION = 5;
 
 // Per-difficulty tap-timing tolerance windows (± ms from the expected beat).
-// Cadet is extra forgiving — a 5-year-old's "in time" is naturally loose.
+// Bumped ~50 % wider on user feedback that Echo Stew + Rhythm Run felt
+// "too unforgiving" — at the previous numbers a kid tapping a hair late on
+// the SECOND beat would sometimes auto-miss the first beat. The
+// perfect/great/good tier ratios inside `handleSnareTap` (0.3 / 0.6 / 1.0
+// of tol) are unchanged, so a tap that USED to be PERFECT still is; the
+// new wider window just rescues taps that previously fell off the end.
 export const TOLERANCE_MS = {
-  cadet:  400,
-  pro:    275,
-  master: 175,
+  cadet:  600,   // was 400 — 5-year-olds need the most slack
+  pro:    400,   // was 275
+  master: 275,   // was 175
 };
 
 // Difficulty tiers — each pattern is an array of note keys from NOTE_DEFS.
