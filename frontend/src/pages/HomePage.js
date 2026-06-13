@@ -11,6 +11,7 @@ import RankBadge from '../components/RankBadge';
 import StickerSpotlight from '../components/StickerSpotlight';
 import PracticeStreakChip from '../components/PracticeStreakChip';
 import NextMissionPanel from '../components/NextMissionPanel';
+import RetroTV from '../components/RetroTV';
 
 // Jelly Rocks blimp — 3-frame loop slowly drifting side-to-side behind everything.
 const BLIMP_FRAMES = [
@@ -524,6 +525,12 @@ function HomePage() {
           <PrimaryCard key={card.id} card={card} index={idx} navigate={navigate} />
         ))}
       </div>
+
+      {/* JMAtv retro CRT — small, deliberately placed BELOW the 3 main
+          category cards so kids don't bypass the interactive features.
+          Per the partner's "TV-first cannibalization" concern, this lives
+          in the periphery; option 4 from the placement discussion. */}
+      <RetroTV />
     </div>
   );
 }

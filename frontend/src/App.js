@@ -20,6 +20,9 @@ import DetectivePage from "./pages/DetectivePage";
 import SongStudioPage from "./pages/SongStudioPage";
 import SightReadingPage from "./pages/SightReadingPage";
 import BoomGardenPage from "./pages/BoomGardenPage";
+import JMAtvHomePage from "./pages/JMAtvHomePage";
+import JMAtvChannelPage from "./pages/JMAtvChannelPage";
+import JMAtvPlayerPage from "./pages/JMAtvPlayerPage";
 import StickerToast from "./components/StickerToast";
 import RankUpCelebration from "./components/RankUpCelebration";
 import AudioUnlockOverlay from "./components/AudioUnlockOverlay";
@@ -70,6 +73,9 @@ function App() {
             <Route path="/song-studio" element={<SongStudioPage />} />
             <Route path="/sight-reading" element={<SightReadingPage />} />
             <Route path="/boom-garden" element={<BoomGardenPage />} />
+            <Route path="/jmatv" element={<JMAtvHomePage />} />
+            <Route path="/jmatv/:channelId" element={<JMAtvChannelPage />} />
+            <Route path="/jmatv/:channelId/:episodeIndex" element={<JMAtvPlayerPage />} />
             <Route path="/sticker-book" element={<StickerBookPage />} />
           </Routes>
         </AnimatePresence>

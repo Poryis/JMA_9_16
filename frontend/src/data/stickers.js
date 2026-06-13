@@ -114,6 +114,8 @@ export const COLLECTION_STICKERS = [
   { id: 'practice_buddy_3',  name: 'Practice Buddy',     category: 'milestones', icon: 'assets/characters/finn-danger.png',      color: '#FF9500', hint: 'Come back and play 3 days in a row' },
   { id: 'practice_buddy_7',  name: 'Weekly Wonder',      category: 'milestones', icon: 'assets/characters/jazzy.png',            color: '#FF3B30', hint: 'Come back and play 7 days in a row' },
   { id: 'practice_buddy_14', name: 'Two-Week Trooper',   category: 'milestones', icon: 'assets/characters/charlie-grad.png',     color: '#FFD700', hint: 'Come back and play 14 days in a row' },
+  // ---- JMAtv collection ----
+  { id: 'jmatv-first-watch',  name: 'TV Time!',          category: 'milestones', icon: 'assets/ui/jmatv-logo.png',               color: '#FFCC00', hint: 'Watch your first JMAtv episode' },
 ];
 
 // Build sticker arrays/maps. Achievements come from the achievements file

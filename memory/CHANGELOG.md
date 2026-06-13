@@ -1,5 +1,45 @@
 # Changelog
 
+## Feb 21, 2026 (continued) — JMAtv (TV channel) shipped
+
+User: *"Ok I want another place to go - JMAtv!!! I'll upload Jelly of the Month Club and JMA music videos, puns with Finn Danger, and Fun Facts for kids."*
+
+After two rounds of placement design — business partner flagged that a 4th homepage tile would clash visually with the main JMA shield; user worried kids would skip games for passive video — landed on **option 4: small RetroTV widget, deliberately placed below the 3 PLAY/LEARN/CREATE cards** so kids see interactive content first.
+
+### Data model (`src/data/jmatv.js`)
+- `JMATV_CHANNELS` array with 3 channels: `fun-facts` (9 Vimeo IDs from user, auto-numbered #1-8 since one was duplicated), `puns-finn-danger` and `jma-music-videos` (both `comingSoon: true` placeholders).
+- `pickFeaturedEpisode()` stable-random pick used by the home RetroTV preview.
+- `getChannel()` / `getEpisode()` helpers for the channel + player pages.
+
+### Components & pages
+- **`components/RetroTV.js`** — cartoon CRT TV (wood-grain frame via CSS gradients, rabbit ears, knobs, speaker grille). Plays a muted, looping, background-mode Vimeo preview on the home page; tap → `/jmatv`. JMAtv logo bug in screen corner so kids learn the channel name even without tapping. Pulse animation on the "ON AIR" dot via a CSS keyframe (no JS).
+- **`pages/JMAtvHomePage.js`** (`/jmatv`) — dark TV-guide background with the JMAtv shield logo + tagline. Three big TV-card channel tiles; locked channels show a "Coming Soon" badge.
+- **`pages/JMAtvChannelPage.js`** (`/jmatv/:channelId`) — episode grid with auto-fetched Vimeo poster thumbnails via `vumbnail.com/<id>.jpg` (no API key needed, works on static hosting). Big play icon + channel-tinted gradient.
+- **`pages/JMAtvPlayerPage.js`** (`/jmatv/:channelId/:episodeIndex`) — chunky CRT-styled Vimeo embed (same wooden frame as the home TV, scaled up). JMAtv channel bug top-right, scanlines overlay, fullscreen button, "Up Next on …" horizontal carousel below.
+
+### Stickers
+- New `jmatv-first-watch` (TV Time!) sticker in `data/stickers.js`, fired on episode mount via `earnSticker('jmatv-first-watch')`. Idempotent — safe to re-fire on repeat visits.
+
+### Routes (`App.js`)
+- `/jmatv`, `/jmatv/:channelId`, `/jmatv/:channelId/:episodeIndex` — all behind the existing HashRouter so GitHub Pages deeplinks keep working.
+
+### Visual verification
+- Home page screenshot: TV widget renders below the 3 cards at the bottom edge (~752px y) of the viewport on a 1280×1400 simulated mobile-long view.
+- JMAtv home: 3 channel tiles render with correct colors, Finn/Charlie character art, "Coming Soon" badges on the placeholder channels.
+- Fun Facts channel: all 8 episodes show with Vimeo posters auto-pulled from vumbnail.com.
+- Player page: full CRT chassis, "Up Next" carousel of remaining episodes, JMAtv bug in the screen corner.
+
+### Known caveat (NOT a code bug)
+Vimeo returns *"We couldn't verify the security of your connection — access has been restricted"* when embedding the user's Fun Facts videos on the preview domain. This is a **Vimeo privacy setting** on the source videos (likely "Specific domains" privacy mode without our preview domain whitelisted). User needs to either:
+- Set those videos to "Anyone with the link" privacy on Vimeo, OR
+- Whitelist `*.preview.emergentagent.com` AND the production GitHub Pages domain in each video's "Embed Privacy" settings.
+
+### Files touched
+- New: `src/data/jmatv.js`, `src/components/RetroTV.js`, `src/pages/JMAtvHomePage.js`, `src/pages/JMAtvChannelPage.js`, `src/pages/JMAtvPlayerPage.js`.
+- Edited: `src/App.js` (routes), `src/pages/HomePage.js` (RetroTV import + render below the 3 cards), `src/data/stickers.js` (jmatv-first-watch sticker).
+- Asset: `public/assets/ui/jmatv-logo.png` (downloaded from user's upload).
+
+
 ## Feb 21, 2026 (later still) — Sticker Toast: batching + corner positioning
 
 User: *"there are just too many sticker popups to first start. I LOVE the sticker system... it's just that it's too overwhelming when first exploring through the app."*
