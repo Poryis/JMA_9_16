@@ -65,9 +65,29 @@ export const JMATV_CHANNELS = [
     icon: 'assets/characters/llama-lou-stew.png',
     badgeBg: '#FFD9D6',
     episodes: [
-      // Placeholder until music video Vimeo IDs land.
+      // Music videos use named titles (vs. the auto-numbered Fun Facts / Puns)
+      // so kids can pick by song. Two batches in the user's drop — kept in
+      // the order they were sent so the first 11 read like one album and the
+      // last 7 read like a second.
+      { vimeoId: '1200947216', title: 'Jelly Jamboree' },
+      { vimeoId: '1200949215', title: 'Play One, Skip One' },
+      { vimeoId: '1200949216', title: 'Lemonade Standoff' },
+      { vimeoId: '1200949994', title: 'Seahorse Siesta' },
+      { vimeoId: '1200949952', title: 'Epic Drum Battle' },
+      { vimeoId: '1200949768', title: 'Peanut Butter Jellyfish Sandwich' },
+      { vimeoId: '1200949757', title: 'Goody Bag' },
+      { vimeoId: '1200949704', title: 'Cubs, Cubs, Cubs' },
+      { vimeoId: '1200949703', title: 'Brand New Friend' },
+      { vimeoId: '1200949702', title: 'A Shellfish Elf' },
+      { vimeoId: '1200949701', title: 'A Llama’s Life for Me' },
+      { vimeoId: '1200951610', title: 'Do is in Pizza' },
+      { vimeoId: '1200951609', title: 'Faster as We Go' },
+      { vimeoId: '1200951611', title: 'High and Low' },
+      { vimeoId: '1200951612', title: 'Robot Boogie' },
+      { vimeoId: '1200951769', title: 'We Groovin’ Freeze Dance' },
+      { vimeoId: '1200951835', title: 'We Mosh Freeze Dance' },
+      { vimeoId: '1200951872', title: 'Who’s Got the Rhythm' },
     ],
-    comingSoon: true,
   },
 ];
 
