@@ -33,7 +33,11 @@ const DRUM_KEY_MAP = { q: 'hihat', w: 'crash', e: 'ride', a: 'snare', s: 'tom', 
 const DRUM_INFO = {
   hihat:  { label: 'Hi-Hat', key: 'Q', color: '#F1C40F', img1: 'assets/drums/Hi hat 1.png', img2: 'assets/drums/Hi hat 2.png' },
   crash:  { label: 'Crash',  key: 'W', color: '#E67E22', img1: 'assets/drums/Crash 1.png',  img2: 'assets/drums/Crash 2.png'  },
-  ride:   { label: 'Ride',   key: 'E', color: '#E74C3C', img1: 'assets/drums/Ride 1.png',   img2: 'assets/drums/Ride 2.png'   },
+  // Ride's asset files are named opposite the convention used by every
+  // other drum: `Ride 1.png` is actually the PLAYED frame and `Ride 2.png`
+  // is the REST frame. Swapping img1/img2 here keeps the rest-vs-played
+  // logic consistent without renaming the source PNGs.
+  ride:   { label: 'Ride',   key: 'E', color: '#E74C3C', img1: 'assets/drums/Ride 2.png',   img2: 'assets/drums/Ride 1.png'   },
   snare:  { label: 'Snare',  key: 'A', color: '#3498DB', img1: 'assets/drums/Snare 1.png',  img2: 'assets/drums/Snare 2.png'  },
   tom:    { label: 'Tom 1',  key: 'S', color: '#9B59B6', img1: 'assets/drums/tOM 1 1.png',  img2: 'assets/drums/tOM 1 2.png'  },
   lowTom: { label: 'Tom 2',  key: 'D', color: '#1ABC9C', img1: 'assets/drums/tOM 2 1.png',  img2: 'assets/drums/tOM 2 2.png'  },
@@ -782,7 +786,7 @@ function FreePlayPage() {
       {/* Mobile vertically centers content (was justify-start which left empty space
           below the circle on phones, making it feel "bunched up" at the top).
           Desktop keeps justify-start so the layout doesn't drift around. */}
-      <main className="flex-1 flex flex-col items-center justify-center md:justify-start pt-20 md:pt-24 pb-2 px-2">
+      <main className="flex-1 flex flex-col items-center justify-center md:justify-start pt-16 md:pt-24 pb-2 px-2">
         <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2 mb-2 md:mb-2">
           <div className="game-card px-1 py-0.5 md:px-2 md:py-1 flex items-center gap-1">
             {INSTRUMENT_TABS.map(tab => (

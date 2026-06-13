@@ -180,7 +180,10 @@ export const PianoInstrument = forwardRef(function PianoInstrument({ onPlayNote,
 // Exposes imperative .flash(id) that swaps img1->img2 for ~100ms then back.
 const DRUM_FRAMES = {
   crash:  { img1: 'assets/drums/Crash 1.png',  img2: 'assets/drums/Crash 2.png',  style: { left: '55px',  bottom: '125px', height: '110px', zIndex: 1 } },
-  ride:   { img1: 'assets/drums/Ride 1.png',   img2: 'assets/drums/Ride 2.png',   style: { left: '245px', bottom: '95px',  height: '140px', zIndex: 1 } },
+  // Ride's source PNGs are named OPPOSITE the every-other-drum convention
+  // (Ride 1 = played frame, Ride 2 = rest frame). Swap here so `img1` is
+  // still the rest pose like all the other drum entries.
+  ride:   { img1: 'assets/drums/Ride 2.png',   img2: 'assets/drums/Ride 1.png',   style: { left: '245px', bottom: '95px',  height: '140px', zIndex: 1 } },
   hihat:  { img1: 'assets/drums/Hi hat 1.png', img2: 'assets/drums/Hi hat 2.png', style: { left: '0px',   bottom: '20px',  height: '160px', zIndex: 3 } },
   kick:   { img1: 'assets/drums/kICK 1.png',   img2: 'assets/drums/kICK 2.png',   style: { left: '120px', bottom: '0px',   width:  '140px', zIndex: 3 } },
   lowTom: { img1: 'assets/drums/tOM 2 1.png',  img2: 'assets/drums/tOM 2 2.png',  style: { left: '115px', bottom: '128px', width:  '70px',  zIndex: 3 } },
