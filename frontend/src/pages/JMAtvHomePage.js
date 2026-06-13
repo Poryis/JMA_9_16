@@ -30,7 +30,11 @@ function ChannelTile({ channel, index, onClick }) {
           background: channel.color,
           border: '5px solid #0A2540',
           boxShadow: `0 10px 0 0 ${channel.accent}, 0 13px 0 0 #0A2540`,
-          aspectRatio: '5 / 3',
+          // Removed rigid 5/3 aspect-ratio — at 3-column desktop widths the
+          // cards were too short and the tagline + episode chip clipped off
+          // the bottom. Using a min-height instead lets each card grow to
+          // fit its content while still feeling like a chunky TV tile.
+          minHeight: 220,
           padding: 'clamp(14px, 2.6vw, 22px)',
           color: 'white',
           opacity: isLocked ? 0.7 : 1,
@@ -44,27 +48,14 @@ function ChannelTile({ channel, index, onClick }) {
           </span>
         </div>
 
-        <div className="flex-1 flex items-end relative">
-          {/* Character art floats bottom-left */}
-          {channel.icon && (
-            <img
-              src={channel.icon}
-              alt=""
-              aria-hidden="true"
-              draggable={false}
-              className="absolute object-contain pointer-events-none select-none"
-              style={{
-                bottom: -8, right: -8,
-                width: '36%',
-                filter: 'drop-shadow(0 6px 6px rgba(0,0,0,0.25))',
-              }}
-            />
-          )}
-          <div className="relative" style={{ width: '60%' }}>
+        <div className="flex-1 flex items-stretch relative mt-3 gap-3">
+          {/* Text column — given a fixed share so the character art never
+              squeezes the title / tagline. */}
+          <div className="relative flex-1 min-w-0 flex flex-col justify-end">
             <h2
               className="font-black font-display leading-none"
               style={{
-                fontSize: 'clamp(24px, 3.6vw, 38px)',
+                fontSize: 'clamp(22px, 3.2vw, 34px)',
                 color: 'white',
                 textShadow: `2px 2px 0 ${channel.accent}, 4px 4px 0 #0A2540`,
               }}
@@ -93,6 +84,28 @@ function ChannelTile({ channel, index, onClick }) {
               )}
             </div>
           </div>
+
+          {/* Character "host" art — fixed-width column on the right so it
+              never overlaps the text or escapes the card. drop-shadow gives
+              it pop against the channel color. */}
+          {channel.icon && (
+            <div className="relative flex-shrink-0" style={{ width: '38%' }}>
+              <img
+                src={channel.icon}
+                alt=""
+                aria-hidden="true"
+                draggable={false}
+                className="absolute object-contain pointer-events-none select-none"
+                style={{
+                  right: 'clamp(-12px, -1vw, -6px)',
+                  bottom: -8,
+                  width: '120%',
+                  maxHeight: '130%',
+                  filter: 'drop-shadow(0 6px 6px rgba(0,0,0,0.28))',
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </motion.button>

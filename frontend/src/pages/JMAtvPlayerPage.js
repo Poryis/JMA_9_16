@@ -295,7 +295,19 @@ export default function JMAtvPlayerPage() {
           >
             Up Next on {channel.title}
           </h3>
-          <div className="flex gap-3 md:gap-4 overflow-x-auto pb-3" style={{ scrollSnapType: 'x mandatory' }}>
+          <div
+            className="jmatv-upnext-scroller flex gap-3 md:gap-4 pb-4"
+            style={{
+              // overflow-x: scroll (not auto) forces the bar to ALWAYS render
+              // even on systems that hide auto scrollbars by default — the
+              // custom retro styling below is the whole point so we want it
+              // visible all the time.
+              overflowX: 'scroll',
+              scrollSnapType: 'x mandatory',
+              '--jmatv-scroll-accent': channel.accent,
+              '--jmatv-scroll-fill': channel.color,
+            }}
+          >
             {otherEpisodes.map((ep) => {
               const poster = `https://vumbnail.com/${ep.vimeoId}.jpg`;
               return (
@@ -343,6 +355,42 @@ export default function JMAtvPlayerPage() {
               );
             })}
           </div>
+
+          {/* Custom retro scrollbar — channel-tinted, chunky, with a soft
+              dark track that matches the JMAtv vibe. Firefox uses
+              scrollbar-* props; Chromium uses ::-webkit-* pseudo-elements.
+              Both branches share the same colors via CSS vars set inline. */}
+          <style>{`
+            .jmatv-upnext-scroller {
+              scrollbar-width: thin;
+              scrollbar-color: var(--jmatv-scroll-fill) rgba(255,231,194,0.12);
+            }
+            .jmatv-upnext-scroller::-webkit-scrollbar {
+              height: 12px;
+            }
+            .jmatv-upnext-scroller::-webkit-scrollbar-track {
+              background:
+                linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.3)),
+                repeating-linear-gradient(90deg, rgba(255,231,194,0.06) 0 2px, transparent 2px 5px);
+              border-radius: 999px;
+              border: 1.5px solid rgba(255,231,194,0.18);
+            }
+            .jmatv-upnext-scroller::-webkit-scrollbar-thumb {
+              background:
+                linear-gradient(180deg, var(--jmatv-scroll-fill), var(--jmatv-scroll-accent));
+              border-radius: 999px;
+              border: 2px solid rgba(10,37,64,0.85);
+              box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.35),
+                inset 0 -2px 0 rgba(0,0,0,0.25);
+            }
+            .jmatv-upnext-scroller::-webkit-scrollbar-thumb:hover {
+              filter: brightness(1.15);
+            }
+            .jmatv-upnext-scroller::-webkit-scrollbar-thumb:active {
+              filter: brightness(0.95);
+            }
+          `}</style>
         </div>
       )}
     </div>

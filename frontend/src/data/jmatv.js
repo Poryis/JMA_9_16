@@ -19,7 +19,7 @@ export const JMATV_CHANNELS = [
     tagline: 'Quick brain-bites about music & weird stuff',
     color: '#FF9500',
     accent: '#C26200',
-    icon: 'assets/characters/finn-danger.png',
+    icon: 'assets/characters/charlie-grad.png',
     badgeBg: '#FFE7C2',
     episodes: [
       // Auto-numbered #1-9 so the fact stays a surprise. Reorder freely.
@@ -57,7 +57,7 @@ export const JMATV_CHANNELS = [
     tagline: 'Full-length jams from Jelly of the Month Club',
     color: '#FF3B30',
     accent: '#B82A20',
-    icon: 'assets/characters/charlie.png',
+    icon: 'assets/characters/llama-lou-stew.png',
     badgeBg: '#FFD9D6',
     episodes: [
       // Placeholder until music video Vimeo IDs land.

@@ -1,5 +1,37 @@
 # Changelog
 
+## Feb 21, 2026 (continued) — JMAtv polish: hosts, desktop layout, custom scrollbar
+
+User feedback: *"can we have Puns with Finn Danger have Finn as the hero, Fun Facts have professor Charlie, and JMA Music Videos have Llama Lou. Also the cards are weird on desktop now. Stuff is all cut off. And the scroll bar can we have it look cooler"*
+
+### Channel host swaps (`src/data/jmatv.js`)
+- **Fun Facts** → `charlie-grad.png` (Professor Charlie — graduation cap)
+- **Puns with Finn Danger** → `finn-danger.png` (unchanged, already correct)
+- **JMA Music Videos** → `llama-lou-stew.png` (Llama Lou with Stew)
+
+### Desktop layout fix (`pages/JMAtvHomePage.js`)
+- Removed the rigid `aspectRatio: '5 / 3'` that was squashing cards into too-short rectangles on wide screens (text + tagline + episode badge clipped off the bottom).
+- Replaced with `minHeight: 220` so each card grows to fit its content while still feeling chunky.
+- Restructured inner layout to a flex two-column body: text on the left (`flex-1`, `min-w-0` for truncation safety), host art column on the right at a fixed `width: 38%`. Character art is absolute-positioned within its column so it can extend slightly past the card edge for the "popping out of the TV" feel without overlapping the title/tagline.
+
+### Custom retro scrollbar on the "Up Next" carousel (`pages/JMAtvPlayerPage.js`)
+- Swapped `overflow-x: auto` → `overflow-x: scroll` so the bar is always present (some OSes hide auto-scrollbars until interaction).
+- Channel-tinted gradient thumb: orange→darker-orange for Fun Facts, blue→darker-blue for Puns, red→darker-red for Music Videos. CSS vars (`--jmatv-scroll-fill`, `--jmatv-scroll-accent`) set inline on the scroller pass the active channel's palette into both the Firefox (`scrollbar-color`) and WebKit (`::-webkit-scrollbar-thumb`) branches.
+- Track: dark gradient with a subtle vertical-line pattern + soft cream border — reads like film-strip frame edges.
+- Thumb: chunky 12 px tall, pill-shaped, JMA-dark outline, with inset highlights for a cartoon-glossy 3D look. Brightness shifts on hover/active for tactile feedback.
+- Runtime verified: `scrollWidth: 1636 / clientWidth: 896` (so it does overflow), `scrollbar-color` applied = `rgb(255, 149, 0) rgba(255, 231, 194, 0.12)` ✓.
+
+### Autoplay-with-sound on home RetroTV — explained, not fixed
+- This is a **browser policy**, not a Vimeo setting. Chrome / Safari / Firefox all block `autoplay` of media WITH audio when there hasn't been a user gesture on the page yet. Vimeo's `background=1` flag is specifically the "muted ambient autoplay" mode — the only reliable way to get the preview to actually start playing without a manual tap.
+- If we removed the `muted=1` / `background=1`, the iframe would just show a black screen with a play icon until the kid taps — defeating the purpose of the ambient TV vibe.
+- The episode page (`/jmatv/:channel/:ep`) loads with `autoplay=1` (no muted flag); that page is reached via a tap, so the browser allows sound. So sound DOES work once they pick an episode.
+
+### Files touched
+- `src/data/jmatv.js` — 3 character-icon swaps.
+- `src/pages/JMAtvHomePage.js` — desktop card layout, removed aspect-ratio, two-column flex body.
+- `src/pages/JMAtvPlayerPage.js` — custom retro scrollbar via CSS vars + `<style>` block.
+
+
 ## Feb 21, 2026 (continued) — JMAtv (TV channel) shipped
 
 User: *"Ok I want another place to go - JMAtv!!! I'll upload Jelly of the Month Club and JMA music videos, puns with Finn Danger, and Fun Facts for kids."*
