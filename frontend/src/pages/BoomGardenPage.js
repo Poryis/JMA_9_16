@@ -50,7 +50,7 @@ const MODES = [
     color: '#4285F4',
     accent: '#1A4FAB',
     bg: 'assets/backgrounds/recording-studio.jpg',
-    character: 'assets/characters/dr-jellybone.png',
+    character: 'assets/characters/stew.png',
     charWidthPct: 36,
     howToPlay: [
       { icon: '👂', text: 'Listen to Stew play the rhythm.' },
@@ -111,96 +111,89 @@ function threeDistinctPatterns(level) {
   return pool.slice(0, 3);
 }
 
-// JMA-style mode-picker tile, modelled on SubMenuPage but triggers local
-// state instead of navigating.
+// Clean JMAtv-style mode tile: solid mode-color bg, small badge top-left,
+// title + blurb left column, character art right column. Replaces the older
+// full-bleed scene cards which felt visually crowded next to the new
+// homepage / JMAtv aesthetic.
 function ModeTile({ mode, index, onPick }) {
   return (
     <motion.button
       type="button"
       data-testid={`boom-mode-${mode.id}`}
       onClick={() => onPick(mode.id)}
-      className="relative w-full text-left rounded-3xl border-4 overflow-hidden cursor-pointer"
-      style={{
-        borderColor: 'var(--jma-dark)',
-        boxShadow: '0 8px 0 0 var(--jma-dark)',
-        background: mode.color,
-        minHeight: 'clamp(220px, 36vw, 280px)',
-      }}
-      initial={{ y: 40, opacity: 0, rotate: index % 2 === 0 ? -1.5 : 1.5 }}
-      animate={{ y: 0, opacity: 1, rotate: 0 }}
+      className="relative w-full text-left rounded-3xl bg-transparent border-0 p-0 cursor-pointer"
+      initial={{ y: 40, opacity: 0, scale: 0.95 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ delay: 0.12 + index * 0.08, type: 'spring', stiffness: 220 }}
-      whileHover={{ y: -6, boxShadow: '0 14px 0 0 var(--jma-dark)', scale: 1.01 }}
-      whileTap={{ y: 3, boxShadow: '0 4px 0 0 var(--jma-dark)', scale: 0.985 }}
+      whileHover={{ y: -4, scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
     >
-      {/* Background scene */}
       <div
-        className="absolute inset-0"
+        className="relative rounded-3xl overflow-hidden flex flex-col"
         style={{
-          backgroundImage: `url(${mode.bg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          background: mode.color,
+          border: '5px solid var(--jma-dark)',
+          boxShadow: `0 10px 0 0 ${mode.accent}, 0 13px 0 0 var(--jma-dark)`,
+          minHeight: 230,
+          padding: 'clamp(14px, 2.6vw, 22px)',
+          color: 'white',
         }}
-      />
-      {/* Tint for legibility */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, ${mode.color}77 0%, ${mode.accent}33 55%, transparent 100%)`,
-        }}
-      />
-      {/* Sign nameplate */}
-      <div className="absolute top-3 left-3 z-10">
-        <div
-          className="px-3 py-1 rounded-full border-3 inline-block"
-          style={{
-            backgroundColor: 'white',
-            borderColor: 'var(--jma-dark)',
-            boxShadow: '0 3px 0 0 var(--jma-dark)',
-          }}
-        >
+      >
+        {/* Small badge top-left — sign nameplate slimmed down to match the
+            JMAtv tile language. */}
+        <div className="flex items-center gap-2">
           <span
-            className="text-[10px] md:text-xs font-black uppercase tracking-widest"
-            style={{ color: mode.accent }}
+            className="rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em]"
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.92)',
+              color: mode.accent,
+              letterSpacing: '0.18em',
+            }}
           >
             {mode.sign}
           </span>
         </div>
+
+        <div className="flex-1 flex items-stretch relative mt-3 gap-3">
+          {/* Text column — title + blurb. */}
+          <div className="relative flex-1 min-w-0 flex flex-col justify-end">
+            <h2
+              className="font-black font-display leading-none"
+              style={{
+                fontSize: 'clamp(24px, 3.6vw, 36px)',
+                color: 'white',
+                textShadow: `2px 2px 0 ${mode.accent}, 4px 4px 0 var(--jma-dark)`,
+              }}
+            >
+              {mode.label}
+            </h2>
+            <p className="text-xs md:text-sm font-bold mt-2 opacity-95 leading-snug">
+              {mode.blurb}
+            </p>
+          </div>
+
+          {/* Character host column — fixed share so art never overlaps text. */}
+          {mode.character && (
+            <div className="relative flex-shrink-0" style={{ width: '40%' }}>
+              <img
+                src={mode.character}
+                alt=""
+                aria-hidden="true"
+                draggable={false}
+                loading="lazy"
+                className="absolute object-contain pointer-events-none select-none"
+                style={{
+                  right: 'clamp(-12px, -1vw, -6px)',
+                  bottom: -10,
+                  width: '125%',
+                  maxHeight: '135%',
+                  filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.3))',
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
-      {/* Title + tagline */}
-      <div className="absolute left-4 md:left-5 bottom-3 md:bottom-4 right-[42%] z-10">
-        <h2
-          className="text-xl md:text-2xl font-black font-display leading-tight mb-1"
-          style={{
-            color: 'white',
-            textShadow: '2px 2px 0 rgba(10,37,64,0.85), 4px 4px 0 rgba(10,37,64,0.35)',
-          }}
-        >
-          {mode.label}
-        </h2>
-        <p
-          className="text-xs md:text-sm font-bold leading-snug"
-          style={{ color: 'white', textShadow: '1px 1px 0 rgba(10,37,64,0.7)' }}
-        >
-          {mode.blurb}
-        </p>
-      </div>
-      {/* Character */}
-      <motion.img
-        src={mode.character}
-        alt=""
-        draggable={false}
-        loading="lazy"
-        className="absolute right-2 bottom-0 pointer-events-none select-none z-10"
-        style={{
-          width: `${mode.charWidthPct}%`,
-          height: '92%',
-          objectFit: 'contain',
-          objectPosition: 'bottom right',
-          filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.45))',
-        }}
-        animate={{ y: [0, -6, 0], rotate: 0 }}
-        transition={{ y: { repeat: Infinity, duration: 2.4, ease: 'easeInOut' } }}
-      />
     </motion.button>
   );
 }
