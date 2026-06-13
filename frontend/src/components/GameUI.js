@@ -10,11 +10,13 @@ function GameHeader({ title, score, streak, showHomeButton = true, backLink = nu
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-2 md:px-4 py-1 md:py-3 pointer-events-none">
       <div className="max-w-7xl mx-auto flex items-start justify-between gap-2">
-        {/* Home button + optional Back-to-parent chip stacked left. The Back
-            chip is small and sits just below the Home tile so the kid has
-            two clear escape hatches: "all the way home" + "one level up". */}
+        {/* Home button + optional Back-to-parent chip. On mobile, lay
+            them out side-by-side (icon+label column + chip column) so
+            the header's vertical footprint stays compact and doesn't
+            overlap page content. On desktop where headers have more
+            room, the back chip stacks below the Home tile. */}
         {(showHomeButton || backLink) && (
-          <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+          <div className="flex flex-row md:flex-col items-end md:items-center gap-1.5 md:gap-1.5 flex-shrink-0">
             {showHomeButton && (
               <motion.button
                 data-testid="home-button"

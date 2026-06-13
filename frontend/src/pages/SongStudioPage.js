@@ -340,7 +340,7 @@ export default function SongStudioPage() {
       <GameHeader title="Charlie's Song Studio" showHomeButton={true} backLink={{ to: '/create', label: 'Create' }} />
       <FullscreenButton />
 
-      <main className="relative z-10 flex-1 flex flex-col items-center pt-14 md:pt-20 pb-3 md:pb-6 px-2 md:px-3 max-w-4xl mx-auto w-full">
+      <main className="relative z-10 flex-1 flex flex-col items-center pt-20 md:pt-20 pb-3 md:pb-6 px-2 md:px-3 max-w-4xl mx-auto w-full">
 
         {/* Unified frosted "studio console" — calms the busy bg by grouping
             all the controls inside one cohesive surface */}

@@ -178,7 +178,7 @@ export default function StickerBookPage() {
 
       <FullscreenButton />
 
-      <main className="flex-1 pt-16 pb-10 px-3 md:px-6 max-w-6xl mx-auto w-full">
+      <main className="flex-1 pt-20 pb-10 px-3 md:px-6 max-w-6xl mx-auto w-full">
         {/* Rank badge with progress meter inside it */}
         <div className="flex justify-center mt-4 mb-6">
           <RankBadge showProgress clickable={false} />

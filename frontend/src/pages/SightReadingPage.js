@@ -359,7 +359,7 @@ export default function SightReadingPage() {
       <GameHeader title={`Sight-Read · ${level.name}`} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <RoomCharacters room="sight-reading" />
 
-      <main className="flex-1 flex flex-col items-center pt-16 md:pt-20 pb-6 px-3">
+      <main className="flex-1 flex flex-col items-center pt-20 md:pt-20 pb-6 px-3">
         {/* Progress dots — one per card in the run */}
         <div className="flex items-center justify-center gap-2 mb-3" data-testid="card-progress-dots">
           {Array.from({ length: CARDS_PER_RUN }).map((_, i) => {

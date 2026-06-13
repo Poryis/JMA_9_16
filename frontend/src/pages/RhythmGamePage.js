@@ -431,7 +431,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     const topScores = getTopScores(5);
     return (
       <div
-        className="min-h-screen flex flex-col items-center px-3 pt-16 md:pt-20 pb-6 relative"
+        className="min-h-screen flex flex-col items-center px-3 pt-20 md:pt-20 pb-6 relative"
         data-testid="rhythm-game-menu"
         style={{
           background: 'linear-gradient(180deg, #BCE5F2 0%, #E5F2F8 55%, #FFEEC5 100%)',

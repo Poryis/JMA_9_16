@@ -273,7 +273,7 @@ export default function NoteMatchPage() {
       <GameHeader title={`Note Match · ${level.name}`} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <RoomCharacters room="note-match" />
 
-      <main className="flex-1 flex flex-col items-center pt-16 md:pt-20 pb-6 px-3">
+      <main className="flex-1 flex flex-col items-center pt-20 md:pt-20 pb-6 px-3">
         {/* HUD chips */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
           <div
