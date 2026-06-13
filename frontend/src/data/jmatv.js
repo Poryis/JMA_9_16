@@ -45,11 +45,16 @@ export const JMATV_CHANNELS = [
     icon: 'assets/characters/finn-danger.png',
     badgeBg: '#D7E4FF',
     episodes: [
-      // Placeholder — gets populated when the user uploads Pun videos. Keeps
-      // the channel tile visible so kids see "Coming Soon" instead of a
-      // suddenly-appearing channel later (less jarring).
+      // Short pun bits — auto-numbered so the punchline stays a surprise.
+      // The user's batch had Pun #3's URL repeated; deduped to 7 unique IDs.
+      { vimeoId: '1200946368', title: 'Pun #1' },
+      { vimeoId: '1200946258', title: 'Pun #2' },
+      { vimeoId: '1200946257', title: 'Pun #3' },
+      { vimeoId: '1200946256', title: 'Pun #4' },
+      { vimeoId: '1200946167', title: 'Pun #5' },
+      { vimeoId: '1200946168', title: 'Pun #6' },
+      { vimeoId: '1200946169', title: 'Pun #7' },
     ],
-    comingSoon: true,
   },
   {
     id: 'jma-music-videos',
