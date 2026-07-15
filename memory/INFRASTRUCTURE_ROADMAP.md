@@ -8,7 +8,7 @@
 
 ## 🎯 Guiding Principles for Future Agents
 
-1. **User does NOT want Emergent to host the production app.** They will self-host externally.
+1. **User does NOT want Emergent to host the production app.** They will self-host externally. *(Note: This is user preference, NOT a technical constraint. Emergent hosting does not add any branding/watermark to deployed apps — confirmed with Emergent support. If user ever reconsiders, hosting cost is ~50 credits/month with full custom-domain and no-attribution branding.)*
 2. **The user owns the code.** Every piece we build is portable.
 3. **Do not introduce backend/auth/payment code until user gives explicit go-ahead.** They want to playtest the frontend-only version with real teachers first.
 4. **All child-facing UX must remain COPPA/FERPA-friendly by design.** No PII beyond first name + last initial. Teachers own accounts; kids log in via class code.
