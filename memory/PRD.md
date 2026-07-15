@@ -11,6 +11,10 @@ The experience should evoke PBS Kids / Nintendo / Rhythm Heaven warmth — playf
 - **Tagline**: "Where music friends play together"
 - **HTML title**: `Jelly of the Month Club Music Academy (JMA)`
 
+## 📎 Companion Documents (READ FIRST)
+- **`/app/memory/INFRASTRUCTURE_ROADMAP.md`** — Long-term hosting/backend/payment strategy. User plans to self-host (GitHub Pages + Railway + MongoDB Atlas + Stripe). **DO NOT begin backend/auth/payment work until user explicitly says so.** Currently in polish + teacher-playtest phase.
+- **`/app/memory/CHANGELOG.md`** — Running log of recent changes.
+
 ## Six Academy Destinations (rooms)
 Replacing the legacy "6 mode tiles" grid with rich room-card destinations on the home page:
 
