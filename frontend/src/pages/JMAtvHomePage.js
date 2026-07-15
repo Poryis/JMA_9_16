@@ -44,7 +44,7 @@ function ChannelTile({ channel, index, onClick }) {
         <div className="flex items-center gap-2">
           <Tv className="w-5 h-5" style={{ opacity: 0.9 }} />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ opacity: 0.85 }}>
-            JMAtv • Channel {index + 1}
+            JMAtv
           </span>
         </div>
 
@@ -143,7 +143,7 @@ export default function JMAtvHomePage() {
           }}
         />
         <p className="text-sm md:text-base font-bold mt-2" style={{ color: '#FFE7C2' }}>
-          Pick a channel. Hit play. Hang out.
+          Pick something. Hit play. Hang out.
         </p>
       </motion.div>
 

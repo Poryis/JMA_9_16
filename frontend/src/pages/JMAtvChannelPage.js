@@ -97,7 +97,7 @@ export default function JMAtvChannelPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-6 text-center">
         <div>
-          <h1 className="text-2xl font-black mb-3">Channel not found</h1>
+          <h1 className="text-2xl font-black mb-3">Not found</h1>
           <button
             data-testid="jmatv-channel-notfound-back"
             className="mt-2 px-4 py-2 rounded-full bg-yellow-400 text-gray-900 font-black"

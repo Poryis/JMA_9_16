@@ -250,7 +250,7 @@ export default function JMAtvPlayerPage() {
               className="text-[11px] font-black tracking-[0.18em] uppercase"
               style={{ color: '#FFE7C2', textShadow: '1px 1px 0 #3F2A14' }}
             >
-              JMAtv • CH {channel.id === 'fun-facts' ? '1' : channel.id === 'puns-finn-danger' ? '2' : '3'}
+              JMAtv
             </span>
             <div className="flex items-center gap-1.5">
               {[0, 1].map((i) => (

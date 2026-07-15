@@ -1,70 +1,56 @@
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Volume2 } from 'lucide-react';
 import HarpIcon from './HarpIcon';
-import BackButton from './BackButton';
 
-function GameHeader({ title, score, streak, showHomeButton = true, backLink = null }) {
+function GameHeader({ title, score, streak, showHomeButton = true }) {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // The harp button now acts as a "Back" button (browser history back)
+  // rather than a hard-coded jump to Home. On the actual home page ("/")
+  // we hide it entirely so kids don't accidentally back out of the app.
+  const isOnHome = location.pathname === '/';
+  const renderBackButton = showHomeButton && !isOnHome;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-2 md:px-4 py-1 md:py-3 pointer-events-none">
       <div className="max-w-7xl mx-auto flex items-start justify-between gap-2">
-        {/* Home button + optional Back-to-parent chip. On mobile, lay
-            them out side-by-side (icon+label column + chip column) so
-            the header's vertical footprint stays compact and doesn't
-            overlap page content. On desktop where headers have more
-            room, the back chip stacks below the Home tile. */}
-        {(showHomeButton || backLink) && (
+        {renderBackButton && (
           <div className="flex flex-row md:flex-col items-end md:items-center gap-1.5 md:gap-1.5 flex-shrink-0">
-            {showHomeButton && (
-              <motion.button
-                data-testid="home-button"
-                aria-label="Home"
-                onClick={() => navigate('/')}
-                className="group flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer pointer-events-auto"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95, y: 2 }}
+            <motion.button
+              data-testid="back-button"
+              aria-label="Back"
+              onClick={() => navigate(-1)}
+              className="group flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer pointer-events-auto"
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95, y: 2 }}
+            >
+              <div
+                className="rounded-xl md:rounded-2xl border-2 md:border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] md:shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow w-12 h-12 md:w-20 md:h-20 overflow-hidden"
+                style={{
+                  backgroundColor: 'var(--jma-dark)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                }}
               >
-                <div
-                  className="rounded-xl md:rounded-2xl border-2 md:border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] md:shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow w-12 h-12 md:w-20 md:h-20 overflow-hidden"
-                  style={{
-                    backgroundColor: 'var(--jma-dark)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    // Negative padding (via padding: 0 on the wrapper plus
-                    // a scale-up inside) lets the JMA harp punch right out
-                    // to the chunky border, taking ~95 % of the visible
-                    // surface instead of the previous ~80 %. User
-                    // specifically asked for a bigger harp inside the
-                    // same-size button.
-                    padding: 0,
-                  }}
-                >
-                  <div style={{ width: '118%', height: '118%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <HarpIcon />
-                  </div>
+                <div style={{ width: '118%', height: '118%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <HarpIcon />
                 </div>
-                <span
-                  className="text-[10px] md:text-sm font-black uppercase tracking-wide mt-1 px-2 md:px-2.5 rounded-full"
-                  style={{
-                    color: 'white',
-                    backgroundColor: 'var(--jma-dark)',
-                    textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
-                  }}
-                >
-                  Home
-                </span>
-              </motion.button>
-            )}
-            {backLink && (
-              <BackButton
-                to={backLink.to}
-                label={backLink.label}
-                testId={backLink.testId || 'header-back-button'}
-              />
-            )}
+              </div>
+              <span
+                className="text-[10px] md:text-sm font-black uppercase tracking-wide mt-1 px-2 md:px-2.5 rounded-full"
+                style={{
+                  color: 'white',
+                  backgroundColor: 'var(--jma-dark)',
+                  textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
+                }}
+              >
+                Back
+              </span>
+            </motion.button>
           </div>
         )}
 

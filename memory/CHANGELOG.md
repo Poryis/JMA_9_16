@@ -1,5 +1,44 @@
 # Changelog
 
+## Feb 22, 2026 — Nav simplification, iOS silent-switch bypass, JMAtv copy cleanup
+
+User feedback (3-item batch): *"For apple devices... they have to turn the ringer on for the app to work. I want to replace navigation to only have back. Keep the harp, but have it say back instead of home. For JMAtv, can we get rid of the word channel wherever it appears."*
+
+### iOS Ring/Silent switch bypass (`src/hooks/useAudioUnlock.js`, `public/assets/audio/silence.wav`)
+- **Root cause**: iOS Safari respects the physical mute switch for Web Audio API by default — kids with the ringer OFF hear nothing from the bells, drums, kazoos, etc.
+- **Fix**: On the very first user gesture (via the existing `AudioUnlockOverlay` OR any page-wide pointerdown), we now also start a background HTMLAudioElement that loops a 2-second silent WAV at `volume: 0.001`. iOS reclassifies the tab's audio session as `AVAudioSessionCategoryPlayback`, which ignores the mute switch. Web Audio then plays regardless of switch position.
+- **Persistence**: The silent-audio element is held in a module-level ref so it survives StrictMode double-mounts and route changes without garbage-collection. A second `useEffect` primes the loop on refresh/deep-link visits (where session is already unlocked but the audio element hasn't been created yet).
+- **Zero user-visible change**: No new UI, no audible artifact, no battery hit worth measuring.
+
+### Nav: harp → Back (`src/components/GameUI.js`)
+- Harp button label swapped from **"Home"** → **"Back"**.
+- Behavior swapped from `navigate('/')` → `navigate(-1)` (browser history back).
+- `aria-label` and `data-testid` renamed to `back-button` accordingly.
+- On the actual home route (`/`), the harp is now hidden entirely so kids can't accidentally back out of the app.
+- Removed the secondary `BackButton` chip that used to sit beside the harp — one Back control instead of two. The `backLink` prop is now ignored; callers can leave it in place harmlessly.
+
+### JMAtv: drop the word "channel" (`pages/JMAtvHomePage.js`, `pages/JMAtvChannelPage.js`, `pages/JMAtvPlayerPage.js`)
+- Home tagline: *"Pick a channel. Hit play. Hang out."* → *"Pick something. Hit play. Hang out."*
+- Tile subtitle: *"JMAtv • Channel {n}"* → just **"JMAtv"** on each tile.
+- Player CRT chassis: *"JMAtv • CH 1/2/3"* → just **"JMAtv"** on the retro TV controls strip.
+- Error state: *"Channel not found"* → *"Not found"*.
+
+### Files touched
+- `src/hooks/useAudioUnlock.js` — added silent-audio-loop mechanic on top of the existing WebAudio unlock.
+- `src/components/GameUI.js` — harp behavior + label; removed BackButton dependency.
+- `src/pages/JMAtvHomePage.js` — tagline + tile subtitle copy.
+- `src/pages/JMAtvChannelPage.js` — error copy.
+- `src/pages/JMAtvPlayerPage.js` — CRT chassis label copy.
+- `public/assets/audio/silence.wav` — new 2 s silent WAV (~32 KB) used by the ring-off bypass.
+
+### Verified
+- Home page (`/`): no back button rendered. ✅
+- Rhythm Arcade (`/rhythm-game`): back button visible labeled **BACK**. ✅
+- JMAtv home (`/jmatv`): zero occurrences of "channel" in visible text; tagline reads *"Pick something. Hit play. Hang out."* ✅
+- Lint: clean across all touched files.
+
+---
+
 ## Feb 21, 2026 (continued) — JMAtv polish: hosts, desktop layout, custom scrollbar
 
 User feedback: *"can we have Puns with Finn Danger have Finn as the hero, Fun Facts have professor Charlie, and JMA Music Videos have Llama Lou. Also the cards are weird on desktop now. Stuff is all cut off. And the scroll bar can we have it look cooler"*
