@@ -1,7 +1,11 @@
-// Stew's Rhythm Academy — a rhythm-reading room with three modes:
-//   - Echo Stew    (echo): Doc claps a rhythm; kid hits the snare to copy it.
-//   - Beat Finder  (match): Three patterns shown; kid picks the one they hear.
-//   - Rhythm Run   (read): Pattern is shown; kid reads + plays it in time.
+// Who's Got the Rhythm — a rhythm-reading room with three modes:
+//   - Parrot Percussion (echo): Stew claps a rhythm; kid hits the snare to copy it.
+//   - Beat Finder      (match): Three patterns shown; kid picks the one they hear.
+//   - Rhythm Run       (read):  Pattern is shown; kid reads + plays it in time.
+//
+// Renamed Feb 2026: this room used to be "Stew's Rhythm Academy". The
+// original "Who's Got the Rhythm?" falling-notes game is now called
+// "Jelly Jukebox" and lives under Play.
 //
 // All three modes share a steady hi-hat click track so the kid always has a
 // beat to lock into — and so audio-identical-without-metronome patterns like
@@ -44,12 +48,12 @@ const TEMPOS = [
 const MODES = [
   {
     id: 'copy',
-    label: 'Echo Stew',
-    blurb: 'Stew plays it. You echo it back on the snare.',
-    sign: 'ECHO STEW',
+    label: 'Parrot Percussion',
+    blurb: 'Stew plays. You play it back.',
+    sign: 'PARROT PERCUSSION',
     color: '#4285F4',
     accent: '#1A4FAB',
-    bg: 'assets/backgrounds/recording-studio.jpg',
+    bg: 'assets/backgrounds/football-field.png',
     character: 'assets/characters/stew.png',
     charWidthPct: 36,
     howToPlay: [

@@ -164,7 +164,7 @@ export default function JMAtvChannelPage() {
             Coming soon!
           </h3>
           <p className="text-sm font-bold" style={{ color: '#FFE7C2' }}>
-            Fresh episodes are on the way. Check the other channels in the meantime.
+            Fresh episodes are on the way. Check the other shows in the meantime.
           </p>
         </motion.div>
       ) : (
