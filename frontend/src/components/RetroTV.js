@@ -36,7 +36,7 @@ export default function RetroTV() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
     >
-      {/* "Now on JMAtv" header — small, low-key — sells the click without
+      {/* "Streaming now" header — small, low-key — sells the click without
           screaming for attention. */}
       <div className="flex items-center gap-2 mb-2">
         <span
@@ -53,7 +53,7 @@ export default function RetroTV() {
           className="text-[10px] md:text-xs font-black uppercase tracking-widest"
           style={{ color: 'var(--jma-dark)', opacity: 0.75 }}
         >
-          Now on JMAtv
+          Streaming Now
         </span>
       </div>
 
@@ -206,14 +206,16 @@ export default function RetroTV() {
             />
           </div>
 
-          {/* TV controls strip below the screen — speaker grille + knobs +
-              "JMAtv" channel label. */}
+          {/* TV controls strip below the screen — speaker grille + knobs.
+              The "JMAtv" channel label used to live here but reads redundantly
+              alongside the JMAtv brand-bug on the CRT itself, so it's been
+              removed. Keeping the speaker grille wider absorbs its space. */}
           <div className="flex items-center justify-between mt-2 px-1">
-            {/* Speaker grille */}
+            {/* Speaker grille — widened now that the channel label is gone. */}
             <div
               aria-hidden="true"
               style={{
-                width: '52%',
+                width: '72%',
                 height: 18,
                 borderRadius: 4,
                 background:
@@ -221,16 +223,6 @@ export default function RetroTV() {
                 border: '1.5px solid #3F2A14',
               }}
             />
-            {/* Channel label */}
-            <span
-              className="text-[10px] font-black tracking-[0.18em] uppercase"
-              style={{
-                color: '#FFE7C2',
-                textShadow: '1px 1px 0 #3F2A14',
-              }}
-            >
-              JMAtv
-            </span>
             {/* Knobs */}
             <div className="flex items-center gap-1.5">
               {[0, 1].map((i) => (

@@ -283,7 +283,6 @@ export default function SongStudioPage() {
     setSongs(next);
     setShowSaveModal(false);
     setShowCelebration(true);
-    try { earnSticker('songwriter'); } catch { /* ignore */ }
     // ✍️ Song Creator achievements
     try {
       // Cadet: first saved song

@@ -247,8 +247,6 @@ function LoopStudioPage() {
       setCurrentStep(-1);
     } else {
       setIsPlaying(true);
-      // Sticker: kid played a loop
-      earnSticker('ach_beat_maker');
       // 🥁 Beat Builder achievement — playing any loop = Cadet
       earnAchievement('beat', 'cadet');
       // Count active tracks (any track with at least one hit) for the Pro tier

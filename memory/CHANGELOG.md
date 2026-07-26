@@ -1,5 +1,95 @@
 # Changelog
 
+## Feb 22, 2026 (evening) — World overhaul: JELLY JUKEBOX / WHO'S GOT THE RHYTHM rename, NES-cartridge cards, cascade Lessons
+
+User feedback (huge batch): rename swap between two rhythm games, kill sign nameplates + taglines, all-caps NES-cartridge titles, cascade lessons layout, 4th JMAtv channel, streaming-now bug, broken stickers audit.
+
+### 🔴 Critical name swap
+- **"Who's Got the Rhythm?"** (falling-notes game at `/rhythm-game`) → **"JELLY JUKEBOX"** (disco-themed with rainbow-glow title, dark purple/violet radial-gradient background, Lou-disco character on the PLAY tile).
+- **"Stew's Rhythm Academy"** (rhythm-reading rooms at `/boom-garden`) → **"WHO'S GOT THE RHYTHM"** (updated the two `GameHeader` titles and the file's top-of-file comment).
+- **"Echo Stew"** mode → **"PARROT PERCUSSION"** with new tagline *"Stew plays. You play it back."*
+- All achievement hints, migration doorway comments, `useNextMission` CTA copy updated.
+- Sticker hints referencing "Rhythm Arcade" → "Jelly Jukebox".
+
+### 🎮 NES-cartridge card overhaul (`components/SubMenuPage.js`, all three menu pages)
+- Removed the `GAME` / `LESSONS` / `STUDIO` sign nameplate that used to sit in the top-left corner of every tile.
+- Removed the speech-bubble mini-callouts ("Find the pairs!", "Repeat after me!", etc.).
+- Removed all taglines ("Catch the falling notes!", "Watch, listen, then play it back!", etc.).
+- Titles are now massive ALL-CAPS with chunky JMA-dark stroke, multi-color drop-shadow, letter-tracking — reads like Super Mario Bros. cartridge art at a glance.
+- Section headers (`PLAY` / `LEARN` / `CREATE`) got the same treatment — 5xl → 7xl, 6px chunky stroke, sectionColor secondary shadow layer, plus a JMA-dark pill for the subtitle so it stays legible on light gradient backgrounds.
+- Removed "Coming Soon" was already in the older card — kept intact.
+
+### 🎈 Lou blimp on all three sub-worlds
+- Extracted the `BlimpFlyby` component from `HomePage.js` into a shared `components/BlimpFlyby.js`.
+- HomePage keeps using it. Play / Learn / Create now render it too via `SubMenuPage`, so the sky feels continuous across the app.
+
+### 📚 Lessons page — cascade layout (`pages/LessonsPage.js`)
+- Ripped out the square grid.
+- New layout: vertical stacked cards, each 480 px wide max, alternating left/right nudges (±18 px) so the eye travels down a diagonal path.
+- Each card: big number badge on the left, lesson title (real name now — TALKIN' BOUT TEMPO / NOTES MCGOTES / SEAHORSE SIESTA / WHO'S GOT THE RHYTHM / HIGH N LOW / DOUGH IS IN PIZZA / JELLY JAMBOREE) on the right in ALL CAPS, status badge (locked/unlocked/watched) at the far right.
+- Chalkboard background retained until the user provides the Charlie-behind-podium art.
+
+### 📺 JMAtv (`data/jmatv.js`, `pages/JMAtvHomePage.js`, `pages/JMAtvPlayerPage.js`)
+- Channel titles rewritten to ALL CAPS: **FUN FACTS**, **PUNS WITH FINN DANGER**, **JMA MUSIC VIDEOS**.
+- Added **4th channel: VARIETY SHOW** — purple palette, `jelly-rap-trio.png` host, empty episodes list. Falls through the existing `Coming soon!` state on the channel page automatically.
+- Fixed episode title typo: **"Do is in Pizza"** → **"Dough is in Pizza"** (Music Videos).
+- Home tagline still "Pick something. Hit play. Hang out."
+
+### 🏠 Homepage RetroTV (`components/RetroTV.js`)
+- "Now on JMAtv" header pill → **"STREAMING NOW"**.
+- Removed the "JMAtv" channel label from the CRT's lower controls strip (redundant with the JMAtv brand-bug on the TV screen itself). Speaker grille widened from 52% → 72% to absorb the freed space.
+
+### 🎯 Boom Garden / Who's Got the Rhythm room (`pages/BoomGardenPage.js`)
+- Mode-picker page background swapped from the pastel radial-gradient to `football-field.png` (per user's "football field on all cards" direction).
+- All three mode cards now share the football-field background with color-tinted overlays so each mode still reads its own hue (BLUE Parrot Percussion / GREEN Beat Finder / ORANGE Rhythm Run).
+- Removed the tiny `sign` nameplate from mode tile top-left.
+- Titles bumped: bigger, all-caps, chunky stroke, mode-accent shadow + JMA-dark secondary shadow (matches the PLAY/LEARN/CREATE cards).
+- Removed the mode blurb text under each title — cleaner, more cartridge-like.
+- "Three rhythm games. Pick your jam." → just **"Pick your jam."**.
+- Fixed a lingering syntax-corruption issue at the bottom of the file (leftover JSX from an earlier session's search-replace that hadn't cleaned up).
+
+### 🐛 Broken stickers audit
+Found 5 sticker IDs that were being called via `earnSticker(...)` but not defined in `stickers.js` — they silently no-oped (the `STICKER_MAP` guard returned false). Each one had a valid `earnAchievement(...)` call already sitting right next to it doing the real work, so removed the dead calls:
+- `ach_beat_maker` (LoopStudioPage) → still triggers `earnAchievement('beat', 'cadet')`.
+- `ach_ear_trainer` (EarTrainerPage) → still triggers `earnAchievement('ear', 'cadet')`.
+- `ach_simon_5` (SimonSaysPage) → still triggers `earnAchievementUpTo('keyboard', 'pro')` at level ≥ 4.
+- `ach_song_5` (RhythmGamePage) → replaced with `earnAchievement('rhythm', 'cadet')` on 5-song milestone.
+- `songwriter` (SongStudioPage) → still triggers `earnAchievement('song', 'cadet')`.
+
+The `MIGRATION_MAP` in `useStickers.js` still lists these IDs so any kid who earned them under the pre-guard version of the code still gets the corresponding achievement on next load.
+
+### Files touched
+- `components/BlimpFlyby.js` (new — extracted from HomePage).
+- `components/SubMenuPage.js` (rewrite — NES cartridge tile).
+- `components/RetroTV.js` (Streaming Now + label removal).
+- `pages/HomePage.js` (uses shared BlimpFlyby).
+- `pages/PlayMenuPage.js` (rewrite — JELLY JUKEBOX, no taglines/signs).
+- `pages/LearnMenuPage.js` (rewrite — WHO'S GOT THE RHYTHM, no taglines/signs).
+- `pages/CreateMenuPage.js` (rewrite — all caps, no taglines/signs).
+- `pages/LessonsPage.js` (rewrite — vertical cascade).
+- `pages/RhythmGamePage.js` (JELLY JUKEBOX title, disco palette, dead sticker call removed).
+- `pages/BoomGardenPage.js` (WHO'S GOT THE RHYTHM, PARROT PERCUSSION, football-field bg, mode tile cleanup, syntax fix).
+- `pages/LoopStudioPage.js` (dead sticker call removed).
+- `pages/EarTrainerPage.js` (dead sticker call removed).
+- `pages/SimonSaysPage.js` (dead sticker call removed).
+- `pages/SongStudioPage.js` (dead sticker call removed).
+- `data/jmatv.js` (all caps titles, VARIETY SHOW added, Dough is in Pizza fixed).
+- `data/lessons.js` (real subtitles).
+- `data/achievements.js` (hint copy refresh).
+- `data/stickers.js` (hint copy refresh).
+- `hooks/useNextMission.js` (CTA copy).
+
+### Not yet done (deferred to next batch per user)
+- Jelly Jukebox background scene selection.
+- Drum-major outfits for every hero on the Who's-Got-the-Rhythm cards.
+- Charlie-behind-podium curtain background for Lessons.
+- Hold-spacebar-for-longer-note-values in Who's Got the Rhythm.
+- Scoring-timing tolerance audit in Who's Got the Rhythm (needs an actual on-device play session).
+- Silly names for Puns episodes (waiting on user).
+- JMAtv logo color inconsistency (user is uploading new art).
+
+---
+
 ## Feb 22, 2026 — Nav simplification, iOS silent-switch bypass, JMAtv copy cleanup
 
 User feedback (3-item batch): *"For apple devices... they have to turn the ringer on for the app to work. I want to replace navigation to only have back. Keep the harp, but have it say back instead of home. For JMAtv, can we get rid of the word channel wherever it appears."*

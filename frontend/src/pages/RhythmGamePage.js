@@ -355,7 +355,8 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         const set = new Set(JSON.parse(localStorage.getItem('jma_songs_completed_v1') || '[]'));
         set.add(selectedSong.id);
         localStorage.setItem('jma_songs_completed_v1', JSON.stringify([...set]));
-        if (set.size >= 5) earnSticker('ach_song_5');
+        // Song Collector 5-song milestone earns Rhythm Cadet
+        if (set.size >= 5) earnAchievement('rhythm', 'cadet');
         if (set.size >= 10) earnSticker('fit_jazzy_disco');
         // Steampunk Charlie = all 5 JMA Originals cleared with 70%+ accuracy
         const jmaIds = ['jma_play_one_skip_one','jma_magic_in_music','jma_brand_new_friend','jma_faster_as_we_go','jma_goody_bag'];
@@ -431,25 +432,41 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     const topScores = getTopScores(5);
     return (
       <div
-        className="min-h-screen flex flex-col items-center px-3 pt-20 md:pt-20 pb-6 relative"
+        className="min-h-screen flex flex-col items-center px-3 pt-20 md:pt-20 pb-6 relative overflow-x-hidden"
         data-testid="rhythm-game-menu"
         style={{
-          background: 'linear-gradient(180deg, #BCE5F2 0%, #E5F2F8 55%, #FFEEC5 100%)',
+          background:
+            'radial-gradient(circle at 20% 20%, #FF6BAA33 0%, transparent 55%), ' +
+            'radial-gradient(circle at 80% 30%, #FFD93D33 0%, transparent 55%), ' +
+            'radial-gradient(circle at 50% 90%, #7EFFB833 0%, transparent 55%), ' +
+            'linear-gradient(180deg, #1B1140 0%, #3B1F5C 50%, #5A2989 100%)',
         }}
       >
-        <GameHeader showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
+        <GameHeader showHomeButton={true} />
 
-        {/* Title block */}
+        {/* Title block — JELLY JUKEBOX, disco-themed. Rainbow glow, chunky
+            stroke, big NES-cartridge presence. */}
         <motion.div
           className="text-center mb-3"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
-          <h1 className="text-3xl md:text-5xl font-black font-display leading-none" style={{ color: 'var(--jma-dark)' }}>
-            Who's Got the Rhythm?
+          <h1
+            className="text-5xl md:text-7xl font-black font-display leading-none uppercase"
+            style={{
+              color: '#FFF3A6',
+              WebkitTextStroke: 'clamp(3px, 0.5vw, 5px) #0A2540',
+              paintOrder: 'stroke fill',
+              textShadow:
+                '3px 3px 0 #FF3B9A, 5px 5px 0 #4285F4, 8px 8px 0 #FFCC00, 0 0 24px rgba(255,107,170,0.55)',
+              letterSpacing: '0.03em',
+            }}
+          >
+            Jelly Jukebox
           </h1>
-          <p className="text-xs md:text-sm mt-1 opacity-70 font-bold" style={{ color: 'var(--jma-dark)' }}>
-            Catch the notes as they fall — tap a song to play!
+          <p className="text-xs md:text-sm mt-2 font-black uppercase tracking-widest inline-block px-3 py-1 rounded-full"
+             style={{ color: '#FFF3A6', backgroundColor: 'rgba(0,0,0,0.35)', border: '2px solid #FF6BAA' }}>
+            Catch the falling notes · Boogie edition
           </p>
         </motion.div>
 

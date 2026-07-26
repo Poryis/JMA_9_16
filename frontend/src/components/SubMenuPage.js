@@ -1,14 +1,19 @@
 // Shared submenu page used by PlayMenuPage, LearnMenuPage, CreateMenuPage.
-// Renders a hero title + a grid of "destination" tiles. Each tile shows:
-//   - A background scene
-//   - A character peeking
-//   - A title + tagline
-// Layout: 1 column on mobile, 2 columns on tablet+ desktop.
+//
+// Look: NES cartridge art. Each tile is dominated by:
+//   - Full-bleed background scene
+//   - Character peeking (right side)
+//   - MASSIVE all-caps title stretched across the bottom with chunky
+//     stroke + drop-shadow for readability against any scene
+//
+// No taglines, no sign nameplates, no speech bubbles — the title carries
+// the tile.
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameHeader } from './GameUI';
+import BlimpFlyby from './BlimpFlyby';
 
 function Tile({ tile, index, navigate }) {
   const [hovered, setHovered] = useState(false);
@@ -19,13 +24,10 @@ function Tile({ tile, index, navigate }) {
     if (tile.sfx) {
       try {
         const audio = new Audio(tile.sfx);
-        // Keep the DJ scratch loud (it's the signature Beat Lab cue) — every
-        // other card click is softer so the menu navigation doesn't blast.
         audio.volume = tile.sfx.includes('sfx-dj-scratch') ? 0.85 : 0.42;
         audio.play().catch(() => { /* autoplay rejected — proceed without SFX */ });
       } catch { /* ignore */ }
     }
-    // Small delay so the SFX can ring out before the page transitions
     const delay = tile.sfx ? 220 : 0;
     setTimeout(() => navigate(tile.path), delay);
   };
@@ -42,7 +44,8 @@ function Tile({ tile, index, navigate }) {
         borderColor: 'var(--jma-dark)',
         boxShadow: `0 8px 0 0 var(--jma-dark)`,
         background: tile.color,
-        minHeight: '200px',
+        aspectRatio: '4 / 3',
+        minHeight: 220,
       }}
       initial={{ y: 40, opacity: 0, rotate: index % 2 === 0 ? -1.5 : 1.5 }}
       animate={{ y: 0, opacity: 1, rotate: 0 }}
@@ -61,87 +64,19 @@ function Tile({ tile, index, navigate }) {
           }}
         />
       )}
-      {/* Color tint for legibility - lighter so the artwork shines through */}
+
+      {/* Bottom shadow gradient so the huge title stays legible on any scene */}
       <div
-        className="absolute inset-0"
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 pointer-events-none"
         style={{
-          background: tile.bg
-            ? `linear-gradient(135deg, ${tile.color}77 0%, ${tile.accent || tile.color}22 55%, transparent 100%)`
-            : tile.color,
+          height: '55%',
+          background:
+            `linear-gradient(180deg, transparent 0%, ${tile.accent || tile.color}55 40%, rgba(10,37,64,0.72) 100%)`,
         }}
       />
 
-      {/* Nameplate */}
-      <div className="absolute top-3 left-3 z-10">
-        <div
-          className="px-3 py-1 rounded-full border-3 inline-block"
-          style={{
-            backgroundColor: 'white',
-            borderColor: 'var(--jma-dark)',
-            boxShadow: '0 3px 0 0 var(--jma-dark)',
-          }}
-        >
-          <span
-            className="text-[10px] md:text-xs font-black uppercase tracking-widest"
-            style={{ color: tile.accent || tile.color }}
-          >
-            {tile.sign || tile.title}
-          </span>
-        </div>
-      </div>
-
-      {/* Speech bubble (optional) */}
-      {tile.bubble && (
-        <motion.div
-          className="absolute z-20 px-2.5 py-1 rounded-2xl border-3 max-w-[130px]"
-          style={{
-            top: '38%',
-            right: 'clamp(34%, calc(28% + 30px), 42%)',
-            backgroundColor: 'white',
-            borderColor: 'var(--jma-dark)',
-            boxShadow: '0 3px 0 0 var(--jma-dark)',
-          }}
-          initial={{ scale: 0, x: 12 }}
-          animate={{ scale: 1, x: 0 }}
-          transition={{ delay: 0.45 + index * 0.08, type: 'spring' }}
-        >
-          <span className="text-[10px] md:text-xs font-black leading-tight block text-center" style={{ color: 'var(--jma-dark)' }}>
-            {tile.bubble}
-          </span>
-        </motion.div>
-      )}
-
-      {/* Title + tagline */}
-      <div className="absolute left-4 md:left-5 bottom-3 md:bottom-4 right-[40%] z-10">
-        <h2
-          className="text-xl md:text-2xl font-black font-display leading-tight mb-1"
-          style={{
-            color: 'white',
-            textShadow: '2px 2px 0 rgba(10,37,64,0.85), 4px 4px 0 rgba(10,37,64,0.35)',
-          }}
-        >
-          {tile.title}
-        </h2>
-        <p
-          className="text-xs md:text-sm font-bold leading-snug"
-          style={{
-            color: 'white',
-            textShadow: '1px 1px 0 rgba(10,37,64,0.7)',
-          }}
-        >
-          {tile.tagline}
-        </p>
-        {disabled && (
-          <p
-            className="mt-1 text-[10px] md:text-xs font-black uppercase tracking-wide inline-block px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: 'white', color: 'var(--jma-dark)' }}
-          >
-            Coming Soon
-          </p>
-        )}
-      </div>
-
-      {/* Primary character */}
+      {/* Primary character (right side, prominent) */}
       {tile.character && (
         <motion.img
           src={tile.character}
@@ -150,11 +85,11 @@ function Tile({ tile, index, navigate }) {
           loading="lazy"
           className="absolute right-2 bottom-0 pointer-events-none select-none z-10"
           style={{
-            width: `${tile.charWidthPct || 32}%`,
-            height: `${tile.charHeightPct || 92}%`,
+            width: `${tile.charWidthPct || 34}%`,
+            height: `${tile.charHeightPct || 88}%`,
             objectFit: tile.charObjectFit || 'contain',
             objectPosition: tile.charObjectPosition || 'bottom right',
-            filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.45))',
+            filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.55))',
           }}
           animate={hovered ? { y: -8, rotate: -3 } : { y: [0, -6, 0], rotate: 0 }}
           transition={
@@ -165,10 +100,38 @@ function Tile({ tile, index, navigate }) {
         />
       )}
 
-      {/* Enter chip */}
+      {/* NES cartridge title — huge, all-caps, chunky stroke, spans the
+          bottom of the tile so it reads even at a glance. */}
+      <div className="absolute left-3 right-3 bottom-3 md:bottom-4 z-20">
+        <h2
+          className="font-black font-display leading-[0.85] uppercase"
+          style={{
+            fontSize: 'clamp(28px, 6.2vw, 56px)',
+            color: 'white',
+            WebkitTextStroke: 'clamp(2px, 0.5vw, 4px) var(--jma-dark)',
+            paintOrder: 'stroke fill',
+            textShadow:
+              '0 3px 0 rgba(10,37,64,0.7), 0 6px 14px rgba(10,37,64,0.55)',
+            letterSpacing: '0.01em',
+            wordBreak: 'break-word',
+          }}
+        >
+          {tile.title}
+        </h2>
+        {disabled && (
+          <p
+            className="mt-1 text-[10px] md:text-xs font-black uppercase tracking-wide inline-block px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: 'white', color: 'var(--jma-dark)' }}
+          >
+            Coming Soon
+          </p>
+        )}
+      </div>
+
+      {/* Enter chip (hover-reveal, desktop only) */}
       {!disabled && (
         <motion.div
-          className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full border-2 z-10 hidden md:flex items-center gap-1"
+          className="absolute top-3 right-3 px-2.5 py-1 rounded-full border-2 z-20 hidden md:flex items-center gap-1"
           style={{ backgroundColor: 'white', borderColor: 'var(--jma-dark)' }}
           animate={hovered ? { x: 0, opacity: 1 } : { x: 20, opacity: 0 }}
           transition={{ type: 'spring' }}
@@ -195,9 +158,14 @@ export default function SubMenuPage({ sectionTitle, sectionSubtitle, sectionColo
   return (
     <div
       data-testid={testId}
-      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-8 relative"
+      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-8 relative overflow-x-hidden"
       style={{ background: bgGradient }}
     >
+      {/* Lou blimp — same drifting sky presence used on the home page so the
+          three sub-worlds feel contiguous with the lobby. Sits behind
+          everything else. */}
+      <BlimpFlyby />
+
       <GameHeader showHomeButton={true} />
 
       <motion.div
@@ -206,10 +174,12 @@ export default function SubMenuPage({ sectionTitle, sectionSubtitle, sectionColo
         animate={{ y: 0, opacity: 1 }}
       >
         <h1
-          className="text-4xl md:text-6xl font-black font-display leading-none"
+          className="text-5xl md:text-7xl font-black font-display leading-none uppercase"
           style={{
             color: 'white',
-            textShadow: `3px 3px 0 var(--jma-dark), 5px 5px 0 ${sectionColor || '#0A2540'}`,
+            WebkitTextStroke: 'clamp(3px, 0.6vw, 6px) var(--jma-dark)',
+            paintOrder: 'stroke fill',
+            textShadow: `4px 4px 0 var(--jma-dark), 7px 7px 0 ${sectionColor || '#0A2540'}, 10px 10px 24px rgba(10,37,64,0.35)`,
             letterSpacing: '0.02em',
           }}
         >
@@ -217,8 +187,12 @@ export default function SubMenuPage({ sectionTitle, sectionSubtitle, sectionColo
         </h1>
         {sectionSubtitle && (
           <p
-            className="mt-2 text-sm md:text-base font-bold"
-            style={{ color: 'white', textShadow: '1px 1px 0 rgba(10,37,64,0.6)' }}
+            className="mt-2 text-sm md:text-base font-bold uppercase tracking-wider inline-block px-3 py-1 rounded-full"
+            style={{
+              color: 'white',
+              backgroundColor: 'var(--jma-dark)',
+              boxShadow: '0 3px 0 0 rgba(0,0,0,0.35)',
+            }}
           >
             {sectionSubtitle}
           </p>

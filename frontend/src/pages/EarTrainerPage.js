@@ -114,7 +114,6 @@ function EarTrainerPage() {
       setResults(prev => {
         const next = { ...prev, correct: prev.correct + 1 };
         if (next.correct >= 5) {
-          earnSticker('ach_ear_trainer');
           // 🎧 Note Detective Cadet — scored 5 correct in Ear Quest.
           earnAchievement('ear', 'cadet');
           // Ear Master requires Pro first (from Note Match/Detective hard

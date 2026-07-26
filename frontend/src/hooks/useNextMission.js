@@ -29,7 +29,7 @@ import useStickers from './useStickers';
 // `route` is the HashRouter target. `cta` is the button verb (short).
 // `instruction` is the one-line "what to do" the kid sees on the card.
 const MISSIONS = {
-  ach_rhythm_cadet:    { route: '/rhythm-game',  cta: 'Play Rhythm Arcade', instruction: 'Hit 20 perfect notes in any song' },
+  ach_rhythm_cadet:    { route: '/rhythm-game',  cta: 'Play Jelly Jukebox', instruction: 'Hit 20 perfect notes in any song' },
   ach_rhythm_pro:      { route: '/rhythm-game',  cta: 'Chase a streak',     instruction: 'Hit a streak of 15 in any song' },
   ach_rhythm_master:   { route: '/rhythm-game',  cta: 'Try Turbo speed!',   instruction: 'Finish a song at Turbo speed' },
   ach_ear_cadet:       { route: '/detective',    cta: 'Solve a case',       instruction: 'Crack one case in Detective Dr. Jellybone' },

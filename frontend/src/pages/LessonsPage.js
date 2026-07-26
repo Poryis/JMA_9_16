@@ -1,6 +1,11 @@
 // Chalkboard-themed lessons hub. Charlie introduces 7 Vimeo lessons.
 // Each lesson tile is locked until the previous one is watched.
 // Tapping an unlocked tile → /lessons/:num where the Vimeo player lives.
+//
+// Layout: vertical stacked "cascade" — each lesson is a wide horizontal card
+// that offsets slightly left/right from the previous, so the eye travels
+// down the page like a footpath through the academy. Replaces the earlier
+// square-grid layout per the world-building direction (Feb 2026).
 
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -9,86 +14,106 @@ import { GameHeader } from '../components/GameUI';
 import { LESSONS } from '../data/lessons';
 import { useLessonsProgress } from '../hooks/useLessonsProgress';
 
-function LessonTile({ lesson, index, locked, watched, onPlay }) {
+function LessonCard({ lesson, index, locked, watched, onPlay }) {
+  // Cascade offset — alternate a subtle left/right nudge per card so the
+  // column reads like a diagonal path rather than a rigid stack.
+  const nudge = index % 2 === 0 ? -18 : 18;
+
   return (
     <motion.button
       type="button"
       data-testid={`lesson-${lesson.num}`}
       disabled={locked}
       onClick={() => !locked && onPlay(lesson.num)}
-      className={`relative rounded-2xl border-4 p-4 flex flex-col items-center text-center ${
+      className={`relative w-full rounded-3xl border-4 flex items-center gap-4 md:gap-5 text-left ${
         locked ? 'cursor-not-allowed' : 'cursor-pointer'
       }`}
       style={{
         borderColor: 'var(--jma-dark)',
-        backgroundColor: locked ? 'rgba(255,255,255,0.78)' : 'rgba(255,255,255,0.96)',
-        boxShadow: locked ? '0 4px 0 0 rgba(0,0,0,0.45)' : '0 8px 0 0 var(--jma-dark)',
-        filter: locked ? 'grayscale(0.6)' : 'none',
+        backgroundColor: locked ? 'rgba(255,255,255,0.86)' : 'rgba(255,255,255,0.98)',
+        boxShadow: locked ? '0 5px 0 0 rgba(0,0,0,0.45)' : '0 9px 0 0 var(--jma-dark)',
+        filter: locked ? 'grayscale(0.55)' : 'none',
+        padding: 'clamp(12px, 2vw, 20px)',
+        transform: `translateX(${nudge}px)`,
       }}
-      initial={{ y: 30, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.1 + index * 0.06, type: 'spring' }}
-      whileHover={!locked ? { y: -4, boxShadow: '0 12px 0 0 var(--jma-dark)' } : {}}
-      whileTap={!locked ? { y: 2, boxShadow: '0 4px 0 0 var(--jma-dark)' } : {}}
+      initial={{ y: 30, opacity: 0, x: nudge + (index % 2 === 0 ? -40 : 40) }}
+      animate={{ y: 0, opacity: 1, x: nudge }}
+      transition={{ delay: 0.08 + index * 0.06, type: 'spring', stiffness: 200 }}
+      whileHover={!locked ? { y: -3, x: nudge, boxShadow: '0 12px 0 0 var(--jma-dark)' } : {}}
+      whileTap={!locked ? { y: 2, x: nudge, boxShadow: '0 4px 0 0 var(--jma-dark)' } : {}}
     >
-      {/* Status badge top-right */}
-      <div className="absolute top-2 right-2 z-10">
-        {watched ? (
-          <div
-            className="w-8 h-8 rounded-full border-3 flex items-center justify-center"
-            style={{ backgroundColor: '#34A853', borderColor: 'var(--jma-dark)' }}
-            data-testid={`lesson-${lesson.num}-watched`}
-          >
-            <CheckCircle2 className="w-5 h-5 text-white" />
-          </div>
-        ) : locked ? (
-          <div
-            className="w-8 h-8 rounded-full border-3 flex items-center justify-center"
-            style={{ backgroundColor: '#6B7280', borderColor: 'var(--jma-dark)' }}
-            data-testid={`lesson-${lesson.num}-locked`}
-          >
-            <Lock className="w-4 h-4 text-white" />
-          </div>
-        ) : (
-          <div
-            className="w-8 h-8 rounded-full border-3 flex items-center justify-center"
-            style={{ backgroundColor: '#FFCC00', borderColor: 'var(--jma-dark)' }}
-            data-testid={`lesson-${lesson.num}-unlocked`}
-          >
-            <PlayCircle className="w-5 h-5" style={{ color: 'var(--jma-dark)' }} />
-          </div>
-        )}
-      </div>
-
-      {/* Big lesson number */}
+      {/* Big lesson number badge on the left */}
       <div
-        className="w-16 h-16 md:w-20 md:h-20 rounded-2xl border-4 flex items-center justify-center mb-2 mt-1"
+        className="flex-shrink-0 rounded-2xl border-4 flex items-center justify-center"
         style={{
+          width: 'clamp(56px, 9vw, 84px)',
+          height: 'clamp(56px, 9vw, 84px)',
           backgroundColor: locked ? '#9CA3AF' : '#34A853',
           borderColor: 'var(--jma-dark)',
           boxShadow: '0 4px 0 0 var(--jma-dark)',
         }}
       >
         <span
-          className="text-2xl md:text-3xl font-black font-display"
-          style={{ color: 'white', textShadow: '2px 2px 0 rgba(0,0,0,0.35)' }}
+          className="font-black font-display leading-none"
+          style={{
+            fontSize: 'clamp(28px, 4.4vw, 44px)',
+            color: 'white',
+            textShadow: '2px 2px 0 rgba(0,0,0,0.35)',
+          }}
         >
           {lesson.num}
         </span>
       </div>
 
-      <h3
-        className="text-base md:text-lg font-black font-display leading-tight"
-        style={{ color: 'var(--jma-dark)' }}
-      >
-        {lesson.title}
-      </h3>
-      <p
-        className="text-[10px] md:text-xs font-bold uppercase tracking-wide mt-0.5"
-        style={{ color: locked ? '#6B7280' : 'var(--jma-orange)' }}
-      >
-        {locked ? 'Locked' : lesson.subtitle}
-      </p>
+      {/* Title column — the lesson's actual name, all caps NES style. */}
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] mb-1"
+          style={{ color: locked ? '#6B7280' : 'var(--jma-orange)' }}
+        >
+          {locked ? 'Locked' : `Lesson ${lesson.num}`}
+        </p>
+        <h3
+          className="font-black font-display leading-[0.9] uppercase"
+          style={{
+            fontSize: 'clamp(20px, 3.6vw, 34px)',
+            color: 'var(--jma-dark)',
+            letterSpacing: '0.01em',
+            wordBreak: 'break-word',
+          }}
+        >
+          {lesson.subtitle}
+        </h3>
+      </div>
+
+      {/* Status badge on the right */}
+      <div className="flex-shrink-0 mr-1">
+        {watched ? (
+          <div
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 flex items-center justify-center"
+            style={{ backgroundColor: '#34A853', borderColor: 'var(--jma-dark)' }}
+            data-testid={`lesson-${lesson.num}-watched`}
+          >
+            <CheckCircle2 className="w-6 h-6 md:w-7 md:h-7 text-white" />
+          </div>
+        ) : locked ? (
+          <div
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 flex items-center justify-center"
+            style={{ backgroundColor: '#6B7280', borderColor: 'var(--jma-dark)' }}
+            data-testid={`lesson-${lesson.num}-locked`}
+          >
+            <Lock className="w-5 h-5 md:w-6 md:h-6 text-white" />
+          </div>
+        ) : (
+          <div
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 flex items-center justify-center"
+            style={{ backgroundColor: '#FFCC00', borderColor: 'var(--jma-dark)' }}
+            data-testid={`lesson-${lesson.num}-unlocked`}
+          >
+            <PlayCircle className="w-6 h-6 md:w-7 md:h-7" style={{ color: 'var(--jma-dark)' }} />
+          </div>
+        )}
+      </div>
     </motion.button>
   );
 }
@@ -102,14 +127,14 @@ export default function LessonsPage() {
   return (
     <div
       data-testid="lessons-page"
-      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-8 relative"
+      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-8 relative overflow-x-hidden"
       style={{
         backgroundImage: 'url(assets/backgrounds/chalkboard.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     >
-      <GameHeader showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
+      <GameHeader showHomeButton={true} />
 
       <motion.div
         className="relative z-10 text-center mb-4"
@@ -117,26 +142,32 @@ export default function LessonsPage() {
         animate={{ y: 0, opacity: 1 }}
       >
         <h1
-          className="text-4xl md:text-6xl font-black font-display"
+          className="text-5xl md:text-7xl font-black font-display leading-none uppercase"
           style={{
             color: 'white',
-            textShadow: '3px 3px 0 var(--jma-dark), 5px 5px 0 rgba(0,0,0,0.5)',
+            WebkitTextStroke: 'clamp(3px, 0.5vw, 5px) var(--jma-dark)',
+            paintOrder: 'stroke fill',
+            textShadow: '4px 4px 0 var(--jma-dark), 7px 7px 0 rgba(0,0,0,0.5)',
           }}
         >
           Lessons 1–7
         </h1>
         <p
-          className="mt-2 text-sm md:text-base font-bold"
-          style={{ color: '#FFE9C4', textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}
+          className="mt-2 text-sm md:text-base font-black uppercase tracking-widest inline-block px-3 py-1 rounded-full"
+          style={{
+            color: 'white',
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            border: '2px solid rgba(255,231,196,0.55)',
+          }}
         >
-          Watch each lesson to unlock the next!
+          Watch each lesson to unlock the next
         </p>
       </motion.div>
 
       {/* Progress pill */}
       <motion.div
         data-testid="lessons-progress"
-        className="relative z-10 mb-4 px-4 py-2 rounded-full border-3 flex items-center gap-2"
+        className="relative z-10 mb-5 px-4 py-2 rounded-full border-3 flex items-center gap-2"
         style={{
           backgroundColor: 'rgba(255,255,255,0.96)',
           borderColor: 'var(--jma-dark)',
@@ -152,21 +183,10 @@ export default function LessonsPage() {
         </span>
       </motion.div>
 
-      {/* Charlie at the chalkboard */}
-      <motion.img
-        src="assets/characters/charlie-grad.png"
-        alt="Charlie"
-        className="relative z-10 mb-3 object-contain"
-        style={{ width: 'min(28vw, 140px)', filter: 'drop-shadow(0 8px 10px rgba(0,0,0,0.45))' }}
-        animate={{ y: [0, -6, 0] }}
-        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-        draggable={false}
-      />
-
-      {/* Lessons grid */}
-      <div className="relative z-10 w-full max-w-4xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
+      {/* Vertical cascade of lesson cards */}
+      <div className="relative z-10 w-full max-w-2xl flex flex-col gap-3 md:gap-4">
         {LESSONS.map((lesson, i) => (
-          <LessonTile
+          <LessonCard
             key={lesson.num}
             lesson={lesson}
             index={i}

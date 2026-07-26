@@ -40,7 +40,7 @@ export const COLLECTION_STICKERS = [
   // ---- Outfits (alternate looks, unlocked via gameplay milestones) ----
   // CHARLIE
   { id: 'fit_charlie_zoot',       name: 'Zoot Charlie',        category: 'outfits', icon: 'assets/characters/charlie-zoot.png',        color: '#C0392B', hint: 'Play the Xylophone in Jam Hall' },
-  { id: 'fit_charlie_punk',       name: 'Punk Charlie',        category: 'outfits', icon: 'assets/characters/charlie-punk.png',        color: '#E91E63', hint: 'Hit a streak of 15 in the Rhythm Arcade' },
+  { id: 'fit_charlie_punk',       name: 'Punk Charlie',        category: 'outfits', icon: 'assets/characters/charlie-punk.png',        color: '#E91E63', hint: 'Hit a streak of 15 in Jelly Jukebox' },
   { id: 'fit_charlie_ragu',       name: 'Ragu Charlie',        category: 'outfits', icon: 'assets/characters/charlie-ragu.png',        color: '#E67E22', hint: 'Complete any song in Turbo speed' },
   { id: 'fit_charlie_surf',       name: 'Surf Charlie',        category: 'outfits', icon: 'assets/characters/charlie-surf.png',        color: '#3498DB', hint: 'Play 3 loops in the Beat Lab' },
   { id: 'fit_charlie_grad',       name: 'Grad Charlie',        category: 'outfits', icon: 'assets/characters/charlie-grad.png',        color: '#2C3E50', hint: 'Beat Stew Kazoo Says level 8' },
@@ -52,7 +52,7 @@ export const COLLECTION_STICKERS = [
   { id: 'fit_chunk_disco',        name: 'Disco Chunk',         category: 'outfits', icon: 'assets/characters/chunk-disco.png',         color: '#FF6B9D', hint: 'Play a Beat Lab loop for 30 seconds' },
   { id: 'fit_chunk_steampunk',    name: 'Steampunk Chunk',     category: 'outfits', icon: 'assets/characters/chunk-steampunk.png',     color: '#654321', hint: 'Record and play back 10 notes in Jam Hall' },
   // SHARKY
-  { id: 'fit_sharky_hiphop',      name: 'Hip-Hop Sharky',      category: 'outfits', icon: 'assets/characters/sharky-hiphop.png',      color: '#F39C12', hint: 'Score 1000 points in the Rhythm Arcade' },
+  { id: 'fit_sharky_hiphop',      name: 'Hip-Hop Sharky',      category: 'outfits', icon: 'assets/characters/sharky-hiphop.png',      color: '#F39C12', hint: 'Score 1000 points in Jelly Jukebox' },
   { id: 'fit_sharky_snorkel',     name: 'Snorkel Sharky',      category: 'outfits', icon: 'assets/characters/sharky-snorkel.png',     color: '#1ABC9C', hint: 'Play Ear Quest 10 times' },
   { id: 'fit_sharky_zoot',        name: 'Zoot Sharky',         category: 'outfits', icon: 'assets/characters/sharky-zoot.png',        color: '#27AE60', hint: 'Play the Piano in Jam Hall' },
   // JAZZY

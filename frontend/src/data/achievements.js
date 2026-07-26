@@ -95,13 +95,13 @@ export const ACHIEVEMENT_TIERS = [
 // `id` is the legacy-style id we store in localStorage: `ach_<domain>_<tier>`.
 export const ACHIEVEMENT_STICKERS = [
   // ---------- Rhythm Reader ----------
-  // Earned via either Stew's Rhythm Academy (Echo Stew / Beat Finder /
-  // Rhythm Run) at the matching difficulty OR the Rhythm Arcade falling-
+  // Earned via either Who's Got the Rhythm (Parrot Percussion / Beat Finder /
+  // Rhythm Run) at the matching difficulty OR the Jelly Jukebox falling-
   // notes game. Two distinct doorways into the same domain so kids who
   // hate one game still have a path.
-  { id: 'ach_rhythm_cadet',    domain: 'rhythm',   tier: 'cadet',  name: 'Rhythm Rookie',  hint: "Ace any round in Stew's Rhythm Academy (or hit 20 perfects in the Rhythm Arcade)" },
-  { id: 'ach_rhythm_pro',      domain: 'rhythm',   tier: 'pro',    name: 'Rhythm Pro',     hint: "Pass an SRA round at Pro level (or hit a streak of 15 in the Rhythm Arcade)" },
-  { id: 'ach_rhythm_master',   domain: 'rhythm',   tier: 'master', name: 'Rhythm Master',  hint: 'Pass an SRA round at Master level (or finish a song at Turbo speed)' },
+  { id: 'ach_rhythm_cadet',    domain: 'rhythm',   tier: 'cadet',  name: 'Rhythm Rookie',  hint: "Ace any round in Who's Got the Rhythm (or hit 20 perfects in Jelly Jukebox)" },
+  { id: 'ach_rhythm_pro',      domain: 'rhythm',   tier: 'pro',    name: 'Rhythm Pro',     hint: "Pass a round at Pro level in Who's Got the Rhythm (or hit a streak of 15 in Jelly Jukebox)" },
+  { id: 'ach_rhythm_master',   domain: 'rhythm',   tier: 'master', name: 'Rhythm Master',  hint: "Pass a round at Master level in Who's Got the Rhythm (or finish a song at Turbo speed)" },
   // ---------- Note Detective ----------
   { id: 'ach_ear_cadet',       domain: 'ear',      tier: 'cadet',  name: 'Ear Cadet',      hint: 'Solve a case in Detective Dr. Jellybone' },
   { id: 'ach_ear_pro',         domain: 'ear',      tier: 'pro',    name: 'Ear Pro',        hint: 'Clear Note Match on Medium' },

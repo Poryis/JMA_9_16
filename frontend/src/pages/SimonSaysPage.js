@@ -233,8 +233,6 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
 
         // Move to next level or finish
         timeoutRef.current = setTimeout(() => {
-          // Sticker: completed a level — level 5+ earns Super Ear
-          if (level >= 5) earnSticker('ach_simon_5');
           // 🎹 Keyboard Scout achievements via Stew Kazoo Says level milestones
           if (level >= 1) earnAchievement('keyboard', 'cadet');
           if (level >= 4) earnAchievementUpTo('keyboard', 'pro');

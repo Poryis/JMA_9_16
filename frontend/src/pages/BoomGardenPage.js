@@ -65,7 +65,7 @@ const MODES = [
     sign: 'BEAT FINDER',
     color: '#34A853',
     accent: '#1F7A38',
-    bg: 'assets/backgrounds/clubhouse.png',
+    bg: 'assets/backgrounds/football-field.png',
     character: 'assets/characters/llama-lou-stew.png',
     charWidthPct: 40,
     howToPlay: [
@@ -81,7 +81,7 @@ const MODES = [
     sign: 'RHYTHM RUN',
     color: '#FF9500',
     accent: '#C26200',
-    bg: 'assets/backgrounds/graffiti-wall.jpg',
+    bg: 'assets/backgrounds/football-field.png',
     character: 'assets/characters/charlie-rundmc.png',
     charWidthPct: 32,
     howToPlay: [
@@ -131,48 +131,48 @@ function ModeTile({ mode, index, onPick }) {
       <div
         className="relative rounded-3xl overflow-hidden flex flex-col"
         style={{
-          background: mode.color,
           border: '5px solid var(--jma-dark)',
           boxShadow: `0 10px 0 0 ${mode.accent}, 0 13px 0 0 var(--jma-dark)`,
-          minHeight: 230,
+          minHeight: 240,
           padding: 'clamp(14px, 2.6vw, 22px)',
           color: 'white',
+          backgroundImage: `url(${mode.bg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
       >
-        {/* Small badge top-left — sign nameplate slimmed down to match the
-            JMAtv tile language. */}
-        <div className="flex items-center gap-2">
-          <span
-            className="rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em]"
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.92)',
-              color: mode.accent,
-              letterSpacing: '0.18em',
-            }}
-          >
-            {mode.sign}
-          </span>
-        </div>
+        {/* Color tint over the football field so each card still reads its
+            mode-color even though every card shares the same scene. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `linear-gradient(180deg, ${mode.color}55 0%, ${mode.accent}88 100%)`,
+          }}
+        />
 
-        <div className="flex-1 flex items-stretch relative mt-3 gap-3">
-          {/* Text column — title + blurb. */}
+        <div className="flex-1 flex items-stretch relative gap-3">
+          {/* Text column — NES-cartridge huge title, no sign nameplate,
+              no long blurb. */}
           <div className="relative flex-1 min-w-0 flex flex-col justify-end">
             <h2
-              className="font-black font-display leading-none"
+              className="font-black font-display leading-[0.85] uppercase"
               style={{
-                fontSize: 'clamp(24px, 3.6vw, 36px)',
+                fontSize: 'clamp(26px, 4.4vw, 44px)',
                 color: 'white',
-                textShadow: `2px 2px 0 ${mode.accent}, 4px 4px 0 var(--jma-dark)`,
+                WebkitTextStroke: 'clamp(2px, 0.5vw, 4px) var(--jma-dark)',
+                paintOrder: 'stroke fill',
+                textShadow: `3px 3px 0 ${mode.accent}, 6px 6px 0 var(--jma-dark)`,
+                letterSpacing: '0.01em',
+                wordBreak: 'break-word',
               }}
             >
               {mode.label}
             </h2>
-            <p className="text-xs md:text-sm font-bold mt-2 opacity-95 leading-snug">
-              {mode.blurb}
-            </p>
           </div>
 
-          {/* Character host column — fixed share so art never overlaps text. */}
+          {/* Character host column — drum-major-style hero on the football
+              field. Fixed share so art never overlaps text. */}
           {mode.character && (
             <div className="relative flex-shrink-0" style={{ width: '40%' }}>
               <img
@@ -187,7 +187,7 @@ function ModeTile({ mode, index, onPick }) {
                   bottom: -10,
                   width: '125%',
                   maxHeight: '135%',
-                  filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.3))',
+                  filter: 'drop-shadow(0 6px 8px rgba(0,0,0,0.45))',
                 }}
               />
             </div>
@@ -984,18 +984,27 @@ export default function BoomGardenPage() {
         data-testid="boom-garden-page"
         className="min-h-screen flex flex-col relative"
         style={{
-          background:
-            'radial-gradient(circle at 20% 20%, #FFE0B2 0%, transparent 55%), ' +
-            'radial-gradient(circle at 80% 70%, #C9F0E0 0%, transparent 60%), ' +
-            'linear-gradient(180deg, #FFF7E5 0%, #FFE5C9 100%)',
+          backgroundImage: 'url(assets/backgrounds/football-field.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
       >
-        <GameHeader title="Stew's Rhythm Academy" showHomeButton={true} backLink={{ to: '/learn', label: 'Learn' }} />
+        {/* Sky tint at the top of the football-field bg so the header
+            reads clearly regardless of scene contrast. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 pointer-events-none"
+          style={{
+            height: '30%',
+            background: 'linear-gradient(180deg, rgba(255,247,229,0.75) 0%, transparent 100%)',
+          }}
+        />
+        <GameHeader title="Who's Got the Rhythm" showHomeButton={true} />
         <FullscreenButton />
         <main className="flex-1 pt-16 md:pt-20 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col">
           <div className="text-center mb-4 md:mb-6">
             <p className="text-sm md:text-base font-bold opacity-80" style={{ color: 'var(--jma-dark)' }}>
-              Three rhythm games. Pick your jam.
+              Pick your jam.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 flex-1">
@@ -1095,7 +1104,7 @@ export default function BoomGardenPage() {
         }}
       />
       <div className="relative z-10 flex flex-col flex-1">
-      <GameHeader title={`Stew's Rhythm Academy · ${modeConfig.label}`} showHomeButton={true} score={score} streak={streak} />
+      <GameHeader title={`Who's Got the Rhythm · ${modeConfig.label}`} showHomeButton={true} score={score} streak={streak} />
       <FullscreenButton />
       <main className="flex-1 pt-20 md:pt-24 pb-4 px-3 md:px-6 max-w-4xl mx-auto w-full flex flex-col">
         {/* Back + level row */}
