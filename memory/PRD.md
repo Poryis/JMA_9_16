@@ -21,13 +21,16 @@ Replacing the legacy "6 mode tiles" grid with rich room-card destinations on the
 | Room | Path (kept for sticker compat) | Background | Character vibe |
 |------|-------------------------------|------------|----------------|
 | Jam Hall | `/free-play` | river.png | Drum Major Charlie + Finn |
-| Rhythm Arcade | `/rhythm-game` | stage.png | Punk Charlie + Jazzy |
+| **Jelly Jukebox** (formerly "Who's Got the Rhythm?" / "Rhythm Arcade") | `/rhythm-game` | dark purple/violet disco gradient | Disco Lou + Punk Charlie |
 | Stew Kazoo Says (Kazoo Room) | `/simon-says` | underwater.png | Stew + Lou & Stew |
 | Ear Quest | `/ear-trainer` | beach.png | Dr. Jellybone + Snorkel Sharky |
-| Beat Lab | `/loop-studio` | circus.png | Disco Chunk + DMC Charlie |
+| Beat Lab | `/loop-studio` | graffiti-wall.jpg | Jelly Rap Trio |
+| **Who's Got the Rhythm** (formerly "Stew's Rhythm Academy") | `/boom-garden` | football-field.png | Stew + drum-major heroes |
 | Fun Facts Clubhouse | `/fun-facts` | clubhouse.png | Jazzy + Charlie |
 
-Each destination card features a faux academy "sign" nameplate, character peeks, background sliver, and an "Enter →" hover affordance.
+**Feb 2026 name-swap note**: The two rhythm games swapped names. What was "Who's Got the Rhythm?" (falling notes) became **Jelly Jukebox** (disco theme). What was "Stew's Rhythm Academy" (rhythm-reading rooms) became **Who's Got the Rhythm** (football field theme). Inside that room, "Echo Stew" mode is now **Parrot Percussion** with tagline "Stew plays. You play it back." The internal route names `/rhythm-game` and `/boom-garden` were preserved for sticker/achievement compatibility.
+
+Each destination card features a full-bleed background scene, prominent character art, and an ALL-CAPS NES-cartridge title. Sign nameplates and taglines were removed Feb 2026 per the world-building direction.
 
 ## Academy Rank System (Polliwog → Maestro)
 Driven by total stickers earned. Warm, non-competitive.
