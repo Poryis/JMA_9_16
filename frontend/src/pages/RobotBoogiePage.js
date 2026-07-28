@@ -330,7 +330,7 @@ function LightningBolt() {
 // Character slot — preloads every animation frame at mount so cycling is
 // instant, then toggles which frame is displayed via display:none/block.
 // ============================================================
-function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1 / 1', spriteZoom = 1 }) {
+function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1 / 1' }) {
   const isActive = activeStemIndex >= 0;
 
   const [animFrame, setAnimFrame] = useState(1);
@@ -362,9 +362,6 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
       className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none overflow-hidden"
       style={{
         width: '100%',
-        // Slot aspect is controlled by the caller so the band can pick
-        // a wider ratio when 4 dancers wrap into 2 rows (otherwise 2 ×
-        // square slots push the Time Machine off the bottom edge).
         aspectRatio: slotAspect,
         touchAction: 'manipulation',
       }}
@@ -374,13 +371,6 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
       <div
         className="relative w-full h-full flex items-end justify-center"
         style={{
-          // Zoom into the sprite to crop out the source PNGs' baked-in
-          // transparent margin (each sprite has ~25 % empty on each
-          // side). `overflow-hidden` on the button clips the excess,
-          // and origin: bottom center keeps the character's feet on
-          // the stage floor as we scale.
-          transform: spriteZoom !== 1 ? `scale(${spriteZoom})` : undefined,
-          transformOrigin: 'bottom center',
           filter: isActive
             ? `drop-shadow(0 0 22px ${cfg.color}dd)`
             : 'drop-shadow(0 8px 12px rgba(0,0,0,0.55)) saturate(0.55) brightness(0.75)',
@@ -388,12 +378,16 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
         }}
       >
         {/* Neutral image — shown when the character is off. Always in
-            the DOM so the browser has it cached the moment we toggle. */}
+            the DOM so the browser has it cached the moment we toggle.
+            `object-cover object-bottom` crops the source PNG's baked-in
+            LEFT/RIGHT transparent margin (each sprite has ~25 % empty
+            air on each side) without touching height — so heads stay
+            in frame and adjacent dancers sit close together. */}
         <img
           src={cfg.neutral}
           alt=""
           draggable={false}
-          className="max-w-full max-h-full object-contain object-bottom pointer-events-none"
+          className="w-full h-full object-cover object-bottom pointer-events-none"
           style={{ display: isActive ? 'none' : 'block' }}
         />
 
@@ -406,7 +400,7 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
             src={cfg.playingSingle}
             alt=""
             draggable={false}
-            className="max-w-full max-h-full object-contain object-bottom pointer-events-none absolute inset-0 m-auto"
+            className="w-full h-full object-cover object-bottom pointer-events-none absolute inset-0"
             style={{
               display: isActive ? 'block' : 'none',
               animation: isActive ? 'jazzyWobble 0.6s ease-in-out infinite' : 'none',
@@ -423,7 +417,7 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
             src={url}
             alt=""
             draggable={false}
-            className="max-w-full max-h-full object-contain object-bottom pointer-events-none absolute inset-0 m-auto"
+            className="w-full h-full object-cover object-bottom pointer-events-none absolute inset-0"
             style={{
               display: isActive && animFrame === i + 1 ? 'block' : 'none',
             }}
@@ -752,13 +746,6 @@ export default function RobotBoogiePage() {
                 // Machine + the lineup all fit above the fold.
                 const slotAspect = n === 4 ? '4 / 3' : '1 / 1';
 
-                // Zoom into the sprite (crops the source PNG's baked-in
-                // transparent margin) so characters visually sit closer
-                // to their neighbors. 1.4 seems to be the sweet spot —
-                // trims most of the empty air without clipping guitars
-                // / tails / trumpets.
-                const spriteZoom = 1.4;
-
                 return (
                   <motion.div
                     key={cfg.id}
@@ -785,7 +772,6 @@ export default function RobotBoogiePage() {
                         onClick={handleCharacterClick}
                         zapping={zappingId === cfg.id}
                         slotAspect={slotAspect}
-                        spriteZoom={spriteZoom}
                       />
                     </div>
                   </motion.div>
