@@ -474,6 +474,17 @@ h1, h2, h3, h4, h5, h6 {
     inset 0 1px 0 rgba(255,255,255,0.5),
     inset 0 -2px 0 rgba(0,0,0,0.22);
 }
+
+/* Robot Boogie — Jazzy's dance wobble.
+   framer-motion's keyframe animate + `repeat: Infinity` refuses to loop
+   when the parent is an <AnimatePresence layout /> wrapper (transform
+   fights). Plain CSS animation is bulletproof here. */
+@keyframes jazzyWobble {
+  0%   { transform: rotate(-5deg) translateY(0); }
+  50%  { transform: rotate(5deg)  translateY(-8px); }
+  100% { transform: rotate(-5deg) translateY(0); }
+}
+
 *::-webkit-scrollbar-thumb:hover  { filter: brightness(1.12); }
 *::-webkit-scrollbar-thumb:active { filter: brightness(0.94); }
 *::-webkit-scrollbar-corner       { background: transparent; }

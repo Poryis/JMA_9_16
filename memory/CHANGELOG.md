@@ -1,6 +1,50 @@
 # Changelog
 
-## Feb 28, 2026 (pm) — Robot Boogie v4: full layout redesign
+## Feb 28, 2026 (evening) — Robot Boogie v5: 2-row band + Jazzy wobble fix
+
+Polish pass on the v4 redesign per user feedback ("Jazzy is not animating when she's up. I like this much better, but after 3 friends they get too small. Can we do two rows after 3?").
+
+### 🕺 Jazzy's wobble now actually wobbles
+Root cause: framer-motion's keyframe `animate` prop with `repeat: Infinity` refuses to loop when the parent is an `<AnimatePresence layout>` wrapper — the outer `layout` animations fight with the inner transform-based keyframes. framer-motion sets Jazzy's transform to the FIRST keyframe (`-5deg`) and then leaves it there.
+
+Fix: switched Jazzy's playing sprite from `motion.img` with animate keyframes to a plain `<img>` with a CSS `@keyframes jazzyWobble` animation applied via inline `style.animation`. Verified via automation: `getComputedStyle(img).transform` now cycles through the three keyframes correctly.
+
+Added the keyframes rule to `index.css`:
+```css
+@keyframes jazzyWobble {
+  0%   { transform: rotate(-5deg) translateY(0); }
+  50%  { transform: rotate(5deg)  translateY(-8px); }
+  100% { transform: rotate(-5deg) translateY(0); }
+}
+```
+
+### 🎼 Band wraps to 2 rows after 3 dancers
+Active-band container is now `flex flex-wrap content-end` and each dancer's width is tuned so the total row shape matches the user's brief:
+| Dancers | Layout |
+| --- | --- |
+| 1 | 1 huge soloist (440 px cap) |
+| 2 | Row of 2 (360 px each) |
+| 3 | Row of 3 (300 px each) |
+| **4** | **2 × 2** (420 px each) |
+| **5** | **3 + 2** (300 px each) |
+| **6** | **3 × 2** (300 px each) |
+| **7** | **4 + 3** (240 px each) |
+| **8** | **4 × 2** (240 px each) |
+
+Widths are percentage-based so the wrap decision holds on any viewport width; `maxWidth` in pixels stops a soloist from becoming grotesquely wide on ultrawides.
+
+### 🎯 Padding tightened
+- Playing-chip zone: `pt-14 md:pt-20 pb-1` → `pt-14 md:pt-16 pb-0` (chip sits closer to header).
+- Main-stage horizontal pad: `px-3 md:px-6` → `px-2 md:px-4`.
+- Time Machine zone: `py-1 md:py-2` → `py-0` (band and TM sit closer).
+- Character lineup: `pt-1 md:pt-2` → `pt-0`.
+
+### Verified via automation
+Screenshots at desktop (1280×800) confirm 1/2/3 in a single row; 4 → 2+2; 5 → 3+2; 6 → 3+3; 8 → 4+4. Jazzy transform sampled 5× at 200 ms intervals shows genuine rotation cycling. Time Machine still sits below the band with its golden halo and continuous reel.
+
+---
+
+
 
 Complete rebuild of `RobotBoogiePage.js` layout per user brief. The old grid-of-8 characters is gone; new visual hierarchy is:
 

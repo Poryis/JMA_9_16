@@ -382,18 +382,21 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
           style={{ display: isActive ? 'none' : 'block' }}
         />
 
-        {/* Single "playing" still (Jazzy). Wobble + hop animation gives
-            the illusion of "playing" without needing a distinct pose,
-            since her legs-included neutral is reused here. */}
+        {/* Single "playing" still (Jazzy). CSS keyframe wobble + hop —
+            using plain CSS animation instead of framer-motion because
+            the `layout` prop on the AnimatePresence wrapper interferes
+            with framer-motion's transform-based keyframe repeat. */}
         {cfg.playingSingle && (
-          <motion.img
+          <img
             src={cfg.playingSingle}
             alt=""
             draggable={false}
             className="max-w-full max-h-full object-contain object-bottom pointer-events-none absolute inset-0 m-auto"
-            style={{ display: isActive ? 'block' : 'none' }}
-            animate={isActive ? { rotate: [-5, 5, -5], y: [0, -8, 0] } : {}}
-            transition={{ duration: 0.55, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              display: isActive ? 'block' : 'none',
+              animation: isActive ? 'jazzyWobble 0.6s ease-in-out infinite' : 'none',
+              transformOrigin: '50% 90%',
+            }}
           />
         )}
 
@@ -631,7 +634,7 @@ export default function RobotBoogiePage() {
       <GameHeader title="Robot Boogie" showHomeButton={true} />
 
       {/* Playing chip + Reset — sits just under the fixed header */}
-      <div className="relative z-10 flex items-center justify-center gap-3 pt-14 md:pt-20 pb-1">
+      <div className="relative z-10 flex items-center justify-center gap-3 pt-14 md:pt-16 pb-0">
         <div
           data-testid="robot-boogie-active-count"
           className="px-3 py-1 rounded-full font-black text-xs uppercase tracking-wider"
@@ -666,13 +669,16 @@ export default function RobotBoogiePage() {
           Machine in the middle, tappable lineup at the bottom. All
           three sit inside a max-width column so the composition stays
           coherent on ultra-wide screens. */}
-      <div className="relative z-10 flex-1 flex flex-col items-center w-full mx-auto px-3 md:px-6 pb-3"
+      <div className="relative z-10 flex-1 flex flex-col items-center w-full mx-auto px-2 md:px-4 pb-2"
            style={{ maxWidth: '1200px' }}>
 
-        {/* ---- Active band (top) ---- */}
+        {/* ---- Active band (top) ----
+            Flex-wrap so we get a second row automatically once there
+            are 4+ dancers. `justify-center` keeps a partial row centered
+            below the first (e.g. 5 dancers → row of 4 + row of 1). */}
         <div
           data-testid="robot-boogie-active-band"
-          className="w-full flex-1 flex items-end justify-center gap-2 md:gap-4 pt-2 pb-1 overflow-hidden"
+          className="w-full flex-1 flex flex-wrap items-end justify-center content-end gap-x-1 gap-y-0 md:gap-x-2 pt-2 pb-0 overflow-hidden"
           style={{ minHeight: '180px' }}
         >
           {activeChars.length === 0 ? (
@@ -680,7 +686,7 @@ export default function RobotBoogiePage() {
               key="empty-hint"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center self-center pointer-events-none"
+              className="text-center self-center pointer-events-none w-full"
               style={{ color: 'white' }}
             >
               <div
@@ -698,47 +704,54 @@ export default function RobotBoogiePage() {
             </motion.div>
           ) : (
             <AnimatePresence mode="popLayout" initial={false}>
-              {activeChars.map((cfg) => (
-                <motion.div
-                  key={cfg.id}
-                  layout
-                  initial={{ opacity: 0, y: 60, scale: 0.6 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 40, scale: 0.6 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-                  className="min-w-0"
-                  style={{
-                    // Each active character shares the available width
-                    // equally, but with a per-count cap so a soloist
-                    // feels HUGE and a full band still fits comfortably.
-                    // The cap eases down as more join: 1 → 460px, 2 →
-                    // 400px, 3 → 340px, 4 → 300px, 5+ → 260px.
-                    flex: '1 1 0%',
-                    maxWidth: (() => {
-                      const n = activeChars.length;
-                      if (n <= 1) return '460px';
-                      if (n === 2) return '400px';
-                      if (n === 3) return '340px';
-                      if (n === 4) return '300px';
-                      return '260px';
-                    })(),
-                  }}
-                >
-                  <CharacterSlot
-                    cfg={cfg}
-                    activeStemIndex={0}
-                    onClick={handleCharacterClick}
-                    zapping={zappingId === cfg.id}
-                  />
-                </motion.div>
-              ))}
+              {activeChars.map((cfg) => {
+                const n = activeChars.length;
+                // Widths tuned so flex-wrap gives the row shape we want
+                // on a ~1200 px stage:
+                //   1 dancer  → huge solo
+                //   2 dancers → row of 2
+                //   3 dancers → row of 3
+                //   4 dancers → 2 rows of 2 (per user brief)
+                //   5-6       → 2 rows of 3 (max 3 per row)
+                //   7-8       → 2 rows of 4
+                let widthPct;
+                let maxW;
+                if (n === 1)      { widthPct = '55%'; maxW = '440px'; }
+                else if (n === 2) { widthPct = '42%'; maxW = '360px'; }
+                else if (n === 3) { widthPct = '30%'; maxW = '300px'; }
+                else if (n === 4) { widthPct = '48%'; maxW = '420px'; } // → 2+2
+                else if (n <= 6)  { widthPct = '34%'; maxW = '300px'; } // → 3-per-row max
+                else               { widthPct = '23%'; maxW = '240px'; } // → 4-per-row max
+                return (
+                  <motion.div
+                    key={cfg.id}
+                    layout
+                    initial={{ opacity: 0, y: 60, scale: 0.6 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 40, scale: 0.6 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+                    className="min-w-0 flex-shrink-0"
+                    style={{
+                      width: widthPct,
+                      maxWidth: maxW,
+                    }}
+                  >
+                    <CharacterSlot
+                      cfg={cfg}
+                      activeStemIndex={0}
+                      onClick={handleCharacterClick}
+                      zapping={zappingId === cfg.id}
+                    />
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           )}
         </div>
 
         {/* ---- Time Machine (centerpiece) ---- */}
         <div
-          className="w-full flex justify-center items-center py-1 md:py-2 relative"
+          className="w-full flex justify-center items-center py-0 relative"
           data-testid="robot-boogie-time-machine-zone"
         >
           {/* Soft halo behind the machine so it reads as the anchor of
@@ -760,7 +773,7 @@ export default function RobotBoogiePage() {
         {/* ---- Character lineup (bottom, always 8) ---- */}
         <div
           data-testid="robot-boogie-lineup"
-          className="w-full flex justify-center items-end gap-1.5 md:gap-3 pt-1 md:pt-2 pb-2"
+          className="w-full flex justify-center items-end gap-1.5 md:gap-3 pt-0 pb-2"
         >
           {CHARACTERS.map((cfg) => (
             <CompactChar
