@@ -117,10 +117,10 @@ const CHARACTERS = [
     id: 'jazzy',
     stems: ['robot-horns-1'],
     frames: 0,
-    // Reuse neutral for the "playing" still so Jazzy's legs stay visible.
-    // The CSS jazzyWobble animation on <CharacterSlot> conveys "she's
-    // playing" without needing a distinct trumpet-up pose.
-    playingSingle: 'assets/robot-boogie/jazzy-neutral.png',
+    // NEW jazzy-playing.png (dropped in Feb 28 pm) has legs + red boots
+    // + trumpet up — the artwork itself now covers everything we need
+    // for the "playing" state, so no more neutral-reuse workaround.
+    playingSingle: 'assets/robot-boogie/jazzy-playing.png',
     neutral: 'assets/robot-boogie/jazzy-neutral.png',
     color: '#FFCC00',
   },
@@ -330,7 +330,7 @@ function LightningBolt() {
 // Character slot — preloads every animation frame at mount so cycling is
 // instant, then toggles which frame is displayed via display:none/block.
 // ============================================================
-function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1 / 1' }) {
+function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1 / 1', spriteZoom = 1 }) {
   const isActive = activeStemIndex >= 0;
 
   const [animFrame, setAnimFrame] = useState(1);
@@ -359,7 +359,7 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
       data-testid={`robot-boogie-char-${cfg.id}`}
       data-active={isActive ? 'true' : 'false'}
       onClick={() => onClick(cfg.id)}
-      className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none"
+      className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none overflow-hidden"
       style={{
         width: '100%',
         // Slot aspect is controlled by the caller so the band can pick
@@ -374,6 +374,13 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
       <div
         className="relative w-full h-full flex items-end justify-center"
         style={{
+          // Zoom into the sprite to crop out the source PNGs' baked-in
+          // transparent margin (each sprite has ~25 % empty on each
+          // side). `overflow-hidden` on the button clips the excess,
+          // and origin: bottom center keeps the character's feet on
+          // the stage floor as we scale.
+          transform: spriteZoom !== 1 ? `scale(${spriteZoom})` : undefined,
+          transformOrigin: 'bottom center',
           filter: isActive
             ? `drop-shadow(0 0 22px ${cfg.color}dd)`
             : 'drop-shadow(0 8px 12px rgba(0,0,0,0.55)) saturate(0.55) brightness(0.75)',
@@ -745,6 +752,13 @@ export default function RobotBoogiePage() {
                 // Machine + the lineup all fit above the fold.
                 const slotAspect = n === 4 ? '4 / 3' : '1 / 1';
 
+                // Zoom into the sprite (crops the source PNG's baked-in
+                // transparent margin) so characters visually sit closer
+                // to their neighbors. 1.4 seems to be the sweet spot —
+                // trims most of the empty air without clipping guitars
+                // / tails / trumpets.
+                const spriteZoom = 1.4;
+
                 return (
                   <motion.div
                     key={cfg.id}
@@ -771,6 +785,7 @@ export default function RobotBoogiePage() {
                         onClick={handleCharacterClick}
                         zapping={zappingId === cfg.id}
                         slotAspect={slotAspect}
+                        spriteZoom={spriteZoom}
                       />
                     </div>
                   </motion.div>

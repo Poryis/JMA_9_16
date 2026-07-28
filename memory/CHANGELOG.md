@@ -1,6 +1,24 @@
 # Changelog
 
-## Feb 28, 2026 (very late) — Robot Boogie v6: TM bigger, n=4 smaller, tighter rows
+## Feb 28, 2026 (night) — Robot Boogie v7: NEW Jazzy playing sprite + sprite zoom
+
+User dropped in the proper Jazzy playing PNG (trumpet up, pink mohawk, red vest, white pants, red boots — the works). Also identified the root cause of the "too much padding" complaint: **the source PNGs themselves have ~25 % transparent margin baked in on each side**, so no amount of CSS layout tightening was going to close the gaps. Fixed both in one pass.
+
+### 🎺 New `jazzy-playing.png` in the tree
+Downloaded to `/app/frontend/public/assets/robot-boogie/jazzy-playing.png` (1920×1080). `CHARACTERS[jazzy].playingSingle` now points back to `jazzy-playing.png` (was reusing `jazzy-neutral.png` as a workaround). The CSS `jazzyWobble` animation still runs on top so she grooves while she plays.
+
+### 🔍 Sprite zoom crops the baked-in transparent padding
+`<CharacterSlot>` now accepts a `spriteZoom` prop (default 1, band passes 1.4). The zoom is applied via `transform: scale()` on the inner sprite-flex container, `transform-origin: bottom center` (feet stay planted), and the outer `<motion.button>` uses `overflow: hidden` to clip the overshoot. Net effect: the same-source PNG shows ~40 % more character in the same slot, so adjacent dancers visually touch without needing negative margins or layout tricks. Compact lineup keeps zoom=1 since those tiles are already tiny.
+
+### Verified
+Playwright at desktop:
+- Solo Jazzy — **NEW sprite** filling the frame with all her outfit details visible, wobble animation running.
+- 4 dancers — Chunk + Finn on top, Charlie + Jazzy on bottom, characters sit noticeably closer (no more oceans of transparent air), Time Machine + lineup all fit.
+- 6 dancers — 3 + 3 with Chunk, Jellybone (sax jellyfish), Finn on top and Charlie, Lou (unicorn), Jazzy on bottom. Tight composition.
+
+---
+
+
 
 Iteration on v5 per user: "the padding for the performers... they can be closer. When 4 are active, they are too big. Time machine 20 percent bigger."
 
