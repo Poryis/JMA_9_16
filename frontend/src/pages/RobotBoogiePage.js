@@ -330,7 +330,7 @@ function LightningBolt() {
 // Character slot — preloads every animation frame at mount so cycling is
 // instant, then toggles which frame is displayed via display:none/block.
 // ============================================================
-function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1 / 1' }) {
+function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
   const isActive = activeStemIndex >= 0;
 
   const [animFrame, setAnimFrame] = useState(1);
@@ -359,10 +359,14 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
       data-testid={`robot-boogie-char-${cfg.id}`}
       data-active={isActive ? 'true' : 'false'}
       onClick={() => onClick(cfg.id)}
-      className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none overflow-hidden"
+      className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none"
       style={{
         width: '100%',
-        aspectRatio: slotAspect,
+        // Original 3:4 portrait slot — the ONLY way we get here without
+        // clipping heads. Adjacent-dancer closeness is done via
+        // NEGATIVE HORIZONTAL MARGINS on the outer wrapper (see the
+        // main component's activeChars map). No vertical hacks.
+        aspectRatio: '3 / 4',
         touchAction: 'manipulation',
       }}
       whileHover={{ y: -6 }}
@@ -379,28 +383,26 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
       >
         {/* Neutral image — shown when the character is off. Always in
             the DOM so the browser has it cached the moment we toggle.
-            `object-cover object-bottom` crops the source PNG's baked-in
-            LEFT/RIGHT transparent margin (each sprite has ~25 % empty
-            air on each side) without touching height — so heads stay
-            in frame and adjacent dancers sit close together. */}
+            REVERTED to `object-contain` — object-cover was cropping
+            character heads at multi-row counts. Head clipping is a
+            hard NO. Horizontal closeness is handled by negative
+            margins on the outer wrapper (see the map() in the main
+            component), which is a pure X-axis change. */}
         <img
           src={cfg.neutral}
           alt=""
           draggable={false}
-          className="w-full h-full object-cover object-bottom pointer-events-none"
+          className="max-w-full max-h-full object-contain object-bottom pointer-events-none"
           style={{ display: isActive ? 'none' : 'block' }}
         />
 
-        {/* Single "playing" still (Jazzy). CSS keyframe wobble + hop —
-            using plain CSS animation instead of framer-motion because
-            the `layout` prop on the AnimatePresence wrapper interferes
-            with framer-motion's transform-based keyframe repeat. */}
+        {/* Single "playing" still (Jazzy). */}
         {cfg.playingSingle && (
           <img
             src={cfg.playingSingle}
             alt=""
             draggable={false}
-            className="w-full h-full object-cover object-bottom pointer-events-none absolute inset-0"
+            className="max-w-full max-h-full object-contain object-bottom pointer-events-none absolute inset-0 m-auto"
             style={{
               display: isActive ? 'block' : 'none',
               animation: isActive ? 'jazzyWobble 0.6s ease-in-out infinite' : 'none',
@@ -417,7 +419,7 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1
             src={url}
             alt=""
             draggable={false}
-            className="w-full h-full object-cover object-bottom pointer-events-none absolute inset-0"
+            className="max-w-full max-h-full object-contain object-bottom pointer-events-none absolute inset-0 m-auto"
             style={{
               display: isActive && animFrame === i + 1 ? 'block' : 'none',
             }}
@@ -716,45 +718,29 @@ export default function RobotBoogiePage() {
             <AnimatePresence mode="popLayout" initial={false}>
               {activeChars.map((cfg) => {
                 const n = activeChars.length;
-                // Widths are % of the band container (max 1200 px).
-                // With gap-0, wrap happens when N * width > 1200. The
-                // maxW caps are chosen so N-per-row exceeds the
-                // container width by a comfortable margin — otherwise
-                // the browser fits everything on one row.
-                //   1 → huge solo
-                //   2 → row of 2
-                //   3 → row of 3
-                //   4 → 2 rows of 2   (3 × 420 = 1260 > 1200, wraps)
-                //   5-6 → 3-per-row max  (4 × 340 = 1360 > 1200, wraps)
-                //   7-8 → 4-per-row max  (5 × 260 = 1300 > 1200, wraps)
-                let widthPct;
-                let maxW;
-                if (n === 1)      { widthPct = '55%'; maxW = '440px'; }
-                else if (n === 2) { widthPct = '48%'; maxW = '380px'; }
-                else if (n === 3) { widthPct = '33%'; maxW = '320px'; }
-                else if (n === 4) { widthPct = '48%'; maxW = '420px'; } // → 2+2
-                else if (n <= 6)  { widthPct = '33%'; maxW = '340px'; } // → max 3 per row
-                else               { widthPct = '24%'; maxW = '260px'; } // → max 4 per row
-
-                // Visual scale-down inside the slot so 4 dancers don't
-                // feel oversized. Layout width stays the same (wrap
-                // math is preserved), only the sprite renders smaller.
-                const innerScale = n === 4 ? 0.85 : 1;
-
-                // Slot aspect ratio. Since object-cover now fills the
-                // full slot height, TALLER slots (like 1:1) at multi-row
-                // counts push the Time Machine below the fold. Use
-                // landscape aspects for wrapped layouts so both rows +
-                // TM + lineup fit above the fold on 1280×800.
-                //   1-3 dancers → 5:4 (nearly square, one row anyway)
-                //   4          → 4:3 (2 rows of 2)
-                //   5-6        → 3:2 (2 rows of 3)
-                //   7-8        → 2:1 (2 rows of 4)
-                let slotAspect;
-                if (n <= 3)      slotAspect = '5 / 4';
-                else if (n === 4) slotAspect = '4 / 3';
-                else if (n <= 6)  slotAspect = '3 / 2';
-                else               slotAspect = '2 / 1';
+                // Widths + negative horizontal margins do the "closer
+                // together" work: each wrapper is BIGGER than we want
+                // it to render, with a negative margin on each side
+                // that pulls neighboring wrappers into overlap. The
+                // sprites' baked-in transparent side-padding then
+                // overlaps invisibly, so characters visually touch.
+                // The wrap math (which uses margin-box aka outer size)
+                // stays correct because outer = width + 2 × margin.
+                //
+                //   n | widthPct |  maxW | negMarginPx | outer = wrap size
+                //   1 |   55%    | 440px |      0      |   440
+                //   2 |   50%    | 440px |    -30      |   380
+                //   3 |   36%    | 380px |    -25      |   330
+                //   4 |   52%    | 480px |    -30      |   420   (3×420=1260>1200 → 2+2)
+                //  5-6|   36%    | 400px |    -30      |   340   (4×340=1360>1200 → 3-per-row)
+                //  7-8|   26%    | 300px |    -20      |   260   (5×260=1300>1200 → 4-per-row)
+                let widthPct, maxW, negPx;
+                if (n === 1)      { widthPct = '55%'; maxW = '440px'; negPx = 0; }
+                else if (n === 2) { widthPct = '50%'; maxW = '440px'; negPx = 30; }
+                else if (n === 3) { widthPct = '36%'; maxW = '380px'; negPx = 25; }
+                else if (n === 4) { widthPct = '52%'; maxW = '480px'; negPx = 30; }
+                else if (n <= 6)  { widthPct = '36%'; maxW = '400px'; negPx = 30; }
+                else               { widthPct = '26%'; maxW = '300px'; negPx = 20; }
 
                 return (
                   <motion.div
@@ -768,22 +754,16 @@ export default function RobotBoogiePage() {
                     style={{
                       width: widthPct,
                       maxWidth: maxW,
+                      marginLeft: `-${negPx}px`,
+                      marginRight: `-${negPx}px`,
                     }}
                   >
-                    <div
-                      style={{
-                        transform: `scale(${innerScale})`,
-                        transformOrigin: 'bottom center',
-                      }}
-                    >
-                      <CharacterSlot
-                        cfg={cfg}
-                        activeStemIndex={0}
-                        onClick={handleCharacterClick}
-                        zapping={zappingId === cfg.id}
-                        slotAspect={slotAspect}
-                      />
-                    </div>
+                    <CharacterSlot
+                      cfg={cfg}
+                      activeStemIndex={0}
+                      onClick={handleCharacterClick}
+                      zapping={zappingId === cfg.id}
+                    />
                   </motion.div>
                 );
               })}
