@@ -1,6 +1,43 @@
 # Changelog
 
-## Feb 28, 2026 — Robot Boogie team pairing + Jazzy legs fix
+## Feb 28, 2026 (later) — Robot Boogie v3: co-dancing pairs + Lou → drum-1
+
+Follow-up refinement per user: "when you toggle one of the pair members, don't disable the other's animation, just cycle to the next sound, but they'll both play/dance together. And for Lou, I want him to be drum-1. He can play at the same time as Chunk for now. Chunk gets all drums but the one."
+
+### 🕺 Both pair members dance together (only sound cycles)
+Previous v2 pairing SWAPPED members — activating Jellybone deactivated Jazzy. Now they groove side-by-side; only the audible stem cycles.
+
+State model changed from `teamState[teamId] = { charId, stemIndex }` to two decoupled maps:
+- `dancing[charId]: bool` — per-character visual state, independently toggled.
+- `teamStemIndex[teamId]: number | null` — index into `TEAM_STEMS[teamId]` for the ONE stem the team is currently playing (or null).
+
+Click behavior:
+| Tap on char C in team T | Effect |
+| --- | --- |
+| C not dancing, team silent | C dances; team stem = 0 (first stem plays) |
+| C not dancing, team already playing | C joins the dance; team stem advances by 1 (mod cycle length), old stem mutes, new one plays |
+| C already dancing, others in T still dancing | C stops dancing; **sound continues** — the other members hold the groove |
+| C already dancing, last dancer in T | C stops dancing; team goes silent |
+
+### 🥁 Lou → solo drum-1; Chunk keeps drum-1-1 / 2 / 3
+`CHARACTERS.stems`: Chunk lost `robot-drum-1` (now `['robot-drum-1-1', 'robot-drum-2', 'robot-drum-3']`); Lou gained `robot-drum-1` (was `robot-synth-1`).
+
+Lou is his own solo team → 6 total teams: `bass`, `drum`, `guitar`, **`lou`**, `horns` (Jazzy + Jellybone), `synth` (Robot 1 + Robot 2). Chip now reads "N / 6 playing".
+
+`robot-synth-1` is temporarily orphaned (no character/team plays it). The audio hook still preloads it; it just stays muted until a character is reassigned to it later.
+
+### Verified via automation
+- **Idle**: `0 / 6 PLAYING`.
+- **Tap Jazzy**: 1 / 6, `jazzy=true, jellybone=false`.
+- **Tap Jellybone (paired co-dance test)**: 1 / 6 — count stays at 1 because horns is still a single-stem slot — but `jazzy=true, jellybone=true` (both dancing). ✅
+- **Tap Jazzy off**: 1 / 6, `jazzy=false, jellybone=true` — sound continues while Jellybone holds the groove. ✅
+- **Tap Jellybone off (last horn dancer)**: 0 / 6, team silences. ✅
+- **Tap Lou + Chunk**: 2 / 6, both `data-active=true` — proves they're in separate teams and play together. ✅
+- **Tap all 8**: 6 / 6 PLAYING, every character `data-active=true` — every one visible with their color glow.
+
+---
+
+
 
 Two follow-ups on user feedback after the reel/tap-anim polish earlier the same day.
 

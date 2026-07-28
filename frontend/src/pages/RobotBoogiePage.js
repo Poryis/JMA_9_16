@@ -30,20 +30,20 @@ import useRobotBoogieAudio from '../hooks/useRobotBoogieAudio';
 // ============================================================
 // Character config
 //
-// TEAM PAIRING RULES (per user, Feb 28 2026):
-//   • Bass  → Finn only
-//   • Drums → Chunk only
+// TEAM PAIRING RULES (per user, Feb 28 2026 — v2):
+//   • Bass   → Finn only
+//   • Drums  → Chunk only (drum-1-1, drum-2, drum-3)
 //   • Guitar → Charlie only
-//   • Horns → Jazzy + Dr Jellybone (shared slot)
-//   • Synth → Lou + Robot 1 + Robot 2 (shared slot; Lou temporarily
-//             lives here until we decide his final home)
+//   • Lou    → **solo team**, plays drum-1 (can play WITH Chunk)
+//   • Horns  → Jazzy + Dr Jellybone (shared sound slot; both dance)
+//   • Synth  → Robot 1 + Robot 2      (shared sound slot; both dance)
 //
-// A "team" only ever plays ONE stem at a time. Tapping ANY team member
-// activates that member with their first stem. Tapping the same member
-// again cycles through their stems, then turns the team off. Tapping a
-// DIFFERENT member of an already-active team swaps to that member's
-// first stem — so if every character is toggled on you still only hear
-// 1 bass + 1 drum + 1 guitar + 1 horns + 1 synth = 5 layers total.
+// Paired teams (`horns`, `synth`) share ONE audible stem at a time.
+// Tapping any team member either (a) starts the team if it was off,
+// (b) advances to the next stem in the team's cycle if the team was
+// already playing, or (c) turns THAT character off — but if the other
+// member is still dancing, the sound keeps playing. Both members
+// dance together whenever both are toggled on.
 //
 // `playingSingle` — used for characters whose only extra "playing" pose
 // is a single still (Jazzy). Since her source `jazzy-playing.png` was
@@ -62,7 +62,9 @@ const CHARACTERS = [
   },
   {
     id: 'chunk',
-    stems: ['robot-drum-1', 'robot-drum-1-1', 'robot-drum-2', 'robot-drum-3'],
+    // Chunk keeps every drum stem EXCEPT drum-1 (which now belongs to
+    // Lou). See TEAM_STEMS below — the team cycle order is authoritative.
+    stems: ['robot-drum-1-1', 'robot-drum-2', 'robot-drum-3'],
     frames: 8,
     playingBase: 'assets/robot-boogie/chunk-playing/chunk-playing',
     neutral: 'assets/robot-boogie/chunk-neutral.png',
@@ -96,7 +98,10 @@ const CHARACTERS = [
   },
   {
     id: 'lou',
-    stems: ['robot-synth-1'],
+    // Lou moved out of the synth team; he's now the drum-1 solo. He
+    // can play at the same time as Chunk — different teams, different
+    // stems. robot-synth-1 is temporarily orphaned (no one plays it).
+    stems: ['robot-drum-1'],
     frames: 6,
     playingBase: 'assets/robot-boogie/lou-dancing/lou-dancing',
     neutral: 'assets/robot-boogie/lou-neutral.png',
@@ -120,15 +125,28 @@ const CHARACTERS = [
   },
 ];
 
-// Team → member ids. Order matters only for reset ordering; the actual
-// team routing uses CHAR_TO_TEAM below.
+// Team → member ids. Order matters for the shared-stem cycle: tapping
+// advances through TEAM_STEMS[teamId] which is derived by concatenating
+// each listed member's stems array (in this order).
 const TEAMS = {
   bass:   ['finn'],
   drum:   ['chunk'],
   guitar: ['charlie'],
+  lou:    ['lou'],
   horns:  ['jazzy', 'jellybone'],
-  synth:  ['lou', 'robot1', 'robot2'],
+  synth:  ['robot1', 'robot2'],
 };
+
+// Aggregated stem cycle per team. Each tap on ANY team member advances
+// the team's index into its cycle. Derived so per-character stem edits
+// stay the single source of truth.
+const TEAM_STEMS = Object.entries(TEAMS).reduce((acc, [teamId, members]) => {
+  acc[teamId] = members.flatMap(
+    (memberId) => CHARACTERS.find((c) => c.id === memberId).stems
+  );
+  return acc;
+}, {});
+
 const CHAR_TO_TEAM = Object.entries(TEAMS).reduce((acc, [teamId, members]) => {
   members.forEach((id) => { acc[id] = teamId; });
   return acc;
@@ -396,88 +414,78 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
 // ============================================================
 // Main page
 // ============================================================
-const EMPTY_TEAM_STATE = Object.keys(TEAMS).reduce((acc, t) => {
-  acc[t] = null;
-  return acc;
-}, {});
+const EMPTY_DANCING = CHARACTERS.reduce((acc, c) => { acc[c.id] = false; return acc; }, {});
+const EMPTY_TEAM_STEM = Object.keys(TEAMS).reduce((acc, t) => { acc[t] = null; return acc; }, {});
 
 export default function RobotBoogiePage() {
   const { setStemActive, muteAll } = useRobotBoogieAudio();
 
-  // Per-team state: null (nobody playing) OR { charId, stemIndex }.
-  // A "team" is a shared instrument slot — see TEAMS above.
-  const [teamState, setTeamState] = useState(() => ({ ...EMPTY_TEAM_STATE }));
+  // Per-character: is this character currently DANCING? Dancing is
+  // independent per character — both members of a paired team can dance
+  // at the same time. See TEAM PAIRING RULES in the CHARACTERS comment.
+  const [dancing, setDancing] = useState(() => ({ ...EMPTY_DANCING }));
+
+  // Per-team: index into TEAM_STEMS[teamId] for the ONE stem the team
+  // is currently playing (or null if the team is silent). Every tap on
+  // ANY team member advances this index by one; when the last dancer
+  // leaves the team, the index goes back to null.
+  const [teamStemIndex, setTeamStemIndex] = useState(() => ({ ...EMPTY_TEAM_STEM }));
 
   // Track which character was most recently zapped (for the LightningBolt
   // overlay on the character slot).
   const [zappingId, setZappingId] = useState(null);
 
   const handleCharacterClick = useCallback((charId) => {
-    const cfg = CHARACTERS.find((c) => c.id === charId);
-    if (!cfg) return;
     const teamId = CHAR_TO_TEAM[charId];
-    const current = teamState[teamId]; // null OR { charId, stemIndex }
+    const cycle = TEAM_STEMS[teamId];
+    const wasDancing = dancing[charId];
+    const curIdx = teamStemIndex[teamId];
 
-    setTeamState((prev) => {
-      const cur = prev[teamId];
+    // Team members OTHER than the tapped one that are still dancing
+    // AFTER this tap. Used to decide whether the sound keeps playing
+    // when the tapped char turns off.
+    const otherMembersStillDancing = TEAMS[teamId]
+      .filter((id) => id !== charId)
+      .some((id) => dancing[id]);
 
-      // Team is off → activate this char with their first stem.
-      if (cur === null) {
-        setStemActive(cfg.stems[0], true);
-        return { ...prev, [teamId]: { charId, stemIndex: 0 } };
-      }
+    if (!wasDancing) {
+      // Turning THIS character ON.
+      setDancing((prev) => ({ ...prev, [charId]: true }));
 
-      // Same character tapped again → advance to their next stem OR
-      // turn the team off if we've cycled through all of them.
-      if (cur.charId === charId) {
-        setStemActive(cfg.stems[cur.stemIndex], false);
-        if (cur.stemIndex + 1 < cfg.stems.length) {
-          setStemActive(cfg.stems[cur.stemIndex + 1], true);
-          return { ...prev, [teamId]: { charId, stemIndex: cur.stemIndex + 1 } };
-        }
-        return { ...prev, [teamId]: null };
-      }
+      // Advance the team's stem cycle. If nobody was playing, start at
+      // index 0; otherwise advance by one (wrapping around).
+      const nextIdx = curIdx === null ? 0 : (curIdx + 1) % cycle.length;
+      if (curIdx !== null) setStemActive(cycle[curIdx], false);
+      setStemActive(cycle[nextIdx], true);
+      setTeamStemIndex((prev) => ({ ...prev, [teamId]: nextIdx }));
 
-      // A DIFFERENT team member tapped → swap. Mute the currently-active
-      // member's stem, activate the new member's first stem. Only one
-      // team member is ever visually + audibly active at a time.
-      const prevCfg = CHARACTERS.find((c) => c.id === cur.charId);
-      if (prevCfg) setStemActive(prevCfg.stems[cur.stemIndex], false);
-      setStemActive(cfg.stems[0], true);
-      return { ...prev, [teamId]: { charId, stemIndex: 0 } };
-    });
-
-    // Only flash the lightning bolt if this tap actually turns the
-    // character ON (or swaps them in). Turning-off shouldn't zap.
-    const willBeActive =
-      current === null ||
-      current.charId !== charId ||
-      current.stemIndex + 1 < cfg.stems.length;
-    if (willBeActive) {
       setZappingId(charId);
       setTimeout(() => setZappingId(null), 360);
+    } else {
+      // Turning THIS character OFF.
+      setDancing((prev) => ({ ...prev, [charId]: false }));
+
+      if (!otherMembersStillDancing) {
+        // Last dancer in the team just left → silence the team.
+        if (curIdx !== null) setStemActive(cycle[curIdx], false);
+        setTeamStemIndex((prev) => ({ ...prev, [teamId]: null }));
+      }
+      // Else: leave the current stem playing — the other dancer keeps
+      // holding the groove.
     }
-  }, [teamState, setStemActive]);
+  }, [dancing, teamStemIndex, setStemActive]);
 
   const handleReset = useCallback(() => {
     muteAll();
-    setTeamState({ ...EMPTY_TEAM_STATE });
+    setDancing({ ...EMPTY_DANCING });
+    setTeamStemIndex({ ...EMPTY_TEAM_STEM });
   }, [muteAll]);
 
   const activeCount = useMemo(
-    () => Object.values(teamState).filter((v) => v !== null).length,
-    [teamState]
+    () => Object.values(teamStemIndex).filter((v) => v !== null).length,
+    [teamStemIndex]
   );
   const totalTeams = Object.keys(TEAMS).length;
-
-  // Helper: for a given character, what stem index (if any) is this
-  // character currently playing? -1 means "not this character."
-  const activeStemIndexFor = useCallback((charId) => {
-    const teamId = CHAR_TO_TEAM[charId];
-    const team = teamState[teamId];
-    if (team && team.charId === charId) return team.stemIndex;
-    return -1;
-  }, [teamState]);
 
   return (
     <div
@@ -547,7 +555,7 @@ export default function RobotBoogiePage() {
             <div key={cfg.id} className="min-w-0">
               <CharacterSlot
                 cfg={cfg}
-                activeStemIndex={activeStemIndexFor(cfg.id)}
+                activeStemIndex={dancing[cfg.id] ? 0 : -1}
                 onClick={handleCharacterClick}
                 zapping={zappingId === cfg.id}
               />
