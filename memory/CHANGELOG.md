@@ -1,5 +1,73 @@
 # Changelog
 
+## Feb 28, 2026 — Robot Boogie team pairing + Jazzy legs fix
+
+Two follow-ups on user feedback after the reel/tap-anim polish earlier the same day.
+
+### 🎺 Instrument teams: caps the mix at 5 layers max
+Previously all 8 characters could play simultaneously → cluttered mix. User asked for pairing so the max is 1 bass + 1 drum + 1 guitar + 1 horns + 1 synth.
+
+Added `TEAMS` and `CHAR_TO_TEAM` maps to `RobotBoogiePage.js`:
+- `bass` → Finn
+- `drum` → Chunk
+- `guitar` → Charlie
+- `horns` → **Jazzy + Dr Jellybone** (shared slot)
+- `synth` → **Lou + Robot 1 + Robot 2** (shared slot; Lou parked here per user note "I'll have to change that later")
+
+State model refactored from `charState` (per-character stem index) to `teamState` (per-team `{ charId, stemIndex } | null`). New click behavior:
+
+| Team state before tap | Result |
+| --- | --- |
+| null (team off) | Team turns on, tapped char plays their stem 0 |
+| Same char is active, stems remain | Advance to their next stem |
+| Same char is active, at last stem | Team turns off |
+| Different char is active | **Swap** — old member mutes, tapped member plays their stem 0 |
+
+Counter chip now reads "N / 5 playing" (teams, not characters). Zap lightning bolt only fires when the tap actually activates or swaps a character (not on turn-off).
+
+### 🦵 Jazzy's legs: reuse her neutral image for the "playing" state
+`jazzy-playing.png` is a torso-only crop — her feet were never drawn on the sheet, so no CSS offset can add them back (Feb 28 morning's `playingOffsetY: -10%` was cosmetic only). Fix: swap `playingSingle` from `jazzy-playing.png` to `jazzy-neutral.png` so her full body + red boots stay visible while playing. The wobble+hop framer-motion animation on the sprite (`rotate: [-5, 5, -5], y: [0, -8, 0]`) sells the "playing" motion; kids see her grooving without noticing the trumpet pose didn't change.
+
+**Follow-up needed from user**: If a proper "playing" pose with legs becomes available, drop it in and point Jazzy's `playingSingle` back to it.
+
+### Verified
+Automation confirmed:
+- Idle → "0 / 5 playing"; tap Jazzy → "1 / 5 playing" with `data-active` flipped to true only on Jazzy (jellybone stays false).
+- Tap Jellybone next → jazzy `data-active=false`, jellybone `data-active=true` (clean swap, one horn stem).
+- Tap all 8 characters in sequence → chip shows "5 / 5 playing"; active flags: `finn=true, chunk=true, charlie=true, jazzy=false, jellybone=true, lou=false, robot1=false, robot2=true`. Exactly one member per team, matching user's spec.
+- Jazzy's full sprite (with red boots) visible in the active screenshot.
+
+---
+
+## Feb 28, 2026 (morning) — Robot Boogie polish (Time Machine reel + tap flourish)
+
+Follow-up polish per user feedback after v2 rebuild. All fixes in `pages/RobotBoogiePage.js`.
+
+### 🎺 Jazzy's legs: initial attempt (superseded — see afternoon entry)
+Source PNG `jazzy-playing.png` is a torso-up crop (feet not drawn on the sheet). Bottom-aligning it made her hips clip against the frame's bottom edge and look decapitated at the waist.
+- Added optional `playingOffsetY` field on each `CHARACTERS` config entry.
+- Set `playingOffsetY: '-10%'` on Jazzy — shifts her whole "playing" sprite up 10% so the transparent bottom of the PNG becomes empty stage floor rather than a hard clip at her hips.
+- **Superseded**: user reported this was still visibly cropped. Afternoon fix swaps to `jazzy-neutral.png` for the playing state instead.
+
+### 🕰️ Time Machine loops continuously while any character plays
+Previously the 8-frame reel only fired once per toggle (via a `zapKey` counter). Now behaves like the disco ball — always in motion while music plays, idle when silent.
+- `<TimeMachine>` prop changed from `zapKey` to `anyActive` (derived from `activeCount > 0` in the parent).
+- `useEffect` starts a 100 ms interval that cycles `frame = (frame + 1) % 8` while `anyActive`, clears it and reverts to idle when everything is muted.
+
+### ⚡ Time Machine now tappable with Shield-style flourish
+Added the same easter-egg tap loop as the Home page shield.
+- Element switched from `<div pointer-events-none>` to `<motion.button>` with `whileHover`/`whileTap`.
+- New `TIME_MACHINE_ANIMS` array of 5 variants (wobble, spin, pop, flipY, shimmy). Deterministic cycle via `hitsRef` so back-to-back taps never repeat.
+- Reel-frame `<img>` elements marked `pointer-events-none` so clicks always go to the button, not a child image.
+- Reset button no longer bumps a zapKey (obsolete) — reset simply mutes stems + clears state.
+
+### Verified
+Automation confirmed:
+- Idle scene: all 8 characters grayed, time machine shows `time-machine-idle.png`, "0 / 8 PLAYING" chip visible.
+- After tapping Jazzy: Jazzy colored-in with **full red boots visible**, glowing yellow drop-shadow, "1 / 8 PLAYING" chip, time machine glowing (reel running).
+- Tapping the time machine plays the tap animation (position shift + rotate variants) even when no character is active.
+
+
 ## Feb 27, 2026 (later still) — Robot Boogie v2 rebuild
 
 User feedback was rough on v1: loops out of sync, characters tiny, animations not playing, time machine covering the disco ball, name plates unwanted. Full rebuild:

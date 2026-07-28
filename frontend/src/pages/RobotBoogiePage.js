@@ -11,16 +11,45 @@
 //   • Audio sync handled sample-accurately by the Web-Audio version of
 //     useRobotBoogieAudio — see that file for details.
 //
+// Team pairing (v3, Feb 28 2026):
+//   Stems are grouped by INSTRUMENT into 5 "teams" — bass, drum, guitar,
+//   horns (Jazzy + Jellybone), synth (Lou + Robot 1 + Robot 2). A team
+//   only ever plays ONE stem at a time. Tapping any team member swaps
+//   the team's active member; tapping the same member cycles through
+//   their stems then turns the team off. This caps the mix at 5 layers
+//   even if every character is toggled on. See TEAMS + CHAR_TO_TEAM.
+//
 // Grid: 4 columns × 2 rows on desktop, 2 × 4 on mobile.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
 import { RotateCcw } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import useRobotBoogieAudio from '../hooks/useRobotBoogieAudio';
 
 // ============================================================
 // Character config
+//
+// TEAM PAIRING RULES (per user, Feb 28 2026):
+//   • Bass  → Finn only
+//   • Drums → Chunk only
+//   • Guitar → Charlie only
+//   • Horns → Jazzy + Dr Jellybone (shared slot)
+//   • Synth → Lou + Robot 1 + Robot 2 (shared slot; Lou temporarily
+//             lives here until we decide his final home)
+//
+// A "team" only ever plays ONE stem at a time. Tapping ANY team member
+// activates that member with their first stem. Tapping the same member
+// again cycles through their stems, then turns the team off. Tapping a
+// DIFFERENT member of an already-active team swaps to that member's
+// first stem — so if every character is toggled on you still only hear
+// 1 bass + 1 drum + 1 guitar + 1 horns + 1 synth = 5 layers total.
+//
+// `playingSingle` — used for characters whose only extra "playing" pose
+// is a single still (Jazzy). Since her source `jazzy-playing.png` was
+// drawn as a torso-up crop with no feet, we reuse her neutral image
+// here so her legs remain visible while playing; the wobble animation
+// applied by <CharacterSlot> still communicates "she's grooving."
 // ============================================================
 const CHARACTERS = [
   {
@@ -51,7 +80,9 @@ const CHARACTERS = [
     id: 'jazzy',
     stems: ['robot-horns-1'],
     frames: 0,
-    playingSingle: 'assets/robot-boogie/jazzy-playing.png',
+    // Reuse neutral for the "playing" still so Jazzy's legs stay visible.
+    // The wobble motion on <CharacterSlot> conveys "she's playing."
+    playingSingle: 'assets/robot-boogie/jazzy-neutral.png',
     neutral: 'assets/robot-boogie/jazzy-neutral.png',
     color: '#FFCC00',
   },
@@ -89,52 +120,102 @@ const CHARACTERS = [
   },
 ];
 
+// Team → member ids. Order matters only for reset ordering; the actual
+// team routing uses CHAR_TO_TEAM below.
+const TEAMS = {
+  bass:   ['finn'],
+  drum:   ['chunk'],
+  guitar: ['charlie'],
+  horns:  ['jazzy', 'jellybone'],
+  synth:  ['lou', 'robot1', 'robot2'],
+};
+const CHAR_TO_TEAM = Object.entries(TEAMS).reduce((acc, [teamId, members]) => {
+  members.forEach((id) => { acc[id] = teamId; });
+  return acc;
+}, {});
+
 // ============================================================
 // Time machine — small chip that lives in the top-RIGHT corner so it
 // doesn't overlap the disco ball at the top-center of the background.
-// Animates its 8-frame reel once whenever any character is toggled.
+//
+// Reel behavior:
+//   • Idle when nothing is playing (single time-machine-idle.png).
+//   • Loops the 8-frame reel CONTINUOUSLY while any character is active.
+//   • A tap plays a fun Shield-style flourish animation (cycles through a
+//     set of variants) — same easter-egg vibe as the home page logo.
 // ============================================================
-function TimeMachine({ zapKey }) {
+const TIME_MACHINE_ANIMS = [
+  { keyframes: { rotate: [0, -14, 12, -8, 6, 0],  scale: [1, 1.08, 1.10, 1.04, 1.02, 1] }, duration: 0.9 },
+  { keyframes: { rotate: [0, 360],                scale: [1, 1.10, 1],                     y: [0, -10, 0] }, duration: 0.95 },
+  { keyframes: { rotate: [0, 0],                  scale: [1, 1.35, 0.92, 1.12, 1],         y: [0, -14, 0, -6, 0] }, duration: 0.85 },
+  { keyframes: { rotateY: [0, 360],               scale: [1, 1.06, 1],                     y: [0, -8, 0] }, duration: 0.95 },
+  { keyframes: { x: [0, -10, 10, -7, 7, -4, 4, 0], rotate: [0, -4, 4, -2, 2, 0, 0, 0],     scale: [1, 1.04, 1.04, 1.04, 1.04, 1.02, 1.02, 1] }, duration: 0.95 },
+];
+
+function TimeMachine({ anyActive }) {
   const [frame, setFrame] = useState(-1);
   const timerRef = useRef(null);
+  const tmControls = useAnimationControls();
+  const hitsRef = useRef(0);
 
+  // Loop the reel while any stem is active; otherwise return to idle.
   useEffect(() => {
-    if (zapKey === 0) return;
-    setFrame(0);
-    let i = 0;
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      i += 1;
-      if (i >= 8) {
-        clearInterval(timerRef.current);
-        setFrame(-1);
-      } else {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (anyActive) {
+      let i = 0;
+      setFrame(0);
+      timerRef.current = setInterval(() => {
+        i = (i + 1) % 8;
         setFrame(i);
-      }
-    }, 80);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [zapKey]);
+      }, 100);
+    } else {
+      setFrame(-1);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [anyActive]);
+
+  // Shield-style easter-egg flourish on tap.
+  const handleTap = () => {
+    const anim = TIME_MACHINE_ANIMS[hitsRef.current % TIME_MACHINE_ANIMS.length];
+    hitsRef.current += 1;
+    tmControls.start({
+      ...anim.keyframes,
+      transition: { duration: anim.duration, ease: 'easeInOut' },
+    });
+  };
 
   // Preload all 8 frames + idle by rendering them stacked with display
   // toggling — no fetch delay when the reel plays. Position:fixed so its
   // location is anchored to the viewport (not the min-h-screen wrapper,
   // which can grow wider than the viewport briefly during layout).
   return (
-    <div
+    <motion.button
+      type="button"
       data-testid="robot-boogie-time-machine"
-      className="fixed pointer-events-none select-none"
+      aria-label="Time machine"
+      onClick={handleTap}
+      className="fixed select-none bg-transparent border-0 p-0 cursor-pointer"
       style={{
         right: 'clamp(12px, 2vw, 32px)',
         top: 'clamp(80px, 12vh, 130px)',
         width: 'clamp(96px, 12vw, 160px)',
         zIndex: 15,
+        touchAction: 'manipulation',
       }}
+      animate={tmControls}
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.94 }}
     >
       <img
         src="assets/robot-boogie/time-machine-idle.png"
         alt=""
         draggable={false}
-        className="w-full h-auto"
+        className="w-full h-auto pointer-events-none"
         style={{
           display: frame === -1 ? 'block' : 'none',
           filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.55))',
@@ -146,14 +227,14 @@ function TimeMachine({ zapKey }) {
           src={`assets/robot-boogie/time-machine/time-machine-${String(i + 1).padStart(2, '0')}.png`}
           alt=""
           draggable={false}
-          className="absolute inset-0 w-full h-auto"
+          className="absolute inset-0 w-full h-auto pointer-events-none"
           style={{
             display: frame === i ? 'block' : 'none',
             filter: 'drop-shadow(0 0 24px rgba(255,220,120,0.9))',
           }}
         />
       ))}
-    </div>
+    </motion.button>
   );
 }
 
@@ -261,7 +342,9 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
           style={{ display: isActive ? 'none' : 'block' }}
         />
 
-        {/* Single "playing" still (Jazzy — no frame sequence). */}
+        {/* Single "playing" still (Jazzy). Wobble + hop animation gives
+            the illusion of "playing" without needing a distinct pose,
+            since her legs-included neutral is reused here. */}
         {cfg.playingSingle && (
           <motion.img
             src={cfg.playingSingle}
@@ -269,8 +352,8 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
             draggable={false}
             className="max-w-full max-h-full object-contain object-bottom pointer-events-none absolute inset-0 m-auto"
             style={{ display: isActive ? 'block' : 'none' }}
-            animate={isActive ? { rotate: [0, -4, 4, 0] } : {}}
-            transition={{ duration: 0.6, repeat: Infinity, ease: 'easeInOut' }}
+            animate={isActive ? { rotate: [-5, 5, -5], y: [0, -8, 0] } : {}}
+            transition={{ duration: 0.55, repeat: Infinity, ease: 'easeInOut' }}
           />
         )}
 
@@ -313,55 +396,88 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
 // ============================================================
 // Main page
 // ============================================================
+const EMPTY_TEAM_STATE = Object.keys(TEAMS).reduce((acc, t) => {
+  acc[t] = null;
+  return acc;
+}, {});
+
 export default function RobotBoogiePage() {
   const { setStemActive, muteAll } = useRobotBoogieAudio();
 
-  // Per-character: null = neutral, 0..stems.length-1 = active stem index.
-  const [charState, setCharState] = useState(() => {
-    const s = {};
-    CHARACTERS.forEach((c) => { s[c.id] = null; });
-    return s;
-  });
+  // Per-team state: null (nobody playing) OR { charId, stemIndex }.
+  // A "team" is a shared instrument slot — see TEAMS above.
+  const [teamState, setTeamState] = useState(() => ({ ...EMPTY_TEAM_STATE }));
 
-  // Zap key ticks up on every toggle so <TimeMachine> re-runs its reel.
-  const [zapKey, setZapKey] = useState(0);
+  // Track which character was most recently zapped (for the LightningBolt
+  // overlay on the character slot).
   const [zappingId, setZappingId] = useState(null);
 
   const handleCharacterClick = useCallback((charId) => {
     const cfg = CHARACTERS.find((c) => c.id === charId);
     if (!cfg) return;
+    const teamId = CHAR_TO_TEAM[charId];
+    const current = teamState[teamId]; // null OR { charId, stemIndex }
 
-    const current = charState[charId];
-    let nextIndex; // null OR 0..stems.length-1
+    setTeamState((prev) => {
+      const cur = prev[teamId];
 
-    if (current === null) nextIndex = 0;
-    else if (current + 1 < cfg.stems.length) nextIndex = current + 1;
-    else nextIndex = null;
+      // Team is off → activate this char with their first stem.
+      if (cur === null) {
+        setStemActive(cfg.stems[0], true);
+        return { ...prev, [teamId]: { charId, stemIndex: 0 } };
+      }
 
-    // Audio: mute the current stem, unmute the new one (if any).
-    if (current !== null) setStemActive(cfg.stems[current], false);
-    if (nextIndex !== null) setStemActive(cfg.stems[nextIndex], true);
+      // Same character tapped again → advance to their next stem OR
+      // turn the team off if we've cycled through all of them.
+      if (cur.charId === charId) {
+        setStemActive(cfg.stems[cur.stemIndex], false);
+        if (cur.stemIndex + 1 < cfg.stems.length) {
+          setStemActive(cfg.stems[cur.stemIndex + 1], true);
+          return { ...prev, [teamId]: { charId, stemIndex: cur.stemIndex + 1 } };
+        }
+        return { ...prev, [teamId]: null };
+      }
 
-    setCharState((prev) => ({ ...prev, [charId]: nextIndex }));
-    setZapKey((k) => k + 1);
-    setZappingId(charId);
-    setTimeout(() => setZappingId(null), 360);
-  }, [charState, setStemActive]);
+      // A DIFFERENT team member tapped → swap. Mute the currently-active
+      // member's stem, activate the new member's first stem. Only one
+      // team member is ever visually + audibly active at a time.
+      const prevCfg = CHARACTERS.find((c) => c.id === cur.charId);
+      if (prevCfg) setStemActive(prevCfg.stems[cur.stemIndex], false);
+      setStemActive(cfg.stems[0], true);
+      return { ...prev, [teamId]: { charId, stemIndex: 0 } };
+    });
+
+    // Only flash the lightning bolt if this tap actually turns the
+    // character ON (or swaps them in). Turning-off shouldn't zap.
+    const willBeActive =
+      current === null ||
+      current.charId !== charId ||
+      current.stemIndex + 1 < cfg.stems.length;
+    if (willBeActive) {
+      setZappingId(charId);
+      setTimeout(() => setZappingId(null), 360);
+    }
+  }, [teamState, setStemActive]);
 
   const handleReset = useCallback(() => {
     muteAll();
-    setCharState(() => {
-      const s = {};
-      CHARACTERS.forEach((c) => { s[c.id] = null; });
-      return s;
-    });
-    setZapKey((k) => k + 1);
+    setTeamState({ ...EMPTY_TEAM_STATE });
   }, [muteAll]);
 
   const activeCount = useMemo(
-    () => Object.values(charState).filter((v) => v !== null).length,
-    [charState]
+    () => Object.values(teamState).filter((v) => v !== null).length,
+    [teamState]
   );
+  const totalTeams = Object.keys(TEAMS).length;
+
+  // Helper: for a given character, what stem index (if any) is this
+  // character currently playing? -1 means "not this character."
+  const activeStemIndexFor = useCallback((charId) => {
+    const teamId = CHAR_TO_TEAM[charId];
+    const team = teamState[teamId];
+    if (team && team.charId === charId) return team.stemIndex;
+    return -1;
+  }, [teamState]);
 
   return (
     <div
@@ -387,7 +503,7 @@ export default function RobotBoogiePage() {
 
       <GameHeader title="Robot Boogie" showHomeButton={true} />
 
-      <TimeMachine zapKey={zapKey} />
+      <TimeMachine anyActive={activeCount > 0} />
 
       {/* Header ribbon: active count + reset */}
       <div className="relative z-10 flex items-center justify-center gap-3 mt-16 md:mt-20 pt-3">
@@ -401,7 +517,7 @@ export default function RobotBoogiePage() {
             boxShadow: '0 3px 0 0 var(--jma-dark)',
           }}
         >
-          {activeCount} / {CHARACTERS.length} playing
+          {activeCount} / {totalTeams} playing
         </div>
         <button
           type="button"
@@ -431,7 +547,7 @@ export default function RobotBoogiePage() {
             <div key={cfg.id} className="min-w-0">
               <CharacterSlot
                 cfg={cfg}
-                activeStemIndex={charState[cfg.id] ?? -1}
+                activeStemIndex={activeStemIndexFor(cfg.id)}
                 onClick={handleCharacterClick}
                 zapping={zappingId === cfg.id}
               />
