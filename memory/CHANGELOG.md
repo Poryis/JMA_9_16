@@ -1,5 +1,34 @@
 # Changelog
 
+## Feb 27, 2026 (later still) — Robot Boogie v2 rebuild
+
+User feedback was rough on v1: loops out of sync, characters tiny, animations not playing, time machine covering the disco ball, name plates unwanted. Full rebuild:
+
+### 🎵 Audio: HTMLAudioElement → Web Audio API (sample-accurate sync)
+`hooks/useRobotBoogieAudio.js` rewritten. Root cause of v1's drift: `<audio loop>` in HTMLAudioElement is NOT sample-accurate — MP3 seek can gap by tens of ms per lap, so within a few loops the 12 stems drift wildly.
+- v2 fetches each MP3 → `AudioContext.decodeAudioData()` → in-memory `AudioBuffer`.
+- On the FIRST character tap, creates 12 `AudioBufferSourceNode`s + 12 `GainNode`s and calls `.start(startTime)` on ALL of them at the exact same `ctx.currentTime + 0.05` — sample-accurate group start.
+- Gain nodes ramp between 0 and 1 over 15 ms on toggle — no audible click.
+- Sources never stop until the page unmounts, so the 12 stems stay locked on the same measure grid forever.
+
+### 🎬 Animation: frames now actually cycle
+v1's `<img src>` swap forced the browser to fetch each frame on demand, producing flicker/no-play. v2 preloads every playing/dancing frame at mount by rendering them as stacked `<img>` with `display: none/block` toggled on the current-frame index. Verified via automation: at 400 ms deltas Robot 1 goes `01 → 06`, Chunk goes `05 → 02`, Charlie goes `08 → 05`. Animations play the moment a character is toggled active.
+
+### 📐 Layout fixes
+- **Characters BIG** (263 px × 351 px each on 1280 viewport, aspect-ratio locked 3:4). Grid switched from a 1-row-of-8 flex-wrap that overflowed the viewport, to a proper 4-col × 2-row CSS grid centered with `mx-auto` inside a 1160 px max-width column.
+- **Time machine** relocated from center-top (covering the disco ball on the bg) to `position: fixed` top-right corner. Smaller (96-160 px wide) so it doesn't compete with the character stage.
+- **Name plates removed** — kids ID their pals by outfit + song.
+- Bottom purple wash raised so the tile floor on the bg still peeks through.
+
+### Also
+- Copied `robot-boogie/finn-neutral.png` (which is `Disco Shark Bass nuetral.png` after compression) → `characters/finn-disco.png` per user request.
+
+### Files touched
+- `hooks/useRobotBoogieAudio.js` — full rewrite with Web Audio API.
+- `pages/RobotBoogiePage.js` — full rewrite: preloaded frame stacks, 4×2 grid, no nameplates, time machine relocated.
+
+---
+
 ## Feb 27, 2026 (later) — Theme swap fix: Jelly Jukebox = disco, Who's Got the Rhythm = marching band
 
 User caught a swap error from the previous batch: I'd flipped the visual themes between the two rooms. Corrected mapping:

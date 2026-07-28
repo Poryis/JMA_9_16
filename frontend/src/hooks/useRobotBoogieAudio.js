@@ -1,21 +1,25 @@
-// useRobotBoogieAudio — audio manager for the Robot Boogie mixer game.
+// useRobotBoogieAudio — Web Audio API version.
 //
-// Design goal: perfect sync between the 12 stems. If we spun up an
-// <audio> element on demand (only after a kid taps a character) each
-// stem would restart from t=0 and drift out of the shared measure grid,
-// producing a "glitchy restart" that the user explicitly asked us to
-// avoid.
+// The v1 attempt used HTMLAudioElement with `loop=true`, but MP3 loops on
+// HTMLAudioElement are NOT sample-accurate — each loop can gap by tens of
+// milliseconds, and after a few laps the 12 stems drift wildly out of sync.
+// The user reported "the loops arent at all together" and that was the
+// core problem.
 //
-// So instead: preload all 12 stems, and on the very FIRST character tap
-// (which counts as an in-page user gesture — required by iOS autoplay
-// policy) start EVERY stem simultaneously. From that point on they all
-// loop in lockstep. Toggling a character just toggles `muted` on the
-// matching HTMLAudioElement — audible/inaudible without ever restarting.
+// This version:
+//   1. Fetches + decodes each stem into an in-memory AudioBuffer (once).
+//   2. On the FIRST character tap, spins up 12 AudioBufferSourceNodes and
+//      calls .start(startTime) on ALL of them at the exact same audio-clock
+//      timestamp — sample-accurate group start.
+//   3. Each source is routed through its own GainNode. Toggling a character
+//      just ramps that GainNode to 1.0 (audible) or 0.0 (silent) over ~15
+//      ms. The source never stops, so it stays in perfect sync with the
+//      other 11 for the entire session.
+//
+// Result: every stem lines up on the measure grid indefinitely.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Stem IDs — file basenames under /public/assets/audio/robot-boogie/.
-// Kept as an ordered list so we can iterate deterministically.
 export const STEM_IDS = [
   'robot-bass',
   'robot-drum-1',
@@ -32,71 +36,99 @@ export const STEM_IDS = [
 ];
 
 export default function useRobotBoogieAudio() {
-  const audioMap = useRef({}); // { stemId: HTMLAudioElement }
+  const ctxRef = useRef(null);
+  const buffersRef = useRef({});   // stemId -> AudioBuffer
+  const sourcesRef = useRef({});   // stemId -> AudioBufferSourceNode
+  const gainsRef = useRef({});     // stemId -> GainNode
   const startedRef = useRef(false);
-  const [ready, setReady] = useState(false);
-  // Which stems are currently unmuted (for UI feedback if needed)
+
+  const [loaded, setLoaded] = useState(false);
   const [activeStems, setActiveStems] = useState(new Set());
 
-  // ---- preload all 12 audio elements exactly once ----
+  // ---- preload + decode all 12 stems as AudioBuffers ----
   useEffect(() => {
     let cancelled = false;
-    let loadedCount = 0;
+    const Ctor = window.AudioContext || window.webkitAudioContext;
+    if (!Ctor) {
+      setLoaded(true);
+      return;
+    }
+    const ctx = new Ctor();
+    ctxRef.current = ctx;
 
-    STEM_IDS.forEach((stem) => {
-      const audio = new Audio(`assets/audio/robot-boogie/${stem}.mp3`);
-      audio.loop = true;
-      audio.muted = true;         // start silent — flip mute on activation
-      audio.preload = 'auto';
-      audio.crossOrigin = 'anonymous';
-      // iOS requires playsinline; on <audio> this attribute maps directly.
-      audio.setAttribute('playsinline', '');
-      audio.setAttribute('webkit-playsinline', '');
-
-      const onReady = () => {
-        loadedCount += 1;
-        if (!cancelled && loadedCount === STEM_IDS.length) setReady(true);
-      };
-      audio.addEventListener('canplaythrough', onReady, { once: true });
-
-      audioMap.current[stem] = audio;
+    Promise.all(
+      STEM_IDS.map(async (stem) => {
+        try {
+          const res = await fetch(`assets/audio/robot-boogie/${stem}.mp3`);
+          const arrayBuf = await res.arrayBuffer();
+          // Wrap in a Promise because some old iOS Safari builds only
+          // support the callback form of decodeAudioData.
+          const audioBuf = await new Promise((resolve, reject) => {
+            const p = ctx.decodeAudioData(arrayBuf, resolve, reject);
+            if (p && typeof p.then === 'function') p.then(resolve, reject);
+          });
+          buffersRef.current[stem] = audioBuf;
+        } catch (_) {
+          /* individual stem failure — page still functions with others */
+        }
+      })
+    ).then(() => {
+      if (!cancelled) setLoaded(true);
     });
 
     return () => {
       cancelled = true;
-      Object.values(audioMap.current).forEach((a) => {
-        try { a.pause(); a.src = ''; a.load(); } catch (_) { /* ignore */ }
+      // Stop every source
+      Object.values(sourcesRef.current).forEach((s) => {
+        try { s.stop(); } catch (_) { /* already stopped */ }
       });
-      audioMap.current = {};
+      try { ctx.close(); } catch (_) { /* ignore */ }
+      ctxRef.current = null;
+      buffersRef.current = {};
+      sourcesRef.current = {};
+      gainsRef.current = {};
       startedRef.current = false;
     };
   }, []);
 
-  // ---- toggle a stem ----
-  // First call in a session ALSO fires the group-start dance so every
-  // stem begins from t=0 together. Subsequent calls just mute/unmute.
+  // ---- toggle a stem's audibility ----
   const setStemActive = useCallback(async (stemId, active) => {
-    // First-touch group-start
-    if (!startedRef.current) {
-      startedRef.current = true;
-      // Rewind every stem to 0 then play them all in the same tick.
-      // We await the .play() promises so iOS can grant the entire cluster
-      // permission from the single user gesture that triggered this call.
-      const promises = STEM_IDS.map((id) => {
-        const a = audioMap.current[id];
-        if (!a) return Promise.resolve();
-        a.muted = true;
-        try { a.currentTime = 0; } catch (_) { /* iOS may throw pre-load */ }
-        const p = a.play();
-        return p && typeof p.catch === 'function'
-          ? p.catch(() => { /* autoplay policy edge — silent fail */ })
-          : Promise.resolve();
-      });
-      await Promise.all(promises);
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    if (ctx.state === 'suspended') {
+      try { await ctx.resume(); } catch (_) { /* ignore */ }
     }
 
-    const a = audioMap.current[stemId];
-    if (a) a.muted = !active;
+    // First-touch: spin up all 12 sources + gains and start them at the
+    // SAME AudioContext timestamp. This is the anti-drift move.
+    if (!startedRef.current) {
+      startedRef.current = true;
+      const startTime = ctx.currentTime + 0.05; // small lookahead
+      STEM_IDS.forEach((id) => {
+        const buf = buffersRef.current[id];
+        if (!buf) return;
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.loop = true;
+        const gain = ctx.createGain();
+        gain.gain.value = 0; // start silent
+        src.connect(gain).connect(ctx.destination);
+        src.start(startTime);
+        sourcesRef.current[id] = src;
+        gainsRef.current[id] = gain;
+      });
+    }
+
+    // Ramp the requested gain — 15 ms is enough to avoid audible clicks
+    // without introducing a perceptible fade delay.
+    const gain = gainsRef.current[stemId];
+    if (gain) {
+      const now = ctx.currentTime;
+      // Cancel any in-flight ramp on this node so we don't fight it
+      try { gain.gain.cancelScheduledValues(now); } catch (_) { /* ignore */ }
+      gain.gain.setValueAtTime(gain.gain.value, now);
+      gain.gain.linearRampToValueAtTime(active ? 1.0 : 0.0, now + 0.015);
+    }
 
     setActiveStems((prev) => {
       const next = new Set(prev);
@@ -106,11 +138,18 @@ export default function useRobotBoogieAudio() {
     });
   }, []);
 
-  // ---- silence everyone (used by the RESET button) ----
+  // ---- mute everyone (reset button) ----
   const muteAll = useCallback(() => {
-    Object.values(audioMap.current).forEach((a) => { a.muted = true; });
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    Object.values(gainsRef.current).forEach((g) => {
+      try { g.gain.cancelScheduledValues(now); } catch (_) { /* ignore */ }
+      g.gain.setValueAtTime(g.gain.value, now);
+      g.gain.linearRampToValueAtTime(0, now + 0.04);
+    });
     setActiveStems(new Set());
   }, []);
 
-  return { ready, activeStems, setStemActive, muteAll };
+  return { loaded, activeStems, setStemActive, muteAll };
 }
