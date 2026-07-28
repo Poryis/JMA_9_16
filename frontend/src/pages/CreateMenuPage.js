@@ -24,13 +24,23 @@ const CREATE_TILES = [
     sfx: 'assets/audio/sfx-dj-scratch.mp3',
   },
   {
+    id: 'robot-boogie',
+    title: 'ROBOT BOOGIE',
+    path: '/robot-boogie',
+    bg: 'assets/backgrounds/robot-boogie-scene.png',
+    color: '#5A2989',
+    accent: '#3B1F5C',
+    character: 'assets/robot-boogie/robot1-neutral/robot1-neutral-01.png',
+    charWidthPct: 34,
+    sfx: 'assets/audio/robot-boogie/robot-synth-1.mp3',
+  },
+  {
     id: 'song-studio',
     title: "CHARLIE'S SONG STUDIO",
     path: '/song-studio',
     bg: 'assets/backgrounds/charlie-in-studio.jpg',
     color: '#FFCC00',
     accent: '#F39C12',
-    // Charlie is already in the background art — no need for a character overlay.
     sfx: 'assets/audio/sfx-piano-flourish.mp3',
   },
 ];

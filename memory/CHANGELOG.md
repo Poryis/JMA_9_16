@@ -1,5 +1,81 @@
 # Changelog
 
+## Feb 27, 2026 — Robot Boogie mixer game + disco theming + asset compression
+
+Massive drop: user provided 3 zip archives (actionable-now assets, new game assets, fun assets) plus updates to backgrounds, character outfits, and one huge new game.
+
+### 🎛️ NEW GAME: Robot Boogie (`/robot-boogie`, `pages/RobotBoogiePage.js`)
+Incredibox-style stem mixer under CREATE. 8 characters, 12 audio stems, all synced in lockstep.
+
+- **Sync design (critical)**: All 12 mp3 loops start playing simultaneously on the FIRST character tap (iOS-legal user gesture). From then on they loop forever in perfect sync — activating a character just flips `.muted = false` on its `<audio>` element. No restarts, no drift.
+- **Multi-stem cycling**: Chunk has 4 drum variants (drum-1, drum-1-1, drum-2, drum-3), Dr. Jellybone has 2 horn variants. Each click cycles to the next stem; final click returns to neutral.
+- **Character-to-stem mapping**:
+  - Finn → bass
+  - Chunk → drums (4 variants, cycles)
+  - Charlie → guitar
+  - Jazzy → horns-1
+  - Dr. Jellybone → horns-2/horns-3 (cycles)
+  - Lou → synth-1 (dances, doesn't play an instrument)
+  - Robo Red → synth-2 (dances)
+  - Robo Blue → synth-3 (dances)
+- **Visuals**:
+  - Time machine centered top; plays 8-frame animation whenever any character is toggled
+  - Clicked character shows a 4-frame lightning bolt during the zap
+  - Active characters use their playing/dancing animation loop (10 fps) + full-color drop-shadow glow
+  - Neutral characters are dimmed (saturate 0.55, brightness 0.75) so it's obvious which pals are "on"
+  - Active count + reset button in the header ribbon
+- **Route**: `/robot-boogie`. Tile added to `/create` with the disco-scene bg + Robo Red as thumbnail.
+- **New hook**: `hooks/useRobotBoogieAudio.js` — preloads all 12 stems, group-starts on first activation, exposes `setStemActive(id, active)` + `muteAll()`.
+
+### 📦 Asset compression pipeline (space savings ~85%)
+User flagged the disco background as "WAY too big" and asked to keep the app light. Ran a one-shot Pillow pipeline (`/tmp/compress_assets.py`) that:
+- Resized every large PNG to a max 512-1600 px longest edge with `Image.LANCZOS` + `optimize=True`.
+- Sampled character animation frame folders down to 8 evenly-spaced frames (from up to 47).
+- Net Robot Boogie asset budget: **4.3 MB frames + 5.1 MB audio = 9.4 MB** for a full 8-character mixer.
+- Standout wins: JMAtv logo 2.7 MB → 238 KB · Lou 2.1 MB → 217 KB · Curtain BG 1.7 MB → 229 KB · Chunk drums frames 6.7 MB → 721 KB.
+
+### 🎨 Actionable-now asset swaps
+- **JMAtv logo**: Replaced `assets/ui/jmatv-logo.png` in-place (the "TV" now matches the shield's yellow). Every reference across RetroTV / JMAtvHomePage / JMAtvPlayerPage / stickers picks up the new art automatically.
+- **Marching band Chunk**: New `assets/characters/chunk-marching.png` (drum-major-style Chunk). Ready to swap into Who's Got the Rhythm cards or the report card.
+- **Lou standalone**: New `assets/characters/lou.png` (Lou without Stew).
+- **Podium + Charlie Lecturn + Curtain BG**: New Lessons page background — dramatic red curtains with Charlie behind a podium anchored bottom-center.
+
+### 🎪 Jelly Jukebox — disco scene
+Menu page background swapped from the CSS radial-gradient to `assets/backgrounds/jelly-jukebox-scene.png` (the user's disco scene with jukebox + tile floor). Kept the rainbow-glow title + purple/violet overlay tint on top so the title still pops.
+
+### 🕺 Who's Got the Rhythm — disco floor makeover
+- Mode-picker page bg: football-field.png → `jukebox-floor-1.png` (colorful diagonal tile floor).
+- Each mode card gets a different tile-floor variant (floor-1, floor-2, floor-3) so the three cards feel distinct.
+- Character portraits swapped to disco outfits sourced from the new Robot Boogie art:
+  - Parrot Percussion → `chunk-neutral.png` (disco Chunk with drums)
+  - Beat Finder → `jazzy-playing.png` (disco Jazzy with trumpet)
+  - Rhythm Run → `charlie-neutral-01.png` (disco Charlie)
+- Section header restyled: massive rainbow-shadowed "Who's Got the Rhythm" title + "Pick your jam." pill for legibility against the dark floor.
+
+### 📺 Lessons page background
+Chalkboard → `curtain-bg.png` (dramatic red curtains) + `charlie-lecturn.png` overlaid bottom-center at z-0 (visible behind the lesson cards). Existing cascade layout untouched.
+
+### Files touched
+- `pages/RobotBoogiePage.js` (new)
+- `hooks/useRobotBoogieAudio.js` (new)
+- `pages/CreateMenuPage.js` (Robot Boogie tile added)
+- `pages/BoomGardenPage.js` (disco floor bg, disco character portraits, big rainbow title)
+- `pages/RhythmGamePage.js` (disco scene background)
+- `pages/LessonsPage.js` (curtain bg + Charlie Lecturn overlay)
+- `App.js` (route wiring)
+- `/public/assets/backgrounds/` — new: curtain-bg.png, podium.png, charlie-lecturn.png, jelly-jukebox-scene.png, jukebox-element.png, jukebox-floor-{1,2,3}.png, robot-boogie-scene.png
+- `/public/assets/characters/` — new: chunk-marching.png; overwritten: lou.png
+- `/public/assets/ui/jmatv-logo.png` — overwritten with color-corrected version
+- `/public/assets/robot-boogie/` — new (~4.3 MB, all character animation frames + time machine + lightning FX)
+- `/public/assets/audio/robot-boogie/` — new (12 mp3 stems, ~5.1 MB)
+
+### Deferred to next batch (user marked "revisit")
+- **Spacebar-hold for half/whole notes in Who's Got the Rhythm** — needs deeper scoring change in Rhythm Run. Marked as follow-up.
+- **Other animations while playing** in WGTR — cosmetic idea, deferred.
+- Fun assets (elephant, flea, seesaw, etc.) — extracted but not wired yet; user said "if there is a place for them".
+
+---
+
 ## Feb 22, 2026 (evening) — World overhaul: JELLY JUKEBOX / WHO'S GOT THE RHYTHM rename, NES-cartridge cards, cascade Lessons
 
 User feedback (huge batch): rename swap between two rhythm games, kill sign nameplates + taglines, all-caps NES-cartridge titles, cascade lessons layout, 4th JMAtv channel, streaming-now bug, broken stickers audit.

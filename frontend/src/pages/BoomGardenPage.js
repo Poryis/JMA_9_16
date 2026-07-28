@@ -53,9 +53,9 @@ const MODES = [
     sign: 'PARROT PERCUSSION',
     color: '#4285F4',
     accent: '#1A4FAB',
-    bg: 'assets/backgrounds/football-field.png',
-    character: 'assets/characters/stew.png',
-    charWidthPct: 36,
+    bg: 'assets/backgrounds/jukebox-floor-1.png',
+    character: 'assets/robot-boogie/chunk-neutral.png',
+    charWidthPct: 40,
     howToPlay: [
       { icon: '👂', text: 'Listen to Stew play the rhythm.' },
       { icon: '🥁', text: 'After the 4-beat count-in, play the same rhythm on the drum.' },
@@ -69,9 +69,9 @@ const MODES = [
     sign: 'BEAT FINDER',
     color: '#34A853',
     accent: '#1F7A38',
-    bg: 'assets/backgrounds/football-field.png',
-    character: 'assets/characters/llama-lou-stew.png',
-    charWidthPct: 40,
+    bg: 'assets/backgrounds/jukebox-floor-2.png',
+    character: 'assets/robot-boogie/jazzy-playing.png',
+    charWidthPct: 38,
     howToPlay: [
       { icon: '👂', text: 'Listen to the secret rhythm.' },
       { icon: '🎵', text: 'Three rhythm strips will appear.' },
@@ -85,9 +85,9 @@ const MODES = [
     sign: 'RHYTHM RUN',
     color: '#FF9500',
     accent: '#C26200',
-    bg: 'assets/backgrounds/football-field.png',
-    character: 'assets/characters/charlie-rundmc.png',
-    charWidthPct: 32,
+    bg: 'assets/backgrounds/jukebox-floor-3.png',
+    character: 'assets/robot-boogie/charlie-neutral-01.png',
+    charWidthPct: 34,
     howToPlay: [
       { icon: '👀', text: 'Watch the notes scroll toward the gold line.' },
       { icon: '🥁', text: 'Tap Stew when each note crosses the line.' },
@@ -162,7 +162,7 @@ function ModeTile({ mode, index, onPick }) {
             <h2
               className="font-black font-display leading-[0.85] uppercase"
               style={{
-                fontSize: 'clamp(26px, 4.4vw, 44px)',
+                fontSize: 'clamp(22px, 3.4vw, 36px)',
                 color: 'white',
                 WebkitTextStroke: 'clamp(2px, 0.5vw, 4px) var(--jma-dark)',
                 paintOrder: 'stroke fill',
@@ -988,26 +988,47 @@ export default function BoomGardenPage() {
         data-testid="boom-garden-page"
         className="min-h-screen flex flex-col relative"
         style={{
-          backgroundImage: 'url(assets/backgrounds/football-field.png)',
+          backgroundImage: 'url(assets/backgrounds/jukebox-floor-1.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        {/* Sky tint at the top of the football-field bg so the header
+        {/* Sky tint at the top of the jukebox-floor bg so the header
             reads clearly regardless of scene contrast. */}
         <div
           aria-hidden="true"
           className="absolute inset-x-0 top-0 pointer-events-none"
           style={{
             height: '30%',
-            background: 'linear-gradient(180deg, rgba(255,247,229,0.75) 0%, transparent 100%)',
+            background: 'linear-gradient(180deg, rgba(20,10,45,0.65) 0%, transparent 100%)',
           }}
         />
         <GameHeader title="Who's Got the Rhythm" showHomeButton={true} />
         <FullscreenButton />
-        <main className="flex-1 pt-16 md:pt-20 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col">
+        <main className="flex-1 pt-16 md:pt-20 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col relative z-10">
           <div className="text-center mb-4 md:mb-6">
-            <p className="text-sm md:text-base font-bold opacity-80" style={{ color: 'var(--jma-dark)' }}>
+            <h1
+              className="font-black font-display leading-none uppercase inline-block"
+              style={{
+                fontSize: 'clamp(30px, 5.5vw, 56px)',
+                color: 'white',
+                WebkitTextStroke: 'clamp(2px, 0.45vw, 4px) var(--jma-dark)',
+                paintOrder: 'stroke fill',
+                textShadow:
+                  '3px 3px 0 #FF3B9A, 5px 5px 0 #4285F4, 7px 7px 0 #FFCC00',
+                letterSpacing: '0.02em',
+              }}
+            >
+              Who&apos;s Got the Rhythm
+            </h1>
+            <p
+              className="text-sm md:text-base font-black uppercase tracking-widest mt-2 inline-block px-3 py-1 rounded-full"
+              style={{
+                color: '#FFF3A6',
+                backgroundColor: 'rgba(0,0,0,0.55)',
+                border: '2px solid #FF6BAA',
+              }}
+            >
               Pick your jam.
             </p>
           </div>

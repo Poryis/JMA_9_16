@@ -20,6 +20,7 @@ import DetectivePage from "./pages/DetectivePage";
 import SongStudioPage from "./pages/SongStudioPage";
 import SightReadingPage from "./pages/SightReadingPage";
 import BoomGardenPage from "./pages/BoomGardenPage";
+import RobotBoogiePage from "./pages/RobotBoogiePage";
 import JMAtvHomePage from "./pages/JMAtvHomePage";
 import JMAtvChannelPage from "./pages/JMAtvChannelPage";
 import JMAtvPlayerPage from "./pages/JMAtvPlayerPage";
@@ -73,6 +74,7 @@ function App() {
             <Route path="/song-studio" element={<SongStudioPage />} />
             <Route path="/sight-reading" element={<SightReadingPage />} />
             <Route path="/boom-garden" element={<BoomGardenPage />} />
+            <Route path="/robot-boogie" element={<RobotBoogiePage />} />
             <Route path="/jmatv" element={<JMAtvHomePage />} />
             <Route path="/jmatv/:channelId" element={<JMAtvChannelPage />} />
             <Route path="/jmatv/:channelId/:episodeIndex" element={<JMAtvPlayerPage />} />

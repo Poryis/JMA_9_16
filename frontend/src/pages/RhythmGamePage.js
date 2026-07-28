@@ -435,13 +435,22 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         className="min-h-screen flex flex-col items-center px-3 pt-20 md:pt-20 pb-6 relative overflow-x-hidden"
         data-testid="rhythm-game-menu"
         style={{
-          background:
-            'radial-gradient(circle at 20% 20%, #FF6BAA33 0%, transparent 55%), ' +
-            'radial-gradient(circle at 80% 30%, #FFD93D33 0%, transparent 55%), ' +
-            'radial-gradient(circle at 50% 90%, #7EFFB833 0%, transparent 55%), ' +
-            'linear-gradient(180deg, #1B1140 0%, #3B1F5C 50%, #5A2989 100%)',
+          backgroundImage: 'url(assets/backgrounds/jelly-jukebox-scene.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 20%',
         }}
       >
+        {/* Rainbow disco overlay tints so title still pops against the scene. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(circle at 30% 20%, rgba(255,107,170,0.35) 0%, transparent 55%),' +
+              'radial-gradient(circle at 80% 40%, rgba(255,204,0,0.28) 0%, transparent 55%),' +
+              'linear-gradient(180deg, rgba(27,17,64,0.35) 0%, transparent 40%, rgba(20,10,45,0.55) 100%)',
+          }}
+        />
         <GameHeader showHomeButton={true} />
 
         {/* Title block — JELLY JUKEBOX, disco-themed. Rainbow glow, chunky

@@ -129,11 +129,31 @@ export default function LessonsPage() {
       data-testid="lessons-page"
       className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-8 relative overflow-x-hidden"
       style={{
-        backgroundImage: 'url(assets/backgrounds/chalkboard.png)',
+        backgroundImage: 'url(assets/backgrounds/curtain-bg.png)',
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center top',
       }}
     >
+      {/* Charlie behind the podium — anchored bottom-center at low z-index
+          so lesson cards read above him without needing to move. */}
+      <img
+        src="assets/backgrounds/charlie-lecturn.png"
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        loading="lazy"
+        className="fixed pointer-events-none select-none"
+        style={{
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'clamp(320px, 42vw, 620px)',
+          maxHeight: '65vh',
+          zIndex: 0,
+          filter: 'drop-shadow(0 -6px 14px rgba(0,0,0,0.45))',
+        }}
+      />
+
       <GameHeader showHomeButton={true} />
 
       <motion.div
