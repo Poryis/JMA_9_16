@@ -741,10 +741,20 @@ export default function RobotBoogiePage() {
                 // math is preserved), only the sprite renders smaller.
                 const innerScale = n === 4 ? 0.85 : 1;
 
-                // Slot aspect ratio — square by default, but wider (4:3)
-                // when we wrap into 2 rows of 2 so both rows + the Time
-                // Machine + the lineup all fit above the fold.
-                const slotAspect = n === 4 ? '4 / 3' : '1 / 1';
+                // Slot aspect ratio. Since object-cover now fills the
+                // full slot height, TALLER slots (like 1:1) at multi-row
+                // counts push the Time Machine below the fold. Use
+                // landscape aspects for wrapped layouts so both rows +
+                // TM + lineup fit above the fold on 1280×800.
+                //   1-3 dancers → 5:4 (nearly square, one row anyway)
+                //   4          → 4:3 (2 rows of 2)
+                //   5-6        → 3:2 (2 rows of 3)
+                //   7-8        → 2:1 (2 rows of 4)
+                let slotAspect;
+                if (n <= 3)      slotAspect = '5 / 4';
+                else if (n === 4) slotAspect = '4 / 3';
+                else if (n <= 6)  slotAspect = '3 / 2';
+                else               slotAspect = '2 / 1';
 
                 return (
                   <motion.div
