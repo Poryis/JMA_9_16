@@ -1,6 +1,25 @@
 # Changelog
 
-## Feb 28, 2026 (late) — Robot Boogie polish: order + tighter spacing
+## Feb 28, 2026 (very late) — Robot Boogie v6: TM bigger, n=4 smaller, tighter rows
+
+Iteration on v5 per user: "the padding for the performers... they can be closer. When 4 are active, they are too big. Time machine 20 percent bigger."
+
+### 🕰 Time Machine +20%
+`clamp(170px, 26vw, 320px)` → `clamp(205px, 31vw, 385px)`. Halo behind it scaled proportionally (`clamp(220px, 36vw, 440px)` → `clamp(265px, 43vw, 520px)`). Measured on desktop: TM is now 385 × 216 px (was ~260 × 146).
+
+### 🎽 n=4 dancers scaled down 15% + wider slot
+- Each n=4 dancer now renders inside a `transform: scale(0.85)` wrapper — visually smaller than 1/2/3-dancer counts (which stay at scale 1). Layout width unchanged so the 2+2 wrap math still holds.
+- Slot aspect is `4/3` for n=4 (was `1/1`). Landscape slots are less tall, so both rows + Time Machine + lineup all fit above the fold on 1280×800 without pushing the TM off-screen.
+
+### 📐 Slot aspect ratio tightened for all counts (`3/4` → `1/1`)
+Sprites are 16:9 landscape. In the old 3:4 portrait slot each dancer had ~55 % empty vertical space; the square slot cuts that in half and pulls wrapped rows visibly closer together. `CharacterSlot` now takes a `slotAspect` prop with default `'1 / 1'`, allowing the band to override per-count.
+
+### Verified
+Playwright at desktop confirms: solo Jazzy centered with big Time Machine below; 4 dancers → 2+2 with visibly smaller characters and both rows + TM fully in frame; 6 dancers → 3+3 with tighter row spacing than v5.
+
+---
+
+
 
 Two-part follow-up per user: "put the robots first and last… order left to right: Robot 1, Chunk, Dr Jellybone, Finn, Charlie, Lou, Jazzy, Robot 2. Padding is too much between characters."
 

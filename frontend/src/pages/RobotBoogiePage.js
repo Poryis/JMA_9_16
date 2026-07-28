@@ -241,9 +241,10 @@ function TimeMachine({ anyActive, flashKey }) {
       onClick={handleTap}
       className="relative select-none bg-transparent border-0 p-0 cursor-pointer flex-shrink-0"
       style={{
-        // Size scales with the viewport so the Time Machine reads as the
-        // centerpiece on phone AND desktop.
-        width: 'clamp(170px, 26vw, 320px)',
+        // 20 % bigger than v5 (was clamp(170, 26vw, 320)). Time Machine
+        // is the visual anchor of the composition — should read as the
+        // heaviest object on the screen.
+        width: 'clamp(205px, 31vw, 385px)',
         touchAction: 'manipulation',
         // Soft under-glow ring so it feels alive even at idle.
         filter: anyActive
@@ -329,7 +330,7 @@ function LightningBolt() {
 // Character slot — preloads every animation frame at mount so cycling is
 // instant, then toggles which frame is displayed via display:none/block.
 // ============================================================
-function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
+function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotAspect = '1 / 1' }) {
   const isActive = activeStemIndex >= 0;
 
   const [animFrame, setAnimFrame] = useState(1);
@@ -361,7 +362,10 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
       className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none"
       style={{
         width: '100%',
-        aspectRatio: '3 / 4',
+        // Slot aspect is controlled by the caller so the band can pick
+        // a wider ratio when 4 dancers wrap into 2 rows (otherwise 2 ×
+        // square slots push the Time Machine off the bottom edge).
+        aspectRatio: slotAspect,
         touchAction: 'manipulation',
       }}
       whileHover={{ y: -6 }}
@@ -730,6 +734,17 @@ export default function RobotBoogiePage() {
                 else if (n === 4) { widthPct = '48%'; maxW = '420px'; } // → 2+2
                 else if (n <= 6)  { widthPct = '33%'; maxW = '340px'; } // → max 3 per row
                 else               { widthPct = '24%'; maxW = '260px'; } // → max 4 per row
+
+                // Visual scale-down inside the slot so 4 dancers don't
+                // feel oversized. Layout width stays the same (wrap
+                // math is preserved), only the sprite renders smaller.
+                const innerScale = n === 4 ? 0.85 : 1;
+
+                // Slot aspect ratio — square by default, but wider (4:3)
+                // when we wrap into 2 rows of 2 so both rows + the Time
+                // Machine + the lineup all fit above the fold.
+                const slotAspect = n === 4 ? '4 / 3' : '1 / 1';
+
                 return (
                   <motion.div
                     key={cfg.id}
@@ -744,12 +759,20 @@ export default function RobotBoogiePage() {
                       maxWidth: maxW,
                     }}
                   >
-                    <CharacterSlot
-                      cfg={cfg}
-                      activeStemIndex={0}
-                      onClick={handleCharacterClick}
-                      zapping={zappingId === cfg.id}
-                    />
+                    <div
+                      style={{
+                        transform: `scale(${innerScale})`,
+                        transformOrigin: 'bottom center',
+                      }}
+                    >
+                      <CharacterSlot
+                        cfg={cfg}
+                        activeStemIndex={0}
+                        onClick={handleCharacterClick}
+                        zapping={zappingId === cfg.id}
+                        slotAspect={slotAspect}
+                      />
+                    </div>
                   </motion.div>
                 );
               })}
@@ -768,7 +791,7 @@ export default function RobotBoogiePage() {
             aria-hidden="true"
             className="absolute pointer-events-none"
             style={{
-              width: 'clamp(220px, 36vw, 440px)',
+              width: 'clamp(265px, 43vw, 520px)',
               aspectRatio: '2 / 1',
               background:
                 'radial-gradient(ellipse at center, rgba(255,220,120,0.28) 0%, rgba(255,220,120,0.10) 40%, transparent 70%)',
