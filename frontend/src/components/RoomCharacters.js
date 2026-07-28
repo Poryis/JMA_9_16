@@ -27,6 +27,7 @@ const OUTFITS = {
   ],
   finn: [
     'assets/characters/finn-danger.png',
+    'assets/characters/finn-disco.png',
     'assets/characters/sharky-hiphop.png',
     'assets/characters/sharky-snorkel.png',
     'assets/characters/sharky-zoot.png',
@@ -87,11 +88,13 @@ const ROOM_CAST = {
     { id: 'chunk',   pos: { l: 4,  t: 78, w: 8, anim: 'bob' },   line: 'Big beats!' },
     { id: 'charlie', pos: { l: 92, t: 78, w: 7, anim: 'sway' },  line: 'Jam Hall is the BEST!' },
   ],
-  // Rhythm Arcade
+  // Rhythm Arcade — a.k.a. Jelly Jukebox. Everyone in disco outfits so the
+  // corner cast reads with the same disco vibe as the game's floor + backdrop.
+  // Kids can still tap to cycle through their other outfits.
   'rhythm-arcade': [
-    { id: 'finn',    pos: { l: 4,  t: 22, w: 6.5, anim: 'bob' },  line: 'Catch the notes!' },
-    { id: 'jazzy',   pos: { l: 93, t: 22, w: 6.5, anim: 'sway' }, line: 'Stay on the beat!' },
-    { id: 'charlie', pos: { l: 6,  t: 80, w: 7, anim: 'bob' },    line: 'You got this!' },
+    { id: 'finn',    pos: { l: 4,  t: 22, w: 6.5, anim: 'bob' },  line: 'Catch the notes!',   startOutfit: 'assets/characters/finn-disco.png' },
+    { id: 'jazzy',   pos: { l: 93, t: 22, w: 6.5, anim: 'sway' }, line: 'Stay on the beat!',  startOutfit: 'assets/characters/jazzy-disco.png' },
+    { id: 'charlie', pos: { l: 6,  t: 80, w: 7, anim: 'bob' },    line: 'You got this!',      startOutfit: 'assets/characters/charlie-disco.png' },
   ],
   // Stew Kazoo Says
   'kazoo-room': [
@@ -130,8 +133,14 @@ const ANIMS = {
   peek:  { y: [0, -3, 0], rotate: [-2, 2, -2] },
 };
 
-function CharacterImp({ id, pos, line }) {
-  const outfits = OUTFITS[id] || OUTFITS.charlie;
+function CharacterImp({ id, pos, line, startOutfit }) {
+  const baseOutfits = OUTFITS[id] || OUTFITS.charlie;
+  // If a room pins a specific starting outfit (e.g. all-disco in Jelly
+  // Jukebox), promote it to index 0 and de-duplicate the rest of the list
+  // so tap-cycling still works normally.
+  const outfits = startOutfit
+    ? [startOutfit, ...baseOutfits.filter((p) => p !== startOutfit)]
+    : baseOutfits;
   const [outfitIdx, setOutfitIdx] = useState(0);
   const [bubble, setBubble] = useState(false);
   const bubbleTimer = useRef(null);
@@ -252,7 +261,13 @@ export default function RoomCharacters({ room }) {
   return (
     <div className="absolute inset-0 pointer-events-none z-20 hidden md:block" aria-hidden={false}>
       {cast.map((c) => (
-        <CharacterImp key={c.id} id={c.id} pos={c.pos} line={c.line} />
+        <CharacterImp
+          key={c.id}
+          id={c.id}
+          pos={c.pos}
+          line={c.line}
+          startOutfit={c.startOutfit}
+        />
       ))}
     </div>
   );
