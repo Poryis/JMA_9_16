@@ -1,5 +1,34 @@
 # Changelog
 
+## Feb 27, 2026 (later) — Theme swap fix: Jelly Jukebox = disco, Who's Got the Rhythm = marching band
+
+User caught a swap error from the previous batch: I'd flipped the visual themes between the two rooms. Corrected mapping:
+
+### 🎯 Correct theme mapping (locked in)
+| Room | Background | Character theme |
+|------|-----------|-----------------|
+| **Jelly Jukebox** (`/rhythm-game`) | Disco / tile floor | Disco outfits (Lou disco, etc.) |
+| **Who's Got the Rhythm** (`/boom-garden`) | Football field | Marching band / drum major |
+
+### Fixes shipped
+- **`pages/PlayMenuPage.js`** JELLY JUKEBOX tile: bg swapped **football-field.png → jukebox-floor-1.png** (the disco tile floor). Character stays `lou-disco.png`.
+- **`pages/LearnMenuPage.js`** WHO'S GOT THE RHYTHM tile: character swapped from `stew-drum` animation → **`chunk-marching.png`**. Bg stays football-field.png.
+- **`pages/BoomGardenPage.js`**:
+  - Main page bg back to **`football-field.png`** with warm sky-tint overlay (was jukebox-floor-1.png with dark purple tint).
+  - All 3 mode-card backgrounds back to **football-field.png**.
+  - Mode-card characters swapped to marching-band versions:
+    - Parrot Percussion → `chunk-marching.png`
+    - Beat Finder → `jazzy-marching.png`
+    - Rhythm Run → `charlie-drum-major.png`
+  - Title styling: replaced the pink/blue/yellow rainbow drop-shadow (calibrated for a dark bg) with a cleaner **dark + red** shadow suited for the bright football-field sky. Subtitle pill now uses jma-dark + yellow border for team-marching-band feel.
+
+### Files touched
+- `pages/PlayMenuPage.js` — JELLY JUKEBOX tile bg.
+- `pages/LearnMenuPage.js` — WHO'S GOT THE RHYTHM tile character.
+- `pages/BoomGardenPage.js` — main bg, sky overlay, 3 mode-card bg/characters, title/subtitle styling.
+
+---
+
 ## Feb 27, 2026 — Robot Boogie mixer game + disco theming + asset compression
 
 Massive drop: user provided 3 zip archives (actionable-now assets, new game assets, fun assets) plus updates to backgrounds, character outfits, and one huge new game.

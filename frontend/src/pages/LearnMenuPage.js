@@ -28,12 +28,13 @@ const LEARN_TILES = [
     // Renamed from "Stew's Rhythm Academy" — this is now the primary
     // "Who's Got the Rhythm" home. The falling-notes game (previously
     // called "Who's Got the Rhythm?") is now "Jelly Jukebox" under Play.
+    // Theme: marching band on a football field.
     title: "WHO'S GOT THE RHYTHM",
     path: '/boom-garden',
     bg: 'assets/backgrounds/football-field.png',
     color: '#FF9500',
     accent: '#E67E22',
-    character: 'assets/animations/stew-drum/left-1.png',
+    character: 'assets/characters/chunk-marching.png',
     charWidthPct: 34,
     sfx: 'assets/audio/Snare.mp3',
   },

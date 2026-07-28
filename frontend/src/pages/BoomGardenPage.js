@@ -53,8 +53,8 @@ const MODES = [
     sign: 'PARROT PERCUSSION',
     color: '#4285F4',
     accent: '#1A4FAB',
-    bg: 'assets/backgrounds/jukebox-floor-1.png',
-    character: 'assets/robot-boogie/chunk-neutral.png',
+    bg: 'assets/backgrounds/football-field.png',
+    character: 'assets/characters/chunk-marching.png',
     charWidthPct: 40,
     howToPlay: [
       { icon: '👂', text: 'Listen to Stew play the rhythm.' },
@@ -69,8 +69,8 @@ const MODES = [
     sign: 'BEAT FINDER',
     color: '#34A853',
     accent: '#1F7A38',
-    bg: 'assets/backgrounds/jukebox-floor-2.png',
-    character: 'assets/robot-boogie/jazzy-playing.png',
+    bg: 'assets/backgrounds/football-field.png',
+    character: 'assets/characters/jazzy-marching.png',
     charWidthPct: 38,
     howToPlay: [
       { icon: '👂', text: 'Listen to the secret rhythm.' },
@@ -85,8 +85,8 @@ const MODES = [
     sign: 'RHYTHM RUN',
     color: '#FF9500',
     accent: '#C26200',
-    bg: 'assets/backgrounds/jukebox-floor-3.png',
-    character: 'assets/robot-boogie/charlie-neutral-01.png',
+    bg: 'assets/backgrounds/football-field.png',
+    character: 'assets/characters/charlie-drum-major.png',
     charWidthPct: 34,
     howToPlay: [
       { icon: '👀', text: 'Watch the notes scroll toward the gold line.' },
@@ -988,19 +988,19 @@ export default function BoomGardenPage() {
         data-testid="boom-garden-page"
         className="min-h-screen flex flex-col relative"
         style={{
-          backgroundImage: 'url(assets/backgrounds/jukebox-floor-1.png)',
+          backgroundImage: 'url(assets/backgrounds/football-field.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        {/* Sky tint at the top of the jukebox-floor bg so the header
+        {/* Sky tint at the top of the football-field bg so the header
             reads clearly regardless of scene contrast. */}
         <div
           aria-hidden="true"
           className="absolute inset-x-0 top-0 pointer-events-none"
           style={{
             height: '30%',
-            background: 'linear-gradient(180deg, rgba(20,10,45,0.65) 0%, transparent 100%)',
+            background: 'linear-gradient(180deg, rgba(255,247,229,0.75) 0%, transparent 100%)',
           }}
         />
         <GameHeader title="Who's Got the Rhythm" showHomeButton={true} />
@@ -1015,7 +1015,7 @@ export default function BoomGardenPage() {
                 WebkitTextStroke: 'clamp(2px, 0.45vw, 4px) var(--jma-dark)',
                 paintOrder: 'stroke fill',
                 textShadow:
-                  '3px 3px 0 #FF3B9A, 5px 5px 0 #4285F4, 7px 7px 0 #FFCC00',
+                  '3px 3px 0 var(--jma-dark), 6px 6px 0 #C0392B, 9px 9px 20px rgba(10,37,64,0.35)',
                 letterSpacing: '0.02em',
               }}
             >
@@ -1024,9 +1024,10 @@ export default function BoomGardenPage() {
             <p
               className="text-sm md:text-base font-black uppercase tracking-widest mt-2 inline-block px-3 py-1 rounded-full"
               style={{
-                color: '#FFF3A6',
-                backgroundColor: 'rgba(0,0,0,0.55)',
-                border: '2px solid #FF6BAA',
+                color: 'white',
+                backgroundColor: 'var(--jma-dark)',
+                border: '2px solid #FFCC00',
+                boxShadow: '0 3px 0 0 rgba(0,0,0,0.35)',
               }}
             >
               Pick your jam.
