@@ -54,14 +54,17 @@ import useRobotBoogieAudio from '../hooks/useRobotBoogieAudio';
 // here so her legs remain visible while playing; the wobble animation
 // applied by <CharacterSlot> still communicates "she's grooving."
 // ============================================================
+// Display order in both the active band and the compact lineup —
+// this is the ONLY source of truth for character order, per user brief:
+// Robot 1, Chunk, Dr Jellybone, Finn, Charlie, Lou, Jazzy, Robot 2.
 const CHARACTERS = [
   {
-    id: 'finn',
-    stems: ['robot-bass'],
+    id: 'robot1',
+    stems: ['robot-synth-2'],
     frames: 8,
-    playingBase: 'assets/robot-boogie/finn-playing/finn-playing',
-    neutral: 'assets/robot-boogie/finn-neutral.png',
-    color: '#4285F4',
+    playingBase: 'assets/robot-boogie/robot1-dancing/robot1-dancing',
+    neutral: 'assets/robot-boogie/robot1-neutral/robot1-neutral-01.png',
+    color: '#FF3B30',
   },
   {
     id: 'chunk',
@@ -76,30 +79,28 @@ const CHARACTERS = [
     color: '#FF9500',
   },
   {
-    id: 'charlie',
-    stems: ['robot-gtr'],
-    frames: 8,
-    playingBase: 'assets/robot-boogie/charlie-playing/charlie-playing',
-    neutral: 'assets/robot-boogie/charlie-neutral/charlie-neutral-01.png',
-    color: '#E91E63',
-  },
-  {
-    id: 'jazzy',
-    stems: ['robot-horns-1'],
-    frames: 0,
-    // Reuse neutral for the "playing" still so Jazzy's legs stay visible.
-    // The wobble motion on <CharacterSlot> conveys "she's playing."
-    playingSingle: 'assets/robot-boogie/jazzy-neutral.png',
-    neutral: 'assets/robot-boogie/jazzy-neutral.png',
-    color: '#FFCC00',
-  },
-  {
     id: 'jellybone',
     stems: ['robot-horns-2', 'robot-horns-3'],
     frames: 8,
     playingBase: 'assets/robot-boogie/jellybone-playing/jellybone-playing',
     neutral: 'assets/robot-boogie/jellybone-neutral.png',
     color: '#9B6DE0',
+  },
+  {
+    id: 'finn',
+    stems: ['robot-bass'],
+    frames: 8,
+    playingBase: 'assets/robot-boogie/finn-playing/finn-playing',
+    neutral: 'assets/robot-boogie/finn-neutral.png',
+    color: '#4285F4',
+  },
+  {
+    id: 'charlie',
+    stems: ['robot-gtr'],
+    frames: 8,
+    playingBase: 'assets/robot-boogie/charlie-playing/charlie-playing',
+    neutral: 'assets/robot-boogie/charlie-neutral/charlie-neutral-01.png',
+    color: '#E91E63',
   },
   {
     id: 'lou',
@@ -113,12 +114,15 @@ const CHARACTERS = [
     color: '#34A853',
   },
   {
-    id: 'robot1',
-    stems: ['robot-synth-2'],
-    frames: 8,
-    playingBase: 'assets/robot-boogie/robot1-dancing/robot1-dancing',
-    neutral: 'assets/robot-boogie/robot1-neutral/robot1-neutral-01.png',
-    color: '#FF3B30',
+    id: 'jazzy',
+    stems: ['robot-horns-1'],
+    frames: 0,
+    // Reuse neutral for the "playing" still so Jazzy's legs stay visible.
+    // The CSS jazzyWobble animation on <CharacterSlot> conveys "she's
+    // playing" without needing a distinct trumpet-up pose.
+    playingSingle: 'assets/robot-boogie/jazzy-neutral.png',
+    neutral: 'assets/robot-boogie/jazzy-neutral.png',
+    color: '#FFCC00',
   },
   {
     id: 'robot2',
@@ -674,11 +678,12 @@ export default function RobotBoogiePage() {
 
         {/* ---- Active band (top) ----
             Flex-wrap so we get a second row automatically once there
-            are 4+ dancers. `justify-center` keeps a partial row centered
-            below the first (e.g. 5 dancers → row of 4 + row of 1). */}
+            are 4+ dancers. Zero horizontal gap between dancers by
+            design — the transparent whitespace inside each character's
+            3:4 slot already gives plenty of breathing room. */}
         <div
           data-testid="robot-boogie-active-band"
-          className="w-full flex-1 flex flex-wrap items-end justify-center content-end gap-x-1 gap-y-0 md:gap-x-2 pt-2 pb-0 overflow-hidden"
+          className="w-full flex-1 flex flex-wrap items-end justify-center content-end gap-0 pt-2 pb-0 overflow-hidden"
           style={{ minHeight: '180px' }}
         >
           {activeChars.length === 0 ? (
@@ -706,22 +711,25 @@ export default function RobotBoogiePage() {
             <AnimatePresence mode="popLayout" initial={false}>
               {activeChars.map((cfg) => {
                 const n = activeChars.length;
-                // Widths tuned so flex-wrap gives the row shape we want
-                // on a ~1200 px stage:
-                //   1 dancer  → huge solo
-                //   2 dancers → row of 2
-                //   3 dancers → row of 3
-                //   4 dancers → 2 rows of 2 (per user brief)
-                //   5-6       → 2 rows of 3 (max 3 per row)
-                //   7-8       → 2 rows of 4
+                // Widths are % of the band container (max 1200 px).
+                // With gap-0, wrap happens when N * width > 1200. The
+                // maxW caps are chosen so N-per-row exceeds the
+                // container width by a comfortable margin — otherwise
+                // the browser fits everything on one row.
+                //   1 → huge solo
+                //   2 → row of 2
+                //   3 → row of 3
+                //   4 → 2 rows of 2   (3 × 420 = 1260 > 1200, wraps)
+                //   5-6 → 3-per-row max  (4 × 340 = 1360 > 1200, wraps)
+                //   7-8 → 4-per-row max  (5 × 260 = 1300 > 1200, wraps)
                 let widthPct;
                 let maxW;
                 if (n === 1)      { widthPct = '55%'; maxW = '440px'; }
-                else if (n === 2) { widthPct = '42%'; maxW = '360px'; }
-                else if (n === 3) { widthPct = '30%'; maxW = '300px'; }
+                else if (n === 2) { widthPct = '48%'; maxW = '380px'; }
+                else if (n === 3) { widthPct = '33%'; maxW = '320px'; }
                 else if (n === 4) { widthPct = '48%'; maxW = '420px'; } // → 2+2
-                else if (n <= 6)  { widthPct = '34%'; maxW = '300px'; } // → 3-per-row max
-                else               { widthPct = '23%'; maxW = '240px'; } // → 4-per-row max
+                else if (n <= 6)  { widthPct = '33%'; maxW = '340px'; } // → max 3 per row
+                else               { widthPct = '24%'; maxW = '260px'; } // → max 4 per row
                 return (
                   <motion.div
                     key={cfg.id}
@@ -773,7 +781,7 @@ export default function RobotBoogiePage() {
         {/* ---- Character lineup (bottom, always 8) ---- */}
         <div
           data-testid="robot-boogie-lineup"
-          className="w-full flex justify-center items-end gap-1.5 md:gap-3 pt-0 pb-2"
+          className="w-full flex justify-center items-end gap-0 md:gap-1 pt-0 pb-2"
         >
           {CHARACTERS.map((cfg) => (
             <CompactChar

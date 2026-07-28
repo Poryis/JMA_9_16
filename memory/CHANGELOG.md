@@ -1,6 +1,38 @@
 # Changelog
 
-## Feb 28, 2026 (evening) — Robot Boogie v5: 2-row band + Jazzy wobble fix
+## Feb 28, 2026 (late) — Robot Boogie polish: order + tighter spacing
+
+Two-part follow-up per user: "put the robots first and last… order left to right: Robot 1, Chunk, Dr Jellybone, Finn, Charlie, Lou, Jazzy, Robot 2. Padding is too much between characters."
+
+### 🔀 New character order (single source of truth)
+`CHARACTERS` array in `RobotBoogiePage.js` is now in this order — used for BOTH the compact bottom lineup and the active band above it:
+
+1. Robot 1
+2. Chunk
+3. Dr Jellybone
+4. Finn
+5. Charlie
+6. Lou
+7. Jazzy
+8. Robot 2
+
+Team & stem mappings are unchanged (see `TEAMS`), but the visual reading order matches the user's spec.
+
+### 📏 Tighter spacing
+- Active-band gap: `gap-x-1 md:gap-x-2` → `gap-0`. Characters now sit right next to each other; the transparent whitespace baked into each 3:4 slot still keeps them from touching.
+- Lineup gap: `gap-1.5 md:gap-3` → `gap-0 md:gap-1`. The 8 lineup tiles sit almost flush on mobile and only get a 4 px breath on desktop.
+
+### 🧮 Width math re-tuned for zero gap
+With `gap-0`, the wrap trigger is strictly `N × width > 1200 px`. Earlier caps of `maxW = 300px` for 5-6 dancers put them *exactly* at 4×300 = 1200 and the browser fit them on one row. Bumped:
+- 5–6 dancers: `maxW 300 → 340px` (4×340 = 1360 > 1200 → wraps to 3-per-row)
+- 7–8 dancers: `maxW 240 → 260px` (5×260 = 1300 > 1200 → wraps to 4-per-row)
+
+### Verified via automation
+Playwright confirmed lineup order matches the new spec; band layouts observed: 1 → solo, 2 → row of 2, 3 → row of 3, 4 → 2+2, **5 → 3+2**, **6 → 3+3**, 7 → 4+3, 8 → 4+4. All character positions filled with the correct dancer.
+
+---
+
+
 
 Polish pass on the v4 redesign per user feedback ("Jazzy is not animating when she's up. I like this much better, but after 3 friends they get too small. Can we do two rows after 3?").
 
