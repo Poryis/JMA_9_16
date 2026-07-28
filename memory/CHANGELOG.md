@@ -1,6 +1,43 @@
 # Changelog
 
-## Feb 28, 2026 (later) — Robot Boogie v3: co-dancing pairs + Lou → drum-1
+## Feb 28, 2026 (pm) — Robot Boogie v4: full layout redesign
+
+Complete rebuild of `RobotBoogiePage.js` layout per user brief. The old grid-of-8 characters is gone; new visual hierarchy is:
+
+```
+[ TITLE + PLAYING CHIP + RESET ]
+[ ACTIVE BAND — dancing characters, sized dynamically ]
+[ ✨ TIME MACHINE (centerpiece, glow halo) ✨ ]
+[ COMPACT 8-CHARACTER LINEUP (always visible, tappable) ]
+```
+
+### 🎯 Layout goals hit
+- **Time Machine is the visual centerpiece**: dead-center of the page, `clamp(170px, 26vw, 320px)` wide with a radial glow halo behind it. Loops the 8-frame reel continuously while anyone plays, flashes on every character tap.
+- **All 8 characters ALWAYS visible** in the compact bottom lineup. No pagination.
+- **Active performers appear at the top** and are **significantly larger** than the lineup below — max-width scales with count: 1 dancer = 460px, 2 = 400px, 3 = 340px, 4 = 300px, 5+ = 260px.
+- **No background-anchored positioning** — layout uses flex + `flex-1` + `flex 1 1 0%` for share-equally sizing. Background PNG is decoration only; fallback radial gradient behind it keeps the vibe if the image is slow to load.
+
+### 🕰 Time Machine bug fixed
+While cycling the animation frames, the idle image was `display: none` and the frame images were `position: absolute` — so the button collapsed to height 0. Fix: idle image now uses `visibility: hidden` while frames play, keeping the layout box intact.
+
+### 🎯 Interaction flow
+- `<CompactChar>` (new component) is the primary tap target — a small tile at the bottom that toggles the character on/off. Selected tiles get a bright colored ring + drop-shadow.
+- Every tap ticks a shared `flashKey` counter, which `<TimeMachine>` watches and fires a quick scale-burst — so kids visually connect their action to the centerpiece.
+- Active characters materialize in the top band with a spring-scale entrance (`AnimatePresence` + `layout` for smooth re-flow when a new dancer joins).
+
+### 🥁 Chunk → single drum stem (`robot-drum-3`) per user request
+Chunk now plays only `robot-drum-3`. Lou keeps `robot-drum-1`. `robot-drum-1-1` and `robot-drum-2` are temporarily orphaned. Chip still reads `N / 6 playing`.
+
+### Verified via automation
+- Idle: "0 / 6 PLAYING", empty band with a friendly hint (`TAP A PAL BELOW / The Time Machine will zap them onto the stage ⚡`), Time Machine centered with its glow, 8-char lineup at bottom.
+- 1 dancer: single character huge and centered (460px max), Time Machine below, that character's lineup tile has a colored ring.
+- 3 dancers: three characters share the top row, each 340px max, still clearly larger than lineup.
+- 6 teams active (all 8 chars): all 8 fit horizontally at 260px each, mix chip reads `6 / 6 PLAYING`.
+- Mobile emulation (390 × 780): compact stack works — chip on top, big characters in mid-frame, Time Machine glow near bottom, 8-char lineup at the very bottom edge.
+
+---
+
+
 
 Follow-up refinement per user: "when you toggle one of the pair members, don't disable the other's animation, just cycle to the next sound, but they'll both play/dance together. And for Lou, I want him to be drum-1. He can play at the same time as Chunk for now. Chunk gets all drums but the one."
 

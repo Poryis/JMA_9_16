@@ -1,25 +1,28 @@
 // Robot Boogie — the Incredibox-style mixer game.
 //
-// Layout goals (v2, per user feedback):
-//   • Characters BIG enough to actually enjoy playing with (~180-220 px
-//     per slot on desktop).
-//   • Time machine relocated so it doesn't cover the disco ball on the bg.
-//   • No name plates — the characters carry themselves.
-//   • Animation frames PRELOADED into the DOM (stacked <img> with
-//     display: none/block toggling) so the loop cycles instantly instead
-//     of flickering while each frame's PNG loads from the network.
-//   • Audio sync handled sample-accurately by the Web-Audio version of
-//     useRobotBoogieAudio — see that file for details.
+// Layout goals (v4, Feb 28 2026 pm — user redesign brief):
+//   • **Time Machine is the visual centerpiece** — it lives dead-center
+//     between the active band and the character lineup, and it's the
+//     device that "zaps" a character into Robot Boogie World.
+//   • **All 8 characters ALWAYS visible** in a compact lineup at the
+//     bottom of the screen (no pagination, no hidden menus).
+//   • **Active performers appear at the top** as significantly larger
+//     versions of themselves — they resize dynamically so 1 solo star
+//     feels HUGE and a full band of 8 still fits.
+//   • Layout is fully responsive. Character positions are *not*
+//     anchored to background artwork — the background is decoration
+//     only. Flexbox rows + auto-sizing so the exact same hierarchy
+//     works on phone, tablet, desktop.
 //
-// Team pairing (v3, Feb 28 2026):
-//   Stems are grouped by INSTRUMENT into 5 "teams" — bass, drum, guitar,
-//   horns (Jazzy + Jellybone), synth (Lou + Robot 1 + Robot 2). A team
-//   only ever plays ONE stem at a time. Tapping any team member swaps
-//   the team's active member; tapping the same member cycles through
-//   their stems then turns the team off. This caps the mix at 5 layers
-//   even if every character is toggled on. See TEAMS + CHAR_TO_TEAM.
+// Visual flow: Tap compact character below  →  Time Machine flashes
+//              →  a big version of that character joins the top band.
 //
-// Grid: 4 columns × 2 rows on desktop, 2 × 4 on mobile.
+// Team pairing (unchanged from v3):
+//   Stems are grouped by INSTRUMENT into 6 "teams" — bass (Finn), drum
+//   (Chunk), guitar (Charlie), lou (Lou plays drum-1 solo), horns (Jazzy
+//   + Jellybone paired), synth (Robot 1 + Robot 2 paired). Paired teams
+//   share ONE audible stem at a time but both members dance together
+//   when both are toggled on. See TEAMS + TEAM_STEMS + CHAR_TO_TEAM.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
@@ -62,9 +65,11 @@ const CHARACTERS = [
   },
   {
     id: 'chunk',
-    // Chunk keeps every drum stem EXCEPT drum-1 (which now belongs to
-    // Lou). See TEAM_STEMS below — the team cycle order is authoritative.
-    stems: ['robot-drum-1-1', 'robot-drum-2', 'robot-drum-3'],
+    // Chunk reduced to a single stem (robot-drum-3) per user; Lou keeps
+    // drum-1. `robot-drum-1-1` and `robot-drum-2` are temporarily
+    // orphaned — the audio hook still loads them, they just stay muted
+    // until we assign them to a character later.
+    stems: ['robot-drum-3'],
     frames: 8,
     playingBase: 'assets/robot-boogie/chunk-playing/chunk-playing',
     neutral: 'assets/robot-boogie/chunk-neutral.png',
@@ -153,14 +158,16 @@ const CHAR_TO_TEAM = Object.entries(TEAMS).reduce((acc, [teamId, members]) => {
 }, {});
 
 // ============================================================
-// Time machine — small chip that lives in the top-RIGHT corner so it
-// doesn't overlap the disco ball at the top-center of the background.
+// Time machine — the visual CENTERPIECE of the page. Sits between the
+// active band (top) and the character lineup (bottom). Kids see it as
+// the device that zaps a character up into Robot Boogie World.
 //
 // Reel behavior:
 //   • Idle when nothing is playing (single time-machine-idle.png).
 //   • Loops the 8-frame reel CONTINUOUSLY while any character is active.
-//   • A tap plays a fun Shield-style flourish animation (cycles through a
-//     set of variants) — same easter-egg vibe as the home page logo.
+//   • Briefly turbo-flashes when a character is toggled (`flashKey`
+//     ticks up on every tap, kicking off a short faster-reel burst).
+//   • A tap plays a fun Shield-style flourish animation.
 // ============================================================
 const TIME_MACHINE_ANIMS = [
   { keyframes: { rotate: [0, -14, 12, -8, 6, 0],  scale: [1, 1.08, 1.10, 1.04, 1.02, 1] }, duration: 0.9 },
@@ -170,13 +177,14 @@ const TIME_MACHINE_ANIMS = [
   { keyframes: { x: [0, -10, 10, -7, 7, -4, 4, 0], rotate: [0, -4, 4, -2, 2, 0, 0, 0],     scale: [1, 1.04, 1.04, 1.04, 1.04, 1.02, 1.02, 1] }, duration: 0.95 },
 ];
 
-function TimeMachine({ anyActive }) {
+function TimeMachine({ anyActive, flashKey }) {
   const [frame, setFrame] = useState(-1);
   const timerRef = useRef(null);
+  const flashTimerRef = useRef(null);
   const tmControls = useAnimationControls();
   const hitsRef = useRef(0);
 
-  // Loop the reel while any stem is active; otherwise return to idle.
+  // Continuous reel while any team plays; idle when silent.
   useEffect(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -197,6 +205,20 @@ function TimeMachine({ anyActive }) {
     };
   }, [anyActive]);
 
+  // Turbo flash on every character toggle — a quick burst of animated
+  // scale + brightness so kids visually connect their tap with the
+  // Time Machine "zapping" the character into the band.
+  useEffect(() => {
+    if (flashKey === 0) return;
+    tmControls.start({
+      scale: [1, 1.18, 1],
+      transition: { duration: 0.4, ease: 'easeOut' },
+    });
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    // Nothing to clean up beyond the animation controls — the reel
+    // interval keeps humming.
+  }, [flashKey, tmControls]);
+
   // Shield-style easter-egg flourish on tap.
   const handleTap = () => {
     const anim = TIME_MACHINE_ANIMS[hitsRef.current % TIME_MACHINE_ANIMS.length];
@@ -207,26 +229,26 @@ function TimeMachine({ anyActive }) {
     });
   };
 
-  // Preload all 8 frames + idle by rendering them stacked with display
-  // toggling — no fetch delay when the reel plays. Position:fixed so its
-  // location is anchored to the viewport (not the min-h-screen wrapper,
-  // which can grow wider than the viewport briefly during layout).
   return (
     <motion.button
       type="button"
       data-testid="robot-boogie-time-machine"
       aria-label="Time machine"
       onClick={handleTap}
-      className="fixed select-none bg-transparent border-0 p-0 cursor-pointer"
+      className="relative select-none bg-transparent border-0 p-0 cursor-pointer flex-shrink-0"
       style={{
-        right: 'clamp(12px, 2vw, 32px)',
-        top: 'clamp(80px, 12vh, 130px)',
-        width: 'clamp(96px, 12vw, 160px)',
-        zIndex: 15,
+        // Size scales with the viewport so the Time Machine reads as the
+        // centerpiece on phone AND desktop.
+        width: 'clamp(170px, 26vw, 320px)',
         touchAction: 'manipulation',
+        // Soft under-glow ring so it feels alive even at idle.
+        filter: anyActive
+          ? 'drop-shadow(0 0 32px rgba(255,220,120,0.95))'
+          : 'drop-shadow(0 8px 18px rgba(0,0,0,0.55))',
+        transition: 'filter 220ms ease-out',
       }}
       animate={tmControls}
-      whileHover={{ scale: 1.06 }}
+      whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.94 }}
     >
       <img
@@ -235,8 +257,11 @@ function TimeMachine({ anyActive }) {
         draggable={false}
         className="w-full h-auto pointer-events-none"
         style={{
-          display: frame === -1 ? 'block' : 'none',
-          filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.55))',
+          // Always keep the idle image in normal flow so it establishes
+          // the button's height — the animation frames are absolutely
+          // positioned overlays that would otherwise leave the button
+          // at zero height. Just hide its pixels while a frame plays.
+          visibility: frame === -1 ? 'visible' : 'hidden',
         }}
       />
       {Array.from({ length: 8 }, (_, i) => (
@@ -246,10 +271,7 @@ function TimeMachine({ anyActive }) {
           alt=""
           draggable={false}
           className="absolute inset-0 w-full h-auto pointer-events-none"
-          style={{
-            display: frame === i ? 'block' : 'none',
-            filter: 'drop-shadow(0 0 24px rgba(255,220,120,0.9))',
-          }}
+          style={{ display: frame === i ? 'block' : 'none' }}
         />
       ))}
     </motion.button>
@@ -412,6 +434,85 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
 }
 
 // ============================================================
+// Compact character — the bottom-lineup tile. Small, always-visible,
+// tappable. Shows the neutral sprite (never animates) plus a bright
+// team-colored ring when this character is "selected" (dancing in the
+// top band). This is the ONLY tap target on the page — everything else
+// is decoration.
+// ============================================================
+function CompactChar({ cfg, selected, onClick, zapping }) {
+  return (
+    <motion.button
+      type="button"
+      data-testid={`robot-boogie-char-${cfg.id}`}
+      data-active={selected ? 'true' : 'false'}
+      onClick={() => onClick(cfg.id)}
+      aria-label={cfg.id}
+      className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none flex-shrink-0"
+      style={{
+        // Compact strip: 8 tiles fit on any width via clamp. Aspect
+        // keeps their proportions consistent with the top performers.
+        width: 'clamp(48px, 10vw, 96px)',
+        aspectRatio: '3 / 4',
+        touchAction: 'manipulation',
+      }}
+      whileHover={{ y: -4 }}
+      whileTap={{ scale: 0.9 }}
+    >
+      {/* Selection ring / stage puck. Sits BEHIND the sprite so the
+          character stands on top of it. */}
+      <div
+        aria-hidden="true"
+        className="absolute pointer-events-none rounded-full"
+        style={{
+          bottom: '2%',
+          left: '10%',
+          right: '10%',
+          height: '14%',
+          background: selected
+            ? `radial-gradient(closest-side, ${cfg.color}cc, ${cfg.color}00 70%)`
+            : 'radial-gradient(closest-side, rgba(0,0,0,0.45), transparent 70%)',
+          transition: 'background 200ms ease-out',
+        }}
+      />
+
+      <img
+        src={cfg.neutral}
+        alt=""
+        draggable={false}
+        className="max-w-full max-h-full object-contain object-bottom pointer-events-none relative"
+        style={{
+          filter: selected
+            ? `drop-shadow(0 0 12px ${cfg.color}dd)`
+            : 'saturate(0.6) brightness(0.85) drop-shadow(0 4px 6px rgba(0,0,0,0.5))',
+          transition: 'filter 200ms ease-out',
+        }}
+      />
+
+      {/* Zap flash on tap — a quick colored bloom instead of the full
+          lightning frames (those live on the LARGE performer). */}
+      <AnimatePresence>
+        {zapping && (
+          <motion.div
+            key="zap"
+            aria-hidden="true"
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            style={{
+              boxShadow: `0 0 22px 4px ${cfg.color}`,
+              background: `radial-gradient(closest-side, ${cfg.color}66, transparent 70%)`,
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.32 }}
+          />
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
+}
+
+// ============================================================
 // Main page
 // ============================================================
 const EMPTY_DANCING = CHARACTERS.reduce((acc, c) => { acc[c.id] = false; return acc; }, {});
@@ -434,6 +535,11 @@ export default function RobotBoogiePage() {
   // Track which character was most recently zapped (for the LightningBolt
   // overlay on the character slot).
   const [zappingId, setZappingId] = useState(null);
+
+  // Ticks up every time a character is toggled — used by TimeMachine to
+  // fire its "zap" burst animation without needing to know which char
+  // was tapped.
+  const [flashKey, setFlashKey] = useState(0);
 
   const handleCharacterClick = useCallback((charId) => {
     const teamId = CHAR_TO_TEAM[charId];
@@ -473,6 +579,10 @@ export default function RobotBoogiePage() {
       // Else: leave the current stem playing — the other dancer keeps
       // holding the groove.
     }
+
+    // Every tap — on or off — kicks off the Time Machine's flash burst
+    // so kids visually connect their action with the centerpiece.
+    setFlashKey((k) => k + 1);
   }, [dancing, teamStemIndex, setStemActive]);
 
   const handleReset = useCallback(() => {
@@ -487,34 +597,41 @@ export default function RobotBoogiePage() {
   );
   const totalTeams = Object.keys(TEAMS).length;
 
+  const activeChars = useMemo(
+    () => CHARACTERS.filter((c) => dancing[c.id]),
+    [dancing]
+  );
+
   return (
     <div
       data-testid="robot-boogie-page"
       className="min-h-screen relative overflow-x-hidden flex flex-col"
       style={{
-        backgroundImage: 'url(assets/backgrounds/robot-boogie-scene.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        // Background is decoration ONLY — no gameplay positioning
+        // depends on it. Fallback gradient behind so the layout still
+        // looks coherent if the PNG is missing or slow to load.
+        background:
+          'radial-gradient(circle at 50% 30%, #4a2b7a 0%, #2a1650 55%, #150a2b 100%)',
+        backgroundImage:
+          'url(assets/backgrounds/robot-boogie-scene.png), radial-gradient(circle at 50% 30%, #4a2b7a 0%, #2a1650 55%, #150a2b 100%)',
+        backgroundSize: 'cover, auto',
+        backgroundPosition: 'center, center',
       }}
     >
-      {/* Purple wash at bottom for depth — kept OFF the top area so the
-          disco ball on the bg stays visible. */}
+      {/* Vignette so the characters read against any background */}
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          height: '35%',
           background:
-            'linear-gradient(180deg, transparent 0%, rgba(20,10,45,0.5) 100%)',
+            'radial-gradient(ellipse at 50% 40%, transparent 40%, rgba(0,0,0,0.55) 100%)',
         }}
       />
 
       <GameHeader title="Robot Boogie" showHomeButton={true} />
 
-      <TimeMachine anyActive={activeCount > 0} />
-
-      {/* Header ribbon: active count + reset */}
-      <div className="relative z-10 flex items-center justify-center gap-3 mt-16 md:mt-20 pt-3">
+      {/* Playing chip + Reset — sits just under the fixed header */}
+      <div className="relative z-10 flex items-center justify-center gap-3 pt-14 md:pt-20 pb-1">
         <div
           data-testid="robot-boogie-active-count"
           className="px-3 py-1 rounded-full font-black text-xs uppercase tracking-wider"
@@ -544,42 +661,118 @@ export default function RobotBoogiePage() {
         </button>
       </div>
 
-      {/* Character grid — 4×2 on desktop, 2×4 on mobile. No name plates
-          per user feedback; kids identify their pals by outfit + song.
-          `mx-auto` + explicit max-width centers reliably instead of
-          relying on a flex-1 wrapper (which was letting content force
-          horizontal overflow). */}
-      <div className="relative z-10 mx-auto w-full px-3 md:px-6 pt-4 pb-6" style={{ maxWidth: '1160px' }}>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-5">
+      {/* ==== MAIN STAGE ==== 
+          Three vertically stacked zones — active band up top, Time
+          Machine in the middle, tappable lineup at the bottom. All
+          three sit inside a max-width column so the composition stays
+          coherent on ultra-wide screens. */}
+      <div className="relative z-10 flex-1 flex flex-col items-center w-full mx-auto px-3 md:px-6 pb-3"
+           style={{ maxWidth: '1200px' }}>
+
+        {/* ---- Active band (top) ---- */}
+        <div
+          data-testid="robot-boogie-active-band"
+          className="w-full flex-1 flex items-end justify-center gap-2 md:gap-4 pt-2 pb-1 overflow-hidden"
+          style={{ minHeight: '180px' }}
+        >
+          {activeChars.length === 0 ? (
+            <motion.div
+              key="empty-hint"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center self-center pointer-events-none"
+              style={{ color: 'white' }}
+            >
+              <div
+                className="font-black uppercase tracking-widest text-sm md:text-base"
+                style={{ opacity: 0.85 }}
+              >
+                Tap a pal below
+              </div>
+              <div
+                className="font-bold text-xs md:text-sm"
+                style={{ opacity: 0.65, marginTop: '4px' }}
+              >
+                The Time Machine will zap them onto the stage ⚡
+              </div>
+            </motion.div>
+          ) : (
+            <AnimatePresence mode="popLayout" initial={false}>
+              {activeChars.map((cfg) => (
+                <motion.div
+                  key={cfg.id}
+                  layout
+                  initial={{ opacity: 0, y: 60, scale: 0.6 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 40, scale: 0.6 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+                  className="min-w-0"
+                  style={{
+                    // Each active character shares the available width
+                    // equally, but with a per-count cap so a soloist
+                    // feels HUGE and a full band still fits comfortably.
+                    // The cap eases down as more join: 1 → 460px, 2 →
+                    // 400px, 3 → 340px, 4 → 300px, 5+ → 260px.
+                    flex: '1 1 0%',
+                    maxWidth: (() => {
+                      const n = activeChars.length;
+                      if (n <= 1) return '460px';
+                      if (n === 2) return '400px';
+                      if (n === 3) return '340px';
+                      if (n === 4) return '300px';
+                      return '260px';
+                    })(),
+                  }}
+                >
+                  <CharacterSlot
+                    cfg={cfg}
+                    activeStemIndex={0}
+                    onClick={handleCharacterClick}
+                    zapping={zappingId === cfg.id}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
+        </div>
+
+        {/* ---- Time Machine (centerpiece) ---- */}
+        <div
+          className="w-full flex justify-center items-center py-1 md:py-2 relative"
+          data-testid="robot-boogie-time-machine-zone"
+        >
+          {/* Soft halo behind the machine so it reads as the anchor of
+              the composition. Scales with the machine itself. */}
+          <div
+            aria-hidden="true"
+            className="absolute pointer-events-none"
+            style={{
+              width: 'clamp(220px, 36vw, 440px)',
+              aspectRatio: '2 / 1',
+              background:
+                'radial-gradient(ellipse at center, rgba(255,220,120,0.28) 0%, rgba(255,220,120,0.10) 40%, transparent 70%)',
+              filter: 'blur(6px)',
+            }}
+          />
+          <TimeMachine anyActive={activeCount > 0} flashKey={flashKey} />
+        </div>
+
+        {/* ---- Character lineup (bottom, always 8) ---- */}
+        <div
+          data-testid="robot-boogie-lineup"
+          className="w-full flex justify-center items-end gap-1.5 md:gap-3 pt-1 md:pt-2 pb-2"
+        >
           {CHARACTERS.map((cfg) => (
-            <div key={cfg.id} className="min-w-0">
-              <CharacterSlot
-                cfg={cfg}
-                activeStemIndex={dancing[cfg.id] ? 0 : -1}
-                onClick={handleCharacterClick}
-                zapping={zappingId === cfg.id}
-              />
-            </div>
+            <CompactChar
+              key={cfg.id}
+              cfg={cfg}
+              selected={!!dancing[cfg.id]}
+              onClick={handleCharacterClick}
+              zapping={zappingId === cfg.id}
+            />
           ))}
         </div>
       </div>
-
-      {/* Hint (only before anything is playing) */}
-      {activeCount === 0 && (
-        <motion.div
-          className="absolute z-10 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-xs md:text-sm font-black uppercase tracking-wider pointer-events-none"
-          style={{
-            bottom: 'clamp(16px, 3vh, 32px)',
-            backgroundColor: 'rgba(0,0,0,0.72)',
-            color: 'white',
-            border: '2px solid rgba(255,255,255,0.35)',
-          }}
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-        >
-          Tap a pal to bring them to life ⚡
-        </motion.div>
-      )}
     </div>
   );
 }
