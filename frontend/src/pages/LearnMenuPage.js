@@ -9,8 +9,8 @@ const LEARN_TILES = [
     color: '#7A1F1F',
     accent: '#4A0E0E',
     character: 'assets/backgrounds/charlie-lecturn.png',
-    charWidthPct: 58,
-    charObjectPosition: 'bottom center',
+    charWidthPct: 30,
+    charObjectPosition: 'bottom right',
     sfx: 'assets/audio/sfx-page.mp3',
   },
   {
