@@ -26,7 +26,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
-import { RotateCcw, ImageIcon } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import useRobotBoogieAudio from '../hooks/useRobotBoogieAudio';
 import useBeatPulse from '../hooks/useBeatPulse';
@@ -119,7 +119,7 @@ const CHARACTERS = [
     // transparent side padding baked into their sources. Without a
     // scale correction Lou would look almost 2× the visual weight of
     // his neighbors. 0.68 brings him back in line.
-    slotScale: 0.5,
+    slotScale: 0.45,
   },
   {
     id: 'jazzy',
@@ -414,7 +414,6 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotRef, beatSu
   return (
     <motion.button
       type="button"
-      ref={slotRef}
       data-testid={`robot-boogie-char-${cfg.id}`}
       data-active={isActive ? 'true' : 'false'}
       onClick={() => onClick(cfg.id)}
@@ -432,7 +431,19 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotRef, beatSu
       whileTap={{ scale: 0.94 }}
     >
       <div
-        ref={glowWrapRef}
+        ref={(node) => {
+          // Combined ref: internal glow updates + external lightning aim.
+          // We route slotRef to the INNER (scaled) div so that
+          // getBoundingClientRect() returns the actual visible rect of
+          // the sprite — not the outer un-scaled button. Otherwise
+          // scaled characters like Lou get bolts aimed at where their
+          // head WOULD be at 1× scale (i.e., way above their actual head).
+          glowWrapRef.current = node;
+          if (slotRef) {
+            if (typeof slotRef === 'function') slotRef(node);
+            else slotRef.current = node;
+          }
+        }}
         className="relative w-full h-full flex items-end justify-center"
         style={{
           filter: isActive
@@ -624,32 +635,22 @@ const EMPTY_TEAM_STEM = Object.keys(TEAMS).reduce((acc, t) => { acc[t] = null; r
 
 export default function RobotBoogiePage() {
   const { setStemActive, muteAll, getAudioClock } = useRobotBoogieAudio();
-  // Beat phase offset — user prefers 0.5 offset ("off beat" chip
-  // label, but internally that's actually the downbeat given the way
-  // startTime + loop-duration measurement lines up). Default to what
-  // sounds correct; toggle keeps the A/B compare option.
-  const [beatOffset, setBeatOffset] = useState(0.5);
+  // Beat phase offset locked to 0.5 — this hits what the user hears as
+  // the on-beat given how the audio's startTime + loop-duration meshes
+  // with the visual clock. Kept as a constant here for clarity.
+  const beatOffset = 0.5;
   const { subscribe: beatSubscribe } = useBeatPulse(getAudioClock, beatOffset);
 
-  // Background scene — 6 curated options in the app's flat art style.
-  // Cycled via a small button next to the reset chip. Choice persists
-  // to localStorage so kids keep their vibe between sessions.
-  const [bgIndex, setBgIndex] = useState(() => {
-    try {
-      const raw = localStorage.getItem('jma_rb_bg_v1');
-      if (raw !== null) {
-        const n = parseInt(raw, 10);
-        if (n >= 0 && n < BACKGROUNDS.length) return n;
-      }
-    } catch (_) { /* ignore */ }
-    return 0;
-  });
-  const cycleBg = useCallback(() => {
-    setBgIndex((i) => {
-      const next = (i + 1) % BACKGROUNDS.length;
-      try { localStorage.setItem('jma_rb_bg_v1', String(next)); } catch (_) { /* ignore */ }
-      return next;
-    });
+  // Background scene — auto-cycles every 35s through the 4 curated
+  // scenes in the app's flat art style. No UI to pick; kids just
+  // enjoy the changing vibe. Starting index randomized so identical
+  // sessions don't always begin the same way.
+  const [bgIndex, setBgIndex] = useState(() => Math.floor(Math.random() * BACKGROUNDS.length));
+  useEffect(() => {
+    const id = setInterval(() => {
+      setBgIndex((i) => (i + 1) % BACKGROUNDS.length);
+    }, 35000);
+    return () => clearInterval(id);
   }, []);
   const BgComp = BACKGROUNDS[bgIndex].Comp;
 
@@ -826,7 +827,7 @@ export default function RobotBoogiePage() {
       <GameHeader title="Robot Boogie" showHomeButton={true} />
 
       {/* Playing chip + Reset — sits just under the fixed header */}
-      <div className="relative z-10 flex items-center justify-center gap-2 pt-14 md:pt-16 pb-0 flex-wrap px-2">
+      <div className="relative z-10 flex items-center justify-center gap-3 pt-14 md:pt-16 pb-0">
         <div
           data-testid="robot-boogie-active-count"
           className="px-3 py-1 rounded-full font-black text-xs uppercase tracking-wider"
@@ -853,37 +854,6 @@ export default function RobotBoogiePage() {
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Reset
-        </button>
-        <button
-          type="button"
-          data-testid="robot-boogie-cycle-bg"
-          onClick={cycleBg}
-          title={BACKGROUNDS[bgIndex].label}
-          className="px-3 py-1.5 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 border-2 cursor-pointer"
-          style={{
-            backgroundColor: '#8A6FDC',
-            color: 'white',
-            borderColor: 'var(--jma-dark)',
-            boxShadow: '0 3px 0 0 var(--jma-dark)',
-          }}
-        >
-          <ImageIcon className="w-3.5 h-3.5" />
-          {BACKGROUNDS[bgIndex].label}
-        </button>
-        <button
-          type="button"
-          data-testid="robot-boogie-beat-toggle"
-          onClick={() => setBeatOffset((v) => (v === 0.5 ? 0 : 0.5))}
-          title={beatOffset === 0.5 ? 'Pulse on downbeat' : 'Pulse on off-beat'}
-          className="px-3 py-1.5 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 border-2 cursor-pointer"
-          style={{
-            backgroundColor: beatOffset === 0.5 ? '#00A67E' : '#E38B00',
-            color: 'white',
-            borderColor: 'var(--jma-dark)',
-            boxShadow: '0 3px 0 0 var(--jma-dark)',
-          }}
-        >
-          {beatOffset === 0.5 ? 'On Beat' : 'Off Beat'}
         </button>
       </div>
 

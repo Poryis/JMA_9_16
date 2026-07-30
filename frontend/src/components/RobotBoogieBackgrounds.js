@@ -334,13 +334,14 @@ export function BgCrowd() {
 }
 
 // ------------------------------------------------------------
-// Exported registry — used by the page to cycle through them.
+// Exported registry — used by the page to auto-cycle through them.
+// User dropped Cosmic Dance Floor and Silhouette Crowd (Feb 30 pm)
+// because they didn't fit the vibe. Order below drives the auto-cycle
+// rotation on the page.
 // ------------------------------------------------------------
 export const BACKGROUNDS = [
   { id: 'lab',     label: 'Time-Machine Lab',      Comp: BgLab },
-  { id: 'cosmic',  label: 'Cosmic Dance Floor',    Comp: BgCosmic },
   { id: 'arcade',  label: 'Retro Arcade',          Comp: BgArcade },
   { id: 'concert', label: 'Concert Stage',         Comp: BgConcert },
-  { id: 'crowd',   label: 'Silhouette Crowd',      Comp: BgCrowd },
   { id: 'navy',    label: 'Deep Navy',             Comp: BgNavy },
 ];

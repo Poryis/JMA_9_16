@@ -1,5 +1,31 @@
 # Changelog
 
+## Feb 30, 2026 (late) — Robot Boogie v8.2: cleanup & aim fixes
+
+Trimmed the vibe list, killed the top chip clutter, and fixed two aim bugs.
+
+### Backgrounds — down to 4 auto-cycled
+- Dropped **Cosmic Dance Floor** and **Silhouette Crowd** (user "doesn't like").
+- Retired the manual background picker chip. Background now **auto-cycles every 35s** through: Time-Machine Lab → Retro Arcade → Concert Stage → Deep Navy. Starting scene randomized so return visits feel fresh.
+- Beat-toggle chip also removed; internal offset locked to `0.5` (the value user preferred — labels had been backwards).
+
+### Lightning source X
+Reversed the previous nudge — source point was already too far right. Now at `srcBox.width * 0.44` (6% left of clickable center) so bolts emerge from the machine's visible dome cap.
+
+### Lou size + aim on triggered
+- Slot scale tightened from `0.68 → 0.5 → 0.45`. Lou is now ~10% larger than his peers by request, matching visual weight.
+- **Bigger fix**: `slotRef` moved from the OUTER (un-scaled) motion.button to the INNER (scaled) glow-wrapper via a combined callback ref. Previously `getBoundingClientRect()` was returning the full slot rect, so LightningStage aimed at Lou's would-be head at 1× scale — which was way above his actual scaled body ("beam shoots over his head"). Now the rect reflects the visible sprite dimensions and the bolt lands on the scaled character's chest for every character, scaled or not.
+
+### Files touched
+`RobotBoogiePage.js`, `LightningStage.js`, `RobotBoogieBackgrounds.js`.
+
+### Verified
+Screenshotted Lou-only (bolt lands on his torso, machine source on dome cap), and 4-dancer group (all 4 bolts land on-body, no chip clutter, auto-cycled to Retro Arcade).
+
+---
+
+
+
 ## Feb 30, 2026 (evening) — Robot Boogie v8.1: Lou fix, rhythm-locked bolts, 6 SVG backgrounds
 
 User feedback on v8: Lou was crazy big (correctly cropped but the OTHER PNGs still have padding); pulse hit "the and of 1" not the downbeat; Lou's neutral wasn't cropped; the bg was stale. Also loved the lightning but wanted it rhythm-locked.
