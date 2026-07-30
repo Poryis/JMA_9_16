@@ -6,8 +6,9 @@ import { earnSticker, noteFactSeen } from '../hooks/useStickers';
 import { GameHeader } from '../components/GameUI';
 
 // Characters placed IN the clubhouse scene at specific spots.
-// Stew removed in Feb 2026 because Lou's image already has Stew on his shoulder
-// (was producing two visible Stews in the same scene).
+// Lou and Stew were split apart in Feb 2026 — the user wanted Stew to be his
+// own findable character (standalone) up in the top-right tree, while Lou
+// stands solo in his old spot.
 const SCENE_CHARS = [
   { name: 'Chunk',         image: 'assets/characters/chunk.png',           stickerId: 'char_chunk',
     leftPct: 32, topPct: 20, widthPct: 13, anim: 'swing' },
@@ -15,12 +16,14 @@ const SCENE_CHARS = [
     leftPct: 8, topPct: 35, widthPct: 11, anim: 'bob' },
   { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    stickerId: 'char_doctor',
     leftPct: 65, topPct: 27, widthPct: 8.9, anim: 'peek' },
+  { name: 'Stew',          image: 'assets/characters/stew.png',            stickerId: 'char_stew',
+    leftPct: 88, topPct: 18, widthPct: 7, anim: 'swing' },
   { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           stickerId: 'char_jazzy',
     leftPct: 22, topPct: 63, widthPct: 8, anim: 'bob' },
   { name: 'Charlie',       image: 'assets/characters/charlie-polliwog.png', stickerId: 'char_charlie',
     leftPct: 50, topPct: 65, widthPct: 19, anim: 'bob' },
-  { name: 'Lou & Stew',    image: 'assets/characters/llama-lou-stew.png',  stickerId: 'char_loustew',
-    leftPct: 78, topPct: 65, widthPct: 12, anim: 'bob' },
+  { name: 'Lou',           image: 'assets/characters/lou.png',             stickerId: 'char_lou',
+    leftPct: 78, topPct: 65, widthPct: 11, anim: 'bob' },
 ];
 
 const ANIM_VARIANTS = {
@@ -375,7 +378,7 @@ function FunFactsPage() {
                 className="text-2xl md:text-3xl font-black font-display mb-3"
                 style={{ color: 'var(--jma-dark)' }}
               >
-                Find all 6 friends!
+                Find all 7 friends!
               </h2>
               <ul
                 className="text-sm font-bold mb-5 space-y-2 text-left mx-auto inline-block"

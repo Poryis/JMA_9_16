@@ -36,7 +36,8 @@ export const COLLECTION_STICKERS = [
   { id: 'char_chunk',     name: 'Chunk',           category: 'characters', icon: 'assets/characters/chunk.png',           color: '#9B59B6', hint: 'Meet Chunk on the home page' },
   { id: 'char_jazzy',     name: 'Jazzy',           category: 'characters', icon: 'assets/characters/jazzy.png',            color: '#FF9500', hint: 'Meet Jazzy on the home page' },
   { id: 'char_doctor',    name: 'Dr. Jellybone',   category: 'characters', icon: 'assets/characters/dr-jellybone.png',     color: '#4285F4', hint: 'Meet Dr. Jellybone on the home page' },
-  { id: 'char_loustew',   name: 'Lou & Stew',      category: 'characters', icon: 'assets/characters/llama-lou-stew.png',         color: '#AF52DE', hint: 'Meet Lou & Stew on the home page' },
+  { id: 'char_lou',       name: 'Lou',             category: 'characters', icon: 'assets/characters/lou.png',                    color: '#AF52DE', hint: 'Find Lou in the Fun Facts Clubhouse' },
+  { id: 'char_stew',      name: 'Stew',            category: 'characters', icon: 'assets/characters/stew.png',                   color: '#16A085', hint: 'Find Stew in the Fun Facts Clubhouse' },
 
   // ---- Outfits (alternate looks, unlocked via gameplay milestones) ----
   // CHARLIE

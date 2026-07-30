@@ -1,5 +1,23 @@
 # Changelog
 
+## Fun Facts Clubhouse — Lou & Stew split into standalone characters (Feb 2026)
+
+**User request**: "For the fun facts clubhouse. I want to add stew... replace Lou with the png that is titled something like Lou no Stew... put a standalone stew up in the top right corner... give stew some fun facts as well."
+
+**What changed**:
+- `FunFactsPage.js` `SCENE_CHARS` array: replaced the combo `Lou & Stew` entry with two standalone entries — `Lou` using `lou.png` (llama alone, no parrot on shoulder) at his old position (78%, 65%), and a new `Stew` using `stew.png` (green parrot) at the top-right tree area (88%, 18%, width 7%, swing anim).
+- Intro copy: "Find all 6 friends!" → "Find all 7 friends!".
+- `stickers.js`: replaced legacy `char_loustew` sticker with two new stickers — `char_lou` (icon `lou.png`, hint "Find Lou in the Fun Facts Clubhouse") and `char_stew` (icon `stew.png`, hint "Find Stew in the Fun Facts Clubhouse").
+- `musicFacts.js`: renamed the `'Lou & Stew'` key to `'Lou'` (world-music facts unchanged); the existing `Stew` facts entry (kazoo & bird sounds) is now wired to the standalone Stew in the scene.
+
+**Verified**: Manual screenshot after force-marking all 7 found — Stew visible in top-right tree area, Lou standalone (no parrot on shoulder) in bottom right, 7/7 progress reads correctly.
+
+### Files touched
+`FunFactsPage.js`, `stickers.js`, `musicFacts.js`.
+
+---
+
+
 ## Robot Boogie card SFX removed + speed slider tightened
 
 - **Removed the SFX preview from the Robot Boogie tile** (`CreateMenuPage.js`). The source stem is an 8-second loop, so even the 500 ms cap read as "a second of music that abruptly cuts out" when you clicked the card. Card click now navigates silently — the Robot Boogie page itself stays fully muted until the first Club Member is tapped.

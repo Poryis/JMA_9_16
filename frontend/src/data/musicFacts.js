@@ -87,7 +87,7 @@ export const CHARACTER_FACTS = {
       "Jazz musicians call cool, surprising notes 'BLUE NOTES' — they're the secret spice of jazz!",
     ],
   },
-  'Lou & Stew': {
+  'Lou': {
     topic: 'world',
     color: '#AF52DE',
     facts: [

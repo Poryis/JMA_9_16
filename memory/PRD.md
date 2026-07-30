@@ -145,3 +145,11 @@ Four new mini-features designed to boost real music learning while keeping it fu
 
 ## Testing Credentials
 N/A — frontend-only, no auth.
+
+## Implemented (Feb 2026 — Fun Facts Clubhouse: standalone Lou + Stew)
+- `FunFactsPage.js` `SCENE_CHARS` array split the legacy `Lou & Stew` entry into two standalone entries: **Lou** (`lou.png`, no Stew on shoulder) at his old spot, and a new **Stew** (`stew.png`) placed at the top-right tree area (left 88% / top 18%, swing anim).
+- Intro copy: "Find all 6 friends!" → "Find all 7 friends!".
+- `stickers.js`: replaced `char_loustew` with `char_lou` + `char_stew` character stickers.
+- `musicFacts.js`: renamed `'Lou & Stew'` key → `'Lou'`; existing `Stew` facts (kazoo/bird facts) now wired to the standalone Stew.
+- Verified via manual screenshot: all 7 characters found, Stew visible top-right on the palm, Lou standalone in bottom-right.
+
