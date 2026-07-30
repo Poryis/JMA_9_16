@@ -24,6 +24,7 @@ export const STICKER_CATEGORIES = [
   { id: 'bells',        label: 'Jellybells',        kind: 'collection' },
   { id: 'songs',        label: 'Song Champion',     kind: 'collection' },
   { id: 'lessons',      label: 'Lessons',           kind: 'collection' },
+  { id: 'boogie',       label: 'Robot Boogie Band', kind: 'collection' },
   { id: 'milestones',   label: 'Fun Milestones',    kind: 'collection' },
 ];
 
@@ -102,6 +103,21 @@ export const COLLECTION_STICKERS = [
   { id: 'song_ocean_wave',            name: 'Ocean Wave',               category: 'songs', icon: 'assets/bells/D 1.png', color: '#1ABC9C', hint: 'Complete Ocean Wave' },
   { id: 'song_bell_bounce',           name: 'Bell Bounce',              category: 'songs', icon: 'assets/bells/A 1.png', color: '#4285F4', hint: 'Complete Bell Bounce' },
   { id: 'song_funky_fish',            name: 'Funky Fish',               category: 'songs', icon: 'assets/bells/F 1.png', color: '#F39C12', hint: 'Complete Funky Fish' },
+
+  // ---- Robot Boogie (earned by activating each Club Member at
+  // least once in Robot Boogie, plus one milestone for having the
+  // whole 8-piece band jamming at the same time). Awarded from
+  // /app/frontend/src/pages/RobotBoogiePage.js via
+  // earnSticker(`boogie_${charId}`) inside handleCharacterClick.
+  { id: 'boogie_robot1',    name: 'Robot 1',       category: 'boogie', icon: 'assets/robot-boogie/robot1-neutral/robot1-neutral-01.png', color: '#4285F4', hint: 'Jam with Robot 1 in Robot Boogie' },
+  { id: 'boogie_robot2',    name: 'Robot 2',       category: 'boogie', icon: 'assets/robot-boogie/robot2-neutral/robot2-neutral-01.png', color: '#8E44AD', hint: 'Jam with Robot 2 in Robot Boogie' },
+  { id: 'boogie_chunk',     name: 'Chunk',         category: 'boogie', icon: 'assets/robot-boogie/chunk-neutral.png',                     color: '#E74C3C', hint: 'Jam with Chunk in Robot Boogie' },
+  { id: 'boogie_finn',      name: 'Finn',          category: 'boogie', icon: 'assets/robot-boogie/finn-neutral.png',                      color: '#1ABC9C', hint: 'Jam with Finn in Robot Boogie' },
+  { id: 'boogie_charlie',   name: 'Charlie',       category: 'boogie', icon: 'assets/robot-boogie/charlie-neutral/charlie-neutral-01.png', color: '#FF3B30', hint: 'Jam with Charlie in Robot Boogie' },
+  { id: 'boogie_jazzy',     name: 'Jazzy',         category: 'boogie', icon: 'assets/robot-boogie/jazzy-neutral.png',                     color: '#FF3AA8', hint: 'Jam with Jazzy in Robot Boogie' },
+  { id: 'boogie_jellybone', name: 'Dr. Jellybone', category: 'boogie', icon: 'assets/robot-boogie/jellybone-neutral.png',                 color: '#AF52DE', hint: 'Jam with Dr. Jellybone in Robot Boogie' },
+  { id: 'boogie_lou',       name: 'Llama Lou',     category: 'boogie', icon: 'assets/robot-boogie/lou-neutral.png',                       color: '#34A853', hint: 'Jam with Llama Lou in Robot Boogie' },
+  { id: 'boogie_full_band', name: 'Full Band!',    category: 'boogie', icon: 'assets/robot-boogie/time-machine-idle.png',                 color: '#FFCC00', hint: 'Have all 8 Club Members dancing at the same time' },
 
   // ---- Lessons (earned by completing each video lesson in Learn) ----
   { id: 'lesson_1', name: 'Lesson 1 Complete', category: 'lessons', icon: 'assets/characters/charlie-polliwog.png', color: '#FFCC00', hint: 'Finish Lesson 1' },

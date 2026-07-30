@@ -1,5 +1,22 @@
 # Changelog
 
+## Robot Boogie card redo + 9 new stickers
+
+- **New card background** `robot-boogie-card.svg` — a "spotlight stage" scene (purple radial gradient + yellow spotlight cone + hint of disco floor tiles at the bottom). Replaces the busier Lab SVG that didn't work for the card.
+- **Hero size fixed**: Robot 1's neutral PNG was 512×288 but he only occupied pixels 187–316 (~25% of frame width). Cropped a card-specific hero to `robot1-card-hero.png` (153×245). Card now uses this + bumped `charWidthPct` 34 → 55, so Robot 1 fills the card as intended.
+- **9 new Robot Boogie stickers** (all icons verified present):
+  - 8 Club Members: `boogie_robot1`, `boogie_robot2`, `boogie_chunk`, `boogie_finn`, `boogie_charlie`, `boogie_jazzy`, `boogie_jellybone`, `boogie_lou` — each uses that character's neutral PNG as the sticker artwork.
+  - 1 milestone: `boogie_full_band` — earned when all 8 characters are dancing at the same time.
+- New category `boogie` (label "Robot Boogie Band") added to `STICKER_CATEGORIES` so they get their own section in the sticker book.
+- **Wired up in `RobotBoogiePage.handleCharacterClick`**: `earnSticker(\`boogie_${charId}\`)` on activation + `earnSticker('boogie_full_band')` when the eighth character joins. Verified via `localStorage.jma_stickers_v1` — `boogie_robot1` and `boogie_lou` recorded correctly after taps.
+
+### Files touched
+`CreateMenuPage.js` (bg + hero swap + size bump), new `/app/frontend/public/assets/backgrounds/robot-boogie-card.svg`, new `/app/frontend/public/assets/robot-boogie/robot1-card-hero.png`, `stickers.js` (9 new stickers + `boogie` category), `RobotBoogiePage.js` (earnSticker import + calls).
+
+---
+
+
+
 ## Jelly Jukebox tile polish + colorblind audit
 
 - **Slowed tile cycle**: 1.44s → **3s** loop with 1s stagger. Reads as a steady disco pulse instead of a rapid strobe.

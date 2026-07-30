@@ -32,6 +32,7 @@ import useRobotBoogieAudio from '../hooks/useRobotBoogieAudio';
 import useBeatPulse from '../hooks/useBeatPulse';
 import LightningStage from '../components/LightningStage';
 import { BACKGROUNDS } from '../components/RobotBoogieBackgrounds';
+import { earnSticker } from '../hooks/useStickers';
 
 // ============================================================
 // Character config
@@ -931,6 +932,16 @@ export default function RobotBoogiePage() {
 
       setZappingId(charId);
       setTimeout(() => setZappingId(null), 360);
+
+      // Sticker awards — first time each Club Member joins the jam,
+      // and once for having the whole 8-piece band dancing at once.
+      earnSticker(`boogie_${charId}`);
+      // Count dancers AFTER this activation (dancing state above is
+      // async; do the arithmetic here directly).
+      const willBeDancingCount = Object.values(dancing).filter(Boolean).length + 1;
+      if (willBeDancingCount === CHARACTERS.length) {
+        earnSticker('boogie_full_band');
+      }
     } else {
       // Turning THIS character OFF.
       setDancing((prev) => ({ ...prev, [charId]: false }));
