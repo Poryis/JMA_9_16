@@ -1,5 +1,26 @@
 # Changelog
 
+## Robot Boogie loop gap — MP3 encoder-silence trimmed (testing_agent verified)
+
+**🐛 Bug**: "The loop isn't perfectly clean — extra 16th beat of time before it starts over."
+
+**Root cause**: Every stem MP3 in `/app/frontend/public/assets/audio/robot-boogie/` decodes to **11.024 s**, but the actual musical content is only **~10.984 s** — the extra ~40 ms is MP3 encoder-added silence (20 ms lead + 20 ms tail on most stems). `AudioBufferSourceNode.loop = true` was replaying the entire buffer including that silence, so the loop point was audibly late.
+
+**Fix** in `useRobotBoogieAudio.js` source-creation block:
+- `src.loopStart = 0.020` and `src.loopEnd = 10.984` (clamped to `buf.duration - 0.001` defensively) so Web Audio jumps back to loopStart the moment it hits loopEnd, cutting the dead air.
+- `src.start(startTime, LOOP_START)` starts playback at the offset too, so the head silence is skipped on the very first pass (otherwise it'd be gapless from loop 2 onward but not loop 1).
+- `loopDurationRef.current` now stores `LOOP_END - LOOP_START` (10.964 s) so the beat-pulse math stays accurate.
+- Tunable — if a future stem set has different padding, adjust the two constants.
+
+**Verified by testing_agent iteration_19**: static check confirmed constants + `src.start(startTime, LOOP_START)` present; behavioral smoke test (25 s of playback, 2+ loop cycles) showed no console errors, character glow + drum sprite behavior normal.
+
+### Files touched
+`useRobotBoogieAudio.js` (loopStart/loopEnd + LOOP_START-offset start).
+
+---
+
+
+
 ## Card tune + audio-leak bug fix
 
 - **🐛 Bug fix (testing_agent verified iteration_18.json)**: Robot Boogie audio "starts on entering and doesn't stop on leaving." Root cause was NOT the game page — it was `SubMenuPage.Tile.handleClick` playing `tile.sfx` via `new Audio()` on card click. Robot Boogie's sfx pointed to `robot-synth-1.mp3` — an 8-second loop stem, not a short blip — and the HTMLAudioElement lived in a JS closure (not the React tree), so it kept playing after route change. **Fix**: 500ms `setTimeout` in `Tile.handleClick` sets volume=0, pause(), `removeAttribute('src')`, and `load()` to cleanly dispose. Confirmed by testing_agent: jam-session and beat-lab tiles show `paused=true, volume=0` at 700ms post-click; Robot Boogie tile follows the same code path.
