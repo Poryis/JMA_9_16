@@ -407,6 +407,65 @@ function TimeMachine({ anyActive, flashKey, beatSubscribe, tmRef, triggerStab, s
   );
 }
 
+const CONFETTI_COLORS = ['#FF3B30', '#F2C94C', '#4ac6ff', '#34A853', '#ff3aa8', '#ffe066', '#8A6FDC'];
+
+// ============================================================
+// Confetti burst — a small SVG confetti pop that mounts fresh every
+// time its `boopKey` prop changes. Each dot picks a random angle and
+// distance and fades out along that vector via a per-instance CSS
+// keyframe drives its transform. Fires-and-forgets: parent doesn't
+// need to unmount it — the animation itself is what "cleans up"
+// visually. Rendered inside the CharacterSlot so it inherits the
+// character's local coord space.
+// ============================================================
+function ConfettiBurst({ boopKey, color }) {
+  // Deterministic per-boop dots so React doesn't reroll layout mid-run.
+  const dots = useMemo(() => {
+    if (!boopKey) return [];
+    return Array.from({ length: 14 }, (_, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const dist  = 60 + Math.random() * 120;
+      return {
+        dx: (Math.cos(angle) * dist).toFixed(1),
+        dy: (Math.sin(angle) * dist).toFixed(1),
+        rot: (Math.random() * 720 - 360).toFixed(0),
+        color: i % 3 === 0 ? color : CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+        size: (7 + Math.random() * 6).toFixed(1),
+        delay: (Math.random() * 60).toFixed(0),
+      };
+    });
+  }, [boopKey, color]);
+  if (!boopKey) return null;
+  return (
+    <div key={boopKey} aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-visible">
+      {dots.map((d, i) => (
+        <span
+          key={i}
+          className="absolute"
+          style={{
+            left: '50%',
+            top: '55%',
+            width: `${d.size}px`,
+            height: `${d.size}px`,
+            borderRadius: '2px',
+            backgroundColor: d.color,
+            border: '1.5px solid rgba(0,0,0,0.7)',
+            // CSS custom props feed the keyframe — one animation per
+            // dot needs unique end-transform values, so we use CSS
+            // custom properties instead of one @keyframes per dot.
+            '--dx': `${d.dx}px`,
+            '--dy': `${d.dy}px`,
+            '--rot': `${d.rot}deg`,
+            animation: `confettiFly 900ms ${d.delay}ms ease-out forwards`,
+            opacity: 0,
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 // Fun body-flourish animations that fire when the kid boops an active
 // character in the top band. Randomly picked per boop so rapid tapping
 // keeps feeling fresh. Kept short (≤ 0.6 s) so kids can chain them.
@@ -474,11 +533,13 @@ function CharacterSlot({
   // Triggered on short-tap release. Chained onto our transform so drag
   // position + scale persist across the flourish.
   const boopControls = useAnimationControls();
-  const boopHitsRef = useRef(0);
+  const [boopKey, setBoopKey] = useState(0); // Ticks up per boop → drives confetti mount.
   const runBoop = () => {
-    const anim = BOOP_ANIMS[boopHitsRef.current % BOOP_ANIMS.length];
-    boopHitsRef.current += 1;
+    // Random pick instead of round-robin — user asked (Feb 30 late)
+    // that consecutive boops don't feel predictable.
+    const anim = BOOP_ANIMS[Math.floor(Math.random() * BOOP_ANIMS.length)];
     boopControls.start(anim);
+    setBoopKey((k) => k + 1);
     if (onBoop) onBoop(cfg.id);
   };
 
@@ -558,7 +619,7 @@ function CharacterSlot({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       onWheel={handleWheel}
-      className="relative flex items-end justify-center cursor-grab active:cursor-grabbing bg-transparent border-0 p-0 select-none"
+      className="relative flex items-end justify-center cursor-grab active:cursor-grabbing bg-transparent border-0 p-0 select-none focus:outline-none focus-visible:outline-none appearance-none"
       style={{
         width: '100%',
         aspectRatio: '3 / 4',
@@ -640,6 +701,13 @@ function CharacterSlot({
           />
         ))}
 
+        {/* Confetti burst — spawned every time the kid boops this
+            character. Each `boopKey` value spawns a fresh set of ~14
+            colored dots that fly out along a random vector and fade
+            out via a CSS keyframe. Keyed by boopKey so React unmounts
+            the previous burst cleanly when a new boop lands. */}
+        <ConfettiBurst boopKey={boopKey} color={cfg.color} />
+
         {/* Zap-in flash — a bright color bloom the moment the bolt
             hits this character. The actual lightning bolt itself is
             drawn by <LightningStage> at the page level so it can span
@@ -697,7 +765,7 @@ function CompactChar({ cfg, selected, onClick, zapping, beatSubscribe, bobOffset
       data-active={selected ? 'true' : 'false'}
       onClick={() => onClick(cfg.id)}
       aria-label={cfg.id}
-      className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none flex-shrink-0"
+      className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none flex-shrink-0 focus:outline-none focus-visible:outline-none appearance-none"
       style={{
         // Compact strip: 8 tiles fit on any width via clamp. Aspect
         // keeps their proportions consistent with the top performers.
@@ -899,20 +967,18 @@ export default function RobotBoogiePage() {
     setCharTransforms({});
   }, [muteAll]);
 
-  // Silly-speed dial cycles: slow → normal → fast → normal → …
-  const SPEEDS = [
-    { rate: 0.65, label: 'Slow',  emoji: '\u{1F422}' },  // turtle
-    { rate: 1.00, label: 'Normal', emoji: '\u{1F3B5}' }, // music note
-    { rate: 1.40, label: 'Fast',  emoji: '\u{1F407}' },  // rabbit
-  ];
-  const [speedIdx, setSpeedIdx] = useState(1);
-  const cycleSpeed = useCallback(() => {
-    setSpeedIdx((i) => {
-      const next = (i + 1) % SPEEDS.length;
-      if (setPlaybackRate) setPlaybackRate(SPEEDS[next].rate);
-      return next;
-    });
-  }, [setPlaybackRate, SPEEDS]);
+  // Silly-speed slider — continuous 0.8 → 1.5 (0.8 is the floor per
+  // user; anything slower gets uncanny and mucks with sync). Changes
+  // ramp over 80 ms so the audio doesn't click when you scrub the
+  // slider.
+  const SPEED_MIN = 0.8;
+  const SPEED_MAX = 1.5;
+  const [speed, setSpeed] = useState(1.0);
+  const handleSpeedChange = useCallback((e) => {
+    const rate = Math.max(SPEED_MIN, Math.min(SPEED_MAX, parseFloat(e.target.value)));
+    setSpeed(rate);
+    if (setPlaybackRate) setPlaybackRate(rate);
+  }, [setPlaybackRate]);
 
   const activeCount = useMemo(
     () => Object.values(teamStemIndex).filter((v) => v !== null).length,
@@ -1036,22 +1102,29 @@ export default function RobotBoogiePage() {
           <RotateCcw className="w-3.5 h-3.5" />
           Reset
         </button>
-        <button
-          type="button"
-          data-testid="robot-boogie-speed"
-          onClick={cycleSpeed}
-          title={`Speed: ${SPEEDS[speedIdx].label}`}
-          className="px-3 py-1.5 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 border-2 cursor-pointer"
+        <div
+          data-testid="robot-boogie-speed-wrap"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full border-2"
           style={{
             backgroundColor: '#F2C94C',
-            color: 'var(--jma-dark)',
             borderColor: 'var(--jma-dark)',
             boxShadow: '0 3px 0 0 var(--jma-dark)',
           }}
         >
-          <span aria-hidden="true">{SPEEDS[speedIdx].emoji}</span>
-          {SPEEDS[speedIdx].label}
-        </button>
+          <span aria-hidden="true" className="text-xs font-black text-[color:var(--jma-dark)]">🐢</span>
+          <input
+            data-testid="robot-boogie-speed"
+            type="range"
+            min={SPEED_MIN}
+            max={SPEED_MAX}
+            step="0.05"
+            value={speed}
+            onChange={handleSpeedChange}
+            aria-label={`Speed ${speed.toFixed(2)}x`}
+            className="rb-speed-slider"
+          />
+          <span aria-hidden="true" className="text-xs font-black text-[color:var(--jma-dark)]">🐇</span>
+        </div>
       </div>
 
       {/* ==== MAIN STAGE ==== 

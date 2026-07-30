@@ -1,5 +1,23 @@
 # Changelog
 
+## Feb 30, 2026 (nearly midnight) — Robot Boogie v9.1: 5-point polish
+
+- **Speed chip → slider**. Continuous native `<input type="range">` from **0.8** (floor per user — anything slower gets uncanny) to **1.5**, step 0.05. Styled with the JMA look: yellow track, black stroke, chunky red thumb with the block-shadow. Turtle 🐢 / rabbit 🐇 icons flank it. `setPlaybackRate` on every source ramps 80 ms so scrubbing is smooth.
+- **Random boop**. Boop flourish is now `BOOP_ANIMS[Math.floor(Math.random() * ...)]` instead of round-robin so consecutive taps feel unpredictable.
+- **"STAGE" text nixed** from Retro Arcade background. Neon frame + chasing bulbs remain, but the marquee is empty — reads more like a real venue.
+- **Confetti on boop**. New `<ConfettiBurst>` component inside CharacterSlot: 14 colored square dots fly out along random vectors and fade via a single CSS keyframe (`confettiFly`) driven by per-dot `--dx / --dy / --rot` custom properties. Fires-and-forgets — remounts fresh with each new `boopKey`.
+- **Focus-rectangle killed on bottom lineup tiles**. Added `focus:outline-none focus-visible:outline-none appearance-none` to both CompactChar AND CharacterSlot — that was the browser's default button focus indicator lingering after tap.
+
+### Files touched
+`RobotBoogiePage.js` (slider, random boop, ConfettiBurst, focus-none), `RobotBoogieBackgrounds.js` (STAGE text removed), `index.css` (slider styles, `confettiFly` keyframe).
+
+### Verified
+Screenshotted idle (slider visible in header, no chip) and 2-dancer with fresh boop (confetti squares visibly bursting from Chunk). SVG-text query confirms no `<text>` element remains anywhere on the page.
+
+---
+
+
+
 ## Feb 30, 2026 (deep evening) — Robot Boogie v9: Interactive playground
 
 Big engagement update per user's ask for "more ways for kids to interact." Six features shipped:

@@ -187,7 +187,8 @@ export function BgArcade() {
       <rect x="0" y="0" width="1600" height="900" fill="#1a1230" />
       {/* Floor */}
       <rect x="0" y="640" width="1600" height="260" fill="#2a1e42" stroke="#000" strokeWidth={S} />
-      {/* Neon sign frame */}
+      {/* Neon sign frame (no text — user prefers just the empty
+          lit-up marquee, feels more like a real venue). */}
       <g transform="translate(560, 60)">
         <rect x="0" y="0" width="480" height="180" rx="24" fill="#12102a" stroke="#000" strokeWidth={S} />
         <rect x="14" y="14" width="452" height="152" rx="16" fill="none" stroke="#ff3aa8" strokeWidth={5} />
@@ -200,13 +201,6 @@ export function BgArcade() {
           <circle key={`b${i}`} cx={30 + i * 39} cy={188} r={7} fill="#ffe066" stroke="#000" strokeWidth={3}
                   style={{ animation: `jmaBgBulbBlink 1.2s ${(0.6 + i * 0.1).toFixed(2)}s ease-in-out infinite` }} />
         ))}
-        <text x="240" y="120" textAnchor="middle"
-              fontFamily="Fredoka, Impact, sans-serif"
-              fontSize="88" fontWeight="900"
-              fill="#ff3aa8" stroke="#000" strokeWidth={S}
-              paintOrder="stroke" style={{ letterSpacing: '6px' }}>
-          STAGE
-        </text>
       </g>
       {/* Left spotlight — swings from its ceiling anchor. */}
       <g style={{ transformOrigin: '340px 100px', animation: 'jmaBgSpotSwayLeft 6s ease-in-out infinite' }}>
