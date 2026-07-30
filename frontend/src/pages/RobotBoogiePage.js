@@ -142,16 +142,21 @@ const CHARACTERS = [
   },
 ];
 
-// Team → member ids. Order matters for the shared-stem cycle: tapping
-// advances through TEAM_STEMS[teamId] which is derived by concatenating
-// each listed member's stems array (in this order).
+// Team → member ids. Historically some characters were paired to
+// share a stem cycle (Jazzy+Jellybone on horns, robot1+robot2 on
+// synths, Chunk+Lou informal drum share) so 8-char sessions didn't
+// feel too crazy. User reversed that on Feb 30 (evening): each of the
+// 8 characters should feel significant, i.e. each is its own team
+// and can be toggled independently.
 const TEAMS = {
-  bass:   ['finn'],
-  drum:   ['chunk'],
-  guitar: ['charlie'],
-  lou:    ['lou'],
-  horns:  ['jazzy', 'jellybone'],
-  synth:  ['robot1', 'robot2'],
+  finn:      ['finn'],
+  chunk:     ['chunk'],
+  charlie:   ['charlie'],
+  lou:       ['lou'],
+  jazzy:     ['jazzy'],
+  jellybone: ['jellybone'],
+  robot1:    ['robot1'],
+  robot2:    ['robot2'],
 };
 
 // Aggregated stem cycle per team. Each tap on ANY team member advances
@@ -452,9 +457,11 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotRef, beatSu
           transition: 'filter 200ms ease-out',
           // Per-character scale correction (Lou needs shrinking because
           // his PNGs are tightly cropped while others have baked-in
-          // padding). transform-origin bottom keeps feet planted.
+          // padding). Center-scaled so his mid-body lines up with peers'
+          // mid-bodies — earlier we used bottom-anchored scale which
+          // pushed his head way below everyone else's head.
           transform: cfg.slotScale ? `scale(${cfg.slotScale})` : undefined,
-          transformOrigin: '50% 100%',
+          transformOrigin: '50% 50%',
         }}
       >
         {/* Neutral image — shown when the character is off. Always in
@@ -826,20 +833,11 @@ export default function RobotBoogiePage() {
 
       <GameHeader title="Robot Boogie" showHomeButton={true} />
 
-      {/* Playing chip + Reset — sits just under the fixed header */}
+      {/* Reset chip — sits just under the fixed header. The old
+          "X / N playing" chip was retired per user (Feb 30) — with 8
+          independent characters it read more like a scoreboard than a
+          gameplay cue, and cluttered the top of the stage. */}
       <div className="relative z-10 flex items-center justify-center gap-3 pt-14 md:pt-16 pb-0">
-        <div
-          data-testid="robot-boogie-active-count"
-          className="px-3 py-1 rounded-full font-black text-xs uppercase tracking-wider"
-          style={{
-            backgroundColor: 'rgba(255,243,166,0.96)',
-            color: 'var(--jma-dark)',
-            border: '2px solid var(--jma-dark)',
-            boxShadow: '0 3px 0 0 var(--jma-dark)',
-          }}
-        >
-          {activeCount} / {totalTeams} playing
-        </div>
         <button
           type="button"
           data-testid="robot-boogie-reset"

@@ -1,5 +1,22 @@
 # Changelog
 
+## Feb 30, 2026 (very late) — Robot Boogie v8.3: un-pair, un-clutter, un-low
+
+- **All 8 characters un-paired**. Reversed the earlier Jazzy+Jellybone and Robot1+Robot2 team pairings — each character is now its own solo team so all 8 feel individually significant. Jellybone keeps her 2-stem cycle (horns-2 → horns-3) on repeated taps.
+- **Retired the "X/N playing" chip**. Read like a scoreboard with 8 chars; the Reset button now stands alone under the header.
+- **Plasma source X**: settled at `srcBox.width * 0.47` — halfway between our first attempt (0.5, felt slightly right of the dome) and the over-correction (0.44, too far left). Now emerges cleanly from the machine's visible dome cap.
+- **Lou "beam over head" fix**: changed the inner slot scale's `transform-origin` from `50% 100%` (bottom-anchored, which pushed his head down into slot-middle while feet stayed planted) to `50% 50%` (center-anchored, so his midbody lines up with peers' midbodies). Combined with the earlier ref-on-inner-div fix, the bolt now lands on his chest AND he visually sits on the same row as his neighbors.
+
+### Files touched
+`RobotBoogiePage.js`, `LightningStage.js`.
+
+### Verified
+Screenshotted Lou-solo (bolt lands on chest, source on dome, no chip, Lou on-row), 4-dancer group with un-paired chars firing independently.
+
+---
+
+
+
 ## Feb 30, 2026 (late) — Robot Boogie v8.2: cleanup & aim fixes
 
 Trimmed the vibe list, killed the top chip clutter, and fixed two aim bugs.
