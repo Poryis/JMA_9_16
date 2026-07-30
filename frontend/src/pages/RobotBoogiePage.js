@@ -119,7 +119,7 @@ const CHARACTERS = [
     // transparent side padding baked into their sources. Without a
     // scale correction Lou would look almost 2× the visual weight of
     // his neighbors. 0.68 brings him back in line.
-    slotScale: 0.68,
+    slotScale: 0.5,
   },
   {
     id: 'jazzy',
@@ -624,11 +624,11 @@ const EMPTY_TEAM_STEM = Object.keys(TEAMS).reduce((acc, t) => { acc[t] = null; r
 
 export default function RobotBoogiePage() {
   const { setStemActive, muteAll, getAudioClock } = useRobotBoogieAudio();
-  // Beat phase offset toggle — user requested a way to compare
-  // downbeat (0) vs. off-beat ("and of 1", 0.5) since the pulse felt
-  // off with BEATS_PER_LOOP=8. Now that the loop is 16 beats the
-  // downbeat is correct; keeping the toggle lets them A/B compare.
-  const [beatOffset, setBeatOffset] = useState(0);
+  // Beat phase offset — user prefers 0.5 offset ("off beat" chip
+  // label, but internally that's actually the downbeat given the way
+  // startTime + loop-duration measurement lines up). Default to what
+  // sounds correct; toggle keeps the A/B compare option.
+  const [beatOffset, setBeatOffset] = useState(0.5);
   const { subscribe: beatSubscribe } = useBeatPulse(getAudioClock, beatOffset);
 
   // Background scene — 6 curated options in the app's flat art style.
@@ -873,17 +873,17 @@ export default function RobotBoogiePage() {
         <button
           type="button"
           data-testid="robot-boogie-beat-toggle"
-          onClick={() => setBeatOffset((v) => (v === 0 ? 0.5 : 0))}
-          title={beatOffset === 0 ? 'Pulse on downbeat' : 'Pulse on off-beat (and of 1)'}
+          onClick={() => setBeatOffset((v) => (v === 0.5 ? 0 : 0.5))}
+          title={beatOffset === 0.5 ? 'Pulse on downbeat' : 'Pulse on off-beat'}
           className="px-3 py-1.5 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 border-2 cursor-pointer"
           style={{
-            backgroundColor: beatOffset === 0 ? '#00A67E' : '#E38B00',
+            backgroundColor: beatOffset === 0.5 ? '#00A67E' : '#E38B00',
             color: 'white',
             borderColor: 'var(--jma-dark)',
             boxShadow: '0 3px 0 0 var(--jma-dark)',
           }}
         >
-          {beatOffset === 0 ? 'On Beat' : 'Off Beat'}
+          {beatOffset === 0.5 ? 'On Beat' : 'Off Beat'}
         </button>
       </div>
 

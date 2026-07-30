@@ -78,7 +78,9 @@ export default function LightningStage({
     const stageBox = stage.getBoundingClientRect();
     const srcBox = src.getBoundingClientRect();
     const source = {
-      x: srcBox.left - stageBox.left + srcBox.width / 2,
+      // Small +6 % nudge right — the machine sprite's visual dome/vent
+      // isn't exactly centered inside its clickable bounding box.
+      x: srcBox.left - stageBox.left + srcBox.width * 0.56,
       // Time Machine "mouth" — the top-center of the machine sprite is
       // where the bolts emerge. Tuned to line up with the machine's
       // visible dome cap.

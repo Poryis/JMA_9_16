@@ -495,6 +495,37 @@ h1, h2, h3, h4, h5, h6 {
   100% { transform: translate(-50%, -180%) scale(1.6); opacity: 0.0; }
 }
 
+/* Robot Boogie backgrounds — subtle motion for the Deep Navy stars,
+   Time-Machine Lab panels, and Retro Arcade spotlights + bulbs. */
+@keyframes jmaBgTwinkle {
+  0%,100% { opacity: 0.4; }
+  50%     { opacity: 1;   }
+}
+@keyframes jmaBgDriftRight {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(60px); }
+}
+@keyframes jmaBgDriftLeft {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-40px); }
+}
+@keyframes jmaBgPanelPulse {
+  0%,100% { opacity: 0.35; }
+  50%     { opacity: 0.85; }
+}
+@keyframes jmaBgBulbBlink {
+  0%,100% { fill: #ffe066; opacity: 1;    }
+  50%     { fill: #ff3aa8; opacity: 0.55; }
+}
+@keyframes jmaBgSpotSwayLeft {
+  0%,100% { transform: rotate(-6deg); }
+  50%     { transform: rotate(10deg); }
+}
+@keyframes jmaBgSpotSwayRight {
+  0%,100% { transform: rotate(6deg);  }
+  50%     { transform: rotate(-10deg); }
+}
+
 *::-webkit-scrollbar-thumb:hover  { filter: brightness(1.12); }
 *::-webkit-scrollbar-thumb:active { filter: brightness(0.94); }
 *::-webkit-scrollbar-corner       { background: transparent; }

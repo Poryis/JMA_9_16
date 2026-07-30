@@ -14,9 +14,21 @@ const S = 6; // canonical stroke width
 
 // ------------------------------------------------------------
 // 0. Deep-navy gradient — plain, lets the characters + lightning
-//    do all the storytelling.
+//    do all the storytelling. Now with a slow-drifting starfield so
+//    the field of view feels alive.
 // ------------------------------------------------------------
 export function BgNavy() {
+  const stars = useMemo(() => {
+    const rng = (() => { let s = 24601; return () => (s = (s * 9301 + 49297) % 233280) / 233280; })();
+    return Array.from({ length: 60 }, () => ({
+      x: rng() * 1600,
+      y: rng() * 900,
+      r: 1.5 + rng() * 2.8,
+      // Twinkle phase — offset per star so they don't blink in unison.
+      delay: (rng() * 4).toFixed(2),
+      dur: (2 + rng() * 3).toFixed(2),
+    }));
+  }, []);
   return (
     <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"
          className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
@@ -28,13 +40,29 @@ export function BgNavy() {
         </radialGradient>
       </defs>
       <rect x="0" y="0" width="1600" height="900" fill="url(#bg-navy-grad)" />
+      {/* Slow-drifting starfield. Two groups moving in opposite
+          directions for a subtle parallax feel. */}
+      <g style={{ animation: 'jmaBgDriftRight 60s linear infinite' }}>
+        {stars.slice(0, 30).map((s, i) => (
+          <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#fff"
+                  style={{ animation: `jmaBgTwinkle ${s.dur}s ${s.delay}s ease-in-out infinite` }} />
+        ))}
+      </g>
+      <g style={{ animation: 'jmaBgDriftLeft 90s linear infinite' }}>
+        {stars.slice(30).map((s, i) => (
+          <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#fff"
+                  style={{ animation: `jmaBgTwinkle ${s.dur}s ${s.delay}s ease-in-out infinite` }} />
+        ))}
+      </g>
     </svg>
   );
 }
 
 // ------------------------------------------------------------
 // 1. Time-Machine Lab — concrete floor, cables snaking toward
-//    center, bio-luminescent wall panels.
+//    center, bio-luminescent wall panels. Animated: wall panels
+//    blink softly out of phase and a bright current pulse chases
+//    down each cable.
 // ------------------------------------------------------------
 export function BgLab() {
   return (
@@ -46,11 +74,18 @@ export function BgLab() {
       <rect x="0" y="620" width="1600" height="280" fill="#3a3350" stroke="#000" strokeWidth={S} />
       {/* Floor line */}
       <line x1="0" y1="620" x2="1600" y2="620" stroke="#000" strokeWidth={S} />
-      {/* Wall panels — flat rectangles with thick outlines and a bright core */}
-      {[80, 320, 1280, 1440].map((x) => (
+      {/* Wall panels — flat rectangles with thick outlines and a bright
+          core that softly pulses out-of-phase for a bio-lab feel. */}
+      {[
+        { x: 80,   delay: '0s'   },
+        { x: 320,  delay: '0.7s' },
+        { x: 1280, delay: '1.4s' },
+        { x: 1440, delay: '2.1s' },
+      ].map(({ x, delay }) => (
         <g key={x}>
           <rect x={x} y={140} width={80} height={340} fill="#0a1420" stroke="#000" strokeWidth={S} />
-          <rect x={x + 14} y={160} width={52} height={300} fill="#3ec8ff" opacity="0.55" />
+          <rect x={x + 14} y={160} width={52} height={300} fill="#3ec8ff"
+                style={{ animation: `jmaBgPanelPulse 3.6s ${delay} ease-in-out infinite` }} />
           <rect x={x + 14} y={160} width={52} height={300} fill="none" stroke="#7feaff" strokeWidth={3} />
         </g>
       ))}
@@ -62,15 +97,25 @@ export function BgLab() {
           <line x1={x + 20} y1={110} x2={x + 120} y2={110} stroke="#000" strokeWidth={3} />
         </g>
       ))}
-      {/* Cables snaking toward center from the floor */}
-      <path d="M0 780 C 300 780 500 720 800 720 C 1100 720 1300 780 1600 780"
+      {/* Cables snaking toward center from the floor — top cable
+          (red) and bottom cable (cyan) each get a bright "current
+          pulse" dot that chases along the path forever. */}
+      <path id="jma-lab-cable-red" d="M0 780 C 300 780 500 720 800 720 C 1100 720 1300 780 1600 780"
             stroke="#000" strokeWidth={S + 4} fill="none" strokeLinecap="round" />
       <path d="M0 780 C 300 780 500 720 800 720 C 1100 720 1300 780 1600 780"
             stroke="#ff5b5b" strokeWidth={S} fill="none" strokeLinecap="round" />
+      <circle r="9" fill="#ffe066" stroke="#000" strokeWidth={3}>
+        <animateMotion dur="3.4s" repeatCount="indefinite"
+          path="M0 780 C 300 780 500 720 800 720 C 1100 720 1300 780 1600 780" />
+      </circle>
       <path d="M0 830 C 400 830 600 800 800 800 C 1000 800 1200 830 1600 830"
             stroke="#000" strokeWidth={S + 4} fill="none" strokeLinecap="round" />
       <path d="M0 830 C 400 830 600 800 800 800 C 1000 800 1200 830 1600 830"
             stroke="#3ec8ff" strokeWidth={S} fill="none" strokeLinecap="round" />
+      <circle r="9" fill="#ffffff" stroke="#000" strokeWidth={3}>
+        <animateMotion dur="4.6s" repeatCount="indefinite" begin="1s"
+          path="M1600 830 C 1200 830 1000 800 800 800 C 600 800 400 830 0 830" />
+      </circle>
       {/* Floor tiles hint */}
       {[0, 200, 400, 600, 800, 1000, 1200, 1400].map((x) => (
         <line key={x} x1={x} y1="620" x2={x - 100} y2="900" stroke="#000" strokeWidth={3} opacity="0.55" />
@@ -131,7 +176,8 @@ export function BgCosmic() {
 
 // ------------------------------------------------------------
 // 3. Retro arcade — dark room, a big neon "STAGE" sign,
-//    two floor spotlights.
+//    two floor spotlights. Animated: marquee bulbs chase, and
+//    the two spotlights sway side-to-side lazily.
 // ------------------------------------------------------------
 export function BgArcade() {
   return (
@@ -145,15 +191,15 @@ export function BgArcade() {
       <g transform="translate(560, 60)">
         <rect x="0" y="0" width="480" height="180" rx="24" fill="#12102a" stroke="#000" strokeWidth={S} />
         <rect x="14" y="14" width="452" height="152" rx="16" fill="none" stroke="#ff3aa8" strokeWidth={5} />
-        {/* Bulbs along the frame */}
+        {/* Bulbs along the frame — chase animation staggered per bulb. */}
         {Array.from({ length: 12 }, (_, i) => (
-          <circle key={i} cx={30 + i * 39} cy={-8} r={7} fill="#ffe066" stroke="#000" strokeWidth={3} />
+          <circle key={`t${i}`} cx={30 + i * 39} cy={-8} r={7} fill="#ffe066" stroke="#000" strokeWidth={3}
+                  style={{ animation: `jmaBgBulbBlink 1.2s ${(i * 0.1).toFixed(2)}s ease-in-out infinite` }} />
         ))}
         {Array.from({ length: 12 }, (_, i) => (
-          <circle key={i} cx={30 + i * 39} cy={188} r={7} fill="#ffe066" stroke="#000" strokeWidth={3} />
+          <circle key={`b${i}`} cx={30 + i * 39} cy={188} r={7} fill="#ffe066" stroke="#000" strokeWidth={3}
+                  style={{ animation: `jmaBgBulbBlink 1.2s ${(0.6 + i * 0.1).toFixed(2)}s ease-in-out infinite` }} />
         ))}
-        {/* STAGE text (built from rects so it renders exactly the same
-            everywhere — no webfont dependency) */}
         <text x="240" y="120" textAnchor="middle"
               fontFamily="Fredoka, Impact, sans-serif"
               fontSize="88" fontWeight="900"
@@ -162,12 +208,17 @@ export function BgArcade() {
           STAGE
         </text>
       </g>
-      {/* Two floor spotlights (flat triangles from ceiling) */}
-      <path d="M 340 100 L 200 640 L 480 640 Z" fill="#ffe066" opacity="0.35" />
-      <path d="M 340 100 L 200 640 L 480 640 Z" fill="none" stroke="#000" strokeWidth={S - 2} />
-      <path d="M 1260 100 L 1120 640 L 1400 640 Z" fill="#4ac6ff" opacity="0.35" />
-      <path d="M 1260 100 L 1120 640 L 1400 640 Z" fill="none" stroke="#000" strokeWidth={S - 2} />
-      {/* Spotlight fixtures on the ceiling */}
+      {/* Left spotlight — swings from its ceiling anchor. */}
+      <g style={{ transformOrigin: '340px 100px', animation: 'jmaBgSpotSwayLeft 6s ease-in-out infinite' }}>
+        <path d="M 340 100 L 200 640 L 480 640 Z" fill="#ffe066" opacity="0.35" />
+        <path d="M 340 100 L 200 640 L 480 640 Z" fill="none" stroke="#000" strokeWidth={S - 2} />
+      </g>
+      {/* Right spotlight — swings the other way (out of phase). */}
+      <g style={{ transformOrigin: '1260px 100px', animation: 'jmaBgSpotSwayRight 7.4s ease-in-out infinite' }}>
+        <path d="M 1260 100 L 1120 640 L 1400 640 Z" fill="#4ac6ff" opacity="0.35" />
+        <path d="M 1260 100 L 1120 640 L 1400 640 Z" fill="none" stroke="#000" strokeWidth={S - 2} />
+      </g>
+      {/* Spotlight fixtures on the ceiling — fixed. */}
       {[340, 1260].map((x) => (
         <g key={x}>
           <rect x={x - 30} y={40} width={60} height={40} fill="#3a3040" stroke="#000" strokeWidth={S} />
