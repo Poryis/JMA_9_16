@@ -41,6 +41,11 @@ export default function useRobotBoogieAudio() {
   const sourcesRef = useRef({});   // stemId -> AudioBufferSourceNode
   const gainsRef = useRef({});     // stemId -> GainNode
   const startedRef = useRef(false);
+  // Exposed via getAudioClock() so downstream visual effects (lightning,
+  // beat pulses) can lock to the exact same audio-clock timeline the
+  // stems are looping on. Populated on first playback.
+  const startTimeRef = useRef(null);
+  const loopDurationRef = useRef(null);
 
   const [loaded, setLoaded] = useState(false);
   const [activeStems, setActiveStems] = useState(new Set());
@@ -104,9 +109,15 @@ export default function useRobotBoogieAudio() {
     if (!startedRef.current) {
       startedRef.current = true;
       const startTime = ctx.currentTime + 0.05; // small lookahead
+      startTimeRef.current = startTime;
       STEM_IDS.forEach((id) => {
         const buf = buffersRef.current[id];
         if (!buf) return;
+        // Capture the loop duration off the first available buffer —
+        // every stem was authored at the same length, so any works.
+        if (loopDurationRef.current === null) {
+          loopDurationRef.current = buf.duration;
+        }
         const src = ctx.createBufferSource();
         src.buffer = buf;
         src.loop = true;
@@ -151,5 +162,23 @@ export default function useRobotBoogieAudio() {
     setActiveStems(new Set());
   }, []);
 
-  return { loaded, activeStems, setStemActive, muteAll };
+  // ---- audio-clock accessor for beat-synced visuals ----
+  //
+  // Returns null until the first tap has kicked off the group start.
+  // After that, callers can use `elapsed = ctx.currentTime - startTime`
+  // together with `loopDuration` (seconds per loop) to derive an exact
+  // beat phase locked to the audio timeline.
+  const getAudioClock = useCallback(() => {
+    const ctx = ctxRef.current;
+    if (!ctx || startTimeRef.current === null || loopDurationRef.current === null) {
+      return null;
+    }
+    return {
+      audioTime: ctx.currentTime,
+      startTime: startTimeRef.current,
+      loopDuration: loopDurationRef.current,
+    };
+  }, []);
+
+  return { loaded, activeStems, setStemActive, muteAll, getAudioClock };
 }

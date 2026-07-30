@@ -102,6 +102,16 @@ Driven by total stickers earned. Warm, non-competitive.
 - **CI build unblocked** — added eslint-disable for the stable `useImperativeHandle` in `StewDrummer.js`.
 
 
+
+## Implemented (Feb 30, 2026 — Robot Boogie v8 special sauce)
+- **P0 layout fix**: n=4 dancers now render in a single row (widthPct 28% / maxW 340px / negMx 22px). Active band capped at `calc(100vh - 340px)` so 2-row layouts at n≥5 never push the Time Machine into the compact lineup. Metrics-verified `bandOverlapsMachine: false`.
+- **SVG lightning bolts** (`components/LightningStage.js`): persistent, jittering, team-colored plasma paths shoot from the Time Machine's top vent to every active character. Bolts re-roll every 130ms for a crackling live-plasma feel and gain a bright branch on zap. Replaces the old PNG lightning frames the user hated.
+- **Beat-locked visual clock**: `useRobotBoogieAudio.getAudioClock()` + new `hooks/useBeatPulse.js` derive beat/phase/pulse from the same Web Audio timeline the stems loop on. Consumers subscribe imperatively (zero rerenders at 60fps).
+- **Beat-synced world**: active characters' glow pulses; Time Machine under-glow throbs; bottom lineup bobs left/right + hops on the downbeat with per-character offsets; subtle world + disco-floor pulses in the background.
+- **Steam puffs** on every character toggle — CSS keyframe `robotBoogiePuff` rising blobs from the machine vent.
+- **Llama Lou PNG cropped**: source frames had ~50% empty transparent space; all 6 dance frames now cropped to 250×288 identically (originals backed up under `/lou-dancing/originals/`). Lou now sits centered in his slot.
+
+
 ## Implemented (Feb 17, 2026 — Phase 3 Educational Wins)
 Four new mini-features designed to boost real music learning while keeping it fun:
 

@@ -1,5 +1,5 @@
 {
-  "summary": "Frontend-only testing of two parallel additions: (1) iOS AudioUnlockOverlay splash on first session, (2) Sticker Book Teacher View toggle. All 6 review scenarios pass end-to-end on https://rhythm-kids-music.preview.emergentagent.com (1280x900). 21/21 assertions pass.",
+  "summary": "Frontend-only testing of two parallel additions: (1) iOS AudioUnlockOverlay splash on first session, (2) Sticker Book Teacher View toggle. All 6 review scenarios pass end-to-end on https://musical-learning-hub-1.preview.emergentagent.com (1280x900). 21/21 assertions pass.",
   "backend_issues": { "critical": [], "minor": [] },
   "frontend_issues": {
     "ui_bugs": [],

@@ -29,6 +29,8 @@ import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
 import { RotateCcw } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import useRobotBoogieAudio from '../hooks/useRobotBoogieAudio';
+import useBeatPulse from '../hooks/useBeatPulse';
+import LightningStage from '../components/LightningStage';
 
 // ============================================================
 // Character config
@@ -181,12 +183,13 @@ const TIME_MACHINE_ANIMS = [
   { keyframes: { x: [0, -10, 10, -7, 7, -4, 4, 0], rotate: [0, -4, 4, -2, 2, 0, 0, 0],     scale: [1, 1.04, 1.04, 1.04, 1.04, 1.02, 1.02, 1] }, duration: 0.95 },
 ];
 
-function TimeMachine({ anyActive, flashKey }) {
+function TimeMachine({ anyActive, flashKey, beatSubscribe, tmRef }) {
   const [frame, setFrame] = useState(-1);
   const timerRef = useRef(null);
   const flashTimerRef = useRef(null);
   const tmControls = useAnimationControls();
   const hitsRef = useRef(0);
+  const glowRef = useRef(null);
 
   // Continuous reel while any team plays; idle when silent.
   useEffect(() => {
@@ -223,6 +226,27 @@ function TimeMachine({ anyActive, flashKey }) {
     // interval keeps humming.
   }, [flashKey, tmControls]);
 
+  // Steam puff bursts — one added per tap and auto-removed after ~1s.
+  // Uses an array of monotonically-increasing keys instead of state ids
+  // because we want the puffs to layer, not replace. Tracked in state
+  // so React can render/unmount them.
+  const [puffs, setPuffs] = useState([]);
+  const puffKeyRef = useRef(0);
+  // Trigger a puff whenever flashKey changes (every character toggle).
+  useEffect(() => {
+    if (flashKey === 0) return;
+    const key = ++puffKeyRef.current;
+    // Two puffs per zap for a fuller burst.
+    setPuffs((prev) => [...prev,
+      { key: `${key}-a`, offset: -12 + Math.random() * 24, delay: 0 },
+      { key: `${key}-b`, offset: -12 + Math.random() * 24, delay: 120 },
+    ]);
+    const t = setTimeout(() => {
+      setPuffs((prev) => prev.slice(2));
+    }, 1100);
+    return () => clearTimeout(t);
+  }, [flashKey]);
+
   // Shield-style easter-egg flourish on tap.
   const handleTap = () => {
     const anim = TIME_MACHINE_ANIMS[hitsRef.current % TIME_MACHINE_ANIMS.length];
@@ -233,9 +257,25 @@ function TimeMachine({ anyActive, flashKey }) {
     });
   };
 
+  // Beat-synced under-glow. Uses the imperative subscriber pattern so
+  // the machine's glow pulses on every downbeat without triggering a
+  // React re-render.
+  useEffect(() => {
+    if (!beatSubscribe) return undefined;
+    return beatSubscribe(({ pulse }) => {
+      const el = glowRef.current;
+      if (!el) return;
+      // pulse: 1 on the downbeat, easing to 0 by phase ~0.35.
+      const strength = 0.35 + pulse * 0.75;
+      el.style.opacity = String(strength);
+      el.style.transform = `translate(-50%, -50%) scale(${0.92 + pulse * 0.28})`;
+    });
+  }, [beatSubscribe]);
+
   return (
     <motion.button
       type="button"
+      ref={tmRef}
       data-testid="robot-boogie-time-machine"
       aria-label="Time machine"
       onClick={handleTap}
@@ -256,6 +296,26 @@ function TimeMachine({ anyActive, flashKey }) {
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.94 }}
     >
+      {/* Beat-driven under-glow — bright warm halo that pulses in time
+          with the loop. Positioned BEHIND the machine sprite so it reads
+          as light spilling out of the coils. */}
+      <div
+        ref={glowRef}
+        aria-hidden="true"
+        className="absolute pointer-events-none rounded-full"
+        style={{
+          left: '50%',
+          top: '58%',
+          width: '160%',
+          height: '55%',
+          background:
+            'radial-gradient(closest-side, rgba(255,220,120,0.85) 0%, rgba(255,180,90,0.45) 35%, rgba(255,150,80,0.0) 75%)',
+          filter: 'blur(4px)',
+          transition: 'transform 90ms ease-out, opacity 90ms ease-out',
+          opacity: 0.35,
+          transform: 'translate(-50%, -50%) scale(1)',
+        }}
+      />
       <img
         src="assets/robot-boogie/time-machine-idle.png"
         alt=""
@@ -279,50 +339,27 @@ function TimeMachine({ anyActive, flashKey }) {
           style={{ display: frame === i ? 'block' : 'none' }}
         />
       ))}
-    </motion.button>
-  );
-}
-
-// ============================================================
-// Lightning burst — positioned over the clicked character. Rendered via
-// the parent's zapping flag; character slot places it.
-// ============================================================
-function LightningBolt() {
-  const [frame, setFrame] = useState(0);
-  useEffect(() => {
-    let i = 0;
-    const id = setInterval(() => {
-      i += 1;
-      if (i >= 4) clearInterval(id);
-      else setFrame(i);
-    }, 80);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <div
-      className="absolute pointer-events-none select-none"
-      style={{
-        left: '50%',
-        top: '-15%',
-        transform: 'translateX(-50%)',
-        width: '90%',
-        zIndex: 30,
-      }}
-    >
-      {[0, 1, 2, 3].map((i) => (
-        <img
-          key={i}
-          src={`assets/robot-boogie/lightning/lightning-${String(i + 1).padStart(2, '0')}.png`}
-          alt=""
-          draggable={false}
-          className={i === 0 ? 'w-full h-auto block' : 'w-full h-auto absolute inset-0'}
+      {/* Steam puffs — small white blobs that rise + fade from the
+          machine's top vent on every tap. Purely decorative. */}
+      {puffs.map((p) => (
+        <span
+          key={p.key}
+          aria-hidden="true"
+          className="absolute pointer-events-none rounded-full"
           style={{
-            display: frame === i ? 'block' : 'none',
-            filter: 'drop-shadow(0 0 14px rgba(255,255,120,0.95))',
+            left: `calc(50% + ${p.offset}px)`,
+            top: '8%',
+            width: '22%',
+            height: '22%',
+            transform: 'translate(-50%, 0)',
+            background: 'radial-gradient(circle at 40% 40%, rgba(255,255,255,0.95) 0%, rgba(220,220,255,0.55) 45%, rgba(220,220,255,0) 75%)',
+            filter: 'blur(2px)',
+            animation: `robotBoogiePuff 1s ${p.delay}ms ease-out forwards`,
+            opacity: 0,
           }}
         />
       ))}
-    </div>
+    </motion.button>
   );
 }
 
@@ -330,7 +367,7 @@ function LightningBolt() {
 // Character slot — preloads every animation frame at mount so cycling is
 // instant, then toggles which frame is displayed via display:none/block.
 // ============================================================
-function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
+function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotRef, beatSubscribe }) {
   const isActive = activeStemIndex >= 0;
 
   const [animFrame, setAnimFrame] = useState(1);
@@ -342,6 +379,21 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
     }, 90);
     return () => clearInterval(id);
   }, [isActive, cfg.frames]);
+
+  // Beat-synced glow — imperatively update the drop-shadow blur radius
+  // so the active character pulses in time with the loop. Kept out of
+  // React render tree so we don't rerender the sprite stack at 60 fps.
+  const glowWrapRef = useRef(null);
+  useEffect(() => {
+    if (!beatSubscribe || !isActive) return undefined;
+    return beatSubscribe(({ pulse }) => {
+      const el = glowWrapRef.current;
+      if (!el) return;
+      // Bigger, brighter halo on the downbeat; smooth ease-out between.
+      const blur = 18 + pulse * 22;
+      el.style.filter = `drop-shadow(0 0 ${blur.toFixed(1)}px ${cfg.color}dd)`;
+    });
+  }, [beatSubscribe, isActive, cfg.color]);
 
   // Pre-computed list of every playing frame URL for this character.
   // Rendered once as stacked <img> so the browser caches them all up front
@@ -356,6 +408,7 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
   return (
     <motion.button
       type="button"
+      ref={slotRef}
       data-testid={`robot-boogie-char-${cfg.id}`}
       data-active={isActive ? 'true' : 'false'}
       onClick={() => onClick(cfg.id)}
@@ -373,6 +426,7 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
       whileTap={{ scale: 0.94 }}
     >
       <div
+        ref={glowWrapRef}
         className="relative w-full h-full flex items-end justify-center"
         style={{
           filter: isActive
@@ -426,20 +480,25 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
           />
         ))}
 
-        {/* Lightning bolt overlay — appears directly over this character
-            during the ~360 ms after they're zapped. */}
+        {/* Zap-in flash — a bright color bloom the moment the bolt
+            hits this character. The actual lightning bolt itself is
+            drawn by <LightningStage> at the page level so it can span
+            all the way from the Time Machine. */}
         <AnimatePresence>
           {zapping && (
             <motion.div
-              key="bolt"
+              key="hit-flash"
+              aria-hidden="true"
               className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `radial-gradient(closest-side, ${cfg.color}88 0%, ${cfg.color}22 40%, transparent 70%)`,
+                mixBlendMode: 'screen',
+              }}
               initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              transition={{ duration: 0.18 }}
-            >
-              <LightningBolt />
-            </motion.div>
+              animate={{ opacity: 1, scale: 1.05 }}
+              exit={{ opacity: 0, scale: 1.15 }}
+              transition={{ duration: 0.28 }}
+            />
           )}
         </AnimatePresence>
       </div>
@@ -454,7 +513,23 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping }) {
 // top band). This is the ONLY tap target on the page — everything else
 // is decoration.
 // ============================================================
-function CompactChar({ cfg, selected, onClick, zapping }) {
+function CompactChar({ cfg, selected, onClick, zapping, beatSubscribe, bobOffset = 0 }) {
+  // Imperative bob — inactive characters lean into the beat but idle
+  // characters that aren't dancing still peek up on the downbeat. Uses
+  // the beat subscription so we DON'T rerender the tile every frame.
+  const spriteRef = useRef(null);
+  useEffect(() => {
+    if (!beatSubscribe) return undefined;
+    return beatSubscribe(({ pulse, phase }) => {
+      const el = spriteRef.current;
+      if (!el) return;
+      // Two-beat sway using phase; combined with per-beat pulse hop.
+      const sway = Math.sin((phase + bobOffset) * Math.PI * 2) * 2.2;
+      const hop = -pulse * (selected ? 8 : 5);
+      el.style.transform = `translate3d(${sway.toFixed(2)}px, ${hop.toFixed(2)}px, 0)`;
+    });
+  }, [beatSubscribe, bobOffset, selected]);
+
   return (
     <motion.button
       type="button"
@@ -491,6 +566,7 @@ function CompactChar({ cfg, selected, onClick, zapping }) {
       />
 
       <img
+        ref={spriteRef}
         src={cfg.neutral}
         alt=""
         draggable={false}
@@ -500,6 +576,7 @@ function CompactChar({ cfg, selected, onClick, zapping }) {
             ? `drop-shadow(0 0 12px ${cfg.color}dd)`
             : 'saturate(0.6) brightness(0.85) drop-shadow(0 4px 6px rgba(0,0,0,0.5))',
           transition: 'filter 200ms ease-out',
+          willChange: 'transform',
         }}
       />
 
@@ -533,7 +610,8 @@ const EMPTY_DANCING = CHARACTERS.reduce((acc, c) => { acc[c.id] = false; return 
 const EMPTY_TEAM_STEM = Object.keys(TEAMS).reduce((acc, t) => { acc[t] = null; return acc; }, {});
 
 export default function RobotBoogiePage() {
-  const { setStemActive, muteAll } = useRobotBoogieAudio();
+  const { setStemActive, muteAll, getAudioClock } = useRobotBoogieAudio();
+  const { subscribe: beatSubscribe } = useBeatPulse(getAudioClock);
 
   // Per-character: is this character currently DANCING? Dancing is
   // independent per character — both members of a paired team can dance
@@ -616,6 +694,53 @@ export default function RobotBoogiePage() {
     [dancing]
   );
 
+  // Refs used by <LightningStage> to compute bolt endpoints. `stageRef`
+  // is the containing DOM node whose local coord space the SVG uses;
+  // `timeMachineRef` is the source (bolt origin); `charSlotRefsRef`
+  // holds a Map<charId, RefObject<HTMLElement>> for each active char's
+  // rendered slot so we can aim the bolt at their chest.
+  const stageRef = useRef(null);
+  const timeMachineRef = useRef(null);
+  const charSlotRefsRef = useRef(new Map());
+  // Get or create a persistent ref for a given char id.
+  const getSlotRef = useCallback((id) => {
+    const map = charSlotRefsRef.current;
+    if (!map.has(id)) {
+      map.set(id, { current: null });
+    }
+    return map.get(id);
+  }, []);
+
+  // Color lookup for lightning bolts (matches each char's team color).
+  const charColors = useMemo(() => {
+    const m = {};
+    CHARACTERS.forEach((c) => { m[c.id] = c.color; });
+    return m;
+  }, []);
+
+  // Background world-pulse — pulses the vignette + starfield brightness
+  // on every downbeat. Imperative to keep the render tree quiet.
+  const worldPulseRef = useRef(null);
+  const floorTilePulseRef = useRef(null);
+  useEffect(() => {
+    if (!beatSubscribe) return undefined;
+    return beatSubscribe(({ pulse, beat }) => {
+      const w = worldPulseRef.current;
+      if (w) {
+        w.style.opacity = String(0.20 + pulse * 0.35);
+      }
+      const f = floorTilePulseRef.current;
+      if (f) {
+        // Alternate hue on every other beat for a disco-floor flicker.
+        // Guard against beat === -1 (audio not yet playing).
+        const isOdd = beat > 0 && beat % 2 === 1;
+        f.style.background = isOdd
+          ? `radial-gradient(ellipse at 50% 78%, rgba(120,220,255,${0.08 + pulse * 0.30}) 0%, transparent 55%)`
+          : `radial-gradient(ellipse at 50% 78%, rgba(255,180,90,${0.08 + pulse * 0.30}) 0%, transparent 55%)`;
+      }
+    });
+  }, [beatSubscribe]);
+
   return (
     <div
       data-testid="robot-boogie-page"
@@ -639,6 +764,24 @@ export default function RobotBoogiePage() {
         style={{
           background:
             'radial-gradient(ellipse at 50% 40%, transparent 40%, rgba(0,0,0,0.55) 100%)',
+        }}
+      />
+
+      {/* Beat-driven world pulse — brightens the whole scene on the
+          downbeat. Sits above the vignette so it can raise ambient
+          light without washing out characters. Imperatively updated.
+          Muted opacity + soft-light blend so the dark stage stays
+          moody. */}
+      <div
+        ref={worldPulseRef}
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(ellipse at 50% 45%, rgba(255,220,120,0.35) 0%, rgba(180,120,255,0.15) 40%, transparent 75%)',
+          mixBlendMode: 'soft-light',
+          opacity: 0.28,
+          transition: 'opacity 90ms ease-out',
         }}
       />
 
@@ -680,18 +823,31 @@ export default function RobotBoogiePage() {
           Machine in the middle, tappable lineup at the bottom. All
           three sit inside a max-width column so the composition stays
           coherent on ultra-wide screens. */}
-      <div className="relative z-10 flex-1 flex flex-col items-center w-full mx-auto px-2 md:px-4 pb-2"
+      <div ref={stageRef}
+           className="relative z-10 flex-1 flex flex-col items-center w-full mx-auto px-2 md:px-4 pb-2"
            style={{ maxWidth: '1200px' }}>
 
+        {/* Lightning bolts — drawn OVER the entire stage from the Time
+            Machine "mouth" up to every active character. Sits above
+            most artwork but below tappable buttons via pointer-events:
+            none. Character z-index still wins for taps. */}
+        <LightningStage
+          stageRef={stageRef}
+          sourceRef={timeMachineRef}
+          charRefsRef={charSlotRefsRef}
+          activeIds={activeChars.map((c) => c.id)}
+          zappingId={zappingId}
+          charColors={charColors}
+        />
         {/* ---- Active band (top) ----
             Flex-wrap so we get a second row automatically once there
-            are 4+ dancers. Zero horizontal gap between dancers by
+            are 5+ dancers. Zero horizontal gap between dancers by
             design — the transparent whitespace inside each character's
             3:4 slot already gives plenty of breathing room. */}
         <div
           data-testid="robot-boogie-active-band"
-          className="w-full flex-1 flex flex-wrap items-end justify-center content-end gap-0 pt-2 pb-0 overflow-hidden"
-          style={{ minHeight: '180px' }}
+          className="w-full flex-1 flex flex-wrap items-end justify-center content-center gap-0 pt-2 pb-0 overflow-hidden"
+          style={{ minHeight: '180px', maxHeight: 'calc(100vh - 340px)' }}
         >
           {activeChars.length === 0 ? (
             <motion.div
@@ -727,20 +883,24 @@ export default function RobotBoogiePage() {
                 // The wrap math (which uses margin-box aka outer size)
                 // stays correct because outer = width + 2 × margin.
                 //
+                // n=4 fixed (Feb 30 pm): keep in a SINGLE row so the
+                // 2×2 wrap doesn't push the Time Machine down into the
+                // bottom lineup on 1280×800.
+                //
                 //   n | widthPct |  maxW | negMarginPx | outer = wrap size
                 //   1 |   55%    | 440px |      0      |   440
                 //   2 |   50%    | 440px |    -30      |   380
                 //   3 |   36%    | 380px |    -25      |   330
-                //   4 |   52%    | 480px |    -30      |   420   (3×420=1260>1200 → 2+2)
-                //  5-6|   36%    | 400px |    -30      |   340   (4×340=1360>1200 → 3-per-row)
-                //  7-8|   26%    | 300px |    -20      |   260   (5×260=1300>1200 → 4-per-row)
+                //   4 |   28%    | 340px |    -22      |   296   (4×296=1184<1200 ✓)
+                //  5-6|   24%    | 260px |    -22      |   216   (3-per-row wrap, height ~347px)
+                //  7-8|   20%    | 220px |    -20      |   180   (4-per-row wrap, height ~293px)
                 let widthPct, maxW, negPx;
                 if (n === 1)      { widthPct = '55%'; maxW = '440px'; negPx = 0; }
                 else if (n === 2) { widthPct = '50%'; maxW = '440px'; negPx = 30; }
                 else if (n === 3) { widthPct = '36%'; maxW = '380px'; negPx = 25; }
-                else if (n === 4) { widthPct = '52%'; maxW = '480px'; negPx = 30; }
-                else if (n <= 6)  { widthPct = '36%'; maxW = '400px'; negPx = 30; }
-                else               { widthPct = '26%'; maxW = '300px'; negPx = 20; }
+                else if (n === 4) { widthPct = '28%'; maxW = '340px'; negPx = 22; }
+                else if (n <= 6)  { widthPct = '24%'; maxW = '260px'; negPx = 22; }
+                else               { widthPct = '20%'; maxW = '220px'; negPx = 20; }
 
                 return (
                   <motion.div
@@ -763,6 +923,8 @@ export default function RobotBoogiePage() {
                       activeStemIndex={0}
                       onClick={handleCharacterClick}
                       zapping={zappingId === cfg.id}
+                      slotRef={getSlotRef(cfg.id)}
+                      beatSubscribe={beatSubscribe}
                     />
                   </motion.div>
                 );
@@ -771,11 +933,29 @@ export default function RobotBoogiePage() {
           )}
         </div>
 
-        {/* ---- Time Machine (centerpiece) ---- */}
+        {/* ---- Time Machine (centerpiece) ----
+            Sits on a glowing "dais" — an elliptical stage puck that
+            reads as a raised pedestal. Also anchors the SVG lightning
+            bolts that shoot up from the machine "mouth". */}
         <div
           className="w-full flex justify-center items-center py-0 relative"
           data-testid="robot-boogie-time-machine-zone"
         >
+          {/* Pedestal / dais under the machine — an elliptical stage
+              puck that reads as a raised lab platform. Also serves as
+              the visual "floor" the machine stands on. */}
+          <div
+            aria-hidden="true"
+            className="absolute pointer-events-none"
+            style={{
+              bottom: '2%',
+              width: 'clamp(255px, 41vw, 500px)',
+              height: '32px',
+              background:
+                'radial-gradient(ellipse at 50% 50%, rgba(255,220,120,0.45) 0%, rgba(120,80,180,0.35) 40%, rgba(0,0,0,0.0) 75%)',
+              filter: 'blur(2px)',
+            }}
+          />
           {/* Soft halo behind the machine so it reads as the anchor of
               the composition. Scales with the machine itself. */}
           <div
@@ -789,23 +969,44 @@ export default function RobotBoogiePage() {
               filter: 'blur(6px)',
             }}
           />
-          <TimeMachine anyActive={activeCount > 0} flashKey={flashKey} />
+          <TimeMachine
+            anyActive={activeCount > 0}
+            flashKey={flashKey}
+            tmRef={timeMachineRef}
+            beatSubscribe={beatSubscribe}
+          />
         </div>
 
-        {/* ---- Character lineup (bottom, always 8) ---- */}
-        <div
-          data-testid="robot-boogie-lineup"
-          className="w-full flex justify-center items-end gap-0 md:gap-1 pt-0 pb-2"
-        >
-          {CHARACTERS.map((cfg) => (
-            <CompactChar
-              key={cfg.id}
-              cfg={cfg}
-              selected={!!dancing[cfg.id]}
-              onClick={handleCharacterClick}
-              zapping={zappingId === cfg.id}
-            />
-          ))}
+        {/* ---- Character lineup (bottom, always 8) ----
+            Sits on a beat-driven "disco floor" — a soft ellipse behind
+            the whole strip that flickers hue on every other beat. */}
+        <div className="relative w-full">
+          <div
+            ref={floorTilePulseRef}
+            aria-hidden="true"
+            className="absolute inset-x-0 pointer-events-none"
+            style={{
+              bottom: '-6px',
+              top: '30%',
+              transition: 'background 90ms ease-out',
+            }}
+          />
+          <div
+            data-testid="robot-boogie-lineup"
+            className="relative w-full flex justify-center items-end gap-0 md:gap-1 pt-0 pb-2"
+          >
+            {CHARACTERS.map((cfg, i) => (
+              <CompactChar
+                key={cfg.id}
+                cfg={cfg}
+                selected={!!dancing[cfg.id]}
+                onClick={handleCharacterClick}
+                zapping={zappingId === cfg.id}
+                beatSubscribe={beatSubscribe}
+                bobOffset={i * 0.11}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

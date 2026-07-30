@@ -485,6 +485,16 @@ h1, h2, h3, h4, h5, h6 {
   100% { transform: rotate(-5deg) translateY(0); }
 }
 
+/* Robot Boogie: Time Machine steam puff — a small blob that rises and
+   fades from the machine's top vent each time a character is zapped.
+   Purely decorative. Composited with mix-blend: screen upstream so the
+   dark warm halo doesn't darken through it. */
+@keyframes robotBoogiePuff {
+  0%   { transform: translate(-50%, 0)     scale(0.6); opacity: 0.0; }
+  15%  { opacity: 0.95; }
+  100% { transform: translate(-50%, -180%) scale(1.6); opacity: 0.0; }
+}
+
 *::-webkit-scrollbar-thumb:hover  { filter: brightness(1.12); }
 *::-webkit-scrollbar-thumb:active { filter: brightness(0.94); }
 *::-webkit-scrollbar-corner       { background: transparent; }

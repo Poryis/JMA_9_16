@@ -1,5 +1,41 @@
 # Changelog
 
+## Feb 30, 2026 (pm) — Robot Boogie v8: Special-sauce redesign (lightning + beat sync + steam)
+
+User requested more "special sauce" for Robot Boogie: **Time Machine lab × music-video vibe**, real lightning bolts from the machine to characters, beat-synced world reactions, and reactions from the bottom lineup. Also fixed a P0 layout regression at n=4 and cropped the askew Llama Lou PNG.
+
+### ⚡ New SVG lightning bolts (`/app/frontend/src/components/LightningStage.js`)
+Persistent, jittering **plasma bolts** shoot from the Time Machine's top vent up to every active character. Each bolt is a jagged SVG path re-rolled every 130ms so it crackles like real lightning. Team-colored outer glow + white inner core stroke, Gaussian-blur filter for the halo. When a character is freshly zapped, the bolt gets **thicker and forks with a branch**. Anchored to per-character refs via `getBoundingClientRect` so the endpoints follow layout changes and window resizes exactly. Replaces the old PNG lightning frames (which the user hated: static, low-res, misaligned).
+
+### 🥁 Beat-locked visual clock (`/app/frontend/src/hooks/useBeatPulse.js`, updated `useRobotBoogieAudio.js`)
+`useRobotBoogieAudio` now exposes `getAudioClock()` returning `{ audioTime, startTime, loopDuration }` from the same Web Audio timeline the stems are looping on. `useBeatPulse` runs a single RAF loop and derives `{ beat, phase, beatFrac, pulse }` (8 beats per loop). Consumers subscribe imperatively so nothing rerenders at 60fps — subscribers just mutate `.style` on refs.
+
+### 🕺 Beat-synced effects
+- **Active characters**: drop-shadow glow radius pulses 18→40px on every downbeat, keeping color-matched.
+- **Bottom lineup**: inactive characters bob left/right (phase sway) and hop on the downbeat, each with a per-character `bobOffset` for asymmetric dance.
+- **Time Machine**: warm orange under-glow ellipse pulses opacity + scale on the beat.
+- **World**: subtle radial world-pulse layer on `mix-blend: soft-light` brightens on downbeat.
+- **Floor**: alternating orange/cyan disco-floor bloom flickers behind the lineup.
+
+### 💨 Time Machine steam puffs
+Every character toggle now spawns two rising white blobs from the machine's top vent — CSS keyframe `robotBoogiePuff` (translate + scale + fade) auto-clean up after 1s.
+
+### 🔧 P0 fix: n=4 layout single-row
+Reworked width/margin math so n=4 fits in ONE row (`widthPct 28% / maxW 340px / negMx 22px` → outer 296px × 4 = 1184<1200 ✓). At n≥5 sprites shrink further (24% / 20%) and the active band gets `max-height: calc(100vh - 340px)` so wrapping rows never push the Time Machine into the compact lineup. Metrics verified via `getBoundingClientRect`: `bandOverlapsMachine: False`, `overlap: False`.
+
+### 🦙 Llama Lou PNG re-cropped
+Source frames had ~50% empty transparent space on the left (Lou was drawn askew). Bounding-box analysis showed content at x=255..455 on a 512-wide frame. Cropped all 6 dance frames identically to `230..480` → 250×288 (originals backed up to `/lou-dancing/originals/`). Lou now centered in his slot.
+
+### Files touched
+`RobotBoogiePage.js`, `useRobotBoogieAudio.js`, new `LightningStage.js`, new `useBeatPulse.js`, `index.css` (added `robotBoogiePuff` keyframe), Lou dance frames (cropped in place).
+
+### Verified
+Screenshotted at n=0, 1, 2, 4, 6, 8 (desktop 1280×800). Bolts trail every dancer with color-matched glow. n=4 single row confirmed. Steam puff bursts visible on activation. Lightning branches on zap. Compact lineup pulses on tap.
+
+---
+
+
+
 ## Feb 28, 2026 (night) — Robot Boogie v7: NEW Jazzy playing sprite + sprite zoom
 
 User dropped in the proper Jazzy playing PNG (trumpet up, pink mohawk, red vest, white pants, red boots — the works). Also identified the root cause of the "too much padding" complaint: **the source PNGs themselves have ~25 % transparent margin baked in on each side**, so no amount of CSS layout tightening was going to close the gaps. Fixed both in one pass.
