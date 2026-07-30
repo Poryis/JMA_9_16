@@ -61,6 +61,7 @@ export default function LightningStage({
   activeIds,          // array of currently-dancing char ids
   zappingId,          // id of char currently getting hit by a fresh bolt
   charColors,         // { id: hexColor }
+  beatSubscribe,      // optional: subscribe(({pulse}) => void) — throbs bolts on beat
 }) {
   // Endpoints in stage-local coords. Recomputed on layout changes.
   const [endpoints, setEndpoints] = useState({ source: null, targets: {} });
@@ -144,6 +145,31 @@ export default function LightningStage({
 
   const filterId = useMemo(() => `lightning-glow-${Math.random().toString(36).slice(2, 8)}`, []);
 
+  // Rhythm-lock: subscribe to beat pulse and imperatively update SVG
+  // group opacity so bolts crackle brightly on the downbeat and fade
+  // to a faint plasma trail between beats. Ref-driven so we don't
+  // rerender the entire SVG at 60fps. Before audio starts (beat === -1)
+  // we hold the group at a steady medium brightness so kids can still
+  // see the bolts on their first tap-then-audio-loads moment.
+  const gGroupRef = useRef(null);
+  useEffect(() => {
+    if (!beatSubscribe) return undefined;
+    return beatSubscribe(({ pulse, beat }) => {
+      const g = gGroupRef.current;
+      if (!g) return;
+      let op;
+      if (beat < 0) {
+        // Audio not playing yet — steady, clearly visible.
+        op = 0.80;
+      } else {
+        // Between beats: opacity ~0.30 (faint plasma trail).
+        // On downbeat: opacity ~1.0 (bright Tesla-coil crackle).
+        op = 0.30 + pulse * 0.70;
+      }
+      g.setAttribute('opacity', op.toFixed(3));
+    });
+  }, [beatSubscribe]);
+
   if (!endpoints.source || stageSize.w === 0) return null;
 
   return (
@@ -163,6 +189,7 @@ export default function LightningStage({
           </feMerge>
         </filter>
       </defs>
+      <g ref={gGroupRef} opacity="1">
       {Object.entries(paths).map(([id, p]) => {
         const color = (charColors && charColors[id]) || '#FFDC78';
         return (
@@ -212,6 +239,7 @@ export default function LightningStage({
           </g>
         );
       })}
+      </g>
     </svg>
   );
 }

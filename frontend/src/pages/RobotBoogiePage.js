@@ -26,11 +26,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, ImageIcon } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import useRobotBoogieAudio from '../hooks/useRobotBoogieAudio';
 import useBeatPulse from '../hooks/useBeatPulse';
 import LightningStage from '../components/LightningStage';
+import { BACKGROUNDS } from '../components/RobotBoogieBackgrounds';
 
 // ============================================================
 // Character config
@@ -114,6 +115,11 @@ const CHARACTERS = [
     playingBase: 'assets/robot-boogie/lou-dancing/lou-dancing',
     neutral: 'assets/robot-boogie/lou-neutral.png',
     color: '#34A853',
+    // Lou's PNGs are TIGHTLY cropped (250×288) — the OTHERS have ~40 %
+    // transparent side padding baked into their sources. Without a
+    // scale correction Lou would look almost 2× the visual weight of
+    // his neighbors. 0.68 brings him back in line.
+    slotScale: 0.68,
   },
   {
     id: 'jazzy',
@@ -433,6 +439,11 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotRef, beatSu
             ? `drop-shadow(0 0 22px ${cfg.color}dd)`
             : 'drop-shadow(0 8px 12px rgba(0,0,0,0.55)) saturate(0.55) brightness(0.75)',
           transition: 'filter 200ms ease-out',
+          // Per-character scale correction (Lou needs shrinking because
+          // his PNGs are tightly cropped while others have baked-in
+          // padding). transform-origin bottom keeps feet planted.
+          transform: cfg.slotScale ? `scale(${cfg.slotScale})` : undefined,
+          transformOrigin: '50% 100%',
         }}
       >
         {/* Neutral image — shown when the character is off. Always in
@@ -577,6 +588,8 @@ function CompactChar({ cfg, selected, onClick, zapping, beatSubscribe, bobOffset
             : 'saturate(0.6) brightness(0.85) drop-shadow(0 4px 6px rgba(0,0,0,0.5))',
           transition: 'filter 200ms ease-out',
           willChange: 'transform',
+          // Slot-scale correction (Lou is tightly cropped, others padded).
+          ...(cfg.slotScale ? { maxHeight: `${cfg.slotScale * 100}%` } : null),
         }}
       />
 
@@ -611,7 +624,34 @@ const EMPTY_TEAM_STEM = Object.keys(TEAMS).reduce((acc, t) => { acc[t] = null; r
 
 export default function RobotBoogiePage() {
   const { setStemActive, muteAll, getAudioClock } = useRobotBoogieAudio();
-  const { subscribe: beatSubscribe } = useBeatPulse(getAudioClock);
+  // Beat phase offset toggle — user requested a way to compare
+  // downbeat (0) vs. off-beat ("and of 1", 0.5) since the pulse felt
+  // off with BEATS_PER_LOOP=8. Now that the loop is 16 beats the
+  // downbeat is correct; keeping the toggle lets them A/B compare.
+  const [beatOffset, setBeatOffset] = useState(0);
+  const { subscribe: beatSubscribe } = useBeatPulse(getAudioClock, beatOffset);
+
+  // Background scene — 6 curated options in the app's flat art style.
+  // Cycled via a small button next to the reset chip. Choice persists
+  // to localStorage so kids keep their vibe between sessions.
+  const [bgIndex, setBgIndex] = useState(() => {
+    try {
+      const raw = localStorage.getItem('jma_rb_bg_v1');
+      if (raw !== null) {
+        const n = parseInt(raw, 10);
+        if (n >= 0 && n < BACKGROUNDS.length) return n;
+      }
+    } catch (_) { /* ignore */ }
+    return 0;
+  });
+  const cycleBg = useCallback(() => {
+    setBgIndex((i) => {
+      const next = (i + 1) % BACKGROUNDS.length;
+      try { localStorage.setItem('jma_rb_bg_v1', String(next)); } catch (_) { /* ignore */ }
+      return next;
+    });
+  }, []);
+  const BgComp = BACKGROUNDS[bgIndex].Comp;
 
   // Per-character: is this character currently DANCING? Dancing is
   // independent per character — both members of a paired team can dance
@@ -746,17 +786,15 @@ export default function RobotBoogiePage() {
       data-testid="robot-boogie-page"
       className="min-h-screen relative overflow-x-hidden flex flex-col"
       style={{
-        // Background is decoration ONLY — no gameplay positioning
-        // depends on it. Fallback gradient behind so the layout still
-        // looks coherent if the PNG is missing or slow to load.
-        background:
-          'radial-gradient(circle at 50% 30%, #4a2b7a 0%, #2a1650 55%, #150a2b 100%)',
-        backgroundImage:
-          'url(assets/backgrounds/robot-boogie-scene.png), radial-gradient(circle at 50% 30%, #4a2b7a 0%, #2a1650 55%, #150a2b 100%)',
-        backgroundSize: 'cover, auto',
-        backgroundPosition: 'center, center',
+        // Fallback base — the actual scene is drawn as inline SVG by
+        // <BgComp /> below so we can keep it consistent with the app's
+        // flat-cartoon art style and switch scenes at runtime.
+        background: '#050518',
       }}
     >
+      {/* Background scene (flat SVG, matches app art style) */}
+      <BgComp />
+
       {/* Vignette so the characters read against any background */}
       <div
         aria-hidden="true"
@@ -788,7 +826,7 @@ export default function RobotBoogiePage() {
       <GameHeader title="Robot Boogie" showHomeButton={true} />
 
       {/* Playing chip + Reset — sits just under the fixed header */}
-      <div className="relative z-10 flex items-center justify-center gap-3 pt-14 md:pt-16 pb-0">
+      <div className="relative z-10 flex items-center justify-center gap-2 pt-14 md:pt-16 pb-0 flex-wrap px-2">
         <div
           data-testid="robot-boogie-active-count"
           className="px-3 py-1 rounded-full font-black text-xs uppercase tracking-wider"
@@ -816,6 +854,37 @@ export default function RobotBoogiePage() {
           <RotateCcw className="w-3.5 h-3.5" />
           Reset
         </button>
+        <button
+          type="button"
+          data-testid="robot-boogie-cycle-bg"
+          onClick={cycleBg}
+          title={BACKGROUNDS[bgIndex].label}
+          className="px-3 py-1.5 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 border-2 cursor-pointer"
+          style={{
+            backgroundColor: '#8A6FDC',
+            color: 'white',
+            borderColor: 'var(--jma-dark)',
+            boxShadow: '0 3px 0 0 var(--jma-dark)',
+          }}
+        >
+          <ImageIcon className="w-3.5 h-3.5" />
+          {BACKGROUNDS[bgIndex].label}
+        </button>
+        <button
+          type="button"
+          data-testid="robot-boogie-beat-toggle"
+          onClick={() => setBeatOffset((v) => (v === 0 ? 0.5 : 0))}
+          title={beatOffset === 0 ? 'Pulse on downbeat' : 'Pulse on off-beat (and of 1)'}
+          className="px-3 py-1.5 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 border-2 cursor-pointer"
+          style={{
+            backgroundColor: beatOffset === 0 ? '#00A67E' : '#E38B00',
+            color: 'white',
+            borderColor: 'var(--jma-dark)',
+            boxShadow: '0 3px 0 0 var(--jma-dark)',
+          }}
+        >
+          {beatOffset === 0 ? 'On Beat' : 'Off Beat'}
+        </button>
       </div>
 
       {/* ==== MAIN STAGE ==== 
@@ -838,6 +907,7 @@ export default function RobotBoogiePage() {
           activeIds={activeChars.map((c) => c.id)}
           zappingId={zappingId}
           charColors={charColors}
+          beatSubscribe={beatSubscribe}
         />
         {/* ---- Active band (top) ----
             Flex-wrap so we get a second row automatically once there

@@ -1,5 +1,41 @@
 # Changelog
 
+## Feb 30, 2026 (evening) — Robot Boogie v8.1: Lou fix, rhythm-locked bolts, 6 SVG backgrounds
+
+User feedback on v8: Lou was crazy big (correctly cropped but the OTHER PNGs still have padding); pulse hit "the and of 1" not the downbeat; Lou's neutral wasn't cropped; the bg was stale. Also loved the lightning but wanted it rhythm-locked.
+
+### 🦙 Lou size + neutral crop
+- `lou-neutral.png` was cropped the same way as his dance frames (250×288 from 512×288). Originals backed up.
+- Added optional `slotScale` field per character (`0.68` for Lou). `CharacterSlot`'s inner glow-wrapper applies `transform: scale(cfg.slotScale)` with `transform-origin: 50% 100%` so his feet stay planted; `CompactChar` applies the equivalent `max-height` correction so the lineup tile matches. Now Lou's visual weight lines up with his neighbors.
+
+### 🥁 Beat phase fix + A/B toggle
+- `useBeatPulse` bumped from `BEATS_PER_LOOP = 8` to `16` (four 4/4 bars per loop) — matches the actual authoring of the stems and puts the downbeat on beat 1 instead of the "and of 1".
+- Hook now accepts a `phaseOffset` in [0..1) beats. Page exposes a small **On Beat / Off Beat** toggle chip so the user can A/B compare.
+
+### ⚡ Lightning rhythm-lock
+- `LightningStage` now takes `beatSubscribe` and imperatively updates the outer `<g>` group opacity: `0.30 + pulse * 0.70` when audio is playing, `0.80` steady before the first tap. Result: bolts crackle bright on every downbeat and fall to a faint plasma trail between beats (Tesla-coil vibe).
+
+### 🎨 Six flat-SVG background scenes (`components/RobotBoogieBackgrounds.js`)
+Built in the app's own style — no shading, no bevel, thick black strokes, flat fills.
+1. **Time-Machine Lab** — dark concrete floor, red/cyan power cables snaking on the ground, glowing wall panels.
+2. **Cosmic Dance Floor** — flat pink/cyan/yellow nebulae with a big perspective checker floor.
+3. **Retro Arcade** — big pink neon "STAGE" sign with yellow bulb frame, two colored floor spotlights.
+4. **Concert Stage** — brick wall with red curtains, rigging bar with lights, low fog.
+5. **Silhouette Crowd** — dark stage with a bobbing black-silhouette crowd along the bottom.
+6. **Deep Navy** — plain gradient, characters + lightning do the storytelling.
+
+Cycled via a **Time-Machine Lab / Cosmic Dance Floor / …** chip in the header row. Choice persists via `localStorage.jma_rb_bg_v1`.
+
+### Files touched
+`RobotBoogiePage.js`, `useBeatPulse.js`, `LightningStage.js`, new `RobotBoogieBackgrounds.js`, `lou-neutral.png` (cropped, original backed up under `/robot-boogie/originals/`).
+
+### Verified
+Screenshotted at each of the 6 backgrounds with 4 dancers (Robot 1, Chunk, Finn, Lou) — Lou's proportions now match neighbors, bolts land on each dancer's chest with team color, all six backgrounds render cleanly in flat art style.
+
+---
+
+
+
 ## Feb 30, 2026 (pm) — Robot Boogie v8: Special-sauce redesign (lightning + beat sync + steam)
 
 User requested more "special sauce" for Robot Boogie: **Time Machine lab × music-video vibe**, real lightning bolts from the machine to characters, beat-synced world reactions, and reactions from the bottom lineup. Also fixed a P0 layout regression at n=4 and cropped the askew Llama Lou PNG.
