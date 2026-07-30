@@ -960,12 +960,12 @@ export default function RobotBoogiePage() {
     setFlashKey((k) => k + 1);
   }, [dancing, teamStemIndex, setStemActive]);
 
-  // Silly-speed slider — continuous 0.8 → 1.5 (0.8 is the floor per
-  // user; anything slower gets uncanny and mucks with sync). Changes
-  // ramp over 80 ms so the audio doesn't click when you scrub the
-  // slider.
-  const SPEED_MIN = 0.8;
-  const SPEED_MAX = 1.5;
+  // Silly-speed slider — continuous 0.9 → 1.2 (user narrowed the
+  // extremes on Feb 30 late-night; the previous 0.8/1.5 range was
+  // too warpy at the ends). Changes ramp over 80 ms so scrubbing
+  // doesn't click.
+  const SPEED_MIN = 0.9;
+  const SPEED_MAX = 1.2;
   const [speed, setSpeed] = useState(1.0);
   const handleSpeedChange = useCallback((e) => {
     const rate = Math.max(SPEED_MIN, Math.min(SPEED_MAX, parseFloat(e.target.value)));

@@ -32,7 +32,9 @@ const CREATE_TILES = [
     accent: '#3B1F5C',
     character: 'assets/robot-boogie/robot1-card-hero.png',
     charWidthPct: 45,
-    sfx: 'assets/audio/robot-boogie/robot-synth-1.mp3',
+    // No SFX preview on this card — the source stem is an 8-s loop and
+    // even a short-capped preview reads as "a second of music that cuts
+    // out." Card click just navigates.
   },
   {
     id: 'song-studio',

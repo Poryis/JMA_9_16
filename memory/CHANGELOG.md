@@ -1,5 +1,17 @@
 # Changelog
 
+## Robot Boogie card SFX removed + speed slider tightened
+
+- **Removed the SFX preview from the Robot Boogie tile** (`CreateMenuPage.js`). The source stem is an 8-second loop, so even the 500 ms cap read as "a second of music that abruptly cuts out" when you clicked the card. Card click now navigates silently — the Robot Boogie page itself stays fully muted until the first Club Member is tapped.
+- **Speed slider tightened**: `SPEED_MIN` 0.8 → 0.9, `SPEED_MAX` 1.5 → 1.2 (`RobotBoogiePage.js`). Confirmed via Playwright — slider min/max attributes now read 0.9 / 1.2.
+
+### Files touched
+`CreateMenuPage.js` (removed `sfx:` on robot-boogie tile), `RobotBoogiePage.js` (speed constants).
+
+---
+
+
+
 ## Robot Boogie loop gap — MP3 encoder-silence trimmed (testing_agent verified)
 
 **🐛 Bug**: "The loop isn't perfectly clean — extra 16th beat of time before it starts over."
