@@ -385,7 +385,31 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     else { rating = 'KEEP GOING!'; ratingColor = '#FF9500'; }
 
     return (
-      <div className="min-h-screen sunburst-bg flex flex-col items-center justify-center p-4" data-testid="rhythm-results">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
+           data-testid="rhythm-results" style={{ backgroundColor: '#2E1D5C' }}>
+        {/* Same 3-state tile floor cycle as the playing screen — keeps
+            the after-song moment feeling like a continuation of the
+            gig instead of dumping you into a plain results card. */}
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+          {[1, 2, 3].map((n, i) => (
+            <img
+              key={n}
+              src={`assets/backgrounds/jukebox-floor-${n}.png`}
+              alt=""
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                animation: `jjFloorCycle 3s ${(i * 1).toFixed(2)}s ease-in-out infinite`,
+                opacity: i === 0 ? 1 : 0,
+              }}
+            />
+          ))}
+        </div>
+        {/* Soft dark scrim so the trophy + numbers still pop against the
+            colorful, moving disco floor below. */}
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none"
+             style={{ zIndex: 1, background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 90%)' }} />
+        <div className="relative z-10 flex flex-col items-center">
         <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring' }} className="mb-4">
           <div className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-[var(--jma-dark)]" style={{ backgroundColor: ratingColor }}>
             <Trophy className="w-12 h-12 text-white" />
@@ -422,6 +446,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           <motion.button data-testid="play-again-button" className="chunky-btn bg-[var(--jma-green)] text-white px-6 py-3 font-bold" onClick={startGame} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Play Again</motion.button>
           <motion.button className="chunky-btn bg-white px-6 py-3 font-bold" style={{ color: 'var(--jma-dark)' }} onClick={() => setGameState('menu')} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Pick Song</motion.button>
           <motion.button data-testid="home-button-results" className="chunky-btn bg-white px-6 py-3 font-bold" style={{ color: 'var(--jma-dark)' }} onClick={() => navigate('/')} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Home</motion.button>
+        </div>
         </div>
       </div>
     );
@@ -693,10 +718,10 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
             draggable={false}
             className="absolute inset-0 w-full h-full object-cover"
             style={{
-              // 3 layers stacked; each visible for ~1/3 of a 1.44 s
+              // 3 layers stacked; each visible for ~1/3 of a 3 s
               // loop with brief cross-fades. Staggered starts (0 →
-              // 0.48 s → 0.96 s) mean they take turns being on top.
-              animation: `jjFloorCycle 1.44s ${(i * 0.48).toFixed(2)}s ease-in-out infinite`,
+              // 1 s → 2 s) mean they take turns being on top.
+              animation: `jjFloorCycle 3s ${(i * 1).toFixed(2)}s ease-in-out infinite`,
               opacity: i === 0 ? 1 : 0,
             }}
           />

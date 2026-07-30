@@ -1,5 +1,22 @@
 # Changelog
 
+## Jelly Jukebox tile polish + colorblind audit
+
+- **Slowed tile cycle**: 1.44s → **3s** loop with 1s stagger. Reads as a steady disco pulse instead of a rapid strobe.
+- **Results screen** (`gameState === 'finished'`) now uses the same 3-state tile-floor cycle as the playing screen. Added a soft radial-scrim overlay (dark 0-55% opacity) so the trophy + score numbers still pop against the moving colorful floor.
+- **Colorblind analysis of the 7 lane colors** (report in Q&A below — no code change made pending user direction). Confusion risk pairs (perceptual distance < 60 in transformed space):
+  - Deuteranopia: **Re↔Mi** (d=44), **So↔La** (d=54)
+  - Protanopia:  **Re↔Mi** (d=44), **So↔La** (d=59)
+  - Tritanopia:   **Re↔Mi** (d=54)
+  Mitigation already in place: every lane is triple-labeled (solfège + number + unique bell character shape), so kids can distinguish even if 2 colors merge. FALLING bells still primarily rely on color, though — a future fix could add per-bell shape/pattern differentiation.
+
+### Files touched
+`RhythmGamePage.js` (slowed cycle, added tile cycle to finished state), `index.css` (untouched — keyframe re-used).
+
+---
+
+
+
 ## Card + gameplay backgrounds
 
 - **CreateMenu Robot Boogie card**: swapped `robot-boogie-scene.png` → new `robot-boogie-lab.svg` (static Lab background extracted from `BgLab` component, same flat art style — animations stripped so it works as a `background-image` URL).
