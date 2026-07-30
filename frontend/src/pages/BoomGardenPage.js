@@ -938,6 +938,15 @@ export default function BoomGardenPage() {
   // — back nav, level picker, summary buttons — and Stew himself, who has
   // his own handler). The Spacebar also triggers a tap. Both feel huge on
   // touch screens too: the kid can just slap the field.
+  //
+  // SPACEBAR HOLD (Feb 2026): browsers auto-repeat keydown when a key is
+  // held, which would fire a stream of `handleSnareTap` calls and drown the
+  // kid in false snare hits. We guard with `e.repeat` so ONE press = ONE
+  // tap. We also track a `spaceHeld` visual so kids who instinctively hold
+  // through a longer note (half/whole) get a soft glow acknowledging the
+  // sustain — but scoring is unchanged so they aren't punished if they
+  // don't hold "long enough".
+  const [spaceHeld, setSpaceHeld] = useState(false);
   useEffect(() => {
     if (mode === 'match') return undefined; // Twin Beats picks strips, not Stew
     if (phase !== 'input' && phase !== 'countin') return undefined;
@@ -965,15 +974,26 @@ export default function BoomGardenPage() {
           ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
       if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
+        // AUTO-REPEAT GUARD: without this, holding Space would fire a
+        // torrent of taps. One press → one tap, always.
+        if (e.repeat) return;
         triggerStewTap();
+        if (e.code === 'Space' || e.key === ' ') setSpaceHeld(true);
       }
+    };
+
+    const handleKeyUp = (e) => {
+      if (e.code === 'Space' || e.key === ' ') setSpaceHeld(false);
     };
 
     document.addEventListener('pointerdown', handleAnywhereDown);
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
     return () => {
       document.removeEventListener('pointerdown', handleAnywhereDown);
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+      setSpaceHeld(false);
     };
   }, [mode, phase, handleSnareTap]);
 
@@ -1447,9 +1467,31 @@ export default function BoomGardenPage() {
           </AnimatePresence>
           <motion.div
             data-testid="stew-pop-wrap"
+            className="relative"
             animate={{ scale: stewPop ? 1.15 : victoryDance ? 1.06 : 1 }}
             transition={{ type: 'spring', stiffness: 480, damping: 14 }}
           >
+            {/* Sustain-glow ring: appears while the Spacebar is held.
+                Purely cosmetic — scoring is unchanged. Gives kids
+                sustaining a longer note (half/whole) a visible "I hear
+                you holding it" reward without punishing kids who don't. */}
+            <AnimatePresence>
+              {spaceHeld && (phase === 'input' || phase === 'countin') && (
+                <motion.div
+                  key="sustain-ring"
+                  data-testid="boom-sustain-ring"
+                  initial={{ scale: 0.85, opacity: 0 }}
+                  animate={{ scale: [1, 1.08, 1], opacity: 0.9 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  transition={{ scale: { duration: 0.9, repeat: Infinity, ease: 'easeInOut' }, opacity: { duration: 0.18 } }}
+                  className="absolute inset-0 pointer-events-none rounded-full"
+                  style={{
+                    boxShadow: '0 0 0 6px rgba(155, 109, 224, 0.55), 0 0 42px 14px rgba(155, 109, 224, 0.55)',
+                    zIndex: 1,
+                  }}
+                />
+              )}
+            </AnimatePresence>
             <StewDrummer
               ref={snareRef}
               onTap={handleSnareTap}

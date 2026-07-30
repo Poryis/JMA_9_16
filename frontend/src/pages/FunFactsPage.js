@@ -9,21 +9,39 @@ import { GameHeader } from '../components/GameUI';
 // Lou and Stew were split apart in Feb 2026 — the user wanted Stew to be his
 // own findable character (standalone) up in the top-right tree, while Lou
 // stands solo in his old spot.
+//
+// `chatter` = the tiny SFX that plays the moment the character is REVEALED
+// for the first time (Clubhouse Chatter, Feb 2026). Each pick fits the
+// character's personality:
+//   - Chunk       → piano flourish (big playful chords)
+//   - Finn        → drum fill (Finn Danger, the drummer)
+//   - Dr. Jellybone → detective sting (his own sfx from the mystery game)
+//   - Stew        → kazoo honk (Stew IS the kazoo character)
+//   - Jazzy       → bell pair (jazzy sparkle)
+//   - Charlie     → DJ scratch (Punk Charlie / DJ energy)
+//   - Lou         → twinkle (llama with ukulele)
 const SCENE_CHARS = [
   { name: 'Chunk',         image: 'assets/characters/chunk.png',           stickerId: 'char_chunk',
-    leftPct: 32, topPct: 20, widthPct: 13, anim: 'swing' },
+    leftPct: 32, topPct: 20, widthPct: 13, anim: 'swing',
+    chatter: 'assets/audio/sfx-piano-flourish.mp3' },
   { name: 'Finn',          image: 'assets/characters/finn-danger.png',     stickerId: 'char_finn',
-    leftPct: 8, topPct: 35, widthPct: 11, anim: 'bob' },
+    leftPct: 8, topPct: 35, widthPct: 11, anim: 'bob',
+    chatter: 'assets/audio/sfx-drum-fill.mp3' },
   { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    stickerId: 'char_doctor',
-    leftPct: 65, topPct: 27, widthPct: 8.9, anim: 'peek' },
+    leftPct: 65, topPct: 27, widthPct: 8.9, anim: 'peek',
+    chatter: 'assets/audio/sfx-detective.mp3' },
   { name: 'Stew',          image: 'assets/characters/stew.png',            stickerId: 'char_stew',
-    leftPct: 88, topPct: 18, widthPct: 7, anim: 'swing' },
+    leftPct: 88, topPct: 18, widthPct: 7, anim: 'swing',
+    chatter: 'assets/audio/sfx-kazoo-honk.mp3' },
   { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           stickerId: 'char_jazzy',
-    leftPct: 22, topPct: 63, widthPct: 8, anim: 'bob' },
+    leftPct: 22, topPct: 63, widthPct: 8, anim: 'bob',
+    chatter: 'assets/audio/sfx-bell-pair.mp3' },
   { name: 'Charlie',       image: 'assets/characters/charlie-polliwog.png', stickerId: 'char_charlie',
-    leftPct: 50, topPct: 65, widthPct: 19, anim: 'bob' },
+    leftPct: 50, topPct: 65, widthPct: 19, anim: 'bob',
+    chatter: 'assets/audio/sfx-dj-scratch.mp3' },
   { name: 'Lou',           image: 'assets/characters/lou.png',             stickerId: 'char_lou',
-    leftPct: 78, topPct: 65, widthPct: 11, anim: 'bob' },
+    leftPct: 78, topPct: 65, widthPct: 11, anim: 'bob',
+    chatter: 'assets/audio/sfx-twinkle.mp3' },
 ];
 
 const ANIM_VARIANTS = {
@@ -103,12 +121,23 @@ function FunFactsPage() {
     const isFirst = !found.has(characterName);
     markFound(characterName);
     if (isFirst) {
+      // Clubhouse Chatter (Feb 2026): tiny personality SFX on the moment of
+      // discovery. Only on first find — replays would get spammy since the
+      // whole loop is designed to be replayable. Kept soft so it accents
+      // the "pop" without stepping on the fact text-to-read moment.
+      const charObj = SCENE_CHARS.find(c => c.name === characterName);
+      if (charObj?.chatter) {
+        try {
+          const audio = new Audio(charObj.chatter);
+          audio.volume = 0.55;
+          audio.play().catch(() => { /* autoplay blocked — silent fallback */ });
+        } catch { /* ignore */ }
+      }
       setPoppingName(characterName);
       setTimeout(() => setPoppingName(null), 650);
       // Open modal slightly after the pop so the kid notices the reveal.
       setTimeout(() => {
         setActiveFact({ character: characterName, ...fact });
-        const charObj = SCENE_CHARS.find(c => c.name === characterName);
         if (charObj?.stickerId) earnSticker(charObj.stickerId);
         noteFactSeen();
       }, 350);

@@ -1,5 +1,36 @@
 # Changelog
 
+## Spacebar hold + Clubhouse Chatter (Feb 2026)
+
+### Spacebar hold in Who's Got The Rhythm (`BoomGardenPage.js`)
+**User quote**: "I dont necessarily want to punish users for not sustaining through the full length of note. I don't, however, want it to play a bunch of successive notes when holding down spacebar."
+
+**Fix**:
+- Added `if (e.repeat) return;` guard in the keydown handler. Browsers auto-fire `keydown` while a key is held, which was producing a torrent of `handleSnareTap()` calls. Now: **one press = one tap**, regardless of hold duration.
+- Added a `spaceHeld` state that pulses a soft purple sustain ring around Stew while Space is held (framer-motion, exit-animated). Purely cosmetic — scoring is untouched, so kids who don't hold long enough are not penalised. Kids who instinctively hold through half/whole notes get visible acknowledgement.
+- Verified: dispatched 1 real keydown + 30 repeated (`repeat: true`) keydowns during input phase. Only 2 UI chips appeared (initial tap + one forward-walk auto-miss). Without the guard, this would have been 30+.
+
+### Clubhouse Chatter (`FunFactsPage.js`)
+**User quote**: "Let each Fun Facts friend play a tiny voice or instrument sound the moment they're revealed to make the discovery pop."
+
+**Implementation**:
+- Added a `chatter` field to each entry in `SCENE_CHARS` mapping to an existing SFX asset:
+  - Chunk → `sfx-piano-flourish.mp3`
+  - Finn → `sfx-drum-fill.mp3`
+  - Dr. Jellybone → `sfx-detective.mp3`
+  - Stew → `sfx-kazoo-honk.mp3`
+  - Jazzy → `sfx-bell-pair.mp3`
+  - Charlie → `sfx-dj-scratch.mp3`
+  - Lou → `sfx-twinkle.mp3`
+- In `showFact`, on FIRST find only (`isFirst === true`), spawn a soft `new Audio(chatter)` at volume 0.55. Autoplay-rejection is silently caught so nothing breaks if the browser gates it.
+- Verified via Playwright Audio-constructor interception — confirmed correct SFX firing (detective for Dr. Jellybone, bell-pair for Jazzy, twinkle for Lou) on first find, no double-play on re-tap.
+
+### Files touched
+`BoomGardenPage.js`, `FunFactsPage.js`.
+
+---
+
+
 ## Fun Facts Clubhouse — Lou & Stew split into standalone characters (Feb 2026)
 
 **User request**: "For the fun facts clubhouse. I want to add stew... replace Lou with the png that is titled something like Lou no Stew... put a standalone stew up in the top right corner... give stew some fun facts as well."

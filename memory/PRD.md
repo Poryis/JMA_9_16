@@ -143,6 +143,17 @@ Four new mini-features designed to boost real music learning while keeping it fu
 - Frontend testing agent: **100% pass (6/6 acceptance criteria)**, zero pageerror exceptions, all 13 routes navigate cleanly.
 - `CI=true yarn build` → Compiled successfully (263.25 KB gz, +8 KB for Phase 3).
 
+## Implemented (Feb 2026 — Spacebar hold + Clubhouse Chatter)
+
+### Spacebar hold in Who's Got The Rhythm (`BoomGardenPage.js`)
+- Added `if (e.repeat) return;` guard in the keydown handler — holding Space now produces exactly ONE snare tap, not a repeat-storm. Verified Playwright: 1 press + 30 auto-repeat keydowns → 2 UI chips total (initial tap + one forward-walk auto-miss).
+- Added a `spaceHeld` visual state: a soft purple pulse ring around Stew while Space is held, framer-motion exit-animated. Purely cosmetic — scoring is unchanged, so kids who don't hold "long enough" through half/whole notes are not punished.
+
+### Clubhouse Chatter (`FunFactsPage.js`)
+- Added a `chatter` field to each `SCENE_CHARS` entry mapping the character to an existing personality-appropriate SFX (Chunk → piano flourish, Finn → drum fill, Dr. Jellybone → detective sting, Stew → kazoo honk, Jazzy → bell pair, Charlie → DJ scratch, Lou → twinkle).
+- On FIRST find only, `showFact` spawns a soft `new Audio(chatter)` at volume 0.55 with autoplay-rejection silently caught.
+- Verified via Playwright Audio-constructor interception — correct SFX fires for each first find.
+
 ## Testing Credentials
 N/A — frontend-only, no auth.
 
