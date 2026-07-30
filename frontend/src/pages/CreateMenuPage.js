@@ -27,7 +27,7 @@ const CREATE_TILES = [
     id: 'robot-boogie',
     title: 'ROBOT BOOGIE',
     path: '/robot-boogie',
-    bg: 'assets/backgrounds/robot-boogie-scene.png',
+    bg: 'assets/backgrounds/robot-boogie-lab.svg',
     color: '#5A2989',
     accent: '#3B1F5C',
     character: 'assets/robot-boogie/robot1-neutral/robot1-neutral-01.png',

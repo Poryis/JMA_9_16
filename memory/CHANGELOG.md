@@ -1,5 +1,21 @@
 # Changelog
 
+## Card + gameplay backgrounds
+
+- **CreateMenu Robot Boogie card**: swapped `robot-boogie-scene.png` → new `robot-boogie-lab.svg` (static Lab background extracted from `BgLab` component, same flat art style — animations stripped so it works as a `background-image` URL).
+- **Jelly Jukebox — PLAYING screen**: replaced `sunburst-cool` gradient with a 3-layer cross-fading disco tile floor using the user's 3 color-swap PNGs (`jukebox-floor-1/2/3.png`). Each layer runs the new `jjFloorCycle` 1.44s CSS keyframe with staggered 0/0.48/0.96s starts so the tiles look like they change colors on the beat. Kept the pulsing sunburst overlay but switched it to `mixBlendMode: overlay` at 35% opacity so it enriches the disco floor without hiding it.
+- **Menu screen unchanged** — user "LOVED" the original menu, so `RhythmGamePage.js` menu render still uses `jelly-jukebox-scene.png` unchanged.
+
+### Files touched
+`CreateMenuPage.js` (bg swap), new `/app/frontend/public/assets/backgrounds/robot-boogie-lab.svg`, `RhythmGamePage.js` (playing state tile-floor cycle), `index.css` (`jjFloorCycle` keyframe).
+
+### Verified
+Screenshotted CreateMenu (Robot Boogie card shows the Lab), Jelly Jukebox menu (unchanged, still the beloved scene), and 3 sequential frames of the playing screen showing the tile floor visibly shifting colors on each frame — cross-fade confirmed working.
+
+---
+
+
+
 ## Sticker & Meta-Progression Audit — bug found + fixed
 
 User asked for a full review of stickers, meta-progression, rename artifacts, and PNG integrity. Findings + fixes:

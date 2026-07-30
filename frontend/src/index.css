@@ -588,6 +588,17 @@ h1, h2, h3, h4, h5, h6 {
   50%     { transform: rotate(-10deg); }
 }
 
+/* Jelly Jukebox: cycling tile-floor animation. Three floor color-swap
+   layers cross-fade so the disco floor pulses on-beat. Each layer runs
+   the same keyframe with a staggered delay so they take turns being
+   visible; the brief overlap between beats reads as a smooth color
+   shift. */
+@keyframes jjFloorCycle {
+  0%,   28% { opacity: 1; }
+  33%,  95% { opacity: 0; }
+  100%      { opacity: 1; }
+}
+
 *::-webkit-scrollbar-thumb:hover  { filter: brightness(1.12); }
 *::-webkit-scrollbar-thumb:active { filter: brightness(0.94); }
 *::-webkit-scrollbar-corner       { background: transparent; }

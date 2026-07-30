@@ -678,10 +678,35 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     : 0.6;
 
   return (
-    <div className="min-h-screen sunburst-cool flex flex-col relative overflow-hidden" data-testid="rhythm-game-playing">
+    <div className="min-h-screen flex flex-col relative overflow-hidden" data-testid="rhythm-game-playing"
+         style={{ backgroundColor: '#2E1D5C' }}>
+      {/* Cycling disco floor — three color-swap states of the tiled
+          floor cross-fade so the whole scene reads like the tiles
+          change color on the beat. This IS the background now (the
+          old cyan sunburst was replaced per user request). */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ zIndex: 0 }}>
+        {[1, 2, 3].map((n, i) => (
+          <img
+            key={n}
+            src={`assets/backgrounds/jukebox-floor-${n}.png`}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              // 3 layers stacked; each visible for ~1/3 of a 1.44 s
+              // loop with brief cross-fades. Staggered starts (0 →
+              // 0.48 s → 0.96 s) mean they take turns being on top.
+              animation: `jjFloorCycle 1.44s ${(i * 0.48).toFixed(2)}s ease-in-out infinite`,
+              opacity: i === 0 ? 1 : 0,
+            }}
+          />
+        ))}
+      </div>
       {/* Pulsing sunburst layer — gentle scale + slight rotation so the rays
           read as "alive" without strobing. Kept WELL under photo-sensitivity
-          thresholds (small brightness delta, no large area flashes). */}
+          thresholds (small brightness delta, no large area flashes). Now
+          uses overlay blend so it enriches the tile-floor background
+          instead of replacing it. */}
       <motion.div
         aria-hidden="true"
         className="absolute inset-0 sunburst-cool pointer-events-none"
@@ -689,6 +714,8 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
           transformOrigin: 'center',
           zIndex: 0,
           willChange: 'transform, filter',
+          mixBlendMode: 'overlay',
+          opacity: 0.35,
         }}
         animate={{
           scale: [1, 1.03, 1],
