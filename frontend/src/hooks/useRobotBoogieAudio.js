@@ -110,21 +110,43 @@ export default function useRobotBoogieAudio() {
       startedRef.current = true;
       const startTime = ctx.currentTime + 0.05; // small lookahead
       startTimeRef.current = startTime;
+
+      // Trim the ~40 ms of MP3 encoder-added silence at the head + tail
+      // of every stem so the loop points are seamless. Files decode to
+      // ~11.024 s but the actual musical content is ~10.984 s (drum
+      // stems) with 20 ms silence at each end — hearing that silence
+      // read to the user as "an extra 16th beat before the loop starts
+      // over." Setting loopStart/loopEnd (in seconds) tells Web Audio
+      // to jump back to loopStart when it hits loopEnd, cutting the
+      // dead air out entirely. Values tuned to the shortest reliable
+      // musical duration across all 12 stems so they stay locked in
+      // phase. If the loop still isn't clean, tune LOOP_END down in
+      // small (0.01 s) steps.
+      const LOOP_START = 0.020;
+      const LOOP_END   = 10.984;
+
       STEM_IDS.forEach((id) => {
         const buf = buffersRef.current[id];
         if (!buf) return;
         // Capture the loop duration off the first available buffer —
-        // every stem was authored at the same length, so any works.
+        // every stem is trimmed to the same LOOP window so beat-pulse
+        // math should use the trimmed length, not the raw buffer.
         if (loopDurationRef.current === null) {
-          loopDurationRef.current = buf.duration;
+          loopDurationRef.current = LOOP_END - LOOP_START;
         }
         const src = ctx.createBufferSource();
         src.buffer = buf;
         src.loop = true;
+        // Clamp loopEnd defensively in case a shorter buffer sneaks in.
+        src.loopStart = LOOP_START;
+        src.loopEnd   = Math.min(LOOP_END, buf.duration - 0.001);
         const gain = ctx.createGain();
         gain.gain.value = 0; // start silent
         src.connect(gain).connect(ctx.destination);
-        src.start(startTime);
+        // Start playback at loopStart so we skip the head silence on
+        // the very first pass too — otherwise the FIRST play would
+        // include the 20 ms lead but every subsequent loop wouldn't.
+        src.start(startTime, LOOP_START);
         sourcesRef.current[id] = src;
         gainsRef.current[id] = gain;
       });
