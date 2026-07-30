@@ -1,5 +1,37 @@
 # Changelog
 
+## Sticker & Meta-Progression Audit — bug found + fixed
+
+User asked for a full review of stickers, meta-progression, rename artifacts, and PNG integrity. Findings + fixes:
+
+### 🐛 Real bug: 12 of 12 song stickers were unearnable
+`RhythmGamePage.js` awards stickers on song completion via `` `song_${selectedSong.id}` `` where `selectedSong.id` comes from `data/songs.js` (16 songs with ids like `jma_play_one_skip_one`, `ode_to_joy`, `jelly_groove`, etc.). But `stickers.js` defined stickers for 12 non-existent songs (`song_twinkle`, `song_mary`, `song_hot_cross`, `song_row_boat`, etc.) that were never in the library. Result: only 2 of 16 song completions (`when_saints`, `amazing_grace`) actually earned a real sticker; the other 14 silently no-op'd.
+- **Fixed** in `/app/frontend/src/data/stickers.js`: replaced the 12 stub song stickers with the 16 correct entries mapped 1:1 to `songs.js` ids. All 16 song completions now earn a real sticker.
+- **Verified** by testing_agent (iteration_17.json) — full static scan of song→sticker mapping shows 16/16 matched, 0 missing, 0 extra.
+
+### ✅ Everything else clean (testing_agent confirmed)
+- All 33 `earnSticker()` static call sites reference existing sticker ids
+- All 54 icon PNG paths resolve to real files
+- No user-facing display strings reference retired game names (Boom Garden / Stew's Rhythm Academy / Rhythm Academy) — only internal filenames + route paths retain them, which is fine
+- Meta-progression standards correctly implemented: `useRank.js` derives rank from **achievement** stickers only (not collection); `ranks.js` enforces cross-domain requirements (Maestro needs 3 domains at master); `earnAchievement` enforces cadet→pro→master ladder within each domain; the 7-tier ladder is coherent
+
+### 🎨 Unused PNG candidates in `/app/frontend/public/assets/characters/`
+Not added — flagged for user decision:
+- `charlie-captain-head.png` (700×540) — could be a "Captain Charlie" outfit
+- `charlie-studio.png` (663×700) — could be an outfit unlock tied to Song Studio
+- `charlie-head.png`, `finn-head.png` — head-only crops, better suited for UI thumbnails
+- `lou.png`, `shark.png` — bare sprites, likely duplicates of existing neutrals
+
+### Reusable static-check script
+`/app/test_reports/static_check.py` — run after any data file change to catch regressions (song↔sticker sync, PNG paths, earnSticker call validity, rename artifacts, meta-progression structure). Exit 0 = clean.
+
+### Files touched
+`stickers.js` (song stickers realigned to library ids).
+
+---
+
+
+
 ## Feb 30, 2026 (past-midnight) — Robot Boogie v9.2: small polish
 
 - **Reset now also resets tempo** to 1.0×. Kids often scrub the slider — Reset should be a true clean slate.

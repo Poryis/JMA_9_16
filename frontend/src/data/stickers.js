@@ -82,10 +82,10 @@ export const COLLECTION_STICKERS = [
   // ---- Songs (earned by completing each song in Jelly Jukebox) ----
   // ID convention: `song_${song.id}` — matches the runtime earn call
   // in RhythmGamePage.js line 340. Kept aligned with data/songs.js so
-  // every completable song has a corresponding sticker (fixed Feb 30:
-  // the previous list referenced 12 songs that don't exist in the
-  // library and MISSED all 16 songs that do — every song completion
-  // was silently no-op-ing on a dead sticker id).
+  // every completable song has a corresponding sticker (fixed during
+  // the sticker-audit pass: the previous list referenced 12 songs that
+  // don't exist in the library and MISSED all 16 songs that do —
+  // every song completion was silently no-op-ing on a dead sticker id).
   { id: 'song_jma_play_one_skip_one', name: 'Play One, Skip One',       category: 'songs', icon: 'assets/bells/C 1.png', color: '#FFCC00', hint: 'Complete Play One, Skip One' },
   { id: 'song_jma_magic_in_music',    name: 'The Magic Is in the Music', category: 'songs', icon: 'assets/bells/E 1.png', color: '#FF9500', hint: 'Complete The Magic Is in the Music' },
   { id: 'song_jma_brand_new_friend',  name: 'Brand New Friend',         category: 'songs', icon: 'assets/bells/G 1.png', color: '#4CD964', hint: 'Complete Brand New Friend' },
