@@ -26,6 +26,18 @@ function Tile({ tile, index, navigate }) {
         const audio = new Audio(tile.sfx);
         audio.volume = tile.sfx.includes('sfx-dj-scratch') ? 0.85 : 0.42;
         audio.play().catch(() => { /* autoplay rejected — proceed without SFX */ });
+        // Cap the preview to ~500 ms so long-form SFX (like an 8-second
+        // Robot Boogie synth loop) don't keep playing after the user
+        // has navigated away — that was the "audio doesn't stop after
+        // leaving the page" bug. Short quick fade-out prevents a click.
+        const CAP_MS = 500;
+        setTimeout(() => {
+          try {
+            audio.volume = 0;
+            audio.pause();
+            audio.src = '';
+          } catch { /* ignore */ }
+        }, CAP_MS);
       } catch { /* ignore */ }
     }
     const delay = tile.sfx ? 220 : 0;

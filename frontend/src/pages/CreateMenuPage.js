@@ -9,7 +9,7 @@ const CREATE_TILES = [
     color: '#4CD964',
     accent: '#34A853',
     character: 'assets/characters/charlie-punk.png',
-    charWidthPct: 32,
+    charWidthPct: 35,
     sfx: 'assets/audio/sfx-drum-fill.mp3',
   },
   {
@@ -31,7 +31,7 @@ const CREATE_TILES = [
     color: '#5A2989',
     accent: '#3B1F5C',
     character: 'assets/robot-boogie/robot1-card-hero.png',
-    charWidthPct: 55,
+    charWidthPct: 45,
     sfx: 'assets/audio/robot-boogie/robot-synth-1.mp3',
   },
   {
