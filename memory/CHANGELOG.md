@@ -1,5 +1,22 @@
 # Changelog
 
+## Feb 30, 2026 (past-midnight) — Robot Boogie v9.2: small polish
+
+- **Reset now also resets tempo** to 1.0×. Kids often scrub the slider — Reset should be a true clean slate.
+- **"TAP A PAL BELOW" → "TAP A CLUB MEMBER BELOW"** — matches the JMA Club Members naming across the app.
+- **Rounded orange rectangle on bottom-tile click FOUND AND REMOVED**. Was a lingering `<motion.div className="absolute inset-0 rounded-2xl" style={boxShadow: ...}>` inside CompactChar tied to the `zapping` flash — designed as a bright bloom on activation, but read as a distracting focus box. The character's own color-matched drop-shadow glow (via img filter) is enough activation signal on the compact tile.
+- Also added belt-and-suspenders `outline: none` + `-webkit-tap-highlight-color: transparent` inline styles and a global `[data-testid^="robot-boogie-char-"]:focus, :focus-visible` rule with `::-moz-focus-inner` reset so Firefox can't sneak in a dotted outline either.
+
+### Files touched
+`RobotBoogiePage.js` (Reset resets speed, wording, CompactChar zap-flash removed, outline hardening), `index.css` (focus rules).
+
+### Verified
+Screenshotted click-on-bottom-tile within 120 ms of release — no rectangle, just the compact tile's own drop-shadow glow. Playwright `input_value` on slider confirmed 1.4 → 1.0 on Reset. Empty-state DOM check confirmed "TAP A CLUB MEMBER BELOW".
+
+---
+
+
+
 ## Feb 30, 2026 (nearly midnight) — Robot Boogie v9.1: 5-point polish
 
 - **Speed chip → slider**. Continuous native `<input type="range">` from **0.8** (floor per user — anything slower gets uncanny) to **1.5**, step 0.05. Styled with the JMA look: yellow track, black stroke, chunky red thumb with the block-shadow. Turtle 🐢 / rabbit 🐇 icons flank it. `setPlaybackRate` on every source ramps 80 ms so scrubbing is smooth.

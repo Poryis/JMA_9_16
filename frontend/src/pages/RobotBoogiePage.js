@@ -625,6 +625,8 @@ function CharacterSlot({
         aspectRatio: '3 / 4',
         touchAction: 'none',
         zIndex: zapping ? 5 : 3,
+        outline: 'none',
+        WebkitTapHighlightColor: 'transparent',
       }}
       animate={boopControls}
     >
@@ -772,6 +774,8 @@ function CompactChar({ cfg, selected, onClick, zapping, beatSubscribe, bobOffset
         width: 'clamp(48px, 10vw, 96px)',
         aspectRatio: '3 / 4',
         touchAction: 'manipulation',
+        outline: 'none',
+        WebkitTapHighlightColor: 'transparent',
       }}
       whileHover={{ y: -4 }}
       whileTap={{ scale: 0.9 }}
@@ -810,25 +814,11 @@ function CompactChar({ cfg, selected, onClick, zapping, beatSubscribe, bobOffset
         }}
       />
 
-      {/* Zap flash on tap — a quick colored bloom instead of the full
-          lightning frames (those live on the LARGE performer). */}
-      <AnimatePresence>
-        {zapping && (
-          <motion.div
-            key="zap"
-            aria-hidden="true"
-            className="absolute inset-0 rounded-2xl pointer-events-none"
-            style={{
-              boxShadow: `0 0 22px 4px ${cfg.color}`,
-              background: `radial-gradient(closest-side, ${cfg.color}66, transparent 70%)`,
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.32 }}
-          />
-        )}
-      </AnimatePresence>
+      {/* NOTE: the previous "zap flash" rounded-rect halo on activation
+          was removed (Feb 30) — user found the momentary orange box
+          around the compact tile distracting after clicking. The
+          character's own color-matched drop-shadow glow (applied to
+          the img filter when `selected`) is enough signal. */}
     </motion.button>
   );
 }
@@ -959,14 +949,6 @@ export default function RobotBoogiePage() {
     setFlashKey((k) => k + 1);
   }, [dancing, teamStemIndex, setStemActive]);
 
-  const handleReset = useCallback(() => {
-    muteAll();
-    setDancing({ ...EMPTY_DANCING });
-    setTeamStemIndex({ ...EMPTY_TEAM_STEM });
-    // Also wipe any drag/scale kids applied so they start fresh.
-    setCharTransforms({});
-  }, [muteAll]);
-
   // Silly-speed slider — continuous 0.8 → 1.5 (0.8 is the floor per
   // user; anything slower gets uncanny and mucks with sync). Changes
   // ramp over 80 ms so the audio doesn't click when you scrub the
@@ -979,6 +961,18 @@ export default function RobotBoogiePage() {
     setSpeed(rate);
     if (setPlaybackRate) setPlaybackRate(rate);
   }, [setPlaybackRate]);
+
+  const handleReset = useCallback(() => {
+    muteAll();
+    setDancing({ ...EMPTY_DANCING });
+    setTeamStemIndex({ ...EMPTY_TEAM_STEM });
+    // Also wipe any drag/scale kids applied so they start fresh.
+    setCharTransforms({});
+    // Reset tempo back to normal — kids often scrub the slider and
+    // Reset should be a true clean slate.
+    setSpeed(1.0);
+    if (setPlaybackRate) setPlaybackRate(1.0);
+  }, [muteAll, setPlaybackRate]);
 
   const activeCount = useMemo(
     () => Object.values(teamStemIndex).filter((v) => v !== null).length,
@@ -1172,7 +1166,7 @@ export default function RobotBoogiePage() {
                 className="font-black uppercase tracking-widest text-sm md:text-base"
                 style={{ opacity: 0.85 }}
               >
-                Tap a pal below
+                Tap a Club Member below
               </div>
               <div
                 className="font-bold text-xs md:text-sm"

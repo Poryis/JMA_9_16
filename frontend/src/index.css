@@ -539,6 +539,24 @@ h1, h2, h3, h4, h5, h6 {
   cursor: grab;
 }
 
+/* Robot Boogie: kill browser default focus rectangle on the tappable
+   character buttons. User specifically didn't want the momentary box
+   that appears on release. Global rule so it also catches the
+   `::-moz-focus-inner` dotted outline in Firefox and any browser
+   focus ring on newly-mounted top-band CharacterSlots. */
+[data-testid^="robot-boogie-char-"]:focus,
+[data-testid^="robot-boogie-char-"]:focus-visible,
+[data-testid="robot-boogie-time-machine"]:focus,
+[data-testid="robot-boogie-time-machine"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+[data-testid^="robot-boogie-char-"]::-moz-focus-inner,
+[data-testid="robot-boogie-time-machine"]::-moz-focus-inner {
+  border: 0 !important;
+  padding: 0 !important;
+}
+
 /* Robot Boogie backgrounds — subtle motion for the Deep Navy stars,
    Time-Machine Lab panels, and Retro Arcade spotlights + bulbs. */
 @keyframes jmaBgTwinkle {
