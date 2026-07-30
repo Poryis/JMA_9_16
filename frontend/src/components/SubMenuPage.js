@@ -35,7 +35,8 @@ function Tile({ tile, index, navigate }) {
           try {
             audio.volume = 0;
             audio.pause();
-            audio.src = '';
+            audio.removeAttribute('src'); // avoid empty-string src browser warning
+            audio.load();
           } catch { /* ignore */ }
         }, CAP_MS);
       } catch { /* ignore */ }

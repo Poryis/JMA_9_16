@@ -1,5 +1,22 @@
 # Changelog
 
+## Card tune + audio-leak bug fix
+
+- **🐛 Bug fix (testing_agent verified iteration_18.json)**: Robot Boogie audio "starts on entering and doesn't stop on leaving." Root cause was NOT the game page — it was `SubMenuPage.Tile.handleClick` playing `tile.sfx` via `new Audio()` on card click. Robot Boogie's sfx pointed to `robot-synth-1.mp3` — an 8-second loop stem, not a short blip — and the HTMLAudioElement lived in a JS closure (not the React tree), so it kept playing after route change. **Fix**: 500ms `setTimeout` in `Tile.handleClick` sets volume=0, pause(), `removeAttribute('src')`, and `load()` to cleanly dispose. Confirmed by testing_agent: jam-session and beat-lab tiles show `paused=true, volume=0` at 700ms post-click; Robot Boogie tile follows the same code path.
+- **Robot Boogie card hero** — `charWidthPct` 55 → 45 (17% smaller per user "bring him down 15–20%")
+- **Jam Session card Charlie punk** — `charWidthPct` 32 → 35 (+9% per user "10% bigger")
+
+### Files touched
+`SubMenuPage.js` (SFX cap), `CreateMenuPage.js` (both charWidthPct tunes).
+
+### Verified
+- Audio bug: testing_agent iteration_18 100% pass, retest_needed=false
+- Sizes: screenshot of Create menu shows both cards at correct hero proportions
+
+---
+
+
+
 ## Robot Boogie card redo + 9 new stickers
 
 - **New card background** `robot-boogie-card.svg` — a "spotlight stage" scene (purple radial gradient + yellow spotlight cone + hint of disco floor tiles at the bottom). Replaces the busier Lab SVG that didn't work for the card.
