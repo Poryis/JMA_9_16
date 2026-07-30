@@ -194,7 +194,7 @@ const TIME_MACHINE_ANIMS = [
   { keyframes: { x: [0, -10, 10, -7, 7, -4, 4, 0], rotate: [0, -4, 4, -2, 2, 0, 0, 0],     scale: [1, 1.04, 1.04, 1.04, 1.04, 1.02, 1.02, 1] }, duration: 0.95 },
 ];
 
-function TimeMachine({ anyActive, flashKey, beatSubscribe, tmRef }) {
+function TimeMachine({ anyActive, flashKey, beatSubscribe, tmRef, triggerStab, startRiser, stopRiser }) {
   const [frame, setFrame] = useState(-1);
   const timerRef = useRef(null);
   const flashTimerRef = useRef(null);
@@ -259,13 +259,43 @@ function TimeMachine({ anyActive, flashKey, beatSubscribe, tmRef }) {
   }, [flashKey]);
 
   // Shield-style easter-egg flourish on tap.
-  const handleTap = () => {
-    const anim = TIME_MACHINE_ANIMS[hitsRef.current % TIME_MACHINE_ANIMS.length];
-    hitsRef.current += 1;
-    tmControls.start({
-      ...anim.keyframes,
-      transition: { duration: anim.duration, ease: 'easeInOut' },
-    });
+  //
+  // The Time Machine is also playable as an instrument (added Feb 30
+  // evening on user request):
+  //   • Tap  → a short synth "stab" percussion hit + Shield flourish
+  //   • Hold → a rising synth builds tension; on release, a "drop" kick
+  const holdTimerRef = useRef(null);
+  const holdedRef = useRef(false);
+  const HOLD_THRESHOLD_MS = 220;
+
+  const startHold = () => {
+    holdedRef.current = false;
+    holdTimerRef.current = setTimeout(() => {
+      holdedRef.current = true;
+      if (startRiser) startRiser();
+    }, HOLD_THRESHOLD_MS);
+  };
+  const endHold = () => {
+    if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
+    if (holdedRef.current) {
+      // Was long enough to fire a riser — resolve with a drop.
+      if (stopRiser) stopRiser();
+      holdedRef.current = false;
+    } else {
+      // Short tap → percussion stab + Shield flourish.
+      if (triggerStab) triggerStab();
+      const anim = TIME_MACHINE_ANIMS[hitsRef.current % TIME_MACHINE_ANIMS.length];
+      hitsRef.current += 1;
+      tmControls.start({
+        ...anim.keyframes,
+        transition: { duration: anim.duration, ease: 'easeInOut' },
+      });
+    }
+  };
+  const cancelHold = () => {
+    if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
+    if (holdedRef.current && stopRiser) stopRiser();
+    holdedRef.current = false;
   };
 
   // Beat-synced under-glow. Uses the imperative subscriber pattern so
@@ -289,7 +319,10 @@ function TimeMachine({ anyActive, flashKey, beatSubscribe, tmRef }) {
       ref={tmRef}
       data-testid="robot-boogie-time-machine"
       aria-label="Time machine"
-      onClick={handleTap}
+      onPointerDown={startHold}
+      onPointerUp={endHold}
+      onPointerCancel={cancelHold}
+      onPointerLeave={cancelHold}
       className="relative select-none bg-transparent border-0 p-0 cursor-pointer flex-shrink-0"
       style={{
         // 20 % bigger than v5 (was clamp(170, 26vw, 320)). Time Machine
@@ -374,11 +407,42 @@ function TimeMachine({ anyActive, flashKey, beatSubscribe, tmRef }) {
   );
 }
 
+// Fun body-flourish animations that fire when the kid boops an active
+// character in the top band. Randomly picked per boop so rapid tapping
+// keeps feeling fresh. Kept short (≤ 0.6 s) so kids can chain them.
+// NOTE: intentionally NO `scale` keys here — the kid may have already
+// pinched/wheeled a character to a custom size, and framer-motion
+// scale animations would clobber that. We use rotate / y / x only.
+const BOOP_ANIMS = [
+  { rotate:  [0, 360],                     transition: { duration: 0.55, ease: 'easeInOut' } },
+  { rotateY: [0, 360],                     transition: { duration: 0.55, ease: 'easeInOut' } },
+  { y:       [0, -30, 0],                  transition: { duration: 0.45, ease: 'easeOut' } },
+  { rotate:  [0, -14, 14, -10, 10, -4, 0], transition: { duration: 0.55, ease: 'easeInOut' } },
+  { x:       [0, -10, 10, -8, 8, 0],       transition: { duration: 0.45, ease: 'easeInOut' } },
+];
+
 // ============================================================
 // Character slot — preloads every animation frame at mount so cycling is
 // instant, then toggles which frame is displayed via display:none/block.
+//
+// Top-band CharacterSlots are the "playground" — kids can:
+//   • TAP  → boop (fun body-flourish anim + percussion stab sound)
+//   • DRAG → move the character anywhere in the stage
+//   • WHEEL / pinch → grow or shrink the character
+// Toggling a character OFF is done from the bottom lineup tile (kids
+// naturally think of that strip as the control panel).
 // ============================================================
-function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotRef, beatSubscribe }) {
+function CharacterSlot({
+  cfg,
+  activeStemIndex,
+  zapping,
+  slotRef,
+  beatSubscribe,
+  transform,        // { x, y, scale } persisted per-char at page level
+  onBoop,           // (id) => void — parent triggers a stab sound + zap flash
+  onDrag,           // (id, dx, dy) => void
+  onWheel,          // (id, delta) => void
+}) {
   const isActive = activeStemIndex >= 0;
 
   const [animFrame, setAnimFrame] = useState(1);
@@ -406,6 +470,74 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotRef, beatSu
     });
   }, [beatSubscribe, isActive, cfg.color]);
 
+  // Boop animation — motion-controls target for the outer button.
+  // Triggered on short-tap release. Chained onto our transform so drag
+  // position + scale persist across the flourish.
+  const boopControls = useAnimationControls();
+  const boopHitsRef = useRef(0);
+  const runBoop = () => {
+    const anim = BOOP_ANIMS[boopHitsRef.current % BOOP_ANIMS.length];
+    boopHitsRef.current += 1;
+    boopControls.start(anim);
+    if (onBoop) onBoop(cfg.id);
+  };
+
+  // Pointer drag/tap detection.
+  //   • pointerdown → capture start pos, arm potential-tap
+  //   • pointermove past threshold → switch to drag mode; forward deltas
+  //   • pointerup: if we never crossed the threshold, it was a tap → boop
+  const DRAG_THRESHOLD = 6;
+  const pointerStateRef = useRef(null);
+  const handlePointerDown = (e) => {
+    // Ignore if slot is not active (shouldn't happen — inactive chars
+    // don't render in the top band).
+    if (!isActive) return;
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+    pointerStateRef.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      lastX: e.clientX,
+      lastY: e.clientY,
+      isDragging: false,
+    };
+  };
+  const handlePointerMove = (e) => {
+    const st = pointerStateRef.current;
+    if (!st || st.pointerId !== e.pointerId) return;
+    const dx = e.clientX - st.startX;
+    const dy = e.clientY - st.startY;
+    if (!st.isDragging && Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+      st.isDragging = true;
+    }
+    if (st.isDragging && onDrag) {
+      const stepDx = e.clientX - st.lastX;
+      const stepDy = e.clientY - st.lastY;
+      st.lastX = e.clientX;
+      st.lastY = e.clientY;
+      onDrag(cfg.id, stepDx, stepDy);
+    }
+  };
+  const handlePointerUp = (e) => {
+    const st = pointerStateRef.current;
+    if (!st || st.pointerId !== e.pointerId) return;
+    pointerStateRef.current = null;
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+    if (!st.isDragging) runBoop();
+  };
+  // Wheel = scale. deltaY is +positive when scrolling down; invert so
+  // scroll-up grows the character (matches "zoom in" intuition).
+  const handleWheel = (e) => {
+    if (!isActive || !onWheel) return;
+    e.preventDefault();
+    onWheel(cfg.id, -e.deltaY);
+  };
+
+  // Combine per-char persisted transform with the boop flourish.
+  const tx = (transform && transform.x) || 0;
+  const ty = (transform && transform.y) || 0;
+  const tScale = (transform && transform.scale) || 1;
+
   // Pre-computed list of every playing frame URL for this character.
   // Rendered once as stacked <img> so the browser caches them all up front
   // and cycling to a new frame is a pure display-property flip.
@@ -421,19 +553,19 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotRef, beatSu
       type="button"
       data-testid={`robot-boogie-char-${cfg.id}`}
       data-active={isActive ? 'true' : 'false'}
-      onClick={() => onClick(cfg.id)}
-      className="relative flex items-end justify-center cursor-pointer bg-transparent border-0 p-0 select-none"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onWheel={handleWheel}
+      className="relative flex items-end justify-center cursor-grab active:cursor-grabbing bg-transparent border-0 p-0 select-none"
       style={{
         width: '100%',
-        // Original 3:4 portrait slot — the ONLY way we get here without
-        // clipping heads. Adjacent-dancer closeness is done via
-        // NEGATIVE HORIZONTAL MARGINS on the outer wrapper (see the
-        // main component's activeChars map). No vertical hacks.
         aspectRatio: '3 / 4',
-        touchAction: 'manipulation',
+        touchAction: 'none',
+        zIndex: zapping ? 5 : 3,
       }}
-      whileHover={{ y: -6 }}
-      whileTap={{ scale: 0.94 }}
+      animate={boopControls}
     >
       <div
         ref={(node) => {
@@ -455,12 +587,11 @@ function CharacterSlot({ cfg, activeStemIndex, onClick, zapping, slotRef, beatSu
             ? `drop-shadow(0 0 22px ${cfg.color}dd)`
             : 'drop-shadow(0 8px 12px rgba(0,0,0,0.55)) saturate(0.55) brightness(0.75)',
           transition: 'filter 200ms ease-out',
-          // Per-character scale correction (Lou needs shrinking because
-          // his PNGs are tightly cropped while others have baked-in
-          // padding). Center-scaled so his mid-body lines up with peers'
-          // mid-bodies — earlier we used bottom-anchored scale which
-          // pushed his head way below everyone else's head.
-          transform: cfg.slotScale ? `scale(${cfg.slotScale})` : undefined,
+          // Composed transform: (kid drag) × (kid pinch/wheel scale) ×
+          // (per-character slot-scale correction, e.g. Lou at 0.45).
+          // Order matters: translate first, then scale, so the drag
+          // position isn't multiplied by scale.
+          transform: `translate3d(${tx}px, ${ty}px, 0) scale(${tScale * (cfg.slotScale || 1)})`,
           transformOrigin: '50% 50%',
         }}
       >
@@ -641,7 +772,10 @@ const EMPTY_DANCING = CHARACTERS.reduce((acc, c) => { acc[c.id] = false; return 
 const EMPTY_TEAM_STEM = Object.keys(TEAMS).reduce((acc, t) => { acc[t] = null; return acc; }, {});
 
 export default function RobotBoogiePage() {
-  const { setStemActive, muteAll, getAudioClock } = useRobotBoogieAudio();
+  const {
+    setStemActive, muteAll, getAudioClock,
+    triggerStab, startRiser, stopRiser, setPlaybackRate,
+  } = useRobotBoogieAudio();
   // Beat phase offset locked to 0.5 — this hits what the user hears as
   // the on-beat given how the audio's startTime + loop-duration meshes
   // with the visual clock. Kept as a constant here for clarity.
@@ -680,6 +814,38 @@ export default function RobotBoogiePage() {
   // fire its "zap" burst animation without needing to know which char
   // was tapped.
   const [flashKey, setFlashKey] = useState(0);
+
+  // Per-character transforms applied to the top-band CharacterSlot.
+  // Kids can drag active characters around the stage and wheel/pinch
+  // to grow/shrink them. Values live at the page level so they PERSIST
+  // across activate/deactivate (a character kept in the same spot the
+  // kid parked them) and are wiped by Reset. Not persisted to storage
+  // — start fresh every session.
+  const [charTransforms, setCharTransforms] = useState({});
+  const handleCharDrag = useCallback((charId, dx, dy) => {
+    setCharTransforms((prev) => {
+      const cur = prev[charId] || { x: 0, y: 0, scale: 1 };
+      // Clamp drag so characters can't leave the visible stage area.
+      const nx = Math.max(-360, Math.min(360, cur.x + dx));
+      const ny = Math.max(-140, Math.min(140, cur.y + dy));
+      return { ...prev, [charId]: { ...cur, x: nx, y: ny } };
+    });
+  }, []);
+  const handleCharWheel = useCallback((charId, deltaSigned) => {
+    // deltaSigned is +up (grow) / -down (shrink); ~120 units per notch
+    // is browser default so a ~10% step feels right.
+    const step = deltaSigned > 0 ? 1.08 : 1 / 1.08;
+    setCharTransforms((prev) => {
+      const cur = prev[charId] || { x: 0, y: 0, scale: 1 };
+      const nextScale = Math.max(0.5, Math.min(1.6, cur.scale * step));
+      return { ...prev, [charId]: { ...cur, scale: nextScale } };
+    });
+  }, []);
+  const handleCharBoop = useCallback(() => {
+    // Boop = fun body flourish + a stab sound + a Time Machine flash.
+    if (triggerStab) triggerStab();
+    setFlashKey((k) => k + 1);
+  }, [triggerStab]);
 
   const handleCharacterClick = useCallback((charId) => {
     const teamId = CHAR_TO_TEAM[charId];
@@ -729,7 +895,24 @@ export default function RobotBoogiePage() {
     muteAll();
     setDancing({ ...EMPTY_DANCING });
     setTeamStemIndex({ ...EMPTY_TEAM_STEM });
+    // Also wipe any drag/scale kids applied so they start fresh.
+    setCharTransforms({});
   }, [muteAll]);
+
+  // Silly-speed dial cycles: slow → normal → fast → normal → …
+  const SPEEDS = [
+    { rate: 0.65, label: 'Slow',  emoji: '\u{1F422}' },  // turtle
+    { rate: 1.00, label: 'Normal', emoji: '\u{1F3B5}' }, // music note
+    { rate: 1.40, label: 'Fast',  emoji: '\u{1F407}' },  // rabbit
+  ];
+  const [speedIdx, setSpeedIdx] = useState(1);
+  const cycleSpeed = useCallback(() => {
+    setSpeedIdx((i) => {
+      const next = (i + 1) % SPEEDS.length;
+      if (setPlaybackRate) setPlaybackRate(SPEEDS[next].rate);
+      return next;
+    });
+  }, [setPlaybackRate, SPEEDS]);
 
   const activeCount = useMemo(
     () => Object.values(teamStemIndex).filter((v) => v !== null).length,
@@ -853,6 +1036,22 @@ export default function RobotBoogiePage() {
           <RotateCcw className="w-3.5 h-3.5" />
           Reset
         </button>
+        <button
+          type="button"
+          data-testid="robot-boogie-speed"
+          onClick={cycleSpeed}
+          title={`Speed: ${SPEEDS[speedIdx].label}`}
+          className="px-3 py-1.5 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 border-2 cursor-pointer"
+          style={{
+            backgroundColor: '#F2C94C',
+            color: 'var(--jma-dark)',
+            borderColor: 'var(--jma-dark)',
+            boxShadow: '0 3px 0 0 var(--jma-dark)',
+          }}
+        >
+          <span aria-hidden="true">{SPEEDS[speedIdx].emoji}</span>
+          {SPEEDS[speedIdx].label}
+        </button>
       </div>
 
       {/* ==== MAIN STAGE ==== 
@@ -876,6 +1075,7 @@ export default function RobotBoogiePage() {
           zappingId={zappingId}
           charColors={charColors}
           beatSubscribe={beatSubscribe}
+          measureEpoch={JSON.stringify(charTransforms)}
         />
         {/* ---- Active band (top) ----
             Flex-wrap so we get a second row automatically once there
@@ -959,10 +1159,13 @@ export default function RobotBoogiePage() {
                     <CharacterSlot
                       cfg={cfg}
                       activeStemIndex={0}
-                      onClick={handleCharacterClick}
                       zapping={zappingId === cfg.id}
                       slotRef={getSlotRef(cfg.id)}
                       beatSubscribe={beatSubscribe}
+                      transform={charTransforms[cfg.id]}
+                      onBoop={handleCharBoop}
+                      onDrag={handleCharDrag}
+                      onWheel={handleCharWheel}
                     />
                   </motion.div>
                 );
@@ -1012,6 +1215,9 @@ export default function RobotBoogiePage() {
             flashKey={flashKey}
             tmRef={timeMachineRef}
             beatSubscribe={beatSubscribe}
+            triggerStab={triggerStab}
+            startRiser={startRiser}
+            stopRiser={stopRiser}
           />
         </div>
 

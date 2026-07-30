@@ -1,5 +1,37 @@
 # Changelog
 
+## Feb 30, 2026 (deep evening) — Robot Boogie v9: Interactive playground
+
+Big engagement update per user's ask for "more ways for kids to interact." Six features shipped:
+
+### On active characters (top band)
+- **BOOP on tap**: tapping an active character no longer turns them off — it plays a random fun body flourish (spin, flip, jump, wobble, sway) + fires a short synth "stab" percussion hit from the Time Machine + kicks the machine's flash burst. Kids can rapid-tap for endless silly reactions. Toggling a character OFF is now done from the bottom lineup tile (natural mental model: bottom strip = control panel, top band = playground).
+- **DRAG to move**: pointer-drag any active character anywhere in the stage. Threshold at 6 px distinguishes tap-vs-drag so short taps still boop cleanly. Position is clamped to keep the character on-screen (±360 x, ±140 y).
+- **WHEEL (pinch on mobile-todo) to grow/shrink**: wheel over an active character to scale them between 0.5× and 1.6×. Persists until the kid drags/scales again or hits Reset.
+- Reset now wipes drag+scale offsets too so kids start fresh.
+
+### Time Machine as an instrument
+- **Tap → percussion stab**: kick body (160→45 Hz sine sweep + snappy env) plus a bandpassed white-noise attack transient. Synthesized with Web Audio, no new audio files needed.
+- **Hold → riser + drop**: press-and-hold builds a rising saw + filter-swept noise for up to 3 s; release fires a deep 120→30 Hz kick "drop." Distinguished from tap by a 220 ms threshold.
+
+### Silly-speed dial
+- New **Speed chip** in the header row (🎵 Normal / 🐇 Fast / 🐢 Slow at 0.65× / 1.4× / 1.0×). Retunes every currently-running loop source via `AudioBufferSourceNode.playbackRate` — pitch shifts with tempo (which is what "silly speed" means to a kid).
+
+### Bolts follow drag
+`LightningStage` now takes a `measureEpoch` prop so endpoints re-measure whenever `charTransforms` changes — bolts follow characters wherever kids drag them.
+
+### Files touched
+`useRobotBoogieAudio.js` (added `triggerStab`, `startRiser/stopRiser`, `setPlaybackRate`), `RobotBoogiePage.js` (BOOP_ANIMS, pointer-drag detection, per-char transforms state, Speed chip, TimeMachine hold-riser), `LightningStage.js` (measureEpoch remeasure trigger).
+
+### Verified
+- Screenshotted 3-char baseline → speed cycle → boop tap → TM tap. Boop tap on active Chunk kept `data-active="true"` (previously would have toggled off) ✅
+- Speed chip visible with 🎵 Normal starting state ✅
+- Lightning still lands on characters after all changes ✅
+
+---
+
+
+
 ## Feb 30, 2026 (very late) — Robot Boogie v8.3: un-pair, un-clutter, un-low
 
 - **All 8 characters un-paired**. Reversed the earlier Jazzy+Jellybone and Robot1+Robot2 team pairings — each character is now its own solo team so all 8 feel individually significant. Jellybone keeps her 2-stem cycle (horns-2 → horns-3) on repeated taps.

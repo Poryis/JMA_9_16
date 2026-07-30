@@ -62,6 +62,7 @@ export default function LightningStage({
   zappingId,          // id of char currently getting hit by a fresh bolt
   charColors,         // { id: hexColor }
   beatSubscribe,      // optional: subscribe(({pulse}) => void) — throbs bolts on beat
+  measureEpoch,       // arbitrary number — bump to force endpoint re-measure (drag/scale)
 }) {
   // Endpoints in stage-local coords. Recomputed on layout changes.
   const [endpoints, setEndpoints] = useState({ source: null, targets: {} });
@@ -122,7 +123,7 @@ export default function LightningStage({
       window.removeEventListener('resize', onResize);
       clearTimeout(t1); clearTimeout(t2);
     };
-  }, [activeIds.join('|')]);
+  }, [activeIds.join('|'), measureEpoch]);
 
   // -- crackle: re-roll every path every ~130 ms --
   useEffect(() => {
