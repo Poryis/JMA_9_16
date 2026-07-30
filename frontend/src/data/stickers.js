@@ -79,19 +79,29 @@ export const COLLECTION_STICKERS = [
   { id: 'bell_B',         name: 'Ti',              category: 'bells', icon: 'assets/bells/B 2.png', color: '#AF52DE', hint: 'Play Ti (key 7)' },
   { id: 'bell_HC',        name: 'High Do',         category: 'bells', icon: 'assets/bells/C 2.png', color: '#FF2D55', hint: 'Play High Do (key 8)' },
 
-  // ---- Songs (earned by completing each song in Rhythm Game) ----
-  { id: 'song_twinkle',        name: 'Twinkle Twinkle',   category: 'songs', icon: 'assets/bells/C 1.png',   color: '#FFCC00', hint: 'Complete Twinkle Twinkle' },
-  { id: 'song_mary',           name: 'Mary Had a Lamb',   category: 'songs', icon: 'assets/bells/E 1.png',   color: '#4CD964', hint: 'Complete Mary Had a Lamb' },
-  { id: 'song_hot_cross',      name: 'Hot Cross Buns',    category: 'songs', icon: 'assets/bells/E 1.png',   color: '#FF9500', hint: 'Complete Hot Cross Buns' },
-  { id: 'song_row_boat',       name: 'Row Your Boat',     category: 'songs', icon: 'assets/bells/G 1.png',   color: '#34A853', hint: 'Complete Row Your Boat' },
-  { id: 'song_old_macdonald',  name: 'Old MacDonald',     category: 'songs', icon: 'assets/bells/A 1.png',   color: '#4285F4', hint: 'Complete Old MacDonald' },
-  { id: 'song_jingle_bells',   name: 'Jingle Bells',      category: 'songs', icon: 'assets/bells/B 1.png',   color: '#AF52DE', hint: 'Complete Jingle Bells' },
-  { id: 'song_ode_joy',        name: 'Ode to Joy',        category: 'songs', icon: 'assets/bells/E 1.png',   color: '#FFCC00', hint: 'Complete Ode to Joy' },
-  { id: 'song_happy_birthday', name: 'Happy Birthday',    category: 'songs', icon: 'assets/bells/G 1.png',   color: '#FF3B30', hint: 'Complete Happy Birthday' },
-  { id: 'song_when_saints',    name: 'When the Saints',   category: 'songs', icon: 'assets/bells/C 1.png',   color: '#FF9500', hint: 'Complete When the Saints' },
-  { id: 'song_amazing_grace',  name: 'Amazing Grace',     category: 'songs', icon: 'assets/bells/F 1.png',   color: '#4CD964', hint: 'Complete Amazing Grace' },
-  { id: 'song_london_bridge',  name: 'London Bridge',     category: 'songs', icon: 'assets/bells/G 1.png',   color: '#4285F4', hint: 'Complete London Bridge' },
-  { id: 'song_itsy_bitsy',     name: 'Itsy Bitsy Spider', category: 'songs', icon: 'assets/bells/D 1.png',   color: '#AF52DE', hint: 'Complete Itsy Bitsy Spider' },
+  // ---- Songs (earned by completing each song in Jelly Jukebox) ----
+  // ID convention: `song_${song.id}` — matches the runtime earn call
+  // in RhythmGamePage.js line 340. Kept aligned with data/songs.js so
+  // every completable song has a corresponding sticker (fixed Feb 30:
+  // the previous list referenced 12 songs that don't exist in the
+  // library and MISSED all 16 songs that do — every song completion
+  // was silently no-op-ing on a dead sticker id).
+  { id: 'song_jma_play_one_skip_one', name: 'Play One, Skip One',       category: 'songs', icon: 'assets/bells/C 1.png', color: '#FFCC00', hint: 'Complete Play One, Skip One' },
+  { id: 'song_jma_magic_in_music',    name: 'The Magic Is in the Music', category: 'songs', icon: 'assets/bells/E 1.png', color: '#FF9500', hint: 'Complete The Magic Is in the Music' },
+  { id: 'song_jma_brand_new_friend',  name: 'Brand New Friend',         category: 'songs', icon: 'assets/bells/G 1.png', color: '#4CD964', hint: 'Complete Brand New Friend' },
+  { id: 'song_jma_faster_as_we_go',   name: 'Faster As We Go',          category: 'songs', icon: 'assets/bells/A 1.png', color: '#34A853', hint: 'Complete Faster As We Go' },
+  { id: 'song_jma_goody_bag',         name: 'Goody Bag',                category: 'songs', icon: 'assets/bells/B 1.png', color: '#AF52DE', hint: 'Complete Goody Bag' },
+  { id: 'song_jma_play_one_drums',    name: 'Play One (Drums)',         category: 'songs', icon: 'assets/drums/Snare 1.png', color: '#E74C3C', hint: 'Complete Play One, Skip One (Drums)' },
+  { id: 'song_jma_goody_bag_drums',   name: 'Goody Bag (Drums)',        category: 'songs', icon: 'assets/drums/Snare 1.png', color: '#C0392B', hint: 'Complete Goody Bag (Drums)' },
+  { id: 'song_jam_drums_pocket',      name: 'Pocket Groove',            category: 'songs', icon: 'assets/drums/Snare 1.png', color: '#3498DB', hint: 'Complete Pocket Groove' },
+  { id: 'song_jam_drums_boogie',      name: 'Boogie Stomp',             category: 'songs', icon: 'assets/drums/Snare 1.png', color: '#8E44AD', hint: 'Complete Boogie Stomp' },
+  { id: 'song_ode_to_joy',            name: 'Ode to Joy',               category: 'songs', icon: 'assets/bells/E 1.png', color: '#FFCC00', hint: 'Complete Ode to Joy' },
+  { id: 'song_when_saints',           name: 'When the Saints',          category: 'songs', icon: 'assets/bells/C 1.png', color: '#FF9500', hint: 'Complete When the Saints' },
+  { id: 'song_amazing_grace',         name: 'Amazing Grace',            category: 'songs', icon: 'assets/bells/F 1.png', color: '#4CD964', hint: 'Complete Amazing Grace' },
+  { id: 'song_jelly_groove',          name: 'Jelly Groove',             category: 'songs', icon: 'assets/bells/G 1.png', color: '#FF6B9D', hint: 'Complete Jelly Groove' },
+  { id: 'song_ocean_wave',            name: 'Ocean Wave',               category: 'songs', icon: 'assets/bells/D 1.png', color: '#1ABC9C', hint: 'Complete Ocean Wave' },
+  { id: 'song_bell_bounce',           name: 'Bell Bounce',              category: 'songs', icon: 'assets/bells/A 1.png', color: '#4285F4', hint: 'Complete Bell Bounce' },
+  { id: 'song_funky_fish',            name: 'Funky Fish',               category: 'songs', icon: 'assets/bells/F 1.png', color: '#F39C12', hint: 'Complete Funky Fish' },
 
   // ---- Lessons (earned by completing each video lesson in Learn) ----
   { id: 'lesson_1', name: 'Lesson 1 Complete', category: 'lessons', icon: 'assets/characters/charlie-polliwog.png', color: '#FFCC00', hint: 'Finish Lesson 1' },
