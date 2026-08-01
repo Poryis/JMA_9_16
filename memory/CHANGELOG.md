@@ -1,5 +1,27 @@
 # Changelog
 
+## Bug fix — achievement stickers showed broken-image icon on Home page + toast (Feb 2026)
+
+**User report**: "The home page says newest sticker Scholar Cadet, but inside the circle where I expect the sticker it has that broken image symbol." (Galaxy Fold 5 / Brave)
+
+**Root cause**: `data/stickers.js` was building `ACHIEVEMENT_STICKER_ENTRIES` without `icon` or `color` fields:
+```js
+{ id, name, category: 'achievements', domain, tier, hint }
+```
+Collection stickers include `icon` + `color`, so generic consumers (`StickerSpotlight` on Home, `StickerToast` on earn) just render `<img src={sticker.icon} />` — for any achievement that resolved to `<img src={undefined} />` = broken-image icon. The Sticker Book itself was unaffected because it uses the dedicated `AchievementBadge` component for the fancy Cadet/Pro/Master framing. This bug affected **all 18 achievement badges**, not just Scholar Cadet.
+
+**Fix**: Merged `DOMAIN_MAP` import from `achievements.js` and populated each achievement entry with:
+- `icon` → the domain's mascot icon (e.g. Scholar → `charlie-polliwog.png`, Rhythm Reader → its mascot, etc.)
+- `color` → the domain's color
+
+Verified on Home spotlight: seeded `ach_scholar_cadet` now renders Charlie Polliwog inside the circle, `imgComplete: true`, `naturalWidth: 696` (real image).
+
+### Files touched
+`stickers.js` (added DOMAIN_MAP import; enriched ACHIEVEMENT_STICKER_ENTRIES with icon/color).
+
+---
+
+
 ## Spacebar hold + Clubhouse Chatter (Feb 2026)
 
 ### Spacebar hold in Who's Got The Rhythm (`BoomGardenPage.js`)

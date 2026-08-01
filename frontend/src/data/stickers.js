@@ -13,7 +13,7 @@
 // Storage is unchanged: every earned sticker (collection or achievement)
 // lives in the same localStorage map keyed by sticker id.
 
-import { ACHIEVEMENT_STICKERS } from './achievements';
+import { ACHIEVEMENT_STICKERS, DOMAIN_MAP } from './achievements';
 
 // Category ids for the Sticker Book layout.
 export const STICKER_CATEGORIES = [
@@ -148,14 +148,26 @@ export const COLLECTION_STICKERS = [
 // Build sticker arrays/maps. Achievements come from the achievements file
 // (where they include extra `domain` and `tier` metadata) and are tagged
 // with category 'achievements' here so the sticker book groups them.
-const ACHIEVEMENT_STICKER_ENTRIES = ACHIEVEMENT_STICKERS.map(a => ({
-  id: a.id,
-  name: a.name,
-  category: 'achievements',
-  domain: a.domain,
-  tier: a.tier,
-  hint: a.hint,
-}));
+//
+// `icon` / `color` are pulled from the achievement's DOMAIN so that generic
+// consumers (Newest-Sticker spotlight on the Home page, the "You earned a
+// sticker!" toast, batch-earn preview icons) can render an image without
+// needing to know the difference between a collection sticker and an
+// achievement badge. The Sticker Book itself uses the dedicated
+// `AchievementBadge` component for the fancy Cadet/Pro/Master framing.
+const ACHIEVEMENT_STICKER_ENTRIES = ACHIEVEMENT_STICKERS.map(a => {
+  const dom = DOMAIN_MAP[a.domain];
+  return {
+    id: a.id,
+    name: a.name,
+    category: 'achievements',
+    domain: a.domain,
+    tier: a.tier,
+    hint: a.hint,
+    icon: dom?.icon || 'assets/ui/logo.png',
+    color: dom?.color || '#FFCC00',
+  };
+});
 
 export const STICKERS = [...ACHIEVEMENT_STICKER_ENTRIES, ...COLLECTION_STICKERS];
 
