@@ -294,6 +294,77 @@ export default function ForParentsPage() {
         </div>
       </section>
 
+      {/* PROOF OF PROGRESS — the credibility section. This is what
+          separates JMA from "just another fun music app": every game
+          feeds a REAL, printable competency record. Rank ladder, skill
+          badges across 6 music domains, practice streaks, tracked play
+          time, and a one-page teacher-view report card. This is what
+          parents and teachers WILL pay for. */}
+      <section className="px-4 md:px-10 py-10 md:py-16 max-w-6xl mx-auto">
+        <div className="text-center mb-2">
+          <p className="uppercase font-black tracking-widest mb-3"
+             style={{ fontSize: 'clamp(0.7rem, 1vw, 0.85rem)', color: '#5A2989', opacity: 0.85 }}>
+            The receipts
+          </p>
+          <h2 className="font-black mb-2"
+              style={{ fontSize: 'clamp(1.6rem, 3.6vw, 2.5rem)', color: 'var(--jma-dark, #1a1a2e)' }}>
+            Proof your kid is actually learning.
+          </h2>
+          <p className="text-center text-slate-600 mb-10 max-w-2xl mx-auto">
+            JMA is a game your kid loves. It&apos;s also a record of what they
+            can do. Every tap feeds a rank ladder, a skill map, and a
+            printable one-page report card.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {[
+            {
+              icon: '📋',
+              title: 'One-page printable report card',
+              body: 'Flip on Teacher View and print a clean one-pager: student name, current rank, badges by domain, practice streak, active play time, last-active date. Fridge-ready and PTA-ready.',
+            },
+            {
+              icon: '🎖️',
+              title: '18 skill badges across 6 music domains',
+              body: 'Rhythm, ear-training, keyboard, beat-making, songs, and music-scholar knowledge. Cadet → Pro → Master tiers within each. No shortcuts — Master requires Pro first.',
+            },
+            {
+              icon: '🐸',
+              title: 'A rank ladder that means something',
+              body: 'Polliwog → Tadpole → Apprentice → Soloist → Performer → Conductor → Maestro. Ranks require breadth AND depth — no farming one game to the top.',
+            },
+            {
+              icon: '🔥',
+              title: 'Practice streaks and time-on-task',
+              body: 'Daily streak counter and a real play-time meter (ignores idle tabs) so you can see whether it\u2019s 5 minutes a day or 45. Data lives on your device, always yours.',
+            },
+          ].map((f, i) => (
+            <motion.div
+              key={f.title}
+              className="flex items-start gap-4 rounded-2xl p-5 md:p-6"
+              style={{ backgroundColor: 'white', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              transition={{ delay: i * 0.08 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-3xl md:text-4xl flex-shrink-0" aria-hidden="true">{f.icon}</div>
+              <div>
+                <h4 className="font-black text-lg mb-1" style={{ color: 'var(--jma-dark, #1a1a2e)' }}>{f.title}</h4>
+                <p className="text-slate-600 text-sm md:text-base">{f.body}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Teacher/parent nod — bridges into the classroom section below */}
+        <p className="text-center text-slate-500 text-xs md:text-sm mt-8 max-w-3xl mx-auto italic">
+          Teachers: the report card is designed for parent-conferences and progress binders.
+          Parents: it&apos;s designed for your own peace of mind (and for the grandparents).
+        </p>
+      </section>
+
       {/* MEET THE BAND — the "superpower" section per the audit */}
       <section className="px-4 md:px-10 py-10 md:py-16 max-w-6xl mx-auto">
         <h2 className="font-black text-center mb-2" style={{ fontSize: 'clamp(1.6rem, 3.6vw, 2.5rem)', color: 'var(--jma-dark, #1a1a2e)' }}>
