@@ -16,22 +16,29 @@ import { useRef, useEffect } from 'react';
 
 // Character strip — the same faces the kid will meet in the app. Selling
 // personality is 80% of the "will my kid love this?" pitch.
+// Bios reviewed by Alex (band founder) Feb 2026 — kept truthful to the
+// actual band roles (Finn plays upright bass, not drums; Chunk is a
+// monkey drummer; Jazzy plays trumpet & manages the band; Charlie is a
+// polliwog specifically, not a tadpole).
 const BAND = [
-  { name: 'Charlie',       image: 'assets/characters/charlie.png',         bio: 'Rock-star tadpole who leads the band.' },
-  { name: 'Finn Danger',   image: 'assets/characters/finn-danger.png',     bio: 'Drummer shark. Loud, brave, unstoppable.' },
+  { name: 'Charlie',       image: 'assets/characters/charlie.png',         bio: 'Rock-star polliwog. Fronts the band.' },
+  { name: 'Finn Danger',   image: 'assets/characters/finn-danger.png',     bio: 'Upright-bass shark. Anchors the low end.' },
   { name: 'Stew',          image: 'assets/characters/stew.png',            bio: 'Kazoo-blowing parrot with big opinions.' },
-  { name: 'Lou',           image: 'assets/characters/lou.png',             bio: 'Ukulele llama, seen the whole world.' },
-  { name: 'Chunk',         image: 'assets/characters/chunk.png',           bio: 'Bass-line hippo. Steady as they come.' },
+  { name: 'Lou',           image: 'assets/characters/lou.png',             bio: 'Ukulele llama. Traveled the whole world.' },
+  { name: 'Chunk',         image: 'assets/characters/chunk.png',           bio: 'Monkey on the drum kit. Locks the pocket.' },
   { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    bio: 'Music detective with the sharpest ear.' },
-  { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           bio: 'Keys player. Turns anything into a song.' },
+  { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           bio: 'Trumpet player and the band\u2019s manager.' },
 ];
 
 const WHY_PARENTS = [
-  { title: 'No ads. Ever.',           body: 'Zero third-party ads, zero data brokers, zero “upgrade to premium” pop-ups inside the kid’s view.' },
-  { title: 'COPPA-safe by design',    body: 'Kids’ progress lives on their device. No emails, no last names, no facial recognition, no location.' },
-  { title: 'Made by a working band',  body: 'JMA was built by Jelly of the Month Club — a real touring kindie-rock band, not a Silicon Valley content mill.' },
+  { title: 'Built by working musicians AND teachers',
+    body: 'JMA is made by Jelly of the Month Club \u2014 a touring kindie-rock band with decades of private and classroom teaching between them. Real curriculum, real songs, real ears.' },
+  { title: 'No ads. Ever.',
+    body: 'Zero third-party ads, zero data brokers, zero \u201Cupgrade to premium\u201D pop-ups inside the kid\u2019s view.' },
+  { title: 'COPPA-safe by design',
+    body: 'Kids\u2019 progress lives on their device. No emails, no last names, no facial recognition, no location tracking.' },
   { title: 'Screen time you feel good about',
-    body: 'Every game teaches a real music skill. Every video pairs a laugh with a fact. Every rank-up is proof your kid learned something.' },
+    body: 'Every game teaches a real music skill. Every video pairs a laugh with a fact. Every rank-up is proof your kid actually learned something.' },
 ];
 
 const PRICING = [
@@ -131,6 +138,15 @@ export default function ForParentsPage() {
 
       {/* HERO */}
       <section className="relative px-4 md:px-10 pt-6 md:pt-10 pb-14 md:pb-20 text-center max-w-6xl mx-auto">
+        <motion.p
+          className="uppercase font-black tracking-widest mb-3"
+          style={{ fontSize: 'clamp(0.7rem, 1vw, 0.85rem)', color: '#5A2989', opacity: 0.85 }}
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 0.85 }}
+          transition={{ delay: 0.05 }}
+        >
+          A kid&apos;s first handshake with music
+        </motion.p>
         <motion.h1
           className="font-black leading-tight mb-4"
           style={{ fontSize: 'clamp(2rem, 5.5vw, 4rem)', color: 'var(--jma-dark, #1a1a2e)' }}
@@ -147,8 +163,8 @@ export default function ForParentsPage() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.25 }}
         >
-          6 skill-building games, 7 video lessons, and a whole musical universe
-          kids ask to come back to. Ages 4–10.
+          Games. Video lessons. A studio to write real songs. A whole
+          musical universe kids ask to come back to. Ages 4&ndash;10.
         </motion.p>
         <motion.div
           className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center mb-10"
@@ -196,13 +212,21 @@ export default function ForParentsPage() {
         </div>
       </section>
 
-      {/* WHAT IS THIS strip — 3 quick value props */}
+      {/* WHAT IS THIS strip — value props. Rewritten Feb 2026 to actually
+          reflect the app's scale (was undersold as "6 games / 7 lessons"
+          which sounds tiny — the real experience is a dozen+ activities,
+          40+ videos, a full song library, and creative tools). */}
       <section className="px-4 md:px-10 py-10 md:py-16 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[
-            { icon: '🎮', title: '6+ Games',                body: 'Rhythm, ear-training, sight-reading, sound detective, and more. Every game teaches a real music skill.' },
-            { icon: '📺', title: 'Video Lessons + JMAtv',    body: 'Cartoon lessons and short fact-bites. Screen time that actually teaches your kid something.' },
-            { icon: '🏅', title: 'Real Progression',        body: 'Kids earn badges across 6 music skills and rank up from Polliwog to Maestro. No gimmicks, real mastery.' },
+            { icon: '🎮', title: 'Play',
+              body: 'Rhythm games, ear-training, sight-reading, sound-detective mysteries, and Stew\u2019s copy-along kazoo. Every game teaches a real music skill.' },
+            { icon: '🎓', title: 'Learn',
+              body: 'Seven video lessons with real music teachers, a Fun Facts Clubhouse full of surprises, and marching-band rhythm drills.' },
+            { icon: '🎛️', title: 'Create',
+              body: 'A kid-safe DAW. Write and record your own songs. Build beats. Layer loops in Robot Boogie. Jam in a full band. Save your tracks.' },
+            { icon: '📺', title: 'JMAtv',
+              body: 'Forty short videos across four channels \u2014 fun facts, comedy bits with Finn Danger, music videos, and variety-show segments.' },
           ].map((v, i) => (
             <motion.div
               key={v.title}
@@ -210,13 +234,30 @@ export default function ForParentsPage() {
               style={{ backgroundColor: 'white', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}
               initial={{ y: 20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: i * 0.08 }}
               viewport={{ once: true }}
             >
               <div className="text-4xl mb-2">{v.icon}</div>
               <h3 className="font-black text-xl mb-2" style={{ color: 'var(--jma-dark, #1a1a2e)' }}>{v.title}</h3>
               <p className="text-slate-600 text-sm md:text-base">{v.body}</p>
             </motion.div>
+          ))}
+        </div>
+
+        {/* Scale-of-content strip — the "wait, this is actually huge" moment.
+            Cheap, honest number-drop that reframes the entire app in one
+            eyeful. */}
+        <div className="mt-8 md:mt-10 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 text-center">
+          {[
+            { n: '13+', label: 'games & tools' },
+            { n: '40+', label: 'videos' },
+            { n: '16',  label: 'songs to play with' },
+            { n: '18',  label: 'skill badges to earn' },
+          ].map((s) => (
+            <div key={s.label} className="rounded-2xl py-4 md:py-5" style={{ backgroundColor: 'rgba(90,41,137,0.08)' }}>
+              <div className="font-black" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', color: '#5A2989' }}>{s.n}</div>
+              <div className="text-xs md:text-sm text-slate-600 mt-1 uppercase tracking-wide font-bold">{s.label}</div>
+            </div>
           ))}
         </div>
       </section>
@@ -282,8 +323,10 @@ export default function ForParentsPage() {
         </div>
         <div className="text-center mt-8">
           <p className="text-slate-700 text-sm md:text-base max-w-3xl mx-auto">
-            <strong>Jelly of the Month Club</strong> is a real, touring kindie-rock band.
-            JMA is our kids&apos; music academy. If you love the app,{' '}
+            <strong>Jelly of the Month Club</strong> is a real touring kindie-rock band —
+            and JMA is the music academy we&apos;ve built out of decades of private
+            and classroom teaching. Real teachers. Real musicians. Real music.
+            If you love the app,{' '}
             <a
               href="https://www.jellyofthemonthclub.com"
               target="_blank"

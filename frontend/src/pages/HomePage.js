@@ -320,9 +320,11 @@ function HomePage() {
       {/* Drifting Jelly Rocks blimp — behind everything */}
       <BlimpFlyby />
 
-      {/* Tiny "For Parents" link — top-right, low visual weight. Lets a
-          parent who's on the kid Home reach the marketing/pitch page
-          without hunting for it. Deliberately small so kids don't tap it. */}
+      {/* Tiny "For Grown-Ups" link — top-right, low visual weight. Lets a
+          parent OR teacher on the kid Home reach the marketing/pitch page
+          without hunting for it. Called "Grown-Ups" instead of "Parents"
+          so it doesn't feel weird in a classroom context. Deliberately
+          small so kids don't tap it. */}
       <button
         type="button"
         data-testid="home-for-parents-link"
@@ -335,7 +337,7 @@ function HomePage() {
           backdropFilter: 'blur(4px)',
         }}
       >
-        For Parents
+        For Grown-Ups
       </button>
 
       {/* Sky doodles — float behind the hero */}

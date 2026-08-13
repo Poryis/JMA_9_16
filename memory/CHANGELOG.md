@@ -1,5 +1,41 @@
 # Changelog
 
+## Parent-facing page copy revisions (Feb 2026)
+
+**User feedback**:
+- The band is also music educators with decades of private + classroom teaching \u2014 emphasize that
+- Character bios were wrong: Finn plays upright bass (not drums), Chunk is a monkey drummer (not hippo bass), Jazzy plays trumpet and manages the band (not keys), Charlie is a polliwog specifically (not tadpole)
+- "6 games / 7 lessons" undersells the app \u2014 the actual scale is huge
+- CREATE tab is missing from the pitch (song creation, DAW, beats, save/record)
+- "For Parents" link might feel weird in a classroom
+- Loves "kids first handshake to music" as a tagline
+
+**Changes**:
+- Added new sub-tagline above the hero: **"A KID'S FIRST HANDSHAKE WITH MUSIC"**
+- Rewrote hero subtitle: "Games. Video lessons. A studio to write real songs. A whole musical universe kids ask to come back to."
+- Character bios updated per user (see BAND array in ForParentsPage.js).
+- "Why parents love it" trust-bullet block now leads with **"Built by working musicians AND teachers"** \u2014 kindie-rock band + decades of teaching.
+- "What is this?" strip expanded from 3 cards to **4 cards (Play / Learn / Create / JMAtv)**. Create card explicitly calls out DAW, songwriting, beats, Robot Boogie, band jam, save your tracks.
+- Added a **scale-of-content strip** below the 4-card row: `13+ games & tools · 40+ videos · 16 songs to play with · 18 skill badges to earn`. Reframes the app from "small" to "massive".
+- Meet-the-Band tail-note rewritten: "\u2026 the music academy we've built out of decades of private and classroom teaching. Real teachers. Real musicians. Real music."
+- Renamed the tiny link on the kid Home from **"For Parents"** to **"For Grown-Ups"** so it feels right in a classroom too. Route URL (`/for-parents`) unchanged for shareability.
+
+### Character bios (final)
+| Name | Bio |
+|---|---|
+| Charlie | Rock-star polliwog. Fronts the band. |
+| Finn Danger | Upright-bass shark. Anchors the low end. |
+| Stew | Kazoo-blowing parrot with big opinions. |
+| Lou | Ukulele llama. Traveled the whole world. |
+| Chunk | Monkey on the drum kit. Locks the pocket. |
+| Dr. Jellybone | Music detective with the sharpest ear. |
+| Jazzy | Trumpet player and the band's manager. |
+
+### Files touched
+`ForParentsPage.js`, `HomePage.js`.
+
+---
+
 ## Parent-facing landing page + smart root gate + Streaming Now pill moved (Feb 2026)
 
 **User request 1**: "I want you to move the pulsing light with STREAMING NOW down below the tv. It's cluttered with the rabbit ears."
