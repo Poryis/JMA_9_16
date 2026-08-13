@@ -445,7 +445,7 @@ export default function ForParentsPage() {
           Ready when you are.
         </h2>
         <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
-          Hand your kid the tablet. Let them meet the band. Come back when the paywall matters.
+          Hand your kid the tablet. Let them meet the band. Come back when you&apos;re ready to unlock the whole thing.
         </p>
         <button
           data-testid="parents-final-cta"
@@ -460,7 +460,7 @@ export default function ForParentsPage() {
       {/* FOOTER */}
       <footer className="px-4 md:px-10 py-8 border-t" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-slate-500">
-          <div>© Luner Tide LLC dba Buddy Bro Productions</div>
+          <div>© Buddy Bro Productions</div>
           <div className="flex gap-4 flex-wrap justify-center">
             <a href="#/for-parents" className="hover:text-slate-800">About</a>
             <a href="mailto:hi@jmalearning.com" className="hover:text-slate-800">Contact</a>

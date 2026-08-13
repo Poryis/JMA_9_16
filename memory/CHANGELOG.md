@@ -34,6 +34,12 @@
 ### Files touched
 `ForParentsPage.js`, `HomePage.js`.
 
+**Follow-up copy tweaks (same day)**:
+- Footer changed from "Luner Tide LLC dba Buddy Bro Productions" to just **"© Buddy Bro Productions"** (public-facing brand only).
+- Final CTA blurb replaced the word "paywall" (felt like a buzz word) with softer copy: "Come back when you're ready to unlock the whole thing."
+
+**IMPORTANT — legal name correction for the record**: the LLC is actually **Lunar Tide, Consulting and Productions Inc.** (not "Luner Tide LLC" as I had it in earlier drafts). Only matters for Stripe onboarding / tax paperwork on Path C. Public-facing brand stays "Buddy Bro Productions".
+
 ---
 
 ## Parent-facing landing page + smart root gate + Streaming Now pill moved (Feb 2026)
