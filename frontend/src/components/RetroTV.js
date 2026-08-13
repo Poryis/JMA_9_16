@@ -27,36 +27,16 @@ export default function RetroTV() {
   return (
     <motion.div
       data-testid="home-retro-tv"
-      // pt-16 reserves vertical space for the rabbit ears, which extend
-      // ~58px above the TV body via negative top positioning. Without this
-      // padding, on the homepage the ears were poking up into the bottom of
-      // the PLAY/LEARN/CREATE card grid above.
-      className="relative z-10 mt-12 md:mt-16 mb-2 pt-12 flex flex-col items-center"
+      // pt-8 reserves vertical space for the rabbit ears, which extend
+      // ~58px above the TV body via negative top positioning. The
+      // "Streaming Now" pill used to sit above the TV as well and was
+      // getting cluttered with the ears, so it's been moved BELOW the TV
+      // (Feb 2026 — user request). That freed up ~28px of top padding.
+      className="relative z-10 mt-12 md:mt-16 mb-2 pt-8 flex flex-col items-center"
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
     >
-      {/* "Streaming now" header — small, low-key — sells the click without
-          screaming for attention. */}
-      <div className="flex items-center gap-2 mb-2">
-        <span
-          aria-hidden="true"
-          className="inline-block rounded-full"
-          style={{
-            width: 10, height: 10,
-            backgroundColor: '#FF3B30',
-            boxShadow: '0 0 8px rgba(255,59,48,0.7)',
-            animation: 'jma-pulse 1.4s ease-in-out infinite',
-          }}
-        />
-        <span
-          className="text-[10px] md:text-xs font-black uppercase tracking-widest"
-          style={{ color: 'var(--jma-dark)', opacity: 0.75 }}
-        >
-          Streaming Now
-        </span>
-      </div>
-
       {/* The TV itself — wood-grain frame, sloped sides, rabbit ears on top.
           Whole thing is one big button. */}
       <motion.button
@@ -242,6 +222,28 @@ export default function RetroTV() {
           </div>
         </div>
       </motion.button>
+
+      {/* "Streaming now" pill — moved BELOW the TV (Feb 2026, user request)
+          because it was getting visually tangled with the rabbit-ear
+          antennas above the TV. Same low-key styling; just relocated. */}
+      <div className="flex items-center gap-2 mt-2">
+        <span
+          aria-hidden="true"
+          className="inline-block rounded-full"
+          style={{
+            width: 10, height: 10,
+            backgroundColor: '#FF3B30',
+            boxShadow: '0 0 8px rgba(255,59,48,0.7)',
+            animation: 'jma-pulse 1.4s ease-in-out infinite',
+          }}
+        />
+        <span
+          className="text-[10px] md:text-xs font-black uppercase tracking-widest"
+          style={{ color: 'var(--jma-dark)', opacity: 0.75 }}
+        >
+          Streaming Now
+        </span>
+      </div>
 
       <style>{`
         @keyframes jma-pulse {

@@ -2,7 +2,7 @@
 // once. Shows whenever no player name exists in localStorage AND we're on the
 // home page (we don't want to interrupt a kid mid-game). Skippable.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import usePlayer from '../hooks/usePlayer';
@@ -16,12 +16,34 @@ function markSkipped() {
   try { localStorage.setItem(SKIPPED_KEY, '1'); } catch { /* ignore */ }
 }
 
+// Live hash tracker so PlayerNamePrompt (mounted OUTSIDE the router) can
+// still react to route changes. Needed so the prompt correctly suppresses
+// itself on the parent-facing marketing page.
+function useCurrentHash() {
+  const [hash, setHash] = useState(() => {
+    try { return window.location.hash || ''; } catch { return ''; }
+  });
+  useEffect(() => {
+    const onChange = () => setHash(window.location.hash || '');
+    window.addEventListener('hashchange', onChange);
+    return () => window.removeEventListener('hashchange', onChange);
+  }, []);
+  return hash;
+}
+
 export default function PlayerNamePrompt() {
   const { player, setDisplayName } = usePlayer();
   const [name, setName] = useState('');
   const [skippedThisSession, setSkippedThisSession] = useState(readSkipped);
+  const currentHash = useCurrentHash();
 
-  const shouldShow = !player && !skippedThisSession;
+  // Suppress the prompt on the parent-facing landing page — a parent
+  // browsing marketing hasn't opted-in to the app yet, so asking for a
+  // kid's name is premature and pushy. The prompt fires the moment they
+  // click through into the actual app.
+  const isMarketingPage = currentHash.startsWith('#/for-parents') || currentHash === '' || currentHash === '#/';
+
+  const shouldShow = !player && !skippedThisSession && !isMarketingPage;
 
   const submit = (e) => {
     e?.preventDefault();

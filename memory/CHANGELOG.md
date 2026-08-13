@@ -1,5 +1,45 @@
 # Changelog
 
+## Parent-facing landing page + smart root gate + Streaming Now pill moved (Feb 2026)
+
+**User request 1**: "I want you to move the pulsing light with STREAMING NOW down below the tv. It's cluttered with the rabbit ears."
+**User request 2**: "Lets see the parent facing page."
+
+### Streaming Now pill relocated
+- `RetroTV.js`: moved the pulsing red dot + "STREAMING NOW" label from ABOVE the TV to BELOW it. Reduced the outer wrapper's `pt-12` → `pt-8` since the pill no longer needs top space. Pill visually cleaner — rabbit-ear antennas no longer collide with it.
+
+### Parent-facing landing page (`/for-parents`)
+New route + component `ForParentsPage.js` — the marketing/sales-pitch page discussed in the funnel audit. Sections:
+1. Hero with tagline "Where kids fall in love with music." + dual CTAs (Start Playing Free / I'm a Teacher) + bopping band parade.
+2. "What is this?" 3-card strip (6+ Games / Video Lessons + JMAtv / Real Progression).
+3. Why parents love it — 4 trust bullets (no ads, COPPA-safe, made by touring band, feel-good screen time).
+4. Meet the Band — all 7 characters with one-liner bios + cross-link to jellyofthemonthclub.com for tour dates.
+5. Pricing — Free / Family $12.99 / Teacher $19.99 with annual save badges and "Most Popular" ribbon on Family.
+6. Teacher/classroom strip with mailto CTA.
+7. Final CTA + footer with Luner Tide LLC dba Buddy Bro Productions copyright.
+
+All pricing CTAs currently drop straight into `/home` (the free app). Path C will swap them for Stripe Checkout.
+
+### Smart root gate (`/`)
+New `RootGate` component in `App.js`:
+- Checks `localStorage['jma_player_v1']` or `jma_player_name_skipped_v1`.
+- **Has player** → `<Navigate to="/home" />` — returning kid never sees marketing again.
+- **No player** → renders `<ForParentsPage />` — first-time visitor gets the pitch.
+- Both sides have escape hatches: "Take Me to the App →" button in the parent-page header, and a small "For Parents" link top-right on the kid Home (`data-testid="home-for-parents-link"`, deliberately small so kids don't tap it).
+- Added `/home` route as alias to HomePage (previously `/`); old `/` now routes through the gate. All internal `navigate('/')` calls should still work — HashRouter treats it as root.
+- `PlayerNamePrompt.js` updated with a live `useCurrentHash()` hook so it re-evaluates when the hash changes — suppresses itself on `#/for-parents` and empty/root hashes so a browsing parent isn't asked for their kid's name mid-marketing pitch.
+
+**Verified**:
+- Fresh visit to `/` (no player) → parent page renders, name prompt suppressed.
+- Seeded `jma_player_v1` → `/` redirects to `/home`, kid Home renders with the tiny "For Parents" link top-right.
+- `/#/for-parents` renders standalone.
+
+### Files touched
+`RetroTV.js`, `App.js`, `HomePage.js`, `PlayerNamePrompt.js`. Created `ForParentsPage.js`.
+
+---
+
+
 ## Bug fix — achievement stickers showed broken-image icon on Home page + toast (Feb 2026)
 
 **User report**: "The home page says newest sticker Scholar Cadet, but inside the circle where I expect the sticker it has that broken image symbol." (Galaxy Fold 5 / Brave)

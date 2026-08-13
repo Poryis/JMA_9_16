@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
 import "@/App.css";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import HomePage from "./pages/HomePage";
+import ForParentsPage from "./pages/ForParentsPage";
 import PlayMenuPage from "./pages/PlayMenuPage";
 import LearnMenuPage from "./pages/LearnMenuPage";
 import CreateMenuPage from "./pages/CreateMenuPage";
@@ -30,6 +31,20 @@ import AudioUnlockOverlay from "./components/AudioUnlockOverlay";
 import PlayerNamePrompt from "./components/PlayerNamePrompt";
 import usePlayTime from "./hooks/usePlayTime";
 
+// RootGate — smart routing at `/`. First-time visitors see the parent-
+// facing landing page (marketing pitch). Returning kids (with a stored
+// player profile OR the "add my name later" skip flag) skip straight to
+// the app Home. Anyone can reach either side via the header links.
+function RootGate() {
+  const hasPlayer = (() => {
+    try {
+      return !!localStorage.getItem('jma_player_v1') ||
+             localStorage.getItem('jma_player_name_skipped_v1') === '1';
+    } catch { return false; }
+  })();
+  return hasPlayer ? <Navigate to="/home" replace /> : <ForParentsPage />;
+}
+
 function App() {
   const [score, setScore] = useState(0);
   const [gameStats, setGameStats] = useState({
@@ -53,7 +68,18 @@ function App() {
         <RankUpCelebration />
         <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            {/* Smart root gate:
+                  - If the browser has a stored player profile (jma_player_v1)
+                    OR the "skip name" flag → this is a returning kid, drop
+                    them straight into the app Home.
+                  - Otherwise → show the parent-facing landing page so a
+                    parent can see the pitch before their kid grabs the
+                    tablet.
+                Once the parent taps "Take Me to the App" or "Start Playing",
+                the PlayerNamePrompt handles first-name-only setup. */}
+            <Route path="/" element={<RootGate />} />
+            <Route path="/for-parents" element={<ForParentsPage />} />
+            <Route path="/home" element={<HomePage />} />
             <Route path="/play" element={<PlayMenuPage />} />
             <Route path="/learn" element={<LearnMenuPage />} />
             <Route path="/create" element={<CreateMenuPage />} />
