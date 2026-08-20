@@ -1,5 +1,37 @@
 # Changelog
 
+## Robot Boogie — 3 follow-up fixes (Feb 2026)
+
+**User feedback after the first pass**:
+1. Pinch was scaling ALL characters at once (workspace-level) instead of just the one being pinched
+2. After the first character drag, subsequent taps kept moving whichever character was on the top DOM layer instead of the character actually under the pointer
+3. On phones, the title, reset chip and speed slider stacked on top of each other
+
+### Fix 1 \u2014 Per-character pinch (dropped workspace pinch)
+- Removed `usePinchPan.js` hook + workspace transform layer entirely. Original design was wrong: user wants pinch to scale the individual character (matching desktop mouse-wheel behavior), not the whole workspace.
+- `CharacterSlot` now tracks its own pointers in `localPointersRef` (Map of `pointerId \u2192 {x,y}`). When 2 pointers land on the SAME character\u2019s hit-div, it enters `pinchRef` mode: current finger distance vs. start-distance drives the scale delta, fed through the existing `onWheel` path so scale clamping / caps stay identical to the wheel behaviour.
+- In-flight single-finger drag is aborted the moment finger 2 arrives on the same character.
+
+### Fix 2 \u2014 Hit-div now moves with the character
+- Root cause: the hit-div was a SIBLING of the transformed inner layer. Once the character was translated via CSS transform, the visible sprite moved but the hit-div stayed put \u2014 so subsequent taps at the character\u2019s new position hit whichever hit-div happened to be in the DOM below (usually the neighbor).
+- Fix: relocated the hit-div INSIDE the transformed inner layer. Now the hit region moves with the sprite exactly. Subsequent taps on a moved character land on the correct character every time.
+- Outer wrapper + button remain `pointer-events: none`; hit-div remains `pointer-events: auto` at 62% width centered.
+
+### Fix 3 \u2014 Header stacking on mobile
+- Reset + Speed row `pt-14` \u2192 `pt-20` on mobile (`md:pt-16` unchanged on desktop). The `Back` button pill is ~76px tall on phones and the previous 56px top-padding caused the title / reset / speed slider to visually stack.
+- Added `flex-wrap` to the row so if a very narrow viewport still can\u2019t fit both chips inline they stack cleanly instead of overlapping.
+- Verified on iPhone-14 viewport (390\u00d7844): title top:8/bottom:24, reset+speed top:80/bottom:112, back top:4/bottom:71 \u2014 zero overlap on any axis.
+
+### Files touched
+`RobotBoogiePage.js`. Deleted `hooks/usePinchPan.js` (unused).
+
+### Testing
+- Desktop mouse drag: dragging Charlie 120px right moved his hit-div\u2019s bounding-box exactly 120px right (confirming the hit region follows the character). No stacking on any viewport.
+- Pinch-scale: native pointerevent-based; needs real-device verification (phone/tablet) since Playwright can\u2019t reliably emulate multi-touch.
+
+---
+
+
 ## Robot Boogie — title treatment + 3 interaction fixes (Feb 2026)
 
 **User requests**:

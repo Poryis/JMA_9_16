@@ -29,7 +29,6 @@ import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
 import { RotateCcw } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import RobotBoogieTitle from '../components/RobotBoogieTitle';
-import usePinchPan from '../hooks/usePinchPan';
 import useRobotBoogieAudio from '../hooks/useRobotBoogieAudio';
 import useBeatPulse from '../hooks/useBeatPulse';
 import LightningStage from '../components/LightningStage';
@@ -546,32 +545,46 @@ function CharacterSlot({
     if (onBoop) onBoop(cfg.id);
   };
 
-  // Pointer drag/tap detection.
-  //   • pointerdown → capture start pos, arm potential-tap
-  //   • pointermove past threshold → switch to drag mode; forward deltas
-  //   • pointerup: if we never crossed the threshold, it was a tap → boop
+  // Pointer drag / tap / pinch detection (all on the narrow inner hit
+  // region, not the full-width button).
+  //   • pointerdown → track this pointer; if 1 pointer → drag/tap arm;
+  //                   if 2 pointers on the SAME character → enter pinch
+  //   • pointermove → drag OR compute pinch delta scale
+  //   • pointerup   → if untouched threshold → tap → boop
+  //
+  // Pinch scales this character only (matches desktop wheel behaviour),
+  // not the whole workspace. Two fingers on Charlie scale Charlie, not
+  // the band.
   const DRAG_THRESHOLD = 6;
   const pointerStateRef = useRef(null);
-
-  // If the workspace enters a two-finger pinch/pan gesture while this
-  // character is mid-drag, abort the drag. Otherwise the first finger
-  // (still resting on the character) keeps dragging while finger two
-  // is trying to zoom — feels chaotic.
-  useEffect(() => {
-    const onPinchStart = () => { pointerStateRef.current = null; };
-    window.addEventListener('rb-pinch-start', onPinchStart);
-    return () => window.removeEventListener('rb-pinch-start', onPinchStart);
-  }, []);
+  // Map of pointerId → { x, y } for pointers currently touching THIS
+  // character's hit-div. Used to detect 2-finger pinch.
+  const localPointersRef = useRef(new Map());
+  // Active pinch gesture on this character. Null when idle.
+  //   { startDist, startScale }
+  const pinchRef = useRef(null);
 
   const handlePointerDown = (e) => {
-    // Ignore if slot is not active (shouldn't happen — inactive chars
-    // don't render in the top band).
     if (!isActive) return;
-    // Only track single-finger interactions. If another pointer is
-    // already down (i.e. this is the 2nd finger of a pinch), don't
-    // start a character drag — let the workspace handler own it.
-    if (e.isPrimary === false) return;
+    localPointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+
+    // Two-finger pinch on THIS character → scale-mode.
+    if (localPointersRef.current.size === 2) {
+      const pts = Array.from(localPointersRef.current.values());
+      const dx = pts[1].x - pts[0].x;
+      const dy = pts[1].y - pts[0].y;
+      pinchRef.current = {
+        startDist: Math.max(1, Math.hypot(dx, dy)),
+        startScale: tScale,
+      };
+      // Abort any in-progress drag so finger 1 doesn't drag while
+      // finger 2 is trying to zoom.
+      pointerStateRef.current = null;
+      return;
+    }
+
+    // Single-finger: arm potential tap / drag.
     pointerStateRef.current = {
       pointerId: e.pointerId,
       startX: e.clientX,
@@ -581,7 +594,32 @@ function CharacterSlot({
       isDragging: false,
     };
   };
+
   const handlePointerMove = (e) => {
+    if (localPointersRef.current.has(e.pointerId)) {
+      localPointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+    // Pinch takes priority whenever 2 pointers are down on this char.
+    if (localPointersRef.current.size >= 2 && pinchRef.current && onWheel) {
+      const pts = Array.from(localPointersRef.current.values()).slice(0, 2);
+      const dx = pts[1].x - pts[0].x;
+      const dy = pts[1].y - pts[0].y;
+      const dist = Math.max(1, Math.hypot(dx, dy));
+      const targetScale = pinchRef.current.startScale * (dist / pinchRef.current.startDist);
+      // onWheel takes a delta-Y sign (positive → shrink, negative →
+      // grow) that the parent turns into a scale delta of ~0.001 per
+      // unit. Compute an equivalent delta so scale converges toward
+      // targetScale in a few frames — feels responsive without
+      // over-driving each frame.
+      const scaleDelta = targetScale - tScale;
+      // Parent applies stepScale = 1 + (-deltaY * 0.001). To grow by
+      // `scaleDelta`, feed deltaY = -scaleDelta * 1000 / tScale.
+      const deltaY = -(scaleDelta / Math.max(0.01, tScale)) * 1000;
+      onWheel(cfg.id, -deltaY); // onWheel signature: onWheel(id, invertedDeltaY)
+      if (e.cancelable) e.preventDefault();
+      return;
+    }
+    // Single-finger drag path
     const st = pointerStateRef.current;
     if (!st || st.pointerId !== e.pointerId) return;
     const dx = e.clientX - st.startX;
@@ -597,11 +635,14 @@ function CharacterSlot({
       onDrag(cfg.id, stepDx, stepDy);
     }
   };
+
   const handlePointerUp = (e) => {
+    localPointersRef.current.delete(e.pointerId);
+    if (localPointersRef.current.size < 2) pinchRef.current = null;
     const st = pointerStateRef.current;
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
     if (!st || st.pointerId !== e.pointerId) return;
     pointerStateRef.current = null;
-    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
     if (!st.isDragging) runBoop();
   };
   // Wheel = scale. deltaY is +positive when scrolling down; invert so
@@ -637,47 +678,15 @@ function CharacterSlot({
       style={{
         width: '100%',
         aspectRatio: '3 / 4',
-        // touchAction: 'none' — kept for the button so wheel/browser
-        // pan gestures don't hijack pinch. Pointer events are handled
-        // on the narrow inner "hit" region below.
         touchAction: 'none',
         zIndex: zapping ? 5 : 3,
         outline: 'none',
         WebkitTapHighlightColor: 'transparent',
-        // HIT-TESTING FIX (Feb 2026): the button spans the full 3:4
-        // slot but the visible sprite occupies only the middle ~60% —
-        // the outer 20% on each side is transparent PNG padding. And
-        // wrappers overlap horizontally via negative margins so
-        // adjacent buttons' transparent edges overlap the neighbor's
-        // face. Result: a tap on Charlie's cheek could actually land
-        // on Finn's transparent left-side and drag Finn. Solution:
-        // pointer-events: none on the wide button + a narrower inner
-        // hit region (see below) hosts the pointer handlers. Clicks
-        // in the transparent zones fall through to whichever hit
-        // region is directly beneath.
+        // See HIT-TESTING FIX comment below the transformed layer.
         pointerEvents: 'none',
       }}
       animate={boopControls}
     >
-      {/* Narrower inner hit region — carries the actual pointer/drag
-          handlers. ~62% of the slot width, centered. Matches roughly
-          the visible sprite bounds so taps land on whichever character
-          the kid actually SEES under their finger. */}
-      <div
-        data-testid={`robot-boogie-char-hit-${cfg.id}`}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing"
-        style={{
-          width: '62%',
-          touchAction: 'none',
-          pointerEvents: 'auto',
-          zIndex: 4,
-        }}
-        aria-hidden="true"
-      />
       <div
         ref={(node) => {
           // Combined ref: internal glow updates + external lightning aim.
@@ -706,6 +715,34 @@ function CharacterSlot({
           transformOrigin: '50% 50%',
         }}
       >
+        {/* HIT-TESTING FIX (Feb 2026, refined): a narrow inner hit
+            region hosts the actual pointer handlers. ~62% of the slot
+            width, centered — matches roughly the visible sprite
+            bounds. Sitting INSIDE the transformed layer, so once the
+            kid drags the character, the hit region follows the
+            character (fixes the "after first drag, wrong character
+            moves" bug where the hit-div stayed put while the sprite
+            moved). Wrapper + button are pointer-events: none so their
+            transparent zones fall through to whichever hit-div is
+            actually beneath.
+
+            Also hosts two-finger pinch → scale THIS character (like
+            the desktop mouse-wheel does), not the whole workspace. */}
+        <div
+          data-testid={`robot-boogie-char-hit-${cfg.id}`}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing"
+          style={{
+            width: '62%',
+            touchAction: 'none',
+            pointerEvents: 'auto',
+            zIndex: 4,
+          }}
+          aria-hidden="true"
+        />
         {/* Neutral image — shown when the character is off. Always in
             the DOM so the browser has it cached the moment we toggle.
             REVERTED to `object-contain` — object-cover was cropping
@@ -1027,13 +1064,6 @@ export default function RobotBoogiePage() {
     if (setPlaybackRate) setPlaybackRate(rate);
   }, [setPlaybackRate]);
 
-  // Active-band workspace ref + pinch/pan hook. Declared up here (above
-  // handleReset) so the reset callback can call resetWorkspaceTransform
-  // to snap the workspace back to (0, 0, 1×). Attached to the active-
-  // band DOM element further down.
-  const activeBandRef = useRef(null);
-  const { transform: workspaceTransform, reset: resetWorkspaceTransform } = usePinchPan(activeBandRef);
-
   const handleReset = useCallback(() => {
     muteAll();
     setDancing({ ...EMPTY_DANCING });
@@ -1044,9 +1074,7 @@ export default function RobotBoogiePage() {
     // Reset should be a true clean slate.
     setSpeed(1.0);
     if (setPlaybackRate) setPlaybackRate(1.0);
-    // Snap the workspace pan/zoom back to identity.
-    resetWorkspaceTransform();
-  }, [muteAll, setPlaybackRate, resetWorkspaceTransform]);
+  }, [muteAll, setPlaybackRate]);
 
   const activeCount = useMemo(
     () => Object.values(teamStemIndex).filter((v) => v !== null).length,
@@ -1150,11 +1178,13 @@ export default function RobotBoogiePage() {
 
       <GameHeader title={<RobotBoogieTitle />} showHomeButton={true} />
 
-      {/* Reset chip — sits just under the fixed header. The old
-          "X / N playing" chip was retired per user (Feb 30) — with 8
-          independent characters it read more like a scoreboard than a
-          gameplay cue, and cluttered the top of the stage. */}
-      <div className="relative z-10 flex items-center justify-center gap-3 pt-14 md:pt-16 pb-0">
+      {/* Reset chip + speed slider row. Positioned below the fixed
+          GameHeader — pt-20 on mobile (the "Back" button pill is ~76px
+          tall on phones and the pt-14 we had before caused the title,
+          reset, and speed slider to visually stack on narrow screens).
+          flex-wrap so if a very narrow viewport still can't fit both
+          chips on one line they stack cleanly instead of overlapping. */}
+      <div className="relative z-10 flex items-center justify-center flex-wrap gap-2 md:gap-3 pt-20 md:pt-16 pb-0">
         <button
           type="button"
           data-testid="robot-boogie-reset"
@@ -1227,34 +1257,16 @@ export default function RobotBoogiePage() {
             overflow: visible (not hidden) so a kid dragging a character
             up or down a few pixels doesn't get their head / feet clipped
             at the container edge. Drag-clamp bounds in
-            handleCharDrag() keep them from wandering too far anyway.
-
-            touchAction: 'none' at the workspace level so pinch/pan
-            gestures don't trigger browser page zoom. usePinchPan on
-            activeBandRef handles two-finger gestures; single-finger
-            events fall through to per-character drag handlers. */}
+            handleCharDrag() keep them from wandering too far anyway. */}
         <div
-          ref={activeBandRef}
           data-testid="robot-boogie-active-band"
-          className="w-full flex-1 relative"
+          className="w-full flex-1 flex flex-wrap items-end justify-center content-center gap-0 pt-2 pb-0"
           style={{
             minHeight: '180px',
             maxHeight: 'calc(100vh - 340px)',
             overflow: 'visible',
-            touchAction: 'none',
           }}
         >
-          {/* Workspace transform layer — panned/zoomed by usePinchPan. */}
-          <div
-            data-testid="robot-boogie-workspace"
-            className="w-full h-full flex flex-wrap items-end justify-center content-center gap-0 pt-2 pb-0"
-            style={{
-              transform: `translate3d(${workspaceTransform.x}px, ${workspaceTransform.y}px, 0) scale(${workspaceTransform.scale})`,
-              transformOrigin: '50% 50%',
-              transition: 'transform 60ms linear',
-              willChange: 'transform',
-            }}
-          >
           {activeChars.length === 0 ? (
             <motion.div
               key="empty-hint"
@@ -1345,8 +1357,7 @@ export default function RobotBoogiePage() {
               })}
             </AnimatePresence>
           )}
-          </div>{/* /workspace transform layer */}
-        </div>{/* /active band ref container */}
+        </div>
 
         {/* ---- Time Machine (centerpiece) ----
             Sits on a glowing "dais" — an elliptical stage puck that
