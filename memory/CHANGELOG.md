@@ -1,5 +1,45 @@
 # Changelog
 
+## Robot Boogie — title treatment + 3 interaction fixes (Feb 2026)
+
+**User requests**:
+1. Robot Boogie title needs a distinctive futuristic/robotic display treatment that fits the game's world (still JMA, but clearly different from other page titles)
+2. Pinch-to-zoom does not work on phones/tablets while arranging characters — need two-finger pinch + pan on the workspace without interfering with single-finger character drag
+3. Wrong character sometimes drags when tapping — hit-testing / layer-order issue with overlapping characters
+4. Characters clip at top/bottom of workspace when dragged — need free movement while keeping full character visible
+
+### Fix 1 — Custom Robot Boogie title
+- New `RobotBoogieTitle.js` component: chrome/metallic gradient fill (white \u2192 pale blue \u2192 mid blue), wide-tracked all-caps Orbitron/Rajdhani-style stack, dark hairline text stroke for legibility over the deep-purple stage, and a cyan drop-shadow glow to hum with the lightning theme. Reads as a robot HUD marquee.
+- Extended `GameUI.js` `GameHeader` to accept either a string OR a ReactNode as `title`. Strings still get the default cross-game styling; ReactNodes render as-is. Zero risk to other games.
+- `RobotBoogiePage.js`: passes `<RobotBoogieTitle />` to `GameHeader`.
+
+### Fix 2 — Two-finger pinch-zoom + pan on the workspace
+- New `hooks/usePinchPan.js` hook: attaches native `pointerdown`/`move`/`up`/`cancel` listeners to a container ref, tracks all active pointers in a Map. When 2 pointers land simultaneously, enters gesture mode \u2014 distance-between drives scale (clamped to [0.6\u00d7, 2.5\u00d7]), midpoint drift drives translate. Returns `{ transform, reset }`.
+- Dispatches a `rb-pinch-start` window event when a second pointer arrives. `CharacterSlot` listens and clears its `pointerStateRef` so an in-flight single-finger drag doesn\u2019t keep dragging alongside the pinch (feels chaotic otherwise).
+- `CharacterSlot`\u2019s `handlePointerDown` also checks `e.isPrimary === false` and bails \u2014 the 2nd finger of a pinch never starts a character drag.
+- `RobotBoogiePage`: added `activeBandRef` + `usePinchPan(activeBandRef)` at page level. Active-band container carries the ref + `touchAction: 'none'` (so browsers don\u2019t hijack pinch as page zoom). Inner \u201Cworkspace transform layer\u201D wraps the character AnimatePresence with `transform: translate3d(x, y, 0) scale(s)` from the hook.
+- `handleReset` also calls `resetWorkspaceTransform()` so the Reset button snaps the workspace back to identity.
+
+### Fix 3 — Correct-character hit-testing
+- Root cause: active-band wrappers overlap horizontally via negative margins (e.g. `-22px` each side at n=4), and each `motion.button` fills its wrapper 100%. Character sprites have baked-in transparent side-padding \u2014 so a tap on Charlie\u2019s face can visually be over Charlie\u2019s sprite but LAND inside a neighbor wrapper\u2019s transparent zone, dragging the neighbor.
+- Fix: outer `motion.div` wrappers set to `pointer-events: none`, `motion.button` set to `pointer-events: none`, and a new inner **hit-div** (`data-testid=robot-boogie-char-hit-{id}`, `width: 62%`, absolute centered horizontally, full height) hosts the actual `onPointerDown/Move/Up/Cancel` handlers. The 62% roughly matches the visible sprite bounds. Clicks in the transparent zones fall through to whichever hit-div is directly beneath, so the character the kid SEES under their finger is always the one that moves.
+- Sprites (`<img>`) still render at 100% of the wrapper via absolute positioning inside the button \u2014 visuals unchanged, hit region tightened.
+
+### Fix 4 — Head/feet clipping when dragging
+- Root cause: active-band container had `overflow-hidden`, and drag Y-clamp of \u00b1140px is bigger than the vertical slack the band actually has.
+- Fix: `overflow-hidden` \u2192 `overflow: visible` on the active band. Y clamp tightened `\u00b1140` \u2192 `\u00b160` so characters stay comfortably inside the workspace vertical bounds even at 4+ dancers with wrap. X clamp unchanged.
+
+### Files touched
+`RobotBoogiePage.js`, `GameUI.js` (title-as-ReactNode), created `RobotBoogieTitle.js` + `usePinchPan.js`.
+
+### Testing
+- Desktop mouse: verified drag on active Charlie moves the character (mouse drag +80px on the hit-div produced a visible offset; sticker awarded correctly).
+- Title rendered correctly on the Robot Boogie route with distinct chrome/glow treatment; standard `GameHeader` untouched for other games.
+- Pinch/pan gesture wiring is native pointerevent-based and cannot be reliably exercised in Playwright without touch-device emulation; will require real-device verification by the user on a phone or tablet.
+
+---
+
+
 ## Parent-facing page copy revisions (Feb 2026)
 
 **User feedback**:

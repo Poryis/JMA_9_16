@@ -54,16 +54,23 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
           </div>
         )}
 
-        {/* Title */}
+        {/* Title. Accepts a plain string (default cross-game styling) OR
+            a ReactNode (per-game custom treatment). Robot Boogie uses
+            this to render its own chrome/futurist title without
+            affecting any other game's header. */}
         {title && (
-          <motion.h1 
-            className="text-sm md:text-2xl font-bold text-center font-display pt-1 md:pt-0 pointer-events-auto"
-            style={{ color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(0,0,0,0.3)' }}
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-          >
-            {title}
-          </motion.h1>
+          typeof title === 'string' ? (
+            <motion.h1
+              className="text-sm md:text-2xl font-bold text-center font-display pt-1 md:pt-0 pointer-events-auto"
+              style={{ color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(0,0,0,0.3)' }}
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+            >
+              {title}
+            </motion.h1>
+          ) : (
+            <div className="pointer-events-auto pt-1 md:pt-0">{title}</div>
+          )
         )}
 
         {/* Score display */}
