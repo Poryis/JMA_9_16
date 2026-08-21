@@ -20,14 +20,20 @@ import { useRef, useEffect } from 'react';
 // actual band roles (Finn plays upright bass, not drums; Chunk is a
 // monkey drummer; Jazzy plays trumpet & manages the band; Charlie is a
 // polliwog specifically, not a tadpole).
+//
+// `scale` = per-character size correction for the hero parade. Source
+// PNGs weren't drawn at a uniform reference height, so at a shared
+// `width: clamp(60px, 8vw, 110px)` Lou visually towers and Finn looks
+// tiny relative to the others. Tuned by eye per user (Feb 2026):
+//   Charlie/Chunk +10%, Finn/Stew -5%, Lou -10%.
 const BAND = [
-  { name: 'Charlie',       image: 'assets/characters/charlie.png',         bio: 'Rock-star polliwog. Fronts the band.' },
-  { name: 'Finn Danger',   image: 'assets/characters/finn-danger.png',     bio: 'Upright-bass shark. Anchors the low end.' },
-  { name: 'Stew',          image: 'assets/characters/stew.png',            bio: 'Kazoo-blowing parrot with big opinions.' },
-  { name: 'Lou',           image: 'assets/characters/lou.png',             bio: 'Ukulele llama. Traveled the whole world.' },
-  { name: 'Chunk',         image: 'assets/characters/chunk.png',           bio: 'Monkey on the drum kit. Locks the pocket.' },
-  { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    bio: 'Jazz-loving jellyfish with the sharpest ear in the sea.' },
-  { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           bio: 'Trumpet-toting jaguar. Bandleader, tour boss, big personality.' },
+  { name: 'Charlie',       image: 'assets/characters/charlie.png',         bio: 'Rock-star polliwog. Fronts the band.',                          scale: 1.10 },
+  { name: 'Finn Danger',   image: 'assets/characters/finn-danger.png',     bio: 'Upright-bass shark. Anchors the low end.',                      scale: 0.95 },
+  { name: 'Stew',          image: 'assets/characters/stew.png',            bio: 'Kazoo-blowing parrot with big opinions.',                       scale: 0.95 },
+  { name: 'Lou',           image: 'assets/characters/lou.png',             bio: 'Ukulele llama. Traveled the whole world.',                      scale: 0.90 },
+  { name: 'Chunk',         image: 'assets/characters/chunk.png',           bio: 'Monkey on the drum kit. Locks the pocket.',                     scale: 1.10 },
+  { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    bio: 'Jazz-loving jellyfish with the sharpest ear in the sea.',       scale: 1.00 },
+  { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           bio: 'Trumpet-toting jaguar. Bandleader, tour boss, big personality.', scale: 1.00 },
 ];
 
 const WHY_PARENTS = [
@@ -183,7 +189,9 @@ export default function ForParentsPage() {
           </button>
         </motion.div>
 
-        {/* Bopping character parade — just fun to look at */}
+        {/* Bopping character parade — just fun to look at. Each character
+            gets a per-sprite scale multiplier (see BAND.scale) because the
+            source PNGs weren't drawn at a uniform reference height. */}
         <div className="flex items-end justify-center gap-2 md:gap-4 flex-wrap pt-4">
           {BAND.slice(0, 5).map((c, i) => (
             <motion.img
@@ -191,7 +199,11 @@ export default function ForParentsPage() {
               src={c.image}
               alt={c.name}
               className="object-contain"
-              style={{ width: 'clamp(60px, 8vw, 110px)', height: 'auto', filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.2))' }}
+              style={{
+                width: `calc(clamp(60px, 8vw, 110px) * ${c.scale || 1})`,
+                height: 'auto',
+                filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.2))',
+              }}
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: [0, -6, 0], opacity: 1 }}
               transition={{
@@ -213,7 +225,7 @@ export default function ForParentsPage() {
             { icon: '🎮', title: 'Play',
               body: 'Rhythm games, ear-training, sight-reading, sound-detective mysteries, and kazoo call-and-response with Stew. Every game teaches a real music skill.' },
             { icon: '🎓', title: 'Learn',
-              body: 'Seven video lessons with real music teachers, a Fun Facts Clubhouse full of surprises, and tap-along rhythm challenges with the marching band.' },
+              body: 'Seven video lessons with real music teachers, a Fun Facts Clubhouse full of surprises, and tap-along sight-reading rhythm challenges with the marching band.' },
             { icon: '🎛️', title: 'Create',
               body: 'A kid-safe DAW. Write and record your own songs. Build beats. Layer loops in Robot Boogie. Jam in a full band. Save your tracks.' },
             { icon: '📺', title: 'JMAtv',
