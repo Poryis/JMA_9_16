@@ -25,13 +25,13 @@ import { useRef, useEffect } from 'react';
 // PNGs weren't drawn at a uniform reference height, so at a shared
 // `width: clamp(60px, 8vw, 110px)` Lou visually towers and Finn looks
 // tiny relative to the others. Tuned by eye per user (Feb 2026, refined):
-//   Charlie/Chunk +13%, Finn/Stew -5%, Lou -15%.
+//   Charlie/Chunk +18%, Finn/Stew -5%, Lou -25%.
 const BAND = [
-  { name: 'Charlie',       image: 'assets/characters/charlie.png',         bio: 'Rock-star polliwog. Fronts the band.',                          scale: 1.13 },
+  { name: 'Charlie',       image: 'assets/characters/charlie.png',         bio: 'Rock-star polliwog. Fronts the band.',                          scale: 1.18 },
   { name: 'Finn Danger',   image: 'assets/characters/finn-danger.png',     bio: 'Upright-bass shark. Anchors the low end.',                      scale: 0.95 },
   { name: 'Stew',          image: 'assets/characters/stew.png',            bio: 'Kazoo-blowing parrot with big opinions.',                       scale: 0.95 },
-  { name: 'Lou',           image: 'assets/characters/lou.png',             bio: 'Ukulele llama. Traveled the whole world.',                      scale: 0.85 },
-  { name: 'Chunk',         image: 'assets/characters/chunk.png',           bio: 'Monkey on the drum kit. Locks the pocket.',                     scale: 1.13 },
+  { name: 'Lou',           image: 'assets/characters/lou.png',             bio: 'Ukulele llama. Traveled the whole world.',                      scale: 0.75 },
+  { name: 'Chunk',         image: 'assets/characters/chunk.png',           bio: 'Monkey on the drum kit. Locks the pocket.',                     scale: 1.18 },
   { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    bio: 'Jazz-loving jellyfish with the sharpest ear in the sea.',       scale: 1.00 },
   { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           bio: 'Trumpet-toting jaguar. Bandleader, tour boss, big personality.', scale: 1.00 },
 ];
