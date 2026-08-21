@@ -211,9 +211,9 @@ export default function ForParentsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[
             { icon: '🎮', title: 'Play',
-              body: 'Rhythm games, ear-training, sight-reading, sound-detective mysteries, and Stew\u2019s copy-along kazoo. Every game teaches a real music skill.' },
+              body: 'Rhythm games, ear-training, sight-reading, sound-detective mysteries, and kazoo call-and-response with Stew. Every game teaches a real music skill.' },
             { icon: '🎓', title: 'Learn',
-              body: 'Seven video lessons with real music teachers, a Fun Facts Clubhouse full of surprises, and marching-band rhythm drills.' },
+              body: 'Seven video lessons with real music teachers, a Fun Facts Clubhouse full of surprises, and tap-along rhythm challenges with the marching band.' },
             { icon: '🎛️', title: 'Create',
               body: 'A kid-safe DAW. Write and record your own songs. Build beats. Layer loops in Robot Boogie. Jam in a full band. Save your tracks.' },
             { icon: '📺', title: 'JMAtv',
