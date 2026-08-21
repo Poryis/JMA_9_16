@@ -24,14 +24,14 @@ import { useRef, useEffect } from 'react';
 // `scale` = per-character size correction for the hero parade. Source
 // PNGs weren't drawn at a uniform reference height, so at a shared
 // `width: clamp(60px, 8vw, 110px)` Lou visually towers and Finn looks
-// tiny relative to the others. Tuned by eye per user (Feb 2026):
-//   Charlie/Chunk +10%, Finn/Stew -5%, Lou -10%.
+// tiny relative to the others. Tuned by eye per user (Feb 2026, refined):
+//   Charlie/Chunk +13%, Finn/Stew -5%, Lou -15%.
 const BAND = [
-  { name: 'Charlie',       image: 'assets/characters/charlie.png',         bio: 'Rock-star polliwog. Fronts the band.',                          scale: 1.10 },
+  { name: 'Charlie',       image: 'assets/characters/charlie.png',         bio: 'Rock-star polliwog. Fronts the band.',                          scale: 1.13 },
   { name: 'Finn Danger',   image: 'assets/characters/finn-danger.png',     bio: 'Upright-bass shark. Anchors the low end.',                      scale: 0.95 },
   { name: 'Stew',          image: 'assets/characters/stew.png',            bio: 'Kazoo-blowing parrot with big opinions.',                       scale: 0.95 },
-  { name: 'Lou',           image: 'assets/characters/lou.png',             bio: 'Ukulele llama. Traveled the whole world.',                      scale: 0.90 },
-  { name: 'Chunk',         image: 'assets/characters/chunk.png',           bio: 'Monkey on the drum kit. Locks the pocket.',                     scale: 1.10 },
+  { name: 'Lou',           image: 'assets/characters/lou.png',             bio: 'Ukulele llama. Traveled the whole world.',                      scale: 0.85 },
+  { name: 'Chunk',         image: 'assets/characters/chunk.png',           bio: 'Monkey on the drum kit. Locks the pocket.',                     scale: 1.13 },
   { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    bio: 'Jazz-loving jellyfish with the sharpest ear in the sea.',       scale: 1.00 },
   { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           bio: 'Trumpet-toting jaguar. Bandleader, tour boss, big personality.', scale: 1.00 },
 ];
@@ -225,7 +225,7 @@ export default function ForParentsPage() {
             { icon: '🎮', title: 'Play',
               body: 'Rhythm games, ear-training, sight-reading, sound-detective mysteries, and kazoo call-and-response with Stew. Every game teaches a real music skill.' },
             { icon: '🎓', title: 'Learn',
-              body: 'Seven video lessons with real music teachers, a Fun Facts Clubhouse full of surprises, and tap-along sight-reading rhythm challenges with the marching band.' },
+              body: 'Seven video lessons with real music teachers, a Fun Facts Clubhouse full of surprises, and tap-along sight-reading rhythm challenges with the band.' },
             { icon: '🎛️', title: 'Create',
               body: 'A kid-safe DAW. Write and record your own songs. Build beats. Layer loops in Robot Boogie. Jam in a full band. Save your tracks.' },
             { icon: '📺', title: 'JMAtv',
