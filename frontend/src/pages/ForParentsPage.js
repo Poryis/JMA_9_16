@@ -26,8 +26,8 @@ const BAND = [
   { name: 'Stew',          image: 'assets/characters/stew.png',            bio: 'Kazoo-blowing parrot with big opinions.' },
   { name: 'Lou',           image: 'assets/characters/lou.png',             bio: 'Ukulele llama. Traveled the whole world.' },
   { name: 'Chunk',         image: 'assets/characters/chunk.png',           bio: 'Monkey on the drum kit. Locks the pocket.' },
-  { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    bio: 'Music detective with the sharpest ear.' },
-  { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           bio: 'Trumpet player and the band\u2019s manager.' },
+  { name: 'Dr. Jellybone', image: 'assets/characters/dr-jellybone.png',    bio: 'Jazz-loving jellyfish with the sharpest ear in the sea.' },
+  { name: 'Jazzy',         image: 'assets/characters/jazzy.png',           bio: 'Trumpet-toting jaguar. Bandleader, tour boss, big personality.' },
 ];
 
 const WHY_PARENTS = [
@@ -36,7 +36,7 @@ const WHY_PARENTS = [
   { title: 'No ads. Ever.',
     body: 'Zero third-party ads, zero data brokers, zero \u201Cupgrade to premium\u201D pop-ups inside the kid\u2019s view.' },
   { title: 'COPPA-safe by design',
-    body: 'Kids\u2019 progress lives on their device. No emails, no last names, no facial recognition, no location tracking.' },
+    body: 'Kids sign in with a first name and a class code \u2014 no last names, no kid emails, no facial recognition, no location tracking. Only the grown-up on the account has an email on file.' },
   { title: 'Screen time you feel good about',
     body: 'Every game teaches a real music skill. Every video pairs a laugh with a fact. Every rank-up is proof your kid actually learned something.' },
 ];
@@ -138,15 +138,6 @@ export default function ForParentsPage() {
 
       {/* HERO */}
       <section className="relative px-4 md:px-10 pt-6 md:pt-10 pb-14 md:pb-20 text-center max-w-6xl mx-auto">
-        <motion.p
-          className="uppercase font-black tracking-widest mb-3"
-          style={{ fontSize: 'clamp(0.7rem, 1vw, 0.85rem)', color: '#5A2989', opacity: 0.85 }}
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 0.85 }}
-          transition={{ delay: 0.05 }}
-        >
-          A kid&apos;s first handshake with music
-        </motion.p>
         <motion.h1
           className="font-black leading-tight mb-4"
           style={{ fontSize: 'clamp(2rem, 5.5vw, 4rem)', color: 'var(--jma-dark, #1a1a2e)' }}
@@ -154,7 +145,7 @@ export default function ForParentsPage() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1, type: 'spring', stiffness: 120 }}
         >
-          Where kids fall in love with music.
+          More than music lessons.
         </motion.h1>
         <motion.p
           className="mx-auto mb-8 max-w-3xl"
@@ -164,7 +155,7 @@ export default function ForParentsPage() {
           transition={{ delay: 0.25 }}
         >
           Games. Video lessons. A studio to write real songs. A whole
-          musical universe kids ask to come back to. Ages 4&ndash;10.
+          musical universe kids ask to come back to.
         </motion.p>
         <motion.div
           className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center mb-10"
@@ -327,7 +318,7 @@ export default function ForParentsPage() {
             {
               icon: '🎖️',
               title: '18 skill badges across 6 music domains',
-              body: 'Rhythm, ear-training, keyboard, beat-making, songs, and music-scholar knowledge. Cadet → Pro → Master tiers within each. No shortcuts — Master requires Pro first.',
+              body: 'Rhythm, ear-training, keyboard, beat-making, songs, and music-scholar knowledge. Cadet \u2192 Pro \u2192 Master tiers within each — three levels of proof for every skill.',
             },
             {
               icon: '🐸',
