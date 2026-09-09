@@ -773,7 +773,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
         <audio ref={audioRef} src={selectedSong.audioUrl} preload="auto" data-testid="backing-track" />
       )}
       <GameHeader title={selectedSong.name} score={score} streak={gameStats.streak} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
-      <div className="fixed top-20 left-0 right-0 px-4 py-1 z-40">
+      <div className="fixed top-20 left-0 right-0 px-4 py-1 z-40 flex justify-center">
         <ProgressBar current={currentNoteIndex} total={selectedSong.notes.length} color={speedConfig.color} />
       </div>
       {selectedSong.mode && selectedSong.mode !== 'C-major' && (

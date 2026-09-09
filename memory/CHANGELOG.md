@@ -1936,3 +1936,6 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 - Who's Got the Rhythm: removed duplicate header title, "Pick your jam" pill on its own line, ModeTile title font/char column tuned so PARROT PERCUSSION no longer breaks mid-word at 768px.
 - Beat Lab: toolbar padding bumped so PLAY sits below the harp.
 - Sub-menu tiles (Play/Learn/Create): title moved to TOP-LEFT and width-capped to the column left of the hero (`calc(100 - charWidthPct + 6)%`); gradient scrim flipped to the top; hover "Enter" chip moved to bottom-left. Heroes are now never covered by text on iPad.
+- Jelly Jukebox in-game progress bar centered (`flex justify-center`) so it clears the harp.
+- "Lessons 1–7" → "Season 1" (LearnMenuPage tile + LessonsPage heading).
+- Charlie's Song Studio: no-scroll console. Slot size is `--slot: clamp(40px, 8.5vh, 72px)` (was aspect-square growing to 150px on desktop); piano keys `clamp(70px,13vh,150px)`; mood picker is a single compact row; md+ layout = `grid-cols-[auto_minmax(0,1fr)_auto]` with Charlie | grid | stacked control rail, piano spanning under the first two. Verified scrollHeight == viewport at 1366×768, 1024×700, 768×1024, 390×844.
