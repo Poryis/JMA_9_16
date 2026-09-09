@@ -266,7 +266,7 @@ export default function SightReadingPage() {
     return (
       <div
         data-testid="sight-reading-menu"
-        className="min-h-screen flex flex-col items-center justify-center p-4 relative"
+        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         style={{
           backgroundImage: 'url(assets/backgrounds/clubhouse.png)',
           backgroundSize: 'cover',

@@ -430,7 +430,7 @@ export default function DetectivePage() {
     return (
       <div
         data-testid="detective-menu"
-        className="min-h-screen flex flex-col items-center justify-center p-4 relative"
+        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         style={{
           backgroundImage: 'url(assets/backgrounds/detective-room.jpg)',
           backgroundSize: 'cover',
@@ -530,7 +530,7 @@ export default function DetectivePage() {
       <GameHeader title={`Detective · ${LEVELS[difficulty].name}`} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <RoomCharacters room="detective" />
 
-      <main className="flex-1 flex flex-col items-center pt-16 md:pt-20 pb-6 px-3">
+      <main className="flex-1 flex flex-col items-center pt-20 md:pt-24 pb-6 px-3">
         {/* HUD */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
           <div

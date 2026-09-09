@@ -296,7 +296,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
   if (gameState === 'ready') {
     return (
       <div 
-        className="min-h-screen flex flex-col items-center justify-center p-4 relative" 
+        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative" 
         data-testid="simon-says-menu"
         style={{
           backgroundImage: 'url(assets/backgrounds/underwater.png)',
@@ -389,7 +389,7 @@ function SimonSaysPage({ score, setScore, gameStats, setGameStats, resetGame }) 
       )}
 
       {/* Progress */}
-      <div className="fixed top-16 left-0 right-0 px-4 py-2 z-40">
+      <div className="fixed top-16 left-0 right-0 px-4 py-2 z-40 flex justify-center">
         <ProgressBar 
           current={level} 
           total={8}

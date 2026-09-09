@@ -385,7 +385,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
     else { rating = 'KEEP GOING!'; ratingColor = '#FF9500'; }
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
+      <div className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative overflow-hidden"
            data-testid="rhythm-results" style={{ backgroundColor: '#2E1D5C' }}>
         {/* Same 3-state tile floor cycle as the playing screen — keeps
             the after-song moment feeling like a continuation of the

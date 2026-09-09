@@ -399,7 +399,7 @@ function LoopStudioPage() {
       <PulsingSpeakers side="left"  playing={isPlaying} bpm={bpm} />
       <PulsingSpeakers side="right" playing={isPlaying} bpm={bpm} flip />
 
-      <main className="flex-1 pt-20 pb-4 px-2 md:px-4 overflow-auto">
+      <main className="flex-1 pt-20 md:pt-24 lg:pt-32 pb-4 px-2 md:px-4 overflow-auto">
         {/* Controls Bar */}
         <div className="max-w-6xl mx-auto mb-3">
           <div className="game-card p-3 flex flex-wrap items-center gap-2 justify-between">

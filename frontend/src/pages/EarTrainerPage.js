@@ -172,7 +172,7 @@ function EarTrainerPage() {
   if (gameState === 'tempo') {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center p-4 relative"
+        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         data-testid="ear-trainer-tempo"
         style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
@@ -191,7 +191,7 @@ function EarTrainerPage() {
   if (gameState === 'menu') {
     return (
       <div 
-        className="min-h-screen flex flex-col items-center justify-center p-4 relative"
+        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         data-testid="ear-trainer-menu"
         style={{ backgroundImage: 'url(assets/backgrounds/beach.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >

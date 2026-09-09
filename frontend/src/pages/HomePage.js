@@ -217,7 +217,6 @@ function PrimaryCard({ card, index, navigate }) {
           border: `5px solid ${card.border}`,
           boxShadow: `0 10px 0 0 ${card.shadow}, 0 13px 0 0 ${card.border}`,
           aspectRatio: '1 / 1.05',
-          minHeight: 340,
           padding: 'clamp(12px, 2.2vw, 22px)',
         }}
       >

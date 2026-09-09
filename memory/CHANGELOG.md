@@ -1927,3 +1927,11 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 
 ### Stu Kazoo Says — Level Clear Celebration (initial)
 - Added `Confetti.js` + `playFanfare()` arpeggio.
+
+## Jun 2026 — Tablet (iPad) layout overlap pass
+- **Root cause 1**: Home PLAY/LEARN/CREATE cards had `minHeight: 340` + `aspectRatio`; CSS transfers min-height into a ~324px min-width, so 3 columns at 768px overflowed/piled up. Removed `minHeight` (HomePage.js).
+- **Root cause 2**: GameHeader harp jumped to 80px at `md` (768px) while page paddings were tuned for 48px. Harp now 48 / 56 (md) / 80 (lg). Header footprint ≈ 75px mobile, 87px md, 116px lg → use `pt-20 md:pt-24 lg:pt-32` for content that spans full width under it.
+- **Root cause 3**: Menu screens used `justify-center` on `min-h-screen`; when content is taller than a landscape iPad, flexbox clips the top under the fixed header. Added `.jma-safe-center` (`justify-content: safe center`, index.css) + `pt-20 md:pt-24 lg:pt-32` on all `min-h-screen ... justify-center p-4` menu containers (Detective, Ear Quest, Note Match, Results, Jelly Jukebox, Sight Reading, Stew Kazoo).
+- Stew Kazoo Says: fixed progress bar was left-aligned under the harp → now `flex justify-center`.
+- Who's Got the Rhythm: removed duplicate header title, "Pick your jam" pill on its own line, ModeTile title font/char column tuned so PARROT PERCUSSION no longer breaks mid-word at 768px.
+- Beat Lab: toolbar padding bumped so PLAY sits below the harp.

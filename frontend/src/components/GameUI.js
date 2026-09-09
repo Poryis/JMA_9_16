@@ -27,7 +27,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
               whileTap={{ scale: 0.95, y: 2 }}
             >
               <div
-                className="rounded-xl md:rounded-2xl border-2 md:border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] md:shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow w-12 h-12 md:w-20 md:h-20 overflow-hidden"
+                className="rounded-xl md:rounded-2xl border-2 md:border-3 border-[var(--jma-dark)] shadow-[0_3px_0_0_var(--jma-dark)] md:shadow-[0_4px_0_0_var(--jma-dark)] group-hover:shadow-[0_6px_0_0_var(--jma-dark)] transition-shadow w-12 h-12 md:w-14 md:h-14 lg:w-20 lg:h-20 overflow-hidden"
                 style={{
                   backgroundColor: 'var(--jma-dark)',
                   display: 'flex',
@@ -41,7 +41,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
                 </div>
               </div>
               <span
-                className="text-[10px] md:text-sm font-black uppercase tracking-wide mt-1 px-2 md:px-2.5 rounded-full"
+                className="text-[10px] lg:text-sm font-black uppercase tracking-wide mt-1 px-2 lg:px-2.5 rounded-full"
                 style={{
                   color: 'white',
                   backgroundColor: 'var(--jma-dark)',
@@ -61,7 +61,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
         {title && (
           typeof title === 'string' ? (
             <motion.h1
-              className="text-sm md:text-2xl font-bold text-center font-display pt-1 md:pt-0 pointer-events-auto"
+              className="text-sm md:text-xl lg:text-2xl font-bold text-center font-display pt-1 md:pt-0 pointer-events-auto"
               style={{ color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(0,0,0,0.3)' }}
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

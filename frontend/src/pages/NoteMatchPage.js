@@ -195,7 +195,7 @@ export default function NoteMatchPage() {
   if (gameState === 'menu') {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center p-4 relative"
+        className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8 relative"
         data-testid="note-match-menu"
         style={{ backgroundImage: 'url(assets/backgrounds/boat.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >

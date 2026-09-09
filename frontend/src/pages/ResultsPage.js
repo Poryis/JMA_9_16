@@ -37,7 +37,7 @@ function ResultsPage({ score, gameStats, resetGame }) {
 
   return (
     <div 
-      className="min-h-screen flex flex-col items-center justify-center p-4" 
+      className="min-h-screen flex flex-col items-center justify-center jma-safe-center p-4 pt-20 md:pt-24 lg:pt-32 pb-8" 
       data-testid="results-page"
       style={{
         backgroundImage: 'url(assets/backgrounds/circus.png)',

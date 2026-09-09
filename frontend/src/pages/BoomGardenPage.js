@@ -138,7 +138,7 @@ function ModeTile({ mode, index, onPick }) {
           border: '5px solid var(--jma-dark)',
           boxShadow: `0 10px 0 0 ${mode.accent}, 0 13px 0 0 var(--jma-dark)`,
           minHeight: 240,
-          padding: 'clamp(14px, 2.6vw, 22px)',
+          padding: 'clamp(12px, 2vw, 22px)',
           color: 'white',
           backgroundImage: `url(${mode.bg})`,
           backgroundSize: 'cover',
@@ -162,7 +162,7 @@ function ModeTile({ mode, index, onPick }) {
             <h2
               className="font-black font-display leading-[0.85] uppercase"
               style={{
-                fontSize: 'clamp(22px, 3.4vw, 36px)',
+                fontSize: 'clamp(17px, 2.5vw, 36px)',
                 color: 'white',
                 WebkitTextStroke: 'clamp(2px, 0.5vw, 4px) var(--jma-dark)',
                 paintOrder: 'stroke fill',
@@ -178,7 +178,7 @@ function ModeTile({ mode, index, onPick }) {
           {/* Character host column — drum-major-style hero on the football
               field. Fixed share so art never overlaps text. */}
           {mode.character && (
-            <div className="relative flex-shrink-0" style={{ width: '40%' }}>
+            <div className="relative flex-shrink-0" style={{ width: '35%' }}>
               <img
                 src={mode.character}
                 alt=""
@@ -1023,12 +1023,12 @@ export default function BoomGardenPage() {
             background: 'linear-gradient(180deg, rgba(255,247,229,0.75) 0%, transparent 100%)',
           }}
         />
-        <GameHeader title="Who's Got the Rhythm" showHomeButton={true} />
+        <GameHeader showHomeButton={true} />
         <FullscreenButton />
-        <main className="flex-1 pt-16 md:pt-20 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col relative z-10">
+        <main className="flex-1 pt-20 md:pt-24 lg:pt-32 pb-6 px-3 md:px-6 max-w-6xl mx-auto w-full flex flex-col relative z-10">
           <div className="text-center mb-4 md:mb-6">
             <h1
-              className="font-black font-display leading-none uppercase inline-block"
+              className="font-black font-display leading-none uppercase block"
               style={{
                 fontSize: 'clamp(30px, 5.5vw, 56px)',
                 color: 'white',
