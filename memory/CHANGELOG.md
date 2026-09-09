@@ -1935,3 +1935,4 @@ Imported & optimized the 5-23 batch of lesson artwork for in-app use.
 - Stew Kazoo Says: fixed progress bar was left-aligned under the harp → now `flex justify-center`.
 - Who's Got the Rhythm: removed duplicate header title, "Pick your jam" pill on its own line, ModeTile title font/char column tuned so PARROT PERCUSSION no longer breaks mid-word at 768px.
 - Beat Lab: toolbar padding bumped so PLAY sits below the harp.
+- Sub-menu tiles (Play/Learn/Create): title moved to TOP-LEFT and width-capped to the column left of the hero (`calc(100 - charWidthPct + 6)%`); gradient scrim flipped to the top; hover "Enter" chip moved to bottom-left. Heroes are now never covered by text on iPad.

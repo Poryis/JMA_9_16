@@ -78,14 +78,14 @@ function Tile({ tile, index, navigate }) {
         />
       )}
 
-      {/* Bottom shadow gradient so the huge title stays legible on any scene */}
+      {/* Top shadow gradient so the huge title stays legible on any scene */}
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 pointer-events-none"
+        className="absolute inset-x-0 top-0 pointer-events-none"
         style={{
           height: '55%',
           background:
-            `linear-gradient(180deg, transparent 0%, ${tile.accent || tile.color}55 40%, rgba(10,37,64,0.72) 100%)`,
+            `linear-gradient(0deg, transparent 0%, ${tile.accent || tile.color}55 40%, rgba(10,37,64,0.72) 100%)`,
         }}
       />
 
@@ -113,13 +113,17 @@ function Tile({ tile, index, navigate }) {
         />
       )}
 
-      {/* NES cartridge title — huge, all-caps, chunky stroke, spans the
-          bottom of the tile so it reads even at a glance. */}
-      <div className="absolute left-3 right-3 bottom-3 md:bottom-4 z-20">
+      {/* NES cartridge title — huge, all-caps, chunky stroke. Lives in the
+          TOP-LEFT and is capped to the column left of the hero so the
+          character art is never hidden behind text on tablets. */}
+      <div
+        className="absolute left-3 top-3 md:top-4 z-20"
+        style={{ width: `calc(${100 - (tile.charWidthPct || 34)}% + 6%)` }}
+      >
         <h2
           className="font-black font-display leading-[0.85] uppercase"
           style={{
-            fontSize: 'clamp(28px, 6.2vw, 56px)',
+            fontSize: 'clamp(24px, 4.6vw, 48px)',
             color: 'white',
             WebkitTextStroke: 'clamp(2px, 0.5vw, 4px) var(--jma-dark)',
             paintOrder: 'stroke fill',
@@ -144,9 +148,9 @@ function Tile({ tile, index, navigate }) {
       {/* Enter chip (hover-reveal, desktop only) */}
       {!disabled && (
         <motion.div
-          className="absolute top-3 right-3 px-2.5 py-1 rounded-full border-2 z-20 hidden md:flex items-center gap-1"
+          className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full border-2 z-20 hidden md:flex items-center gap-1"
           style={{ backgroundColor: 'white', borderColor: 'var(--jma-dark)' }}
-          animate={hovered ? { x: 0, opacity: 1 } : { x: 20, opacity: 0 }}
+          animate={hovered ? { x: 0, opacity: 1 } : { x: -20, opacity: 0 }}
           transition={{ type: 'spring' }}
         >
           <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'var(--jma-dark)' }}>
