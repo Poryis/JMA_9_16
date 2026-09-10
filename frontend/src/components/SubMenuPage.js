@@ -170,29 +170,40 @@ function Tile({ tile, index, navigate }) {
 
       {/* Primary character — BIG, bottom-centered so it dominates the
           cartridge without covering the title band up top. Charlie's Song
-          Studio has no character; we simply skip rendering. */}
+          Studio has no character; we simply skip rendering.
+          NOTE: the framer-motion `animate` on the <img> writes to the same
+          `transform` property we'd use for `translateX(-50%)`, so centering
+          MUST live on a non-motion wrapper — otherwise motion clobbers it
+          and the sprite drifts off to the right (that was the Beat Lab
+          "trio cropped in half" bug). */}
       {tile.character && (
-        <motion.img
-          src={tile.character}
-          alt=""
-          draggable={false}
-          loading="lazy"
-          className="absolute bottom-0 left-1/2 pointer-events-none select-none z-10"
+        <div
+          className="absolute bottom-0 left-1/2 pointer-events-none z-10"
           style={{
             width: `${heroWidthPct}%`,
             height: `${heroHeightPct}%`,
-            objectFit: tile.charObjectFit || 'contain',
-            objectPosition: tile.charObjectPosition || 'bottom center',
             transform: 'translateX(-50%)',
-            filter: 'drop-shadow(0 10px 12px rgba(0,0,0,0.55))',
           }}
-          animate={hovered ? { y: -8, rotate: -3 } : { y: [0, -6, 0], rotate: 0 }}
-          transition={
-            hovered
-              ? { type: 'spring', stiffness: 240 }
-              : { y: { repeat: Infinity, duration: 2.4, ease: 'easeInOut' } }
-          }
-        />
+        >
+          <motion.img
+            src={tile.character}
+            alt=""
+            draggable={false}
+            loading="lazy"
+            className="w-full h-full select-none"
+            style={{
+              objectFit: tile.charObjectFit || 'contain',
+              objectPosition: tile.charObjectPosition || 'bottom center',
+              filter: 'drop-shadow(0 10px 12px rgba(0,0,0,0.55))',
+            }}
+            animate={hovered ? { y: -8, rotate: -3 } : { y: [0, -6, 0], rotate: 0 }}
+            transition={
+              hovered
+                ? { type: 'spring', stiffness: 240 }
+                : { y: { repeat: Infinity, duration: 2.4, ease: 'easeInOut' } }
+            }
+          />
+        </div>
       )}
 
       {/* Title band — single line, centered, top of card. Auto-fits so the
