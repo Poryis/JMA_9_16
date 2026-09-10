@@ -484,8 +484,12 @@ export default function NameThatNotePage() {
       playBellNote, playFeedbackSound, finishRound, nextQuestion, setMoodFor]);
 
   useEffect(() => {
-    if (gameState === 'playing' && level.secs > 0 && secsLeft === 0 && !locked) answer('timeout');
-  }, [secsLeft, gameState, level.secs, locked, answer]);
+    if (gameState !== 'playing' || level.secs <= 0 || secsLeft !== 0 || locked) return;
+    // Place It: if the kid has already parked the note somewhere, judge THAT
+    // placement (right spot still counts!) instead of a blanket timeout miss.
+    if (mode === 'place' && candidate != null) answer(candidate);
+    else answer('timeout');
+  }, [secsLeft, gameState, level.secs, locked, mode, candidate, answer]);
 
   const useHint = () => {
     if (hintsLeft <= 0 || locked || isTour) return;
