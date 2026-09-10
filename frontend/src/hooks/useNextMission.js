@@ -44,9 +44,9 @@ const MISSIONS = {
   ach_song_cadet:      { route: '/song-studio',  cta: 'Save a song',        instruction: "Save your first song in Charlie's Song Studio" },
   ach_song_pro:        { route: '/song-studio',  cta: 'Try 3 moods',        instruction: 'Save songs in 3 different moods' },
   ach_song_master:     { route: '/song-studio',  cta: 'Fill all 16 slots',  instruction: 'Fill all 16 slots of any song' },
-  ach_scholar_cadet:   { route: '/lessons',      cta: 'Watch Lesson 1',     instruction: 'Finish Lesson 1' },
-  ach_scholar_pro:     { route: '/lessons',      cta: 'Lessons 1–4',        instruction: 'Finish through Lesson 4' },
-  ach_scholar_master:  { route: '/lessons',      cta: 'Finish all 7',       instruction: 'Finish all 7 lessons' },
+  ach_scholar_cadet:   { route: '/lessons',         cta: 'Watch Lesson 1',         instruction: 'Finish Lesson 1' },
+  ach_scholar_pro:     { route: '/name-that-note',  cta: 'Name That Note: Pro',    instruction: 'Score 8/10 in Name That Note on Pro' },
+  ach_scholar_master:  { route: '/name-that-note',  cta: 'Name That Note: Master', instruction: 'Score 8/10 in Name That Note on Master' },
 };
 
 // Which Cadet do we recommend FIRST for a kid with zero achievements?

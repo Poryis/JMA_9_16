@@ -19,7 +19,7 @@ import RoomCharacters from '../components/RoomCharacters';
 import SolfegeStaff, { NOTE_Y, STAFF_NOTE_AREA_LEFT } from '../components/SolfegeStaff';
 import { BELLS } from '../components/JellyBells';
 import useAudio from '../hooks/useAudio';
-import { earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import { earnAchievement, earnAchievementUpTo, earnSticker } from '../hooks/useStickers';
 import { formatNoteName, getNoteNameMode, NOTE_NAME_MODES } from '../hooks/useNoteNames';
 
 const ALL_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
@@ -422,6 +422,10 @@ export default function NameThatNotePage() {
         if (difficulty === 'master') earnAchievementUpTo('scholar', 'master');
       } catch { /* ignore */ }
     }
+    // Perfect-round flair — one collectible per mode so both modes reward mastery.
+    if (correct >= QUESTIONS_PER_ROUND) {
+      try { earnSticker(mode === 'place' ? 'ntn_place_ace' : 'ntn_staff_star'); } catch { /* ignore */ }
+    }
     const prevBest = bestRecords[bestKey] || 0;
     if (finalScore > prevBest) {
       const next = { ...bestRecords, [bestKey]: finalScore };
@@ -432,7 +436,7 @@ export default function NameThatNotePage() {
     playSfx('assets/audio/sfx-piano-flourish.mp3', 0.5);
     setFinnMood(correct >= PASS_MARK ? 'party' : 'idle');
     setGameState('round-complete');
-  }, [difficulty, bestRecords, bestKey]);
+  }, [difficulty, mode, bestRecords, bestKey]);
 
   const answer = useCallback((note) => {
     if (locked || gameState !== 'playing') return;
