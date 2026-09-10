@@ -1,5 +1,35 @@
 # Changelog
 
+## Sub-menu branding + card polish (Feb 2026)
+
+**User request**: On PLAY / LEARN / CREATE pages, replace the giant word title with the Shield flanked by Finn and Charlie (like the home page). Keep the subtitle pill ("Pick your jam", etc.). On all cards with a hero, the title must be a single centered line at the top and the hero must be MUCH bigger without cropping or overlapping the text. Applies to every card except Charlie's Song Studio (no hero).
+
+### Changes — `components/SubMenuPage.js` (full rewrite)
+- **Header hero row (`<HeaderHero />`)**: replaces the big `sectionTitle` H1 with the same Finn · JMA shield · Charlie composition used on the home page. Sizes shrunk to fit under the top bar: Finn `clamp(50px, 9vw, 110px)`, Shield `clamp(110px, 20vw, 240px)`, Charlie `clamp(64px, 12vw, 140px)`. Subtitle pill preserved directly below. Shield click routes to `/`, character clicks route to `/fun-facts` (matches Home).
+- **Title moved from top-left corner to top-center, single-line**. New `<AutoFitTitle />` component: renders the title in a full-width top band with `white-space: nowrap`, then measures `scrollWidth` vs container `clientWidth` in a `ResizeObserver` and shrinks the font-size (in 1px steps from 44 → 14 px) until it fits. Stroke width scales with font-size (`9%`) so long titles ("DETECTIVE DR. JELLYBONE", "WHO'S GOT THE RHYTHM") still read as a heavy display treatment when squished. Refit runs on every wrapper resize (rotate, grid → 1-col).
+- **Heroes bigger**: applied a `HERO_SCALE = 1.45` multiplier to each tile's authored `charWidthPct` (capped at 78% so the multi-character `jelly-rap-trio` doesn't run to card edges). Hero height defaults raised 88% → 78% with the top ~22% reserved for the title band. Anchor changed from `right: 2` / `object-position: bottom right` to **bottom-center** so heroes visually center-hang from the title, and `translateX(-50%)` keeps them balanced regardless of scaled width. Charlie's Song Studio has no `character`, so the block simply doesn't render.
+- **Top gradient overlay** tightened to `height: 38%` and softened to a top-down `rgba(10,37,64,0.72) → transparent` fade — enough contrast to keep the auto-fit title legible over any scene without dimming the hero.
+- **Card title stays uppercase display font** (`font-black font-display`, white with dark stroke + double text-shadow), just now single-line + auto-fit + centered.
+- Prop signature: kept `sectionTitle`/`sectionSubtitle`/`bgGradient`/`tiles`/`testId`. `sectionColor` is no longer read (was only used by the retired giant-text treatment).
+- New `data-testid`s: `submenu-hero-finn`, `submenu-hero-logo`, `submenu-hero-charlie`, `submenu-tile-title-{id}`.
+
+### Runtime error caught + fixed
+Initial ResizeObserver-based auto-fit produced the "ResizeObserver loop completed with undelivered notifications" overlay in CRA dev mode (the observer callback synchronously mutated layout, which re-triggered the observer, which the browser reports as an unhandled error). Fix: the observer now `requestAnimationFrame`s a `schedule()` guarded by a single `rafId` so layout mutation always happens outside the observer's dispatch cycle. Cancelled on unmount.
+
+### Files touched
+`components/SubMenuPage.js` (rewritten).
+
+### Not touched
+`PlayMenuPage.js` / `LearnMenuPage.js` / `CreateMenuPage.js` — the per-tile authoring shape (`title`, `character`, `charWidthPct`, `bg`, etc.) is unchanged; only the shared renderer changed. No prop churn required on the page files.
+
+### Verification
+- Hot reload confirmed live.
+- The `AudioUnlockOverlay` in Playwright automation blocks a clean full-page screenshot without a trusted first-gesture; verified through the overlay's transparency that (a) the new small Finn/Shield/Charlie hero row is at the top of every sub-menu, and (b) tile titles now sit at the top-center of each card with heroes anchored below. User to confirm on-device.
+
+---
+
+
+
 ## Name That Note — livelier tour + Place It note sound (Jun 2026)
 
 **User feedback**: "That opening animation is a tiny wooden still — the one where we are showing the names. Also in place it, maybe play the sound of the note we want placed?"

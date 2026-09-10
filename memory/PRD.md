@@ -1,6 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Jun 2026): Tablet overlap pass complete — see CHANGELOG.md. Header footprint rule: content under harp needs `pt-20 md:pt-24 lg:pt-32`.
+## Latest (Feb 2026): PLAY/LEARN/CREATE sub-menu pages now use the Finn·Shield·Charlie hero row for branding consistency; tile titles auto-fit on a single line at the top; heroes scaled 1.45× and centered at the bottom (see CHANGELOG for details).
+
+## Prior (Jun 2026): Tablet overlap pass complete — see CHANGELOG.md. Header footprint rule: content under harp needs `pt-20 md:pt-24 lg:pt-32`.
 
 ## Original Problem Statement
 Build a frontend-only rhythm/music education app for young children that feels like a **living musical academy**, not a menu of disconnected mini-games. Use the user's custom artwork (Jellybells, drum kit, xylophone, piano, turntable, kazoos, character cast, original songs).
