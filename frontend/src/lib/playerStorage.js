@@ -58,6 +58,8 @@ const KEYS = {
   playTime:         'jma_total_play_ms_v1',
   rankSeen:         'jma_rank_seen_v1',
   sightReadBest:    'jma_sight_reading_best_v1',
+  nameThatNoteBest: 'jma_name_that_note_best_v1',
+  noteNames:        'jma_note_names_v1',
   tempoQuizBest:    'jma_tempo_quiz_best_v1',
   nameSkipped:      'jma_player_name_skipped_v1',
   teacherView:      'jma_teacher_view_v1',
@@ -105,11 +107,13 @@ export function getPlayerSnapshot() {
       },
       bestScores: {
         sightReading: readJson(KEYS.sightReadBest, {}),
+        nameThatNote: readJson(KEYS.nameThatNoteBest, {}),
         tempoQuiz:    parseInt(localStorage.getItem(KEYS.tempoQuizBest) || '0', 10) || 0,
       },
     },
     deviceSettings: {
       teacherView: localStorage.getItem(KEYS.teacherView) === '1',
+      noteNames:   localStorage.getItem(KEYS.noteNames) || 'solfege',
     },
   };
 }
@@ -142,9 +146,13 @@ export function importPlayerSnapshot(snapshot) {
   if (typeof progress?.totalPlayMs === 'number') localStorage.setItem(KEYS.playTime, String(progress.totalPlayMs));
   if (progress?.ranks?.lastSeenRankId) localStorage.setItem(KEYS.rankSeen, progress.ranks.lastSeenRankId);
   if (progress?.bestScores?.sightReading) writeJson(KEYS.sightReadBest, progress.bestScores.sightReading);
+  if (progress?.bestScores?.nameThatNote) writeJson(KEYS.nameThatNoteBest, progress.bestScores.nameThatNote);
   if (typeof progress?.bestScores?.tempoQuiz === 'number') localStorage.setItem(KEYS.tempoQuizBest, String(progress.bestScores.tempoQuiz));
   if (deviceSettings && typeof deviceSettings.teacherView === 'boolean') {
     localStorage.setItem(KEYS.teacherView, deviceSettings.teacherView ? '1' : '0');
+  }
+  if (deviceSettings && ['solfege', 'letters', 'both'].includes(deviceSettings.noteNames)) {
+    localStorage.setItem(KEYS.noteNames, deviceSettings.noteNames);
   }
 }
 
@@ -174,6 +182,7 @@ export function resetAllPlayerData() {
     KEYS.playTime,
     KEYS.rankSeen,
     KEYS.sightReadBest,
+    KEYS.nameThatNoteBest,
     KEYS.tempoQuizBest,
     KEYS.nameSkipped,
   ];

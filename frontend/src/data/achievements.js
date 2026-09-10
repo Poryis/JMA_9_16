@@ -55,7 +55,7 @@ export const ACHIEVEMENT_DOMAINS = [
     id: 'scholar',
     label: 'Music Scholar',
     blurb: 'Reading & theory',
-    teacherDescription: 'Demonstrates music literacy: notation reading, solfège vocabulary, sight-reading the treble staff, and engagement with formal music-theory lessons.',
+    teacherDescription: 'Demonstrates music literacy: notation reading, solfège and letter-name vocabulary, treble-staff note identification, sight-reading, and engagement with formal music-theory lessons.',
     color: '#34A853',
     icon: 'assets/characters/charlie-polliwog.png',
   },
@@ -121,9 +121,9 @@ export const ACHIEVEMENT_STICKERS = [
   // ---------- Music Scholar ----------
   // Two doors here too: the formal Lessons series for theory + the
   // Sight-Reading Sprint for applied staff-reading.
-  { id: 'ach_scholar_cadet',   domain: 'scholar',  tier: 'cadet',  name: 'Scholar Cadet',  hint: 'Finish Lesson 1 (or clear a Sight-Read sprint on Cadet)' },
-  { id: 'ach_scholar_pro',     domain: 'scholar',  tier: 'pro',    name: 'Scholar Pro',    hint: 'Finish Lessons 1–4 (or clear Sight-Read on Pro)' },
-  { id: 'ach_scholar_master',  domain: 'scholar',  tier: 'master', name: 'Scholar Master', hint: 'Finish all 7 lessons (or clear Sight-Read on Master)' },
+  { id: 'ach_scholar_cadet',   domain: 'scholar',  tier: 'cadet',  name: 'Scholar Cadet',  hint: 'Finish Lesson 1 (or clear Sight-Read or Name That Note on Cadet)' },
+  { id: 'ach_scholar_pro',     domain: 'scholar',  tier: 'pro',    name: 'Scholar Pro',    hint: 'Finish Lessons 1–4 (or clear Sight-Read or Name That Note on Pro)' },
+  { id: 'ach_scholar_master',  domain: 'scholar',  tier: 'master', name: 'Scholar Master', hint: 'Finish all 7 lessons (or clear Sight-Read or Name That Note on Master)' },
 ];
 
 export const ACHIEVEMENT_MAP = Object.fromEntries(ACHIEVEMENT_STICKERS.map(a => [a.id, a]));

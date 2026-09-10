@@ -50,6 +50,17 @@ const LEARN_TILES = [
     charWidthPct: 22,
     sfx: 'assets/audio/sfx-arpeggio.mp3',
   },
+  {
+    id: 'name-that-note',
+    title: 'NAME THAT NOTE',
+    path: '/name-that-note',
+    bg: 'assets/backgrounds/chalkboard.png',
+    color: '#2E7D5B',
+    accent: '#1B5E40',
+    character: 'assets/characters/finn-danger.png',
+    charWidthPct: 24,
+    sfx: 'assets/audio/sfx-bell-chime.mp3',
+  },
 ];
 
 export default function LearnMenuPage() {

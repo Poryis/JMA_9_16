@@ -1,4 +1,5 @@
 import { useEffect, useRef, useImperativeHandle, forwardRef, useCallback } from 'react';
+import useNoteNames from '../hooks/useNoteNames';
 import { motion } from 'framer-motion';
 import { BELLS } from './JellyBells';
 
@@ -22,6 +23,7 @@ const XYLO_BAR_CONFIG = [
 ];
 
 function XyloBar({ config, bell, onPlayNote, onNoteUp, isHighlighted, registerRef }) {
+  const { nameFor } = useNoteNames();
   const barRef = useRef(null);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ function XyloBar({ config, bell, onPlayNote, onNoteUp, isHighlighted, registerRe
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[var(--jma-dark)] opacity-40" />
         <div className="absolute top-3 left-1 w-1.5 rounded-full opacity-30 bg-white" style={{ height: `${config.height * 0.6}px` }} />
       </div>
-      <span className="text-sm md:text-base font-bold mt-2" style={{ color: bell?.color }}>{bell?.solfege}</span>
+      <span className="text-sm md:text-base font-bold mt-2" style={{ color: bell?.color }}>{bell ? nameFor(bell.note, bell.solfege) : ''}</span>
       <div className="w-6 h-6 rounded-full bg-white border-2 border-[var(--jma-dark)] text-xs font-bold flex items-center justify-center" style={{ color: bell?.color }}>{bell?.key}</div>
     </div>
   );
@@ -104,6 +106,7 @@ export const XylophoneInstrument = forwardRef(function XylophoneInstrument({ onP
 
 // --- PIANO -------------------------------------------------------------------
 function PianoKey({ bell, onPlayNote, onNoteUp, isHighlighted, registerRef }) {
+  const { nameFor } = useNoteNames();
   const keyRef = useRef(null);
 
   useEffect(() => {
@@ -139,7 +142,7 @@ function PianoKey({ bell, onPlayNote, onNoteUp, isHighlighted, registerRef }) {
         }}>
         <div className="absolute top-4 left-3 w-2.5 rounded-full opacity-30 bg-white" style={{ height: '60%' }} />
         <div className="bg-white/90 rounded-lg px-4 py-1.5 border-2 border-[var(--jma-dark)]">
-          <span className="text-xl font-black" style={{ color: 'var(--jma-dark)' }}>{bell.solfege}</span>
+          <span className="text-xl font-black" style={{ color: 'var(--jma-dark)' }}>{nameFor(bell.note, bell.solfege)}</span>
         </div>
       </div>
       <div className="w-8 h-8 rounded-full bg-white border-2 border-[var(--jma-dark)] text-base font-bold flex items-center justify-center mt-2" style={{ color: bell.color }}>{bell.key}</div>

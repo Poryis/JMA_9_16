@@ -11,6 +11,7 @@ import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { SONG_LIBRARY, SPEED_SETTINGS, getSongsByCategory } from '../data/songs';
 import { getHighScore, saveHighScore, getTopScores } from '../hooks/useScores';
+import useNoteNames, { formatNoteName } from '../hooks/useNoteNames';
 
 const NOTE_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'High C'];
 
@@ -50,7 +51,7 @@ function FallingBellNote({ note, noteId, laneIndex, totalLanes, speed, isDrum, r
   const lane = isDrum ? DRUM_LANES[note] : null;
   const bell = isDrum ? null : BELLS.find(b => b.note === note);
   const img = isDrum ? lane?.img1 : bell?.image1;
-  const label = isDrum ? lane?.short : bell?.solfege;
+  const label = isDrum ? lane?.short : (bell ? formatNoteName(bell.note, bell.solfege) : '');
   const color = isDrum ? lane?.color : bell?.color;
   const laneWidth = 100 / totalLanes;
   const elRef = useRef(null);
@@ -97,6 +98,7 @@ function FallingBellNote({ note, noteId, laneIndex, totalLanes, speed, isDrum, r
 }
 
 function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame }) {
+  const { nameFor } = useNoteNames();
   const navigate = useNavigate();
   const { playBellNote, playDrumSound, playFeedbackSound, initAudioContext } = useAudio();
 
@@ -792,7 +794,7 @@ function RhythmGamePage({ score, setScore, gameStats, setGameStats, resetGame })
               const bell = isDrumMode ? DRUM_LANES[note] : BELLS.find(b => b.note === note);
               const idleSrc = isDrumMode ? bell?.img1 : bell?.image1;
               const pressedSrc = isDrumMode ? bell?.img2 : bell?.image2;
-              const labelText = isDrumMode ? bell?.short : bell?.solfege;
+              const labelText = isDrumMode ? bell?.short : (bell ? nameFor(bell.note, bell.solfege) : '');
               const keyHint = bell?.key;
               const tintColor = bell?.color;
               if (!bellImgRefs.current[note]) bellImgRefs.current[note] = { current: null, pressedEl: null, lockEl: null };

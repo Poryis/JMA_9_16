@@ -11,6 +11,7 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import Confetti from '../components/Confetti';
 import usePianoAudio from '../hooks/usePianoAudio';
 import { PIANO_KEYS, MOODS, TOTAL_SLOTS, SLOTS_PER_ROW } from '../data/songStudio';
+import useNoteNames, { formatNoteName } from '../hooks/useNoteNames';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 
 const SONGS_KEY = 'jma_songs_v1';
@@ -60,13 +61,14 @@ function ColoredKey({ keyDef, scaleHighlighted, isTonic, onTap, playingNow }) {
         className="mb-1 md:mb-2 text-[10px] md:text-sm font-black font-display leading-none"
         style={{ color: 'var(--jma-dark)', textShadow: '1px 1px 0 rgba(255,255,255,0.6)' }}
       >
-        {keyDef.solfege}
+        {formatNoteName(keyDef.pitch, keyDef.solfege)}
       </span>
     </motion.button>
   );
 }
 
 export default function SongStudioPage() {
+  const { nameFor } = useNoteNames();
   const navigate = useNavigate();
   const { preload, preloadLoop, playPianoNote, playLoop, initContext, now } = usePianoAudio();
 
@@ -484,7 +486,7 @@ export default function SongStudioPage() {
                             ) : key ? (
                               <>
                                 <span className="text-[10px] md:text-xs font-black font-display leading-none" style={{ color: 'var(--jma-dark)' }}>
-                                  {key.solfege}
+                                  {nameFor(key.pitch, key.solfege)}
                                 </span>
                                 <span className="text-[8px] opacity-60 leading-none mt-0.5" style={{ color: 'var(--jma-dark)' }}>
                                   {key.octave}

@@ -1,5 +1,19 @@
 # Changelog
 
+## Name That Note — livelier tour + Place It note sound (Jun 2026)
+
+**User feedback**: "That opening animation is a tiny wooden still — the one where we are showing the names. Also in place it, maybe play the sound of the note we want placed?"
+
+### Change 1 — Opening staff tour is now dynamic (not a stiff still)
+- `NoteHead` gained a `bounce` prop. In tour mode the note now HOPS between staff positions (bouncier spring: stiffness 300 / damping 11) with a scale keyframe pop `[1, 1.32, 0.86, 1.1, 1]`, plus a pulsing golden ring radiating out of the head each stop.
+- Finn now announces every note as it lands ("This is E — it is the bottom line!") using the existing `WHY` rule map, and reacts with `cheer`/`party` moods through the tour. Stop cadence slowed 750ms → 900ms so kids can read each name.
+
+### Change 2 — Place It plays the target note
+- `nextQuestion` now rings `playBellNote(target)` on Place It question start (350ms delay), so the ear reinforces where the named note should go — mirrors the existing Name It behavior. The manual "Hear {note}" button remains.
+
+**Verification**: Frontend compiles cleanly (webpack "Compiled successfully", no runtime JS errors — only benign AudioContext autoplay warnings). NOT visually verified via screenshot: the AudioUnlockOverlay ("Tap to Start the Music") cannot be dismissed by the automation harness (no trusted first-gesture), so mid-tour frames couldn't be captured. Changes are additive/low-risk. User to confirm on-device.
+
+
 ## Robot Boogie — 3 follow-up fixes (Feb 2026)
 
 **User feedback after the first pass**:

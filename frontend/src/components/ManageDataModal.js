@@ -8,13 +8,55 @@
 
 import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, Upload, RotateCcw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { X, Download, Upload, RotateCcw, AlertTriangle, CheckCircle2, Music2 } from 'lucide-react';
 import {
   downloadSnapshotJson,
   importPlayerSnapshot,
   resetAllPlayerData,
   getPlayerSnapshot,
 } from '../lib/playerStorage';
+import useNoteNames, { NOTE_NAME_MODES } from '../hooks/useNoteNames';
+
+function NoteNamesSetting() {
+  const { mode, setMode } = useNoteNames();
+  const active = NOTE_NAME_MODES.find((m) => m.id === mode);
+  return (
+    <div
+      data-testid="note-names-setting"
+      className="rounded-2xl border-2 p-3 mb-3"
+      style={{ borderColor: 'var(--jma-dark)', backgroundColor: '#F4FAFF' }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <Music2 className="w-4 h-4" style={{ color: 'var(--jma-blue)' }} />
+        <span className="text-sm font-black font-display" style={{ color: 'var(--jma-dark)' }}>Note Names</span>
+        <span className="text-[10px] md:text-xs font-bold opacity-60 ml-auto" style={{ color: 'var(--jma-dark)' }}>Shown on bells, keys & games</span>
+      </div>
+      <div className="grid grid-cols-3 gap-1.5">
+        {NOTE_NAME_MODES.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            data-testid={`note-names-${m.id}`}
+            onClick={() => setMode(m.id)}
+            aria-pressed={mode === m.id}
+            className="rounded-xl border-2 py-1.5 text-xs md:text-sm font-black"
+            style={{
+              borderColor: 'var(--jma-dark)',
+              backgroundColor: mode === m.id ? 'var(--jma-blue)' : 'white',
+              color: mode === m.id ? 'white' : 'var(--jma-dark)',
+              boxShadow: mode === m.id ? '0 3px 0 0 var(--jma-dark)' : '0 2px 0 0 var(--jma-dark)',
+            }}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+      <p className="text-[11px] md:text-xs font-bold opacity-70 mt-2" style={{ color: 'var(--jma-dark)' }} data-testid="note-names-blurb">
+        {active?.blurb}
+      </p>
+    </div>
+  );
+}
 
 export default function ManageDataModal({ open, onClose }) {
   const fileInputRef = useRef(null);
@@ -123,6 +165,9 @@ export default function ManageDataModal({ open, onClose }) {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Note-name display (non-destructive device setting) */}
+            <NoteNamesSetting />
 
             {/* Action rows */}
             <div className="space-y-2">

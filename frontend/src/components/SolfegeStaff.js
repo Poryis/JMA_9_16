@@ -53,7 +53,7 @@ const NOTE_ART = {
 //   A (La)    Second space                          49.5
 //   B (Ti)    Middle line                           44
 //   High C    Third space                           38.5
-const NOTE_Y = {
+export const NOTE_Y = {
   C: 77,
   D: 71.5,
   E: 66,
@@ -65,6 +65,7 @@ const NOTE_Y = {
 };
 
 const STAFF_LINES = [22, 33, 44, 55, 66];
+export const STAFF_NOTE_AREA_LEFT = 'clamp(56px, 10vw, 84px)';
 
 const NOTE_IMG_H = 'clamp(140px, 22vw, 200px)';
 
@@ -87,8 +88,8 @@ function TrebleClef({ height }) {
   );
 }
 
-export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1, doneIndices = new Set() }) {
-  const heightStyle = 'clamp(240px, 34vw, 300px)';
+export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1, doneIndices = new Set(), height }) {
+  const heightStyle = height || 'clamp(240px, 34vw, 300px)';
   return (
     <div
       data-testid="solfege-staff"
@@ -126,7 +127,7 @@ export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1
       {/* Notes — laid out evenly to the right of the clef.
           Each cell is `flex-1 h-full relative` so absolutely-positioned
           children resolve against the full staff height. */}
-      <div className="absolute inset-y-0 right-2 flex items-stretch" style={{ left: 'clamp(56px, 10vw, 84px)' }}>
+      <div className="absolute inset-y-0 right-2 flex items-stretch" style={{ left: STAFF_NOTE_AREA_LEFT }}>
         {sequence.map((note, i) => {
           const art = NOTE_ART[note];
           if (!art) return null;
@@ -200,6 +201,7 @@ export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1
               </div>
 
               {/* Position number — small badge at the very bottom */}
+              {sequence.length > 1 && (
               <span
                 className="absolute font-black"
                 style={{
@@ -214,6 +216,7 @@ export default function SolfegeStaff({ sequence, currentIndex = -1, wrongAt = -1
               >
                 {i + 1}
               </span>
+              )}
             </div>
           );
         })}

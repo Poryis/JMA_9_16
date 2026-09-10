@@ -10,6 +10,7 @@ import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 import { getEarTrainerStats, saveEarTrainerStats } from '../hooks/useScores';
 import TempoListeningGame from '../components/TempoListeningGame';
+import useNoteNames from '../hooks/useNoteNames';
 
 // Difficulty levels
 const LEVELS = {
@@ -20,6 +21,8 @@ const LEVELS = {
 };
 
 function EarTrainerPage() {
+  const { nameFor, mode: nameMode } = useNoteNames();
+  const nameOf = (note) => { const b = BELLS.find(x => x.note === note); return b ? nameFor(b.note, b.solfege) : note; };
   const navigate = useNavigate();
   const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
 
@@ -292,7 +295,7 @@ function EarTrainerPage() {
           >
             {showAnswer ? (
               <span className="text-2xl font-bold text-white font-display">
-                {BELLS.find(b => b.note === targetNote)?.solfege}
+                {nameOf(targetNote)}
               </span>
             ) : (
               <span className="text-3xl text-white">?</span>
@@ -300,7 +303,7 @@ function EarTrainerPage() {
           </motion.div>
 
           <p className="text-lg font-bold font-display" style={{ color: 'var(--jma-dark)' }}>
-            {isCorrect === null ? 'What note is this?' : isCorrect ? 'Correct!' : `It was ${BELLS.find(b => b.note === targetNote)?.solfege}!`}
+            {isCorrect === null ? 'What note is this?' : isCorrect ? 'Correct!' : `It was ${nameOf(targetNote)}!`}
           </p>
 
           {isCorrect === null && (
@@ -377,8 +380,8 @@ function EarTrainerPage() {
                   <div className="absolute -top-2 -right-1 w-6 h-6 rounded-full bg-white border-2 border-[var(--jma-dark)] flex items-center justify-center text-xs font-bold" style={{ color: bell.color }}>{bell.key}</div>
                 </motion.button>
                 <div className="bell-note-label text-center">
-                  <span style={{ color: bell.color }}>{bell.solfege}</span>
-                  <span className="block text-xs opacity-70">({bell.note})</span>
+                  <span style={{ color: bell.color }}>{nameFor(bell.note, bell.solfege)}</span>
+                  {nameMode === 'solfege' && <span className="block text-xs opacity-70">({bell.note})</span>}
                 </div>
               </motion.div>
             ))}

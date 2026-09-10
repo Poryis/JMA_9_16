@@ -1,6 +1,7 @@
 // Stu's Kazoos - same imperative-DOM swap pattern as JellyBells.
 // Identical structure to JellyBellsRow but with kazoo art and 'kazoo-X' test ids.
 import { useCallback, useEffect, useImperativeHandle, useRef, forwardRef } from 'react';
+import useNoteNames from '../hooks/useNoteNames';
 
 export const KAZOOS = [
   { note: 'C',      solfege: 'Do', color: '#FF3B30', image1: 'assets/kazoos/kazoo-C-idle.png',     image2: 'assets/kazoos/kazoo-C-pressed.png',     key: '1' },
@@ -19,6 +20,7 @@ const KEY_TO_NOTE = {
 };
 
 function KazooItem({ kazoo, onPlayNote, onNoteUp, highlightedNote, registerRef }) {
+  const { nameFor } = useNoteNames();
   const idleRef = useRef(null);
   const pressedRef = useRef(null);
 
@@ -78,7 +80,7 @@ function KazooItem({ kazoo, onPlayNote, onNoteUp, highlightedNote, registerRef }
           style={{ color: kazoo.color }}>{kazoo.key}</div>
       </div>
       <div className="bell-note-label text-center">
-        <span style={{ color: kazoo.color }}>{kazoo.solfege}</span>
+        <span style={{ color: kazoo.color }}>{nameFor(kazoo.note, kazoo.solfege)}</span>
       </div>
     </div>
   );

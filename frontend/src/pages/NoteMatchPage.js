@@ -14,6 +14,7 @@ import RoomCharacters from '../components/RoomCharacters';
 import { BELLS } from '../components/JellyBells';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import useNoteNames from '../hooks/useNoteNames';
 
 // All 8 bells (including High C). Note Match uses subsets per difficulty.
 // Hard mode = full 8 bells (4 + 4 grid for nice symmetry).
@@ -62,6 +63,7 @@ function fmtTime(ms) {
 }
 
 export default function NoteMatchPage() {
+  const { nameFor } = useNoteNames();
   const navigate = useNavigate();
   const { playBellNote, playFeedbackSound, initAudioContext } = useAudio();
 
@@ -368,7 +370,7 @@ export default function NoteMatchPage() {
                         className="text-sm md:text-base font-black font-display"
                         style={{ color: card.bell.color, textShadow: '1px 1px 0 rgba(0,0,0,0.3)' }}
                       >
-                        {card.bell.solfege}
+                        {nameFor(card.bell.note, card.bell.solfege)}
                       </span>
                       {card.bell.note === 'High C' && (
                         <ChevronUp

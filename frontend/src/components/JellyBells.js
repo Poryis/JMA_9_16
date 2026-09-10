@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useImperativeHandle, useRef, forwardRef } from 'react';
+import useNoteNames from '../hooks/useNoteNames';
 
 export const BELLS = [
   { note: 'C', solfege: 'Do', color: '#FF3B30', image1: 'assets/bells/C 1.png', image2: 'assets/bells/C 2.png', key: '1' },
@@ -21,6 +22,7 @@ const KEY_TO_NOTE = {
 // Dual-frame approach: both idle and pressed frames rendered; toggled via opacity + display.
 // pointer capture prevents spurious pointerleave from breaking the swap.
 function BellItem({ bell, onPlayNote, onNoteUp, highlightedNote, showNotation, registerRef }) {
+  const { nameFor, mode: nameMode } = useNoteNames();
   const idleRef = useRef(null);
   const pressedRef = useRef(null);
 
@@ -80,8 +82,8 @@ function BellItem({ bell, onPlayNote, onNoteUp, highlightedNote, showNotation, r
           style={{ color: bell.color }}>{bell.key}</div>
       </div>
       <div className="bell-note-label text-center">
-        <span style={{ color: bell.color }}>{bell.solfege}</span>
-        {showNotation && <span className="block text-xs opacity-70">({bell.note})</span>}
+        <span style={{ color: bell.color }}>{nameFor(bell.note, bell.solfege)}</span>
+        {showNotation && nameMode === 'solfege' && <span className="block text-xs opacity-70">({bell.note})</span>}
       </div>
     </div>
   );

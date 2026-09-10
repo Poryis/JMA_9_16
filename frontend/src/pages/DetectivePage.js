@@ -14,6 +14,7 @@ import { BELLS } from '../components/JellyBells';
 import { DETECTIVE_TUNES, SCALE_ORDER } from '../data/detectiveMelodies';
 import useAudio from '../hooks/useAudio';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
+import useNoteNames from '../hooks/useNoteNames';
 
 const BELL_BY_NOTE = Object.fromEntries(BELLS.map(b => [b.note, b]));
 
@@ -187,6 +188,8 @@ function buildRound(levelKey) {
 }
 
 export default function DetectivePage() {
+  const { nameFor } = useNoteNames();
+  const nameOf = (note) => { const b = BELL_BY_NOTE[note]; return b ? nameFor(b.note, b.solfege) : note; };
   const navigate = useNavigate();
   const { playBellNote, initAudioContext, playFeedbackSound } = useAudio();
 
@@ -747,7 +750,7 @@ export default function DetectivePage() {
                         className="text-xs md:text-sm font-black font-display"
                         style={{ color: labelColor, textShadow: '1px 1px 0 rgba(0,0,0,0.18)' }}
                       >
-                        {bell.solfege}{note === 'High C' ? '↑' : ''}
+                        {nameFor(bell.note, bell.solfege)}{note === 'High C' ? '↑' : ''}
                       </span>
                     ) : (
                       <svg
@@ -792,11 +795,11 @@ export default function DetectivePage() {
               >
                 {round.mode === 'extra'
                   ? (isCorrect
-                      ? `🔍 Slot ${round.correctSlot + 1} (${BELL_BY_NOTE[round.wrong]?.solfege || round.wrong}) covered up a silence — that spot should have been a REST!`
-                      : `Slot ${round.correctSlot + 1} (${BELL_BY_NOTE[round.wrong]?.solfege || round.wrong}) was hiding a silence. The song has a rest there!`)
+                      ? `🔍 Slot ${round.correctSlot + 1} (${nameOf(round.wrong)}) covered up a silence — that spot should have been a REST!`
+                      : `Slot ${round.correctSlot + 1} (${nameOf(round.wrong)}) was hiding a silence. The song has a rest there!`)
                   : (isCorrect
-                      ? `🔍 Beat ${round.correctSlot + 1} was the wrong one — should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`
-                      : `Beat ${round.correctSlot + 1} was off! Should be ${BELL_BY_NOTE[round.original]?.solfege || round.original}`)
+                      ? `🔍 Beat ${round.correctSlot + 1} was the wrong one — should be ${nameOf(round.original)}`
+                      : `Beat ${round.correctSlot + 1} was off! Should be ${nameOf(round.original)}`)
                 }
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">

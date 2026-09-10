@@ -124,6 +124,12 @@ const ROOM_CAST = {
     { id: 'charlie', pos: { l: 93, t: 22, w: 6.5, anim: 'bob' },  line: "Which one's off?" },
     { id: 'finn',    pos: { l: 93, t: 82, w: 7,   anim: 'sway' }, line: 'Crack the case!' },
   ],
+  // Name That Note — Finn hosts from the speech bubble; friends watch from the sides
+  'name-that-note': [
+    { id: 'stew',    pos: { l: 4,  t: 24, w: 7,   anim: 'bob' },  line: 'Every note has a home!' },
+    { id: 'charlie', pos: { l: 93, t: 22, w: 6.5, anim: 'sway' }, line: 'Lines and spaces!' },
+    { id: 'jazzy',   pos: { l: 93, t: 82, w: 6.5, anim: 'bob' },  line: 'Read it like a pro.' },
+  ],
   // Fun Facts Clubhouse handled by its own page
 };
 
