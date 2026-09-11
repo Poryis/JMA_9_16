@@ -52,7 +52,7 @@ export default function CreateMenuPage() {
     <SubMenuPage
       testId="create-menu-page"
       sectionTitle="CREATE"
-      sectionSubtitle="Make some music"
+      sectionSubtitle="CREATE"
       sectionColor="#C2185B"
       bgGradient="radial-gradient(circle at 20% 20%, #FFE0EF 0%, transparent 50%), radial-gradient(circle at 80% 80%, #F2C7E2 0%, transparent 55%), linear-gradient(180deg, #FFEBF5 0%, #F9CDE3 100%)"
       tiles={CREATE_TILES}

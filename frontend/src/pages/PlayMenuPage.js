@@ -65,7 +65,7 @@ export default function PlayMenuPage() {
     <SubMenuPage
       testId="play-menu-page"
       sectionTitle="PLAY"
-      sectionSubtitle="Pick your jam"
+      sectionSubtitle="PLAY"
       sectionColor="#E94B3C"
       bgGradient="radial-gradient(circle at 20% 20%, #FFE5A6 0%, transparent 50%), radial-gradient(circle at 80% 80%, #FFD9B0 0%, transparent 55%), linear-gradient(180deg, #FFF5DC 0%, #FFD89E 100%)"
       tiles={PLAY_TILES}

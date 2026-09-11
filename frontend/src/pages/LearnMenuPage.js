@@ -68,7 +68,7 @@ export default function LearnMenuPage() {
     <SubMenuPage
       testId="learn-menu-page"
       sectionTitle="LEARN"
-      sectionSubtitle="Lessons & discoveries"
+      sectionSubtitle="LEARN"
       sectionColor="#1E88E5"
       bgGradient="radial-gradient(circle at 20% 20%, #C7E9FF 0%, transparent 50%), radial-gradient(circle at 80% 80%, #B5D8F2 0%, transparent 55%), linear-gradient(180deg, #E6F4FF 0%, #BFE0F8 100%)"
       tiles={LEARN_TILES}
