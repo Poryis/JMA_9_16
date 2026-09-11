@@ -42,7 +42,16 @@ function useUniformTitleFit(tiles) {
       if (!grid || !el) return;
       const sample = grid.querySelector('[data-testid^="submenu-tile-"]');
       if (!sample) return;
-      const cardWidth = sample.clientWidth;
+      // Prefer measuring the NARROW column-1 tile width so the shared font
+      // size fits the tighter cards. A full-width (col-span-2) tile will
+      // simply have extra title breathing room, which is fine.
+      const allTiles = grid.querySelectorAll('[data-testid^="submenu-tile-"]');
+      let cardWidth = sample.clientWidth;
+      allTiles.forEach((t) => {
+        if (t.clientWidth > 0 && t.clientWidth < cardWidth) {
+          cardWidth = t.clientWidth;
+        }
+      });
       // Title anchors top-left with a small inset; give it ~88% of card
       // width to breathe. Any right-edge crowding on long titles is what
       // triggers the shrink.
@@ -164,13 +173,13 @@ function Tile({ tile, index, navigate, titleFontSize }) {
       onClick={handleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`relative w-full text-left rounded-3xl border-4 overflow-hidden ${disabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+      className={`relative w-full text-left rounded-3xl border-4 overflow-hidden ${tile.fullWidth ? 'md:col-span-2' : ''} ${disabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
       style={{
         borderColor: 'var(--jma-dark)',
         boxShadow: `0 8px 0 0 var(--jma-dark)`,
         background: tile.color,
-        aspectRatio: '4 / 3',
-        minHeight: 220,
+        aspectRatio: tile.fullWidth ? '16 / 6' : '4 / 3',
+        minHeight: tile.fullWidth ? 180 : 220,
       }}
       initial={{ y: 40, opacity: 0, rotate: index % 2 === 0 ? -1.5 : 1.5 }}
       animate={{ y: 0, opacity: 1, rotate: 0 }}

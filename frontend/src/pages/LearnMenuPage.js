@@ -3,7 +3,7 @@ import SubMenuPage from '../components/SubMenuPage';
 const LEARN_TILES = [
   {
     id: 'lessons',
-    title: 'SEASON 1',
+    title: 'MUSIC 101',
     path: '/lessons',
     bg: 'assets/backgrounds/curtain-bg.png',
     color: '#7A1F1F',
@@ -12,6 +12,7 @@ const LEARN_TILES = [
     charWidthPct: 30,
     charObjectPosition: 'bottom right',
     sfx: 'assets/audio/sfx-page.mp3',
+    fullWidth: true,
   },
   {
     id: 'fun-facts',
