@@ -145,7 +145,8 @@ function Tile({ tile, index, navigate }) {
       whileHover={disabled ? {} : { y: -6, boxShadow: '0 14px 0 0 var(--jma-dark)', scale: 1.012 }}
       whileTap={disabled ? {} : { y: 3, boxShadow: '0 4px 0 0 var(--jma-dark)', scale: 0.985 }}
     >
-      {/* Background scene */}
+      {/* Background scene — slow Ken Burns drift so the world "breathes".
+          Staggered per-card so the grid isn't in lockstep. */}
       {tile.bg && (
         <div
           className="absolute inset-0"
@@ -153,6 +154,9 @@ function Tile({ tile, index, navigate }) {
             backgroundImage: `url(${tile.bg})`,
             backgroundSize: 'cover',
             backgroundPosition: tile.bgPosition || 'center',
+            animation: 'submenuKenBurns 16s ease-in-out infinite',
+            animationDelay: `${(index % 4) * 1.7}s`,
+            willChange: 'transform',
           }}
         />
       )}
@@ -168,6 +172,51 @@ function Tile({ tile, index, navigate }) {
         }}
       />
 
+      {/* Diagonal sheen sweep — subtle premium-tile polish. Passes across
+          every ~9s with a stagger so cards don't all glint at once. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none overflow-hidden z-[8]"
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: '-20%',
+            left: 0,
+            width: '38%',
+            height: '140%',
+            background:
+              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)',
+            transform: 'skewX(-18deg) translateX(-160%)',
+            animation: 'submenuSheen 9s ease-in-out infinite',
+            animationDelay: `${1.2 + (index % 5) * 1.5}s`,
+            mixBlendMode: 'overlay',
+            willChange: 'transform, opacity',
+          }}
+        />
+      </div>
+
+      {/* Accent-colored sparkle rising from the bottom of the card. One dot,
+          slight per-card horizontal offset so it feels handcrafted, not
+          templated. Skipped on disabled tiles. */}
+      {!disabled && (
+        <div
+          aria-hidden="true"
+          className="absolute pointer-events-none z-[9]"
+          style={{
+            bottom: '10%',
+            left: `${28 + (index % 3) * 22}%`,
+            width: 'clamp(8px, 1.2vw, 12px)',
+            height: 'clamp(8px, 1.2vw, 12px)',
+            borderRadius: '9999px',
+            background: `radial-gradient(circle, #FFFFFF 0%, ${tile.accent || tile.color} 60%, transparent 100%)`,
+            boxShadow: `0 0 8px 2px ${tile.accent || tile.color}aa`,
+            animation: 'submenuSparkle 4.4s ease-out infinite',
+            animationDelay: `${0.6 + (index % 4) * 1.1}s`,
+            willChange: 'transform, opacity',
+          }}
+        />
+      )}
       {/* Primary character — BIG, bottom-centered so it dominates the
           cartridge without covering the title band up top. Charlie's Song
           Studio has no character; we simply skip rendering.

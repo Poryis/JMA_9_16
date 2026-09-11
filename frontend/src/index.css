@@ -31,6 +31,29 @@
   box-sizing: border-box;
 }
 
+/* ---- SubMenu tile "pop" animations ---- */
+/* Slow Ken Burns drift on card background scenes. */
+@keyframes submenuKenBurns {
+  0%   { transform: scale(1.02) translate(0, 0); }
+  50%  { transform: scale(1.09) translate(-1.6%, -1.1%); }
+  100% { transform: scale(1.02) translate(0, 0); }
+}
+/* Diagonal light sheen sweeping across each tile, with a pause between passes. */
+@keyframes submenuSheen {
+  0%, 30%   { transform: skewX(-18deg) translateX(-160%); opacity: 0; }
+  36%       { opacity: 0.55; }
+  62%       { opacity: 0.55; }
+  70%, 100% { transform: skewX(-18deg) translateX(420%); opacity: 0; }
+}
+/* Single sparkle floating up from the bottom of the card in the tile's accent color. */
+@keyframes submenuSparkle {
+  0%   { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
+  15%  { opacity: 0.95; }
+  85%  { transform: translate(-50%, -220%) scale(0.5); opacity: 0.55; }
+  100% { transform: translate(-50%, -260%) scale(0.4); opacity: 0; }
+}
+/* ---- /SubMenu tile animations ---- */
+
 body {
   margin: 0;
   font-family: var(--font-body);
