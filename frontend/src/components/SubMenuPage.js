@@ -60,7 +60,7 @@ function useUniformTitleFit(tiles) {
       const target = Math.max(0, cardWidth - 28);
       if (target <= 0) return;
 
-      const MAX = 44;
+      const MAX = 64;
       const MIN = 12;
       let minSize = MAX;
       for (const tile of tiles) {
@@ -89,6 +89,13 @@ function useUniformTitleFit(tiles) {
     };
 
     schedule();
+    // Re-measure once web fonts finish loading. Without this, the first
+    // measurement uses the (wider) fallback font, we shrink more than
+    // necessary, then Fredoka swaps in and the visible text looks
+    // dramatically undersized.
+    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(schedule).catch(() => {});
+    }
     const ro = new ResizeObserver(schedule);
     if (gridRef.current) ro.observe(gridRef.current);
     window.addEventListener('resize', schedule);
