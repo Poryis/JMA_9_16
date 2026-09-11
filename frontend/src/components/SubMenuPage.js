@@ -3,9 +3,12 @@
 // Look: NES cartridge art. Header uses the same Finn · Shield · Charlie hero
 // row as the home page (branding consistency) instead of a giant word.
 // Each tile is dominated by:
-//   - Full-bleed background scene
-//   - Character hero at the bottom (BIG, centered) — never cropped
-//   - Title band at the TOP, single line, auto-fit, centered
+//   - Full-bleed background scene (slow Ken Burns pop)
+//   - Character hero at the bottom-center (BIG) — never cropped
+//   - Title band at the TOP-LEFT, single line, UNIFORM font-size across
+//     every tile on the page (page-level fit: pick the smallest size that
+//     lets the longest title in the set fit on one line, then apply that
+//     size to all tiles so the grid feels consistent).
 //
 // No taglines, no sign nameplates, no speech bubbles — the title carries
 // the tile.
@@ -17,76 +20,106 @@ import { GameHeader } from './GameUI';
 import BlimpFlyby from './BlimpFlyby';
 
 /**
- * Auto-shrinks its font-size so the (single-line, no-wrap) title fits
- * the available width. Uses ResizeObserver so responsive layouts
- * (grid → single-column) refit correctly on rotate/resize.
+ * Page-level "pick the smallest font-size that fits the longest title in
+ * this tile set at the current card width" hook. Returns the size + refs
+ * the SubMenuPage attaches to the grid + a hidden measurement span.
+ *
+ * Rationale: every tile shares the same card width, so every tile can
+ * (and should) share the same title font-size. Doing this at the page
+ * level means DETECTIVE DR. JELLYBONE and JAM SESSION both render at
+ * the same size — no jarring visual pop between neighbors.
  */
-function AutoFitTitle({ text, testId }) {
-  const wrapRef = useRef(null);
-  const textRef = useRef(null);
+function useUniformTitleFit(tiles) {
+  const gridRef = useRef(null);
+  const measureRef = useRef(null);
+  const [fontSize, setFontSize] = useState(30);
 
   useLayoutEffect(() => {
     let rafId = 0;
-    const fit = () => {
-      const wrap = wrapRef.current;
-      const el = textRef.current;
-      if (!wrap || !el) return;
-      // Start large, shrink until it fits. Keep min for readability.
-      const MAX = 44;
-      const MIN = 14;
-      let size = MAX;
-      el.style.fontSize = size + 'px';
-      el.style.WebkitTextStrokeWidth = Math.max(2, size * 0.09) + 'px';
-      const target = wrap.clientWidth - 4;
+    const measure = () => {
+      const grid = gridRef.current;
+      const el = measureRef.current;
+      if (!grid || !el) return;
+      const sample = grid.querySelector('[data-testid^="submenu-tile-"]');
+      if (!sample) return;
+      const cardWidth = sample.clientWidth;
+      // Title anchors top-left with a small inset; give it ~88% of card
+      // width to breathe. Any right-edge crowding on long titles is what
+      // triggers the shrink.
+      const target = Math.max(0, cardWidth * 0.88 - 4);
       if (target <= 0) return;
-      while (el.scrollWidth > target && size > MIN) {
-        size -= 1;
-        el.style.fontSize = size + 'px';
-        el.style.WebkitTextStrokeWidth = Math.max(2, size * 0.09) + 'px';
+
+      const MAX = 44;
+      const MIN = 12;
+      let minSize = MAX;
+      for (const tile of tiles) {
+        el.textContent = tile.title;
+        let s = MAX;
+        el.style.fontSize = s + 'px';
+        el.style.WebkitTextStrokeWidth = Math.max(2, s * 0.09) + 'px';
+        while (el.scrollWidth > target && s > MIN) {
+          s -= 1;
+          el.style.fontSize = s + 'px';
+          el.style.WebkitTextStrokeWidth = Math.max(2, s * 0.09) + 'px';
+        }
+        if (s < minSize) minSize = s;
       }
+      // Only update state when the value actually changes to avoid a
+      // ResizeObserver re-loop.
+      setFontSize((prev) => (prev !== minSize ? minSize : prev));
     };
-    // Defer to next frame so we don't mutate layout during an in-flight
-    // ResizeObserver dispatch (which triggers the browser's
-    // "ResizeObserver loop completed with undelivered notifications"
-    // benign-but-noisy overlay in the CRA dev error boundary).
+
     const schedule = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
         rafId = 0;
-        fit();
+        measure();
       });
     };
+
     schedule();
     const ro = new ResizeObserver(schedule);
-    if (wrapRef.current) ro.observe(wrapRef.current);
+    if (gridRef.current) ro.observe(gridRef.current);
+    window.addEventListener('resize', schedule);
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
       ro.disconnect();
+      window.removeEventListener('resize', schedule);
     };
-  }, [text]);
+  }, [tiles]);
 
+  return { fontSize, gridRef, measureRef };
+}
+
+/**
+ * Simple single-line uppercase title rendered at a caller-controlled
+ * fontSize. Stroke width scales with font-size so heavy display type
+ * stays readable when small (mobile) without eating the letterforms
+ * when large (desktop).
+ */
+function TileTitle({ text, testId, fontSize }) {
+  const strokePx = Math.max(2, fontSize * 0.09);
   return (
-    <div ref={wrapRef} className="w-full text-center">
-      <h2
-        ref={textRef}
-        data-testid={testId}
-        className="font-black font-display uppercase whitespace-nowrap inline-block leading-none"
-        style={{
-          color: 'white',
-          WebkitTextStroke: '3px var(--jma-dark)',
-          paintOrder: 'stroke fill',
-          textShadow:
-            '0 3px 0 rgba(10,37,64,0.7), 0 6px 14px rgba(10,37,64,0.55)',
-          letterSpacing: '0.01em',
-        }}
-      >
-        {text}
-      </h2>
-    </div>
+    <h2
+      data-testid={testId}
+      className="font-black font-display uppercase whitespace-nowrap leading-none"
+      style={{
+        color: 'white',
+        fontSize: `${fontSize}px`,
+        WebkitTextStroke: `${strokePx}px var(--jma-dark)`,
+        paintOrder: 'stroke fill',
+        textShadow:
+          '0 3px 0 rgba(10,37,64,0.7), 0 6px 14px rgba(10,37,64,0.55)',
+        letterSpacing: '0.01em',
+        margin: 0,
+      }}
+    >
+      {text}
+    </h2>
   );
 }
 
-function Tile({ tile, index, navigate }) {
+function Tile({ tile, index, navigate, titleFontSize }) {
   const [hovered, setHovered] = useState(false);
   const disabled = tile.disabled;
 
@@ -255,11 +288,19 @@ function Tile({ tile, index, navigate }) {
         </div>
       )}
 
-      {/* Title band — single line, centered, top of card. Auto-fits so the
-          longest titles ("DETECTIVE DR. JELLYBONE", "WHO'S GOT THE RHYTHM")
-          still fit on one line at any card width. */}
-      <div className="absolute left-0 right-0 top-3 md:top-4 px-3 z-20">
-        <AutoFitTitle text={tile.title} testId={`submenu-tile-title-${tile.id}`} />
+      {/* Title band — single line, TOP-LEFT anchored, uniform font-size
+          across every tile on the page (computed once at the SubMenuPage
+          level so JAM SESSION and DETECTIVE DR. JELLYBONE render at the
+          same visual weight). */}
+      <div
+        className="absolute left-3 top-3 md:left-4 md:top-4 z-20"
+        style={{ maxWidth: 'calc(100% - 24px)' }}
+      >
+        <TileTitle
+          text={tile.title}
+          testId={`submenu-tile-title-${tile.id}`}
+          fontSize={titleFontSize}
+        />
         {disabled && (
           <p
             className="mt-1 text-[10px] md:text-xs font-black uppercase tracking-wide inline-block px-2 py-0.5 rounded-full"
@@ -383,6 +424,7 @@ function HeaderHero({ subtitle }) {
  */
 export default function SubMenuPage({ sectionTitle, sectionSubtitle, bgGradient, tiles, testId }) {
   const navigate = useNavigate();
+  const { fontSize, gridRef, measureRef } = useUniformTitleFit(tiles);
   return (
     <div
       data-testid={testId}
@@ -399,9 +441,39 @@ export default function SubMenuPage({ sectionTitle, sectionSubtitle, bgGradient,
 
       <HeaderHero subtitle={sectionSubtitle} />
 
-      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+      {/* Hidden measurement span used by useUniformTitleFit — MUST match
+          the visible TileTitle's font family, weight, transform, letter
+          spacing, and stroke so scrollWidth measurements are accurate. */}
+      <span
+        ref={measureRef}
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: '-9999px',
+          left: '-9999px',
+          visibility: 'hidden',
+          whiteSpace: 'nowrap',
+          fontFamily: "'Fredoka', cursive",
+          fontWeight: 900,
+          textTransform: 'uppercase',
+          letterSpacing: '0.01em',
+          lineHeight: 0.9,
+          paintOrder: 'stroke fill',
+        }}
+      />
+
+      <div
+        ref={gridRef}
+        className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5"
+      >
         {tiles.map((tile, idx) => (
-          <Tile key={tile.id} tile={tile} index={idx} navigate={navigate} />
+          <Tile
+            key={tile.id}
+            tile={tile}
+            index={idx}
+            navigate={navigate}
+            titleFontSize={fontSize}
+          />
         ))}
       </div>
     </div>
