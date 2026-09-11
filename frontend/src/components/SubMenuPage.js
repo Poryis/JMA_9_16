@@ -52,10 +52,12 @@ function useUniformTitleFit(tiles) {
           cardWidth = t.clientWidth;
         }
       });
-      // Title anchors top-left with a small inset; give it ~88% of card
-      // width to breathe. Any right-edge crowding on long titles is what
-      // triggers the shrink.
-      const target = Math.max(0, cardWidth * 0.88 - 4);
+      // Title container is `absolute left-3/-4` with `maxWidth: calc(100%
+       // - 24px)`, so the real usable width is card_width - 24px. Give a
+       // tiny safety pad and use that directly (earlier 0.88 * cardWidth
+       // was over-tightening and shrinking the shared font more than
+       // needed).
+      const target = Math.max(0, cardWidth - 28);
       if (target <= 0) return;
 
       const MAX = 44;
