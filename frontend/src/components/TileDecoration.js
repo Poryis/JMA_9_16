@@ -75,28 +75,40 @@ export default function TileDecoration({ type, accent }) {
 
     // ------------------------------------------------------------------
     case 'clouds': {
-      // Fluffy cartoon clouds drifting across. Meant to read as if
-      // they're floating past the window/sky in the tile art.
+      // Fluffy cartoon clouds drifting through the WINDOW area of the
+      // clubhouse.png background — a small right-of-center panel (roughly
+      // 65-85% x 22-42% of the card). Container is constrained to that
+      // window so the clouds appear to be seen through the frame, not
+      // floating across the whole tile.
       const clouds = [
-        { top: '14%', size: 46, dur: 22, delay: 0 },
-        { top: '22%', size: 30, dur: 28, delay: 6 },
-        { top: '30%', size: 60, dur: 34, delay: 14 },
+        { top: 4,  size: 22, dur: 11, delay: 0 },
+        { top: 30, size: 30, dur: 15, delay: 3.5 },
+        { top: 58, size: 18, dur: 9,  delay: 7 },
       ];
       return (
-        <div {...wrapProps}>
+        <div
+          aria-hidden="true"
+          className="absolute pointer-events-none z-[5] overflow-hidden"
+          style={{
+            top: '22%',
+            left: '65%',
+            width: '20%',
+            height: '20%',
+          }}
+        >
           {clouds.map((c, i) => (
             <div
               key={i}
               className="absolute"
               style={{
-                top: c.top,
+                top: c.top + '%',
                 left: 0,
                 width: c.size,
                 height: c.size * 0.55,
                 background: 'radial-gradient(circle at 30% 60%, #FFFFFF 0%, #FFFFFF 60%, transparent 70%), radial-gradient(circle at 60% 40%, #FFFFFF 0%, #FFFFFF 55%, transparent 65%), radial-gradient(circle at 80% 65%, #FFFFFF 0%, #FFFFFF 55%, transparent 65%)',
-                border: '2px solid var(--jma-dark)',
+                border: '1.5px solid var(--jma-dark)',
                 borderRadius: '50%',
-                opacity: 0.85,
+                opacity: 0.95,
                 animation: `tile-cloud-drift ${c.dur}s linear ${c.delay}s infinite`,
               }}
             />

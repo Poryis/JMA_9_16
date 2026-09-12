@@ -36,7 +36,7 @@ const PLAY_TILES = [
     accent: '#0A6E7A',
     character: 'assets/characters/charlie-surf.png',
     charWidthPct: 30,
-    decoration: 'staff',
+    decoration: 'notes',
     sfx: 'assets/audio/sfx-bell-pair.mp3',
   },
   {
@@ -60,7 +60,7 @@ const PLAY_TILES = [
     accent: '#1F7A36',
     character: 'assets/characters/charlie-grad.png',
     charWidthPct: 30,
-    decoration: 'staff',
+    decoration: 'clouds',
     sfx: 'assets/audio/sfx-bell-pair.mp3',
   },
 ];
