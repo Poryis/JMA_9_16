@@ -13,6 +13,62 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { pickFeaturedEpisode } from '../data/jmatv';
 
+// CSS-only bubble-letter "JMAtv" wordmark. Uses `Bagel Fat One` — a
+// balloon/puffy cartoon display face — with a chunky dark stroke and a
+// stacked drop-shadow for an inflated 3D-sticker look. Placeholder until
+// the custom PNG is finalized; swap the whole component for an <img>
+// when it lands.
+function BubbleWordmark() {
+  const LETTERS = [
+    { char: 'J', color: '#FF3B30', rot: -6 },
+    { char: 'M', color: '#FF9500', rot: 4 },
+    { char: 'A', color: '#4CD964', rot: -3 },
+    { char: 'T', color: '#4285F4', rot: 5, small: true },
+    { char: 'V', color: '#AF52DE', rot: -4, small: true },
+  ];
+  return (
+    <motion.div
+      data-testid="jmatv-bubble-wordmark"
+      className="flex items-end justify-center md:justify-end select-none"
+      style={{ lineHeight: 0.9 }}
+      animate={{ rotate: [-1.5, 1.5, -1.5], y: [0, -3, 0] }}
+      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      aria-label="JMAtv"
+    >
+      {LETTERS.map((L, i) => (
+        <span
+          key={i}
+          style={{
+            fontFamily: "'Bagel Fat One', 'Fredoka', cursive",
+            fontWeight: 400,
+            color: L.color,
+            fontSize: L.small
+              ? 'clamp(40px, 6.6vw, 72px)'
+              : 'clamp(56px, 9vw, 100px)',
+            WebkitTextStroke: '0.11em var(--jma-dark)',
+            paintOrder: 'stroke fill',
+            // Stacked layered shadow for the "puffed sticker" 3D effect:
+            // a chunky solid ledge underneath, then a softer diffuse
+            // glow further down.
+            textShadow: [
+              '2px 2px 0 var(--jma-dark)',
+              '4px 4px 0 var(--jma-dark)',
+              '6px 6px 0 var(--jma-dark)',
+              '8px 10px 18px rgba(10,37,64,0.35)',
+            ].join(', '),
+            transform: `rotate(${L.rot}deg)`,
+            display: 'inline-block',
+            marginLeft: i === 0 ? 0 : L.small ? '0.02em' : '0.04em',
+            letterSpacing: '0',
+          }}
+        >
+          {L.char}
+        </span>
+      ))}
+    </motion.div>
+  );
+}
+
 export default function RetroTV() {
   const navigate = useNavigate();
   // Stable per-mount pick so the preview doesn't reshuffle between re-renders.
@@ -29,27 +85,26 @@ export default function RetroTV() {
       data-testid="home-retro-tv"
       // Full-width row that grounds the TV in a friendly "channel banner"
       // context. Left column is the wacky JMAtv brand + caption, center
-      // is the CRT itself, right is a starburst tease. pt-8 still reserves
-      // vertical space for the rabbit ears which extend above the TV body.
-      className="relative z-10 mt-10 md:mt-14 mb-2 pt-4 w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 px-3"
+      // is the CRT itself, right is a starburst tease.
+      //
+      // Top-space rule: the rabbit ears extend ~26% of the TV's width
+      // ABOVE the TV body via negative positioning. On desktop that's
+      // ~80px. Row needs ~100px of clear space at the top so the ears
+      // don't crash into the PLAY/LEARN/CREATE cards above.
+      className="relative z-10 mt-16 md:mt-24 mb-2 pt-8 md:pt-12 w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 px-3"
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
     >
-      {/* LEFT — wacky brand column. Not just floating text; it grounds the
-          TV so it doesn't feel abandoned in the middle of the page. */}
+      {/* LEFT — wacky brand column. Bubble-letter "JMAtv" wordmark rendered
+          in CSS as a placeholder for the custom logo art the user is
+          finalizing. Once the new PNG lands, swap the <BubbleWordmark />
+          for an <img src="assets/ui/jmatv-logo-v2.png" /> and delete the
+          BubbleWordmark component. Rest of the column stays. */}
       <div className="flex flex-col items-center md:items-end text-center md:text-right flex-shrink-0 md:max-w-[240px] order-2 md:order-1">
-        <motion.img
-          src="assets/ui/jmatv-logo.png"
-          alt="JMAtv"
-          draggable={false}
-          className="drop-shadow-lg"
-          style={{ width: 'clamp(120px, 18vw, 200px)', height: 'auto' }}
-          animate={{ rotate: [-2, 2, -2], y: [0, -3, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        />
+        <BubbleWordmark />
         <p
-          className="mt-1 md:mt-2 font-black font-display text-base md:text-lg leading-tight"
+          className="mt-2 md:mt-3 font-black font-display text-base md:text-lg leading-tight"
           style={{ color: 'var(--jma-dark)' }}
         >
           Watch today&apos;s episode!
