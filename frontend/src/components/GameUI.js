@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Volume2 } from 'lucide-react';
 import HarpIcon from './HarpIcon';
+import RetroTVIcon from './RetroTVIcon';
 
 function GameHeader({ title, score, streak, showHomeButton = true }) {
   const navigate = useNavigate();
@@ -12,6 +13,13 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
   // we hide it entirely so kids don't accidentally back out of the app.
   const isOnHome = location.pathname === '/';
   const renderBackButton = showHomeButton && !isOnHome;
+
+  // When the user is inside JMAtv routes, swap the harp for a tiny
+  // cartoon CRT so the back-button reads as "back to the TV world"
+  // instead of the generic Academy shield. Every other route keeps the
+  // harp so the shield stays the strong Academy brand anchor.
+  const insideJMAtv = location.pathname.startsWith('/jmatv');
+  const BackIcon = insideJMAtv ? RetroTVIcon : HarpIcon;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-2 md:px-4 py-1 md:py-3 pointer-events-none">
@@ -37,7 +45,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
                 }}
               >
                 <div style={{ width: '118%', height: '118%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <HarpIcon />
+                  <BackIcon />
                 </div>
               </div>
               <span
