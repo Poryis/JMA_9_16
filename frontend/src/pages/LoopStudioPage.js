@@ -8,6 +8,7 @@ import { FullscreenButton } from '../components/FullscreenButton';
 import { DrumKitVisual, TurntableVisual } from '../components/Instruments';
 import useAudio from '../hooks/useAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
+import usePlayer from '../hooks/usePlayer';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
 
 const DEFAULT_BPM = 100;
@@ -118,6 +119,8 @@ function LoopStudioPage() {
   const navigate = useNavigate();
   const { playBellNote, playDrumSound, initAudioContext, getAudioGraph } = useAudio();
   const recorder = useMp3Recorder(getAudioGraph);
+  const { player } = usePlayer();
+  const playerName = player?.displayName || '';
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
@@ -128,6 +131,18 @@ function LoopStudioPage() {
   const [mutedTracks, setMutedTracks] = useState(new Set());
   // For turntable scratch visual (kept as state since spin animation needs it)
   const [activeHits, setActiveHits] = useState(new Set());
+
+  // Idle-state LCD chatter — while nothing is playing, the STEP readout
+  // cycles a few playful prompts so the deck feels alive and inviting to
+  // kids instead of showing a static "--/16".
+  const IDLE_MESSAGES = ['READY?', 'TAP PADS', 'MAKE BEAT', 'LETS JAM'];
+  const [idleMsgIndex, setIdleMsgIndex] = useState(0);
+  useEffect(() => {
+    if (isPlaying) return;
+    const t = setInterval(() => setIdleMsgIndex(i => (i + 1) % IDLE_MESSAGES.length), 1600);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying]);
 
   const intervalRef = useRef(null);
   const gridRef = useRef(grid);
@@ -416,7 +431,7 @@ function LoopStudioPage() {
             holds the transport, the sequencer, and the instruments. All
             existing state and handlers untouched; this is a re-skin only. */}
         <div
-          className="max-w-6xl mx-auto rounded-[28px] border-[3px] p-3 md:p-5"
+          className="max-w-6xl mx-auto rounded-[32px] border-[3px] p-3 md:p-5 relative"
           style={{
             background:
               'linear-gradient(180deg, #3A557A 0%, #1E2F44 100%)',
@@ -425,6 +440,62 @@ function LoopStudioPage() {
               '0 10px 0 rgba(0,0,0,0.35), inset 0 3px 0 rgba(255,255,255,0.08), inset 0 -6px 0 rgba(0,0,0,0.35)',
           }}
         >
+          {/* --- KID DECALS: hand-placed stickers on the deck body. Absolute
+              positioned, slightly rotated so they feel peeled-and-stuck. */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-[32px]">
+            {/* Star sticker top-left */}
+            <div
+              className="absolute"
+              style={{ top: -14, left: 18, transform: 'rotate(-14deg)', filter: 'drop-shadow(0 2px 0 rgba(0,0,0,0.35))' }}
+            >
+              <svg width="46" height="46" viewBox="0 0 40 40">
+                <polygon
+                  points="20,3 24,15 37,15 26,23 30,36 20,28 10,36 14,23 3,15 16,15"
+                  fill="#FFCC00"
+                  stroke="#0A1626"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            {/* Cassette tape sticker top-right */}
+            <div
+              className="absolute"
+              style={{ top: -8, right: 24, transform: 'rotate(9deg)', filter: 'drop-shadow(0 2px 0 rgba(0,0,0,0.35))' }}
+            >
+              <svg width="58" height="38" viewBox="0 0 58 38">
+                <rect x="2" y="2" width="54" height="34" rx="4" fill="#FF6B6B" stroke="#0A1626" strokeWidth="2.5" />
+                <rect x="8" y="12" width="42" height="14" rx="2" fill="#F1E6C8" stroke="#0A1626" strokeWidth="2" />
+                <circle cx="19" cy="19" r="3.2" fill="#0A1626" />
+                <circle cx="39" cy="19" r="3.2" fill="#0A1626" />
+              </svg>
+            </div>
+            {/* JMA shield sticker bottom-right */}
+            <div
+              className="absolute"
+              style={{ bottom: -10, right: -6, transform: 'rotate(11deg)', filter: 'drop-shadow(0 2px 0 rgba(0,0,0,0.35))' }}
+            >
+              <svg width="52" height="56" viewBox="0 0 52 56">
+                <path d="M26 2 L48 10 V28 C48 42 38 50 26 54 C14 50 4 42 4 28 V10 Z"
+                  fill="#4CD964" stroke="#0A1626" strokeWidth="2.5" strokeLinejoin="round" />
+                <text x="26" y="34" textAnchor="middle" fontSize="15" fontWeight="900" fill="#0A1626" fontFamily="ui-sans-serif, system-ui">JMA</text>
+              </svg>
+            </div>
+            {/* Name tag if player has entered a name */}
+            {playerName && (
+              <div
+                className="absolute"
+                style={{ bottom: 10, left: 22, transform: 'rotate(-6deg)', filter: 'drop-shadow(0 2px 0 rgba(0,0,0,0.35))' }}
+              >
+                <div
+                  className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded"
+                  style={{ background: '#61E8DA', color: '#0A1626', border: '2px solid #0A1626' }}
+                >
+                  Made by {playerName}
+                </div>
+              </div>
+            )}
+          </div>
           {/* --- TOP STRIP: TRANSPORT + LCD + REC --- */}
           <div
             className="rounded-2xl border-2 p-2.5 md:p-3 flex flex-wrap items-center gap-2 md:gap-3"
@@ -471,10 +542,12 @@ function LoopStudioPage() {
                 <span className="text-base md:text-lg font-bold tabular-nums">{String(bpm).padStart(3, '0')}</span>
               </div>
               <div className="w-px h-8" style={{ background: '#61E8DA', opacity: 0.3 }} />
-              <div className="flex flex-col items-center leading-tight">
-                <span className="text-[9px] uppercase opacity-70">STEP</span>
+              <div className="flex flex-col items-center leading-tight" style={{ minWidth: 84 }}>
+                <span className="text-[9px] uppercase opacity-70">{isPlaying ? 'STEP' : 'STATUS'}</span>
                 <span className="text-base md:text-lg font-bold tabular-nums">
-                  {isPlaying && currentStep >= 0 ? String(currentStep + 1).padStart(2, '0') : '--'}/{totalSteps}
+                  {isPlaying && currentStep >= 0
+                    ? `${String(currentStep + 1).padStart(2, '0')}/${totalSteps}`
+                    : IDLE_MESSAGES[idleMsgIndex]}
                 </span>
               </div>
               <div className="hidden sm:block w-px h-8" style={{ background: '#61E8DA', opacity: 0.3 }} />
@@ -606,25 +679,32 @@ function LoopStudioPage() {
             </div>
           </div>
 
-          {/* --- PRESET STRIP --- */}
-          <div className="mt-3">
-            <div className="flex gap-1.5 flex-wrap justify-center">
-              {Object.keys(LOOP_PRESETS).map(name => (
-                <button
-                  key={name}
-                  data-testid={`preset-${name.replace(/\s/g, '-')}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-black"
-                  style={{
-                    background: '#3E5471',
-                    color: '#E8F4FF',
-                    border: '2px solid #000',
-                    boxShadow: '0 2px 0 rgba(0,0,0,0.55)',
-                  }}
-                  onClick={() => loadPreset(name)}
-                >
-                  {name}
-                </button>
-              ))}
+          {/* --- PRESET STRIP — sticker-style pill chips, each rotated a
+               different tiny angle so the row feels hand-placed. --- */}
+          <div className="mt-3 relative">
+            <div className="flex gap-2 flex-wrap justify-center">
+              {Object.keys(LOOP_PRESETS).map((name, i) => {
+                const stickerColors = ['#FFCC00', '#FF6B6B', '#4CD964', '#61E8DA', '#FF9500', '#AF52DE'];
+                const bg = stickerColors[i % stickerColors.length];
+                const rot = ((i * 37) % 5) - 2; // -2..+2 deg pseudo-random
+                return (
+                  <button
+                    key={name}
+                    data-testid={`preset-${name.replace(/\s/g, '-')}`}
+                    className="px-3 py-1.5 rounded-full text-xs font-black"
+                    style={{
+                      background: bg,
+                      color: '#0A1626',
+                      border: '2px solid #0A1626',
+                      boxShadow: '0 2px 0 rgba(0,0,0,0.55), inset 0 -2px 0 rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.4)',
+                      transform: `rotate(${rot}deg)`,
+                    }}
+                    onClick={() => loadPreset(name)}
+                  >
+                    {name}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -774,42 +854,82 @@ function LoopStudioPage() {
             )}
           </div>
 
-          {/* --- GEAR SLOTS: drum kit + turntable, docked into the deck --- */}
+          {/* --- GEAR SLOTS: drum kit + turntable, docked into the deck.
+               Each slot has a peeking RUNDMC mascot poking up from behind
+               the header to warm the whole thing up. --- */}
           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div
-              className="rounded-2xl border-2 p-3 relative overflow-hidden"
+              className="rounded-3xl border-2 p-3 relative overflow-hidden"
               style={{
                 background: 'radial-gradient(circle at 50% 25%, #2C4664 0%, #16243A 100%)',
                 borderColor: '#000',
                 boxShadow: 'inset 0 3px 0 rgba(0,0,0,0.4), inset 0 -3px 0 rgba(255,255,255,0.04)',
+                minHeight: 260,
               }}
             >
               <div
-                className="absolute top-2 left-3 text-[9px] font-black uppercase tracking-widest"
-                style={{ color: '#61E8DA', opacity: 0.75 }}
+                className="absolute top-2 left-3 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full z-10"
+                style={{ color: '#0A1626', background: '#61E8DA', border: '2px solid #0A1626' }}
               >
                 DRUM KIT
               </div>
-              <div className="flex justify-center items-end pt-5 pb-1">
+              {/* Peeking Charlie RUNDMC — bobs to the beat when playing */}
+              <motion.img
+                src="assets/characters/charlie-rundmc.png"
+                alt=""
+                aria-hidden="true"
+                className="absolute pointer-events-none"
+                style={{
+                  right: -20,
+                  top: -30,
+                  width: 130,
+                  height: 'auto',
+                  transform: 'rotate(8deg)',
+                  filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.35))',
+                  zIndex: 4,
+                }}
+                animate={isPlaying ? { y: [0, -8, 0] } : { y: 0 }}
+                transition={isPlaying ? { duration: 60 / bpm, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
+              />
+              <div className="flex justify-center items-end pt-8 pb-1 relative z-[2]">
                 <DrumKitVisual ref={drumKitRef} onHit={handleDrumTap} />
               </div>
             </div>
 
             <div
-              className="rounded-2xl border-2 p-3 relative overflow-hidden"
+              className="rounded-3xl border-2 p-3 relative overflow-hidden"
               style={{
                 background: 'radial-gradient(circle at 50% 25%, #2C4664 0%, #16243A 100%)',
                 borderColor: '#000',
                 boxShadow: 'inset 0 3px 0 rgba(0,0,0,0.4), inset 0 -3px 0 rgba(255,255,255,0.04)',
+                minHeight: 260,
               }}
             >
               <div
-                className="absolute top-2 left-3 text-[9px] font-black uppercase tracking-widest"
-                style={{ color: '#61E8DA', opacity: 0.75 }}
+                className="absolute top-2 left-3 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full z-10"
+                style={{ color: '#0A1626', background: '#61E8DA', border: '2px solid #0A1626' }}
               >
                 TURNTABLE
               </div>
-              <div className="flex justify-center items-end pt-5 pb-1">
+              {/* Peeking Sharky Hip-Hop — bobs to the beat when playing */}
+              <motion.img
+                src="assets/characters/sharky-hiphop.png"
+                alt=""
+                aria-hidden="true"
+                className="absolute pointer-events-none"
+                style={{
+                  right: -24,
+                  top: -36,
+                  width: 140,
+                  height: 'auto',
+                  transform: 'rotate(-6deg)',
+                  filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.35))',
+                  zIndex: 4,
+                }}
+                animate={isPlaying ? { y: [0, -8, 0] } : { y: 0 }}
+                transition={isPlaying ? { duration: 60 / bpm, repeat: Infinity, ease: 'easeInOut', delay: (60 / bpm) / 2 } : { duration: 0.3 }}
+              />
+              <div className="flex justify-center items-end pt-8 pb-1 relative z-[2]">
                 <TurntableVisual activeHits={activeHits} onScratch={handleScratchTap} />
               </div>
             </div>
