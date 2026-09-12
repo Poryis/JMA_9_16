@@ -136,7 +136,12 @@
   background: radial-gradient(circle at 30% 30%,
     rgba(255,255,255,0.9) 0%, rgba(200,230,255,0.55) 40%,
     rgba(180,220,255,0.15) 70%, transparent 90%);
-  box-shadow: inset 0 0 4px rgba(255,255,255,0.6);
+  /* Cartoon dark outline matches the rest of the JMA artwork
+     (every character/card has a chunky JMA-dark stroke). */
+  border: 2px solid var(--jma-dark);
+  box-shadow:
+    inset 0 0 4px rgba(255,255,255,0.6),
+    0 1px 0 rgba(10,37,64,0.3);
   animation: home-bubble-rise linear infinite;
   will-change: transform, opacity;
 }
