@@ -389,7 +389,7 @@ function LoopStudioPage() {
 
   return (
     <div className="min-h-screen flex flex-col relative" data-testid="loop-studio-page"
-      style={{ backgroundImage: 'url(assets/backgrounds/beat-lab-wall.png)', backgroundSize: 'cover', backgroundPosition: 'left top', backgroundRepeat: 'no-repeat', backgroundColor: '#C64B2A' }}>
+      style={{ backgroundImage: 'url(assets/backgrounds/recording-studio.jpg)', backgroundSize: 'cover', backgroundPosition: 'center bottom', backgroundRepeat: 'no-repeat', backgroundColor: '#E64C3C' }}>
       <GameHeader title="Beat Lab" showHomeButton={true} backLink={{ to: '/create', label: 'Create' }} />
       <FullscreenButton />
       <RoomCharacters room="beat-lab" />
