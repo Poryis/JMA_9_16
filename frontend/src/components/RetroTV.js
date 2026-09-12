@@ -58,8 +58,8 @@ function BubbleWordmark() {
             ].join(', '),
             transform: `rotate(${L.rot}deg)`,
             display: 'inline-block',
-            marginLeft: i === 0 ? 0 : L.small ? '0.02em' : '0.04em',
-            letterSpacing: '0',
+            marginLeft: i === 0 ? 0 : L.small ? '-0.14em' : '-0.16em',
+            letterSpacing: '-0.04em',
           }}
         >
           {L.char}
@@ -326,48 +326,12 @@ export default function RetroTV() {
       </div>
       </div>
 
-      {/* RIGHT — starburst "A NEW ADVENTURE EVERY WEEK!" tease. Pure CSS
-          burst so we don't ship another PNG. Rotated slightly so it feels
-          hand-stuck like a sticker. */}
-      <div className="hidden md:flex order-3 flex-shrink-0 items-center justify-center">
-        <motion.div
-          className="relative flex items-center justify-center"
-          style={{ width: 150, height: 150 }}
-          animate={{ rotate: [-6, 6, -6] }}
-          transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <div
-            aria-hidden="true"
-            className="absolute inset-0"
-            style={{
-              background: '#FFCC00',
-              clipPath:
-                'polygon(50% 0%, 60% 15%, 75% 5%, 78% 22%, 95% 20%, 88% 35%, 100% 50%, 88% 65%, 95% 80%, 78% 78%, 75% 95%, 60% 85%, 50% 100%, 40% 85%, 25% 95%, 22% 78%, 5% 80%, 12% 65%, 0% 50%, 12% 35%, 5% 20%, 22% 22%, 25% 5%, 40% 15%)',
-              boxShadow: '0 6px 0 rgba(10,37,64,0.35)',
-            }}
-          />
-          <div className="relative text-center px-4">
-            <div
-              className="text-[10px] font-black uppercase tracking-widest"
-              style={{ color: 'var(--jma-dark)', opacity: 0.75 }}
-            >
-              A NEW
-            </div>
-            <div
-              className="text-lg font-black font-display leading-none uppercase"
-              style={{ color: 'var(--jma-dark)' }}
-            >
-              Adventure
-            </div>
-            <div
-              className="text-[11px] font-black uppercase tracking-wide"
-              style={{ color: 'var(--jma-dark)' }}
-            >
-              every week!
-            </div>
-          </div>
-        </motion.div>
-      </div>
+      {/* RIGHT — reserved slot. The "A NEW ADVENTURE EVERY WEEK!"
+          starburst used to sit here; removed per user request. Left
+          intentionally empty for now so the row still centers cleanly on
+          desktop. Drop a new element inside this div later if we want
+          something back on the right. */}
+      <div className="hidden md:block order-3 flex-shrink-0" style={{ width: 0 }} />
 
       <style>{`
         @keyframes jma-pulse {
