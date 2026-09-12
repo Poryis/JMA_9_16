@@ -144,6 +144,26 @@ function LoopStudioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
+  // First-visit welcome — instead of an intimidating empty grid, load the
+  // Basic Beat preset so a new kid sees the sequencer already lit up and
+  // hears music the moment they hit PLAY. Only runs once per browser
+  // (returning kids get whatever they were last working on).
+  useEffect(() => {
+    const FIRST_VISIT_KEY = 'jma_beat_lab_first_visit_v1';
+    if (typeof window === 'undefined') return;
+    if (localStorage.getItem(FIRST_VISIT_KEY)) return;
+    // Slight delay so loadPreset's setState batches don't race with the
+    // initial grid initialization useEffect.
+    const t = setTimeout(() => {
+      try {
+        loadPreset('Basic Beat');
+        localStorage.setItem(FIRST_VISIT_KEY, '1');
+      } catch (e) {}
+    }, 80);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const intervalRef = useRef(null);
   const gridRef = useRef(grid);
   const mutedRef = useRef(mutedTracks);
@@ -716,7 +736,7 @@ function LoopStudioPage() {
                   return (
                     <div
                       key={`label-${trackId}`}
-                      className="h-7 md:h-9 flex items-center gap-1.5"
+                      className="h-9 md:h-11 flex items-center gap-1.5"
                       data-testid={`track-label-${trackId}`}
                     >
                       <button
@@ -794,9 +814,9 @@ function LoopStudioPage() {
                           <button
                             key={stepIdx}
                             data-testid={`cell-${trackId}-${stepIdx}`}
-                            className={`loop-grid-cell h-7 md:h-9 ${active ? 'active' : ''} ${currentStep === stepIdx && isPlaying ? 'playing' : ''}`}
+                            className={`loop-grid-cell h-9 md:h-11 ${active ? 'active' : ''} ${currentStep === stepIdx && isPlaying ? 'playing' : ''}`}
                             style={{
-                              minWidth: totalSteps > 16 ? '18px' : 'auto',
+                              minWidth: totalSteps > 16 ? '22px' : 'auto',
                               flex: totalSteps <= 16 ? 1 : 'none',
                               backgroundColor: active ? (preset?.color || '#ccc') : (stepIdx % 4 === 0 ? '#243854' : '#1B2A3F'),
                               opacity: isMuted ? 0.35 : 1,
@@ -846,11 +866,17 @@ function LoopStudioPage() {
           {/* --- GEAR SLOTS: drum kit + turntable, docked into the deck.
                Each slot has a peeking RUNDMC mascot poking up from behind
                the header to warm the whole thing up. --- */}
+          {/* --- GEAR SLOTS: drum kit + turntable, each staged like a
+               mini-scene where the character stands SIDE-BY-SIDE with
+               their instrument on a shared floor plane. Reactive speech
+               bubble reflects how many pads the kid has placed. --- */}
           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Compute total active pads for reactive character copy */}
+            {(() => { return null; })()}
             <div
               className="rounded-3xl border-2 p-3 relative"
               style={{
-                background: 'radial-gradient(circle at 50% 25%, #2C4664 0%, #16243A 100%)',
+                background: 'linear-gradient(180deg, #2C4664 0%, #2C4664 62%, #1B2B44 62%, #16243A 100%)',
                 borderColor: '#000',
                 boxShadow: 'inset 0 3px 0 rgba(0,0,0,0.4), inset 0 -3px 0 rgba(255,255,255,0.04)',
                 minHeight: 260,
@@ -862,33 +888,29 @@ function LoopStudioPage() {
               >
                 DRUM KIT
               </div>
-              {/* Peeking Charlie RUNDMC — full height visible (no overflow clip)
-                  and a speech bubble that shows only when nothing is playing. */}
-              <motion.img
-                src="assets/characters/charlie-rundmc.png"
-                alt=""
+              {/* Soft floor shadow that both Charlie and the kit sit on. */}
+              <div
                 aria-hidden="true"
                 className="absolute pointer-events-none"
                 style={{
-                  right: -20,
-                  top: -60,
-                  width: 140,
-                  height: 'auto',
-                  transform: 'rotate(8deg)',
-                  filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.35))',
-                  zIndex: 4,
+                  left: '8%',
+                  right: '8%',
+                  bottom: 10,
+                  height: 16,
+                  borderRadius: '50%',
+                  background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.55), transparent 70%)',
+                  zIndex: 1,
                 }}
-                animate={isPlaying ? { y: [0, -8, 0] } : { y: 0 }}
-                transition={isPlaying ? { duration: 60 / bpm, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
               />
+              {/* Speech bubble anchored above Charlie's head. */}
               {!isPlaying && (
                 <motion.div
                   aria-hidden="true"
-                  className="absolute pointer-events-none"
-                  style={{ right: 122, top: -6, zIndex: 5 }}
+                  className="absolute pointer-events-none z-[6]"
+                  style={{ top: 30, left: '4%' }}
                   initial={{ opacity: 0, scale: 0.7 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 }}
+                  transition={{ delay: 0.3 }}
                 >
                   <div
                     className="text-[11px] font-black uppercase tracking-wide px-3 py-1.5 relative"
@@ -901,44 +923,43 @@ function LoopStudioPage() {
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    Tap a pad!
-                    {/* Bubble tail pointing at Charlie */}
-                    <span
-                      className="absolute"
-                      style={{
-                        right: -8,
-                        bottom: 6,
-                        width: 0,
-                        height: 0,
-                        borderTop: '8px solid transparent',
-                        borderBottom: '8px solid transparent',
-                        borderLeft: '10px solid #0A1626',
-                      }}
-                    />
-                    <span
-                      className="absolute"
-                      style={{
-                        right: -5,
-                        bottom: 8,
-                        width: 0,
-                        height: 0,
-                        borderTop: '6px solid transparent',
-                        borderBottom: '6px solid transparent',
-                        borderLeft: '8px solid #FFF',
-                      }}
-                    />
+                    {(() => {
+                      const total = Object.values(grid).reduce((s, arr) => s + (Array.isArray(arr) ? arr.filter(v => v).length : 0), 0);
+                      if (total === 0) return IDLE_MESSAGES[idleMsgIndex];
+                      if (total < 4) return 'NICE!';
+                      if (total < 10) return 'COOL BEAT!';
+                      return "YOU'RE A DJ!";
+                    })()}
+                    <span className="absolute" style={{ left: 18, bottom: -8, width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '10px solid #0A1626' }} />
+                    <span className="absolute" style={{ left: 20, bottom: -5, width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '8px solid #FFF' }} />
                   </div>
                 </motion.div>
               )}
-              <div className="flex justify-center items-end pt-8 pb-1 relative z-[2]">
-                <DrumKitVisual ref={drumKitRef} onHit={handleDrumTap} />
+              {/* Character + instrument staged on the same floor. */}
+              <div className="flex items-end justify-center gap-2 md:gap-3 pt-10 pb-5 relative z-[2] px-2">
+                <motion.img
+                  src="assets/characters/charlie-rundmc.png"
+                  alt=""
+                  aria-hidden="true"
+                  style={{
+                    height: 176,
+                    width: 'auto',
+                    filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.35))',
+                    flexShrink: 0,
+                  }}
+                  animate={isPlaying ? { y: [0, -6, 0] } : { y: 0 }}
+                  transition={isPlaying ? { duration: 60 / bpm, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
+                />
+                <div className="flex-shrink-0">
+                  <DrumKitVisual ref={drumKitRef} onHit={handleDrumTap} />
+                </div>
               </div>
             </div>
 
             <div
               className="rounded-3xl border-2 p-3 relative"
               style={{
-                background: 'radial-gradient(circle at 50% 25%, #2C4664 0%, #16243A 100%)',
+                background: 'linear-gradient(180deg, #2C4664 0%, #2C4664 62%, #1B2B44 62%, #16243A 100%)',
                 borderColor: '#000',
                 boxShadow: 'inset 0 3px 0 rgba(0,0,0,0.4), inset 0 -3px 0 rgba(255,255,255,0.04)',
                 minHeight: 260,
@@ -950,25 +971,36 @@ function LoopStudioPage() {
               >
                 TURNTABLE
               </div>
-              <motion.img
-                src="assets/characters/sharky-hiphop.png"
-                alt=""
+              <div
                 aria-hidden="true"
                 className="absolute pointer-events-none"
                 style={{
-                  right: -24,
-                  top: -70,
-                  width: 150,
-                  height: 'auto',
-                  transform: 'rotate(-6deg)',
-                  filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.35))',
-                  zIndex: 4,
+                  left: '8%',
+                  right: '8%',
+                  bottom: 10,
+                  height: 16,
+                  borderRadius: '50%',
+                  background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.55), transparent 70%)',
+                  zIndex: 1,
                 }}
-                animate={isPlaying ? { y: [0, -8, 0] } : { y: 0 }}
-                transition={isPlaying ? { duration: 60 / bpm, repeat: Infinity, ease: 'easeInOut', delay: (60 / bpm) / 2 } : { duration: 0.3 }}
               />
-              <div className="flex justify-center items-end pt-8 pb-1 relative z-[2]">
-                <TurntableVisual activeHits={activeHits} onScratch={handleScratchTap} />
+              <div className="flex items-end justify-center gap-2 md:gap-3 pt-10 pb-5 relative z-[2] px-2">
+                <motion.img
+                  src="assets/characters/sharky-hiphop.png"
+                  alt=""
+                  aria-hidden="true"
+                  style={{
+                    height: 190,
+                    width: 'auto',
+                    filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.35))',
+                    flexShrink: 0,
+                  }}
+                  animate={isPlaying ? { y: [0, -6, 0] } : { y: 0 }}
+                  transition={isPlaying ? { duration: 60 / bpm, repeat: Infinity, ease: 'easeInOut', delay: (60 / bpm) / 2 } : { duration: 0.3 }}
+                />
+                <div className="flex-shrink-0">
+                  <TurntableVisual activeHits={activeHits} onScratch={handleScratchTap} />
+                </div>
               </div>
             </div>
           </div>
