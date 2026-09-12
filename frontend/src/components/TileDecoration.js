@@ -22,14 +22,17 @@ export default function TileDecoration({ type, accent }) {
     // ------------------------------------------------------------------
     case 'staff': {
       // 5 chalk staff lines drifting slowly leftward, with a few notes
-      // bobbing above them. Fits Name That Note / Sight-Reading /
-      // Note Match (chalkboard, staff-focused games).
+      // bobbing above them. Fits Name That Note (chalkboard). Width is
+      // clamped to ~80% of the card (left-[10%]/right-[10%]) so the
+      // staff lines never poke past the chalkboard frame in the bg art.
       return (
         <div {...wrapProps}>
           <div
-            className="absolute left-2 right-2"
+            className="absolute"
             style={{
-              top: '32%',
+              left: '12%',
+              right: '12%',
+              top: '34%',
               height: 46,
               opacity: 0.55,
               animation: 'tile-staff-drift 6s linear infinite',
@@ -50,9 +53,9 @@ export default function TileDecoration({ type, accent }) {
             ))}
           </div>
           {[
-            { left: '18%', top: '30%', delay: 0 },
-            { left: '48%', top: '36%', delay: 0.6 },
-            { left: '72%', top: '30%', delay: 1.1 },
+            { left: '24%', top: '32%', delay: 0 },
+            { left: '50%', top: '38%', delay: 0.6 },
+            { left: '70%', top: '32%', delay: 1.1 },
           ].map((n, i) => (
             <span
               key={i}
@@ -75,27 +78,62 @@ export default function TileDecoration({ type, accent }) {
 
     // ------------------------------------------------------------------
     case 'clouds': {
-      // Fluffy cartoon clouds drifting through the WINDOW area of the
-      // clubhouse.png background — a small right-of-center panel (roughly
-      // 65-85% x 22-42% of the card). Container is constrained to that
-      // window so the clouds appear to be seen through the frame, not
-      // floating across the whole tile.
+      // Fluffy cartoon clouds + a rotating sun drifting through the
+      // WINDOW area of the clubhouse.png background. Container is
+      // constrained so the sky panel appears to be seen through the
+      // window frame, not floating across the whole tile.
       const clouds = [
-        { top: 4,  size: 22, dur: 11, delay: 0 },
-        { top: 30, size: 30, dur: 15, delay: 3.5 },
-        { top: 58, size: 18, dur: 9,  delay: 7 },
+        { top: 18, size: 22, dur: 11, delay: 0 },
+        { top: 46, size: 30, dur: 15, delay: 3.5 },
+        { top: 72, size: 18, dur: 9,  delay: 7 },
       ];
       return (
         <div
           aria-hidden="true"
           className="absolute pointer-events-none z-[5] overflow-hidden"
           style={{
-            top: '22%',
+            top: '27%',
             left: '65%',
             width: '20%',
             height: '20%',
           }}
         >
+          {/* Cartoon sun — anchored top-right inside the window. Rays
+              rotate slowly for a friendly shimmer. Sits BEHIND the
+              clouds so drifting clouds partially cover the sun. */}
+          <svg
+            viewBox="0 0 40 40"
+            style={{
+              position: 'absolute',
+              top: '4%',
+              right: '6%',
+              width: 30,
+              height: 30,
+              filter: 'drop-shadow(0 1px 0 rgba(10,37,64,0.4))',
+            }}
+          >
+            <g style={{ transformOrigin: '20px 20px', animation: 'tile-sun-spin 24s linear infinite' }}>
+              {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+                <polygon
+                  key={a}
+                  points="20,2 22.5,10 17.5,10"
+                  fill="#FFCC00"
+                  stroke="#0A2540"
+                  strokeWidth="1.2"
+                  strokeLinejoin="round"
+                  transform={`rotate(${a} 20 20)`}
+                />
+              ))}
+            </g>
+            <circle
+              cx="20"
+              cy="20"
+              r="8"
+              fill="#FFD84D"
+              stroke="#0A2540"
+              strokeWidth="1.5"
+            />
+          </svg>
           {clouds.map((c, i) => (
             <div
               key={i}

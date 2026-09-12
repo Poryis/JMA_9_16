@@ -83,6 +83,11 @@
   0%, 100% { transform: scale(0.4); opacity: 0.25; }
   50%      { transform: scale(1);   opacity: 1;    }
 }
+/* Cartoon sun rotation (Fun Facts / Sight-Reading clubhouse window). */
+@keyframes tile-sun-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 /* Sweeping spotlight cone (Music 101 curtain). */
 @keyframes tile-spotlight-sweep {
   0%,  100% { transform: rotate(-14deg); }
