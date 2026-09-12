@@ -111,8 +111,8 @@
   will-change: transform;
 }
 @keyframes home-underwater-drift {
-  0%, 100% { transform: scale(1.04) translate(0%, 0%); }
-  50%      { transform: scale(1.09) translate(-1.2%, -0.6%); }
+  0%, 100% { transform: scale(1.00) translate(0%, 0%); }
+  50%      { transform: scale(1.03) translate(-0.6%, -0.3%); }
 }
 .home-underwater-shafts {
   background: repeating-linear-gradient(
