@@ -39,8 +39,8 @@ function BubbleWordmark() {
         <span
           key={i}
           style={{
-            fontFamily: "'Chewy', 'Fredoka', cursive",
-            fontWeight: 400,
+            fontFamily: "'Sniglet', 'Fredoka', cursive",
+            fontWeight: 800,
             color: L.color,
             fontSize: L.small
               ? 'clamp(40px, 6.6vw, 72px)'
