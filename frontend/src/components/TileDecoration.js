@@ -106,7 +106,7 @@ export default function TileDecoration({ type, accent }) {
           style={{
             top: '27%',
             left: '65%',
-            width: '20%',
+            width: '30%',
             height: '20%',
           }}
         >

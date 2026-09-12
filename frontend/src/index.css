@@ -79,11 +79,12 @@
    window's overflow-clip never crops a still-visible cloud. Reset then
    happens while the cloud is fully invisible. */
 @keyframes tile-cloud-drift {
-  0%   { transform: translateX(-140%); opacity: 0; }
-  20%  {                               opacity: 1; }
+  0%   { transform: translateX(-240%); opacity: 0; }
+  15%  {                               opacity: 0; }
+  28%  {                               opacity: 1; }
   65%  {                               opacity: 1; }
   85%  { opacity: 0; }
-  100% { transform: translateX(220%);  opacity: 0; }
+  100% { transform: translateX(260%);  opacity: 0; }
 }
 /* Music notes rising (Jam Session, Jukebox). */
 @keyframes tile-note-rise {
