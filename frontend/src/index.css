@@ -53,35 +53,36 @@
   85%  { transform: translate(-50%, -220%) scale(0.5); opacity: 0.55; }
   100% { transform: translate(-50%, -260%) scale(0.4); opacity: 0; }
 }
-/* JMAtv logo cycle — Crayola/Play-Doh palette instead of iOS system
-   colors so the animation reads as a playschool cartoon vibe. Frame
-   uses discrete keyframes (holds each hue for ~1.4s then transitions
-   quickly) so we PAUSE on saturated primaries and skip past muddy
-   intermediate blends. */
+/* JMAtv logo cycle — 6 synced beats where the FRAME hue and the LETTER
+   color always sit on opposite sides of the color wheel (complementary
+   pairs). Same 12s duration on both keyframes so the pairings hold at
+   every rest position.
+     Beat 1 — yellow harp (hue-rotate 0) ↔ blue letters
+     Beat 2 — green harp   (hue-rotate 60) ↔ magenta letters
+     Beat 3 — cyan harp    (hue-rotate 120) ↔ red letters
+     Beat 4 — blue harp    (hue-rotate 180) ↔ yellow letters
+     Beat 5 — magenta harp (hue-rotate 240) ↔ green letters
+     Beat 6 — red harp     (hue-rotate 300) ↔ cyan letters */
 @keyframes jmatv-color-cycle {
-  0%,   14% { filter: hue-rotate(0deg)   drop-shadow(0 0 22px rgba(255,215,0,0.4)); }
-  16%,  30% { filter: hue-rotate(80deg)  drop-shadow(0 0 22px rgba(255,120,60,0.4)); }
-  32%,  46% { filter: hue-rotate(150deg) drop-shadow(0 0 22px rgba(60,200,120,0.4)); }
-  48%,  62% { filter: hue-rotate(210deg) drop-shadow(0 0 22px rgba(60,160,255,0.4)); }
-  64%,  78% { filter: hue-rotate(270deg) drop-shadow(0 0 22px rgba(200,80,220,0.4)); }
-  80%,  94% { filter: hue-rotate(330deg) drop-shadow(0 0 22px rgba(255,100,140,0.4)); }
+  0%,   10% { filter: hue-rotate(0deg)   drop-shadow(0 0 22px rgba(255,215,0,0.4)); }
+  17%,  27% { filter: hue-rotate(60deg)  drop-shadow(0 0 22px rgba(60,200,120,0.4)); }
+  33%,  43% { filter: hue-rotate(120deg) drop-shadow(0 0 22px rgba(60,200,220,0.4)); }
+  50%,  60% { filter: hue-rotate(180deg) drop-shadow(0 0 22px rgba(60,120,255,0.4)); }
+  67%,  77% { filter: hue-rotate(240deg) drop-shadow(0 0 22px rgba(200,80,220,0.4)); }
+  83%,  93% { filter: hue-rotate(300deg) drop-shadow(0 0 22px rgba(255,80,80,0.4)); }
   100%      { filter: hue-rotate(360deg) drop-shadow(0 0 22px rgba(255,215,0,0.4)); }
 }
 .jmatv-color-cycle {
   animation: jmatv-color-cycle 12s ease-in-out infinite;
 }
-/* Letter mask cycle — bold crayon primaries + white "rest" beats. Holds
-   each color for roughly 1s then bounces to the next. */
 @keyframes jmatv-letter-cycle {
-  0%,   10% { background-color: #FFFFFF; }                 /* paper white */
-  15%,  22% { background-color: #E62222; }                 /* fire-truck red */
-  27%,  34% { background-color: #FF8C00; }                 /* crayon orange */
-  39%,  46% { background-color: #FFD700; }                 /* sun yellow */
-  51%,  58% { background-color: #22B14C; }                 /* grass green */
-  63%,  70% { background-color: #00A8E8; }                 /* sky blue */
-  75%,  82% { background-color: #8E44AD; }                 /* Crayola purple */
-  87%,  94% { background-color: #FF5FA2; }                 /* bubblegum pink */
-  100%      { background-color: #FFFFFF; }
+  0%,   10% { background-color: #00A8E8; }  /* blue ↔ yellow harp */
+  17%,  27% { background-color: #E82290; }  /* magenta ↔ green harp */
+  33%,  43% { background-color: #E62222; }  /* red ↔ cyan harp */
+  50%,  60% { background-color: #FFD700; }  /* yellow ↔ blue harp */
+  67%,  77% { background-color: #22B14C; }  /* green ↔ magenta harp */
+  83%,  93% { background-color: #22E8E8; }  /* cyan ↔ red harp */
+  100%      { background-color: #00A8E8; }
 }
 .jmatv-letters-mask {
   /* mask-image is applied via inline style in JS with
@@ -93,7 +94,7 @@
           mask-repeat: no-repeat;
   -webkit-mask-position: center;
           mask-position: center;
-  animation: jmatv-letter-cycle 14s ease-in-out infinite;
+  animation: jmatv-letter-cycle 12s ease-in-out infinite;
 }
 /* ---- /SubMenu tile animations ---- */
 
