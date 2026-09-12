@@ -68,6 +68,30 @@
 .jmatv-color-cycle {
   animation: jmatv-color-cycle 10s linear infinite;
 }
+/* Letter mask cycle — hops through primary/secondary colors on top of
+   the frame layer. Used as a background inside a div whose mask-image
+   is the letters-only PNG, so the JMA letters flash colors while the
+   yellow harp + blue TV in the frame layer hue-rotate underneath. */
+@keyframes jmatv-letter-cycle {
+  0%   { background-color: #FFFFFF; }
+  16%  { background-color: #FF3B30; }
+  33%  { background-color: #FF9500; }
+  50%  { background-color: #4CD964; }
+  66%  { background-color: #4285F4; }
+  83%  { background-color: #AF52DE; }
+  100% { background-color: #FFFFFF; }
+}
+.jmatv-letters-mask {
+  -webkit-mask-image: url('/assets/ui/jmatv-logo-v2-letters.png');
+          mask-image: url('/assets/ui/jmatv-logo-v2-letters.png');
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+  animation: jmatv-letter-cycle 12s ease-in-out infinite;
+}
 /* ---- /SubMenu tile animations ---- */
 
 

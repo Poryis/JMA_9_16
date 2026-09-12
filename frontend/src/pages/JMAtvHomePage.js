@@ -132,15 +132,28 @@ export default function JMAtvHomePage() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <img
-          src="assets/ui/jmatv-logo-v2.png"
-          alt="JMAtv"
-          draggable={false}
-          className="mx-auto object-contain jmatv-color-cycle"
-          style={{
-            width: 'clamp(160px, 24vw, 280px)',
-          }}
-        />
+        {/* Two-layer stacked mark: the "frame" PNG (yellow harp + blue TV
+            + all black outlines, no letter fills, no harp-interior whites)
+            hue-rotates through the color wheel; on top of it a color-cycling
+            div uses the letters-only PNG as a CSS mask so the JMA letters
+            flash through white → red → orange → green → blue → purple in
+            step. Frame and letters share identical bounds, so the mask
+            registers exactly on top of the letter cutouts in the frame. */}
+        <div
+          className="relative mx-auto"
+          style={{ width: 'clamp(160px, 24vw, 280px)', aspectRatio: '1361 / 1156' }}
+        >
+          <img
+            src="assets/ui/jmatv-logo-v2-frame.png"
+            alt="JMAtv"
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-contain jmatv-color-cycle"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 jmatv-letters-mask"
+          />
+        </div>
         <p className="text-sm md:text-base font-bold mt-2" style={{ color: '#FFE7C2' }}>
           Pick something. Hit play. Hang out.
         </p>
