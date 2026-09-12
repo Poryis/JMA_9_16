@@ -64,7 +64,7 @@ const LEARN_TILES = [
     accent: '#1B5E40',
     character: 'assets/characters/finn-danger.png',
     charWidthPct: 24,
-    decoration: 'staff',
+    decoration: 'notes-crazy',
     sfx: 'assets/audio/sfx-bell-chime.mp3',
   },
 ];

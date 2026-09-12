@@ -20,74 +20,38 @@ export default function TileDecoration({ type, accent }) {
 
   switch (type) {
     // ------------------------------------------------------------------
-    case 'staff': {
-      // Stylized WINDING staff — 5 wavy chalk lines drawn as SVG paths,
-      // tightly clipped inside the chalkboard region of the Name That
-      // Note tile. Gentle ping-pong sway means no teleport is ever
-      // visible, and dashed "flow" along each line gives a subtle music-
-      // moving-along-the-staff feel. A few notes bob above.
-      //
-      // Both ends of the staff fade to transparent via a mask gradient
-      // so the raw line endings never look abruptly cut off — works on
-      // any aspect ratio without pixel-based decorations.
-      const lineYs = [8, 18, 28, 38, 48];
-      const fadeMask =
-        'linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%)';
+    case 'staff':
+    case 'notes-crazy': {
+      // Full-tile note storm — bigger, denser, mixed sizes / colors /
+      // rotations. Used on the Name That Note chalkboard tile. Some
+      // notes just rise, others tumble (rise + spin) so the field feels
+      // lively without being uniform.
+      const chalkColors = ['rgba(255,255,255,0.95)', 'rgba(255,235,140,0.9)', 'rgba(180,230,255,0.9)'];
+      const spots = [
+        { left: '4%',  size: 26, dur: 5.8, delay: 0,   anim: 'tile-note-tumble', c: 0 },
+        { left: '14%', size: 34, dur: 7.2, delay: 1.4, anim: 'tile-note-rise',   c: 1 },
+        { left: '24%', size: 20, dur: 5.0, delay: 2.5, anim: 'tile-note-tumble', c: 0 },
+        { left: '34%', size: 38, dur: 6.6, delay: 0.6, anim: 'tile-note-rise',   c: 2 },
+        { left: '44%', size: 22, dur: 4.9, delay: 3.2, anim: 'tile-note-tumble', c: 0 },
+        { left: '56%', size: 30, dur: 6.4, delay: 1.9, anim: 'tile-note-rise',   c: 1 },
+        { left: '66%', size: 24, dur: 5.4, delay: 0.9, anim: 'tile-note-tumble', c: 0 },
+        { left: '76%', size: 36, dur: 6.9, delay: 2.6, anim: 'tile-note-rise',   c: 2 },
+        { left: '86%', size: 20, dur: 5.2, delay: 1.2, anim: 'tile-note-tumble', c: 0 },
+        { left: '94%', size: 28, dur: 6.2, delay: 3.6, anim: 'tile-note-rise',   c: 1 },
+      ];
       return (
         <div {...wrapProps}>
-          <div
-            className="absolute overflow-hidden"
-            style={{
-              left: '12%',
-              right: '12%',
-              top: '38%',
-              height: 56,
-              opacity: 0.75,
-              animation: 'tile-staff-sway 5.5s ease-in-out infinite',
-              WebkitMaskImage: fadeMask,
-              maskImage: fadeMask,
-            }}
-          >
-            <svg
-              viewBox="0 0 200 56"
-              preserveAspectRatio="none"
-              width="100%"
-              height="100%"
-              style={{ overflow: 'visible' }}
-            >
-              {lineYs.map((y, i) => (
-                <path
-                  key={y}
-                  d={`M -10 ${y} Q 25 ${y - 5}, 50 ${y} T 100 ${y} T 150 ${y} T 210 ${y}`}
-                  stroke="rgba(255,255,255,0.9)"
-                  strokeWidth="1.4"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray="8 4"
-                  style={{
-                    filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.35))',
-                    animation: `tile-staff-flow ${7 + i * 0.4}s linear infinite`,
-                  }}
-                />
-              ))}
-            </svg>
-          </div>
-
-          {[
-            { left: '30%', top: '32%', delay: 0 },
-            { left: '50%', top: '36%', delay: 0.6 },
-            { left: '68%', top: '32%', delay: 1.1 },
-          ].map((n, i) => (
+          {spots.map((n, i) => (
             <span
               key={i}
               className="absolute font-black"
               style={{
                 left: n.left,
-                top: n.top,
-                fontSize: 22,
-                color: 'rgba(255,255,255,0.9)',
-                textShadow: '0 2px 0 rgba(10,37,64,0.35)',
-                animation: `tile-note-bob 2.6s ease-in-out ${n.delay}s infinite`,
+                bottom: 8,
+                fontSize: n.size,
+                color: chalkColors[n.c],
+                textShadow: '0 2px 0 rgba(10,37,64,0.45), 0 0 10px rgba(255,255,255,0.35)',
+                animation: `${n.anim} ${n.dur}s ease-in ${n.delay}s infinite`,
               }}
             >
               {noteChars[i % noteChars.length]}

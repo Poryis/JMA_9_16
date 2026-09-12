@@ -86,6 +86,14 @@
   85%  { opacity: 0; }
   100% { transform: translateX(260%);  opacity: 0; }
 }
+/* Tumbling music note — rises + rotates + fades (used by the crazy
+   note storm on the Name That Note tile). */
+@keyframes tile-note-tumble {
+  0%   { transform: translateY(0)     rotate(-30deg); opacity: 0; }
+  10%  { opacity: 0.95; }
+  85%  { opacity: 0.7; }
+  100% { transform: translateY(-170px) rotate(320deg); opacity: 0; }
+}
 /* Music notes rising (Jam Session, Jukebox). */
 @keyframes tile-note-rise {
   0%   { transform: translateY(0)     rotate(-8deg); opacity: 0; }
