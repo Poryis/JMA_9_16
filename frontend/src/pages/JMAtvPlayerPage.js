@@ -12,7 +12,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Player from '@vimeo/player';
-import { ArrowLeft, Maximize2, ChevronRight } from 'lucide-react';
+import { Maximize2, ChevronRight } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { getChannel, getEpisode } from '../data/jmatv';
 import { earnSticker } from '../hooks/useStickers';
@@ -106,35 +106,21 @@ export default function JMAtvPlayerPage() {
     >
       <GameHeader showHomeButton={true} />
 
-      {/* Top-bar: back link + episode title */}
+      {/* Episode title */}
       <motion.div
-        className="relative z-10 w-full max-w-4xl flex items-center justify-between mb-3"
+        className="relative z-10 w-full max-w-4xl text-center mb-3"
         initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
       >
-        <button
-          data-testid="jmatv-player-back"
-          onClick={() => navigate(`/jmatv/${channel.id}`)}
-          className="inline-flex items-center gap-1.5 text-xs md:text-sm font-black uppercase tracking-wider px-3 py-1.5 rounded-full"
+        <h1
+          className="font-black font-display leading-none"
           style={{
+            fontSize: 'clamp(20px, 3vw, 32px)',
             color: 'white',
-            backgroundColor: 'rgba(255,255,255,0.12)',
-            border: '2px solid rgba(255,255,255,0.25)',
+            textShadow: `2px 2px 0 ${channel.accent}, 3px 3px 0 #0A2540`,
           }}
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> {channel.title}
-        </button>
-        <div className="text-right">
-          <h1
-            className="font-black font-display leading-none"
-            style={{
-              fontSize: 'clamp(20px, 3vw, 32px)',
-              color: 'white',
-              textShadow: `2px 2px 0 ${channel.accent}, 3px 3px 0 #0A2540`,
-            }}
-          >
-            {episode.title}
-          </h1>
-        </div>
+          {episode.title}
+        </h1>
       </motion.div>
 
       {/* CRT-styled player frame — bigger sibling of the home RetroTV. */}

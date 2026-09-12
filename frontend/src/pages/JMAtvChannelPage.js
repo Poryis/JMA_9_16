@@ -9,7 +9,7 @@
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, ArrowLeft } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import { getChannel } from '../data/jmatv';
 
@@ -126,18 +126,6 @@ export default function JMAtvChannelPage() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <button
-          data-testid="jmatv-channel-back"
-          onClick={() => navigate('/jmatv')}
-          className="inline-flex items-center gap-1.5 text-xs md:text-sm font-black uppercase tracking-wider mb-2 px-3 py-1.5 rounded-full"
-          style={{
-            color: 'white',
-            backgroundColor: 'rgba(255,255,255,0.12)',
-            border: '2px solid rgba(255,255,255,0.25)',
-          }}
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> JMAtv
-        </button>
         <h1
           className="font-black font-display"
           style={{
