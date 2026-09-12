@@ -90,37 +90,31 @@ export default function TileDecoration({ type, accent }) {
 
     // ------------------------------------------------------------------
     case 'clouds': {
-      // Fluffy cartoon clouds + a rotating sun drifting through the
-      // WINDOW area of the clubhouse.png background. Container is
-      // constrained so the sky panel appears to be seen through the
-      // window frame, not floating across the whole tile.
+      // Fluffy cartoon clouds drifting through the WINDOW area of the
+      // clubhouse.png background, plus a stationary rotating sun. The
+      // sun is anchored to the overall tile (not to the cloud crop) so
+      // widening the cloud crop for a cleaner fade doesn't shift the
+      // sun's placement.
       const clouds = [
         { top: 18, size: 22, dur: 11, delay: 0 },
         { top: 46, size: 30, dur: 15, delay: 3.5 },
         { top: 72, size: 18, dur: 9,  delay: 7 },
       ];
       return (
-        <div
-          aria-hidden="true"
-          className="absolute pointer-events-none z-[5] overflow-hidden"
-          style={{
-            top: '27%',
-            left: '65%',
-            width: '30%',
-            height: '20%',
-          }}
-        >
-          {/* Cartoon sun — anchored top-right inside the window. Rays
-              rotate slowly for a friendly shimmer. Sits BEHIND the
-              clouds so drifting clouds partially cover the sun. */}
+        <>
+          {/* Cartoon sun — pinned to its original position inside the
+              window (independent of the cloud crop container). */}
           <svg
+            aria-hidden="true"
             viewBox="0 0 40 40"
             style={{
               position: 'absolute',
-              top: '4%',
-              right: '6%',
+              top: '28%',
+              right: '16%',
               width: 30,
               height: 30,
+              zIndex: 5,
+              pointerEvents: 'none',
               filter: 'drop-shadow(0 1px 0 rgba(10,37,64,0.4))',
             }}
           >
@@ -146,24 +140,37 @@ export default function TileDecoration({ type, accent }) {
               strokeWidth="1.5"
             />
           </svg>
-          {clouds.map((c, i) => (
-            <div
-              key={i}
-              className="absolute"
-              style={{
-                top: c.top + '%',
-                left: 0,
-                width: c.size,
-                height: c.size * 0.55,
-                background: 'radial-gradient(circle at 30% 60%, #FFFFFF 0%, #FFFFFF 60%, transparent 70%), radial-gradient(circle at 60% 40%, #FFFFFF 0%, #FFFFFF 55%, transparent 65%), radial-gradient(circle at 80% 65%, #FFFFFF 0%, #FFFFFF 55%, transparent 65%)',
-                border: '1.5px solid var(--jma-dark)',
-                borderRadius: '50%',
-                opacity: 0.95,
-                animation: `tile-cloud-drift ${c.dur}s linear ${c.delay}s infinite`,
-              }}
-            />
-          ))}
-        </div>
+          {/* Cloud drift crop — widened on both sides so clouds appear
+              from further off-window-left and vanish further right. */}
+          <div
+            aria-hidden="true"
+            className="absolute pointer-events-none z-[5] overflow-hidden"
+            style={{
+              top: '27%',
+              left: '60%',
+              width: '35%',
+              height: '20%',
+            }}
+          >
+            {clouds.map((c, i) => (
+              <div
+                key={i}
+                className="absolute"
+                style={{
+                  top: c.top + '%',
+                  left: 0,
+                  width: c.size,
+                  height: c.size * 0.55,
+                  background: 'radial-gradient(circle at 30% 60%, #FFFFFF 0%, #FFFFFF 60%, transparent 70%), radial-gradient(circle at 60% 40%, #FFFFFF 0%, #FFFFFF 55%, transparent 65%), radial-gradient(circle at 80% 65%, #FFFFFF 0%, #FFFFFF 55%, transparent 65%)',
+                  border: '1.5px solid var(--jma-dark)',
+                  borderRadius: '50%',
+                  opacity: 0.95,
+                  animation: `tile-cloud-drift ${c.dur}s linear ${c.delay}s infinite`,
+                }}
+              />
+            ))}
+          </div>
+        </>
       );
     }
 
