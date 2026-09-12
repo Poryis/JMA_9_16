@@ -21,41 +21,53 @@ export default function TileDecoration({ type, accent }) {
   switch (type) {
     // ------------------------------------------------------------------
     case 'staff': {
-      // 5 chalk staff lines drifting slowly leftward, with a few notes
-      // bobbing above them. Fits Name That Note (chalkboard). Width is
-      // clamped to ~80% of the card (left-[10%]/right-[10%]) so the
-      // staff lines never poke past the chalkboard frame in the bg art.
+      // Stylized WINDING staff — 5 wavy chalk lines drawn as SVG paths,
+      // tightly clipped inside the chalkboard region of the Name That
+      // Note tile. Gentle ping-pong sway means no teleport is ever
+      // visible, and dashed "flow" along each line gives a subtle music-
+      // moving-along-the-staff feel. A few notes bob above.
+      const lineYs = [8, 18, 28, 38, 48];
       return (
         <div {...wrapProps}>
           <div
-            className="absolute"
+            className="absolute overflow-hidden"
             style={{
-              left: '12%',
-              right: '12%',
-              top: '34%',
-              height: 46,
-              opacity: 0.55,
-              animation: 'tile-staff-drift 6s linear infinite',
+              left: '16%',
+              right: '16%',
+              top: '38%',
+              height: 56,
+              opacity: 0.75,
+              animation: 'tile-staff-sway 5.5s ease-in-out infinite',
             }}
           >
-            {[0, 10, 20, 30, 40].map((y) => (
-              <div
-                key={y}
-                className="absolute left-0 right-[-40px]"
-                style={{
-                  top: y,
-                  height: 1.5,
-                  backgroundColor: 'rgba(255,255,255,0.85)',
-                  borderRadius: 2,
-                  boxShadow: '0 0 3px rgba(255,255,255,0.35)',
-                }}
-              />
-            ))}
+            <svg
+              viewBox="0 0 200 56"
+              preserveAspectRatio="none"
+              width="100%"
+              height="100%"
+              style={{ overflow: 'visible' }}
+            >
+              {lineYs.map((y, i) => (
+                <path
+                  key={y}
+                  d={`M -10 ${y} Q 25 ${y - 5}, 50 ${y} T 100 ${y} T 150 ${y} T 210 ${y}`}
+                  stroke="rgba(255,255,255,0.9)"
+                  strokeWidth="1.4"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray="8 4"
+                  style={{
+                    filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.35))',
+                    animation: `tile-staff-flow ${7 + i * 0.4}s linear infinite`,
+                  }}
+                />
+              ))}
+            </svg>
           </div>
           {[
-            { left: '24%', top: '32%', delay: 0 },
-            { left: '50%', top: '38%', delay: 0.6 },
-            { left: '70%', top: '32%', delay: 1.1 },
+            { left: '28%', top: '32%', delay: 0 },
+            { left: '50%', top: '36%', delay: 0.6 },
+            { left: '68%', top: '32%', delay: 1.1 },
           ].map((n, i) => (
             <span
               key={i}

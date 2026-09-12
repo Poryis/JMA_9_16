@@ -57,19 +57,31 @@
 }
 
 /* ---- Per-tile decoration layers ---- */
-/* Musical staff drifting horizontally (Name That Note, Sight-Reading). */
-@keyframes tile-staff-drift {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-40px); }
+/* Stylized winding staff — gentle undulating sway that ping-pongs, so
+   no teleport is ever visible. Paired with the SVG wavy paths in the
+   `staff` case of TileDecoration.js. */
+@keyframes tile-staff-sway {
+  0%, 100% { transform: translateX(0)    scaleY(1);    }
+  50%      { transform: translateX(-6px) scaleY(1.03); }
+}
+/* Marching notes along the winding staff — animates SVG dash offset for
+   a smooth flow that loops without a visible snap. */
+@keyframes tile-staff-flow {
+  0%   { stroke-dashoffset: 0;   }
+  100% { stroke-dashoffset: -60; }
 }
 @keyframes tile-note-bob {
   0%, 100% { transform: translateY(0) rotate(-4deg); }
   50%      { transform: translateY(-6px) rotate(4deg); }
 }
-/* Clouds drifting across (Fun Facts window). */
+/* Clouds drifting across (Fun Facts window). Fades in on the left and
+   out on the right so the loop reset happens while the cloud is
+   invisible — no more visible snap-back. */
 @keyframes tile-cloud-drift {
-  0%   { transform: translateX(-30%); }
-  100% { transform: translateX(180%); }
+  0%   { transform: translateX(-50%);  opacity: 0; }
+  15%  {                               opacity: 1; }
+  85%  {                               opacity: 1; }
+  100% { transform: translateX(220%);  opacity: 0; }
 }
 /* Music notes rising (Jam Session, Jukebox). */
 @keyframes tile-note-rise {
