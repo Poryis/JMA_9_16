@@ -6,7 +6,7 @@ import { GameHeader } from '../components/GameUI';
 import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import { DrumKitVisual, TurntableVisual } from '../components/Instruments';
-import { PulsingSpeakers } from '../components/PulsingSpeakers';
+import ConsolePadOverlay from '../components/ConsolePadOverlay';
 import useAudio from '../hooks/useAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
@@ -389,15 +389,15 @@ function LoopStudioPage() {
 
   return (
     <div className="min-h-screen flex flex-col relative" data-testid="loop-studio-page"
-      style={{ backgroundImage: 'url(assets/backgrounds/recording-studio.jpg)', backgroundSize: 'cover', backgroundPosition: 'center bottom', backgroundRepeat: 'no-repeat', backgroundColor: '#E64C3C' }}>
+      style={{ backgroundImage: 'url(assets/backgrounds/beat-lab-studio.png)', backgroundSize: 'cover', backgroundPosition: 'center bottom', backgroundRepeat: 'no-repeat', backgroundColor: '#22A6A0' }}>
       <GameHeader title="Beat Lab" showHomeButton={true} backLink={{ to: '/create', label: 'Create' }} />
       <FullscreenButton />
       <RoomCharacters room="beat-lab" />
 
-      {/* Pulsing Stew speakers bracketing the playground — pump in sync with
-          the BPM while the beat is running */}
-      <PulsingSpeakers side="left"  playing={isPlaying} bpm={bpm} />
-      <PulsingSpeakers side="right" playing={isPlaying} bpm={bpm} flip />
+      {/* Animated step-pad strip that overlays the empty grey console in
+          the backdrop — 16 chunky pads flash in sync with the beat, so
+          the physical gear appears to be driving the on-screen grid. */}
+      <ConsolePadOverlay currentStep={currentStep} isPlaying={isPlaying} />
 
       <main className="flex-1 pt-20 md:pt-24 lg:pt-32 pb-4 px-2 md:px-4 overflow-auto">
         {/* Controls Bar */}
@@ -618,16 +618,32 @@ function LoopStudioPage() {
 
         {/* Instruments in the scene - desktop: drums left + turntable right; mobile: stacked vertically.
             Both visuals are TAP-PLAYABLE — kids can jam directly on a kick drum or
-            scratch a record without using the sequencer grid. */}
-        <div className="max-w-5xl mx-auto mt-3 flex flex-col md:flex-row md:items-end md:justify-between md:px-12 gap-6 md:gap-0 items-center">
-          {/* Drum kit */}
-          <div className="flex-shrink-0">
-            <DrumKitVisual ref={drumKitRef} onHit={handleDrumTap} />
+            scratch a record without using the sequencer grid. Wrapped in a
+            "stage riser" card so they read as sitting on their own little
+            platform, not floating against the studio backdrop. */}
+        <div
+          className="max-w-5xl mx-auto mt-3 rounded-2xl border-[3px] border-[var(--jma-dark)] px-4 md:px-10 pt-4 pb-3 md:pb-4"
+          style={{
+            background: 'linear-gradient(180deg, #8B5A2B 0%, #6B3F1D 100%)',
+            boxShadow: '0 8px 0 #3E2410, inset 0 3px 0 rgba(255,255,255,0.15)',
+          }}
+        >
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-0 items-center">
+            {/* Drum kit */}
+            <div className="flex-shrink-0">
+              <DrumKitVisual ref={drumKitRef} onHit={handleDrumTap} />
+            </div>
+            {/* Turntable */}
+            <div className="flex-shrink-0">
+              <TurntableVisual activeHits={activeHits} onScratch={handleScratchTap} />
+            </div>
           </div>
-          {/* Turntable */}
-          <div className="flex-shrink-0">
-            <TurntableVisual activeHits={activeHits} onScratch={handleScratchTap} />
-          </div>
+          {/* Stage lip — a slim darker strip along the bottom edge sells
+              the "wooden riser" read. */}
+          <div
+            className="mt-2 h-1.5 rounded-full"
+            style={{ background: 'rgba(0,0,0,0.35)' }}
+          />
         </div>
       </main>
     </div>
