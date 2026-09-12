@@ -11,6 +11,7 @@ const LEARN_TILES = [
     character: 'assets/backgrounds/charlie-lecturn.png',
     charWidthPct: 30,
     charObjectPosition: 'bottom right',
+    decoration: 'spotlight',
     sfx: 'assets/audio/sfx-page.mp3',
     fullWidth: true,
   },
@@ -23,6 +24,7 @@ const LEARN_TILES = [
     accent: '#F39C12',
     character: 'assets/characters/charlie-polliwog.png',
     charWidthPct: 28,
+    decoration: 'clouds',
     sfx: 'assets/audio/sfx-twinkle.mp3',
   },
   {
@@ -38,6 +40,7 @@ const LEARN_TILES = [
     accent: '#E67E22',
     character: 'assets/characters/chunk-marching.png',
     charWidthPct: 34,
+    decoration: 'sparkles',
     sfx: 'assets/audio/Snare.mp3',
   },
   {
@@ -49,6 +52,7 @@ const LEARN_TILES = [
     accent: '#E67E22',
     character: 'assets/characters/dr-jellybone.png',
     charWidthPct: 22,
+    decoration: 'sparkles',
     sfx: 'assets/audio/sfx-arpeggio.mp3',
   },
   {
@@ -60,6 +64,7 @@ const LEARN_TILES = [
     accent: '#1B5E40',
     character: 'assets/characters/finn-danger.png',
     charWidthPct: 24,
+    decoration: 'staff',
     sfx: 'assets/audio/sfx-bell-chime.mp3',
   },
 ];

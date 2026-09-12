@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameHeader } from './GameUI';
 import BlimpFlyby from './BlimpFlyby';
+import TileDecoration from './TileDecoration';
 
 /**
  * Single-line uppercase title with UNIFORM size across every tile on the
@@ -187,6 +188,12 @@ function Tile({ tile, index, navigate }) {
           }}
         />
       )}
+      {/* Scene-specific CSS decoration — staff lines, clouds, sparkles,
+          etc. Sits BEHIND the character but IN FRONT of the bg. Pure CSS,
+          no new assets. Configured via `tile.decoration` in each menu
+          page's tile array. */}
+      <TileDecoration type={tile.decoration} accent={tile.accent || tile.color} />
+
       {/* Primary character — BIG, bottom-centered so it dominates the
           cartridge without covering the title band up top. Charlie's Song
           Studio has no character; we simply skip rendering.

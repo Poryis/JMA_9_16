@@ -11,6 +11,7 @@ const PLAY_TILES = [
     accent: '#C0392B',
     character: 'assets/characters/lou-disco.png',
     charWidthPct: 32,
+    decoration: 'notes',
     sfx: 'assets/audio/sfx-rhythm-fill.mp3',
   },
   {
@@ -22,6 +23,7 @@ const PLAY_TILES = [
     accent: '#1ABC9C',
     character: 'assets/characters/stew.png',
     charWidthPct: 28,
+    decoration: 'notes',
     sfx: 'assets/audio/sfx-kazoo-honk.mp3',
   },
   {
@@ -34,6 +36,7 @@ const PLAY_TILES = [
     accent: '#0A6E7A',
     character: 'assets/characters/charlie-surf.png',
     charWidthPct: 30,
+    decoration: 'staff',
     sfx: 'assets/audio/sfx-bell-pair.mp3',
   },
   {
@@ -45,6 +48,7 @@ const PLAY_TILES = [
     accent: '#5E2D8C',
     character: 'assets/characters/dr-jellybone-detective.png',
     charWidthPct: 34,
+    decoration: 'sparkles',
     sfx: 'assets/audio/sfx-detective.mp3',
   },
   {
@@ -56,6 +60,7 @@ const PLAY_TILES = [
     accent: '#1F7A36',
     character: 'assets/characters/charlie-grad.png',
     charWidthPct: 30,
+    decoration: 'staff',
     sfx: 'assets/audio/sfx-bell-pair.mp3',
   },
 ];

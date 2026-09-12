@@ -10,6 +10,7 @@ const CREATE_TILES = [
     accent: '#34A853',
     character: 'assets/characters/charlie-punk.png',
     charWidthPct: 35,
+    decoration: 'notes',
     sfx: 'assets/audio/sfx-drum-fill.mp3',
   },
   {
@@ -21,6 +22,7 @@ const CREATE_TILES = [
     accent: '#8E44AD',
     character: 'assets/characters/jelly-rap-trio.png',
     charWidthPct: 52,
+    decoration: 'sparkles',
     sfx: 'assets/audio/sfx-dj-scratch.mp3',
   },
   {
@@ -32,6 +34,7 @@ const CREATE_TILES = [
     accent: '#3B1F5C',
     character: 'assets/robot-boogie/robot1-card-hero.png',
     charWidthPct: 45,
+    decoration: 'sparkles',
     // No SFX preview on this card — the source stem is an 8-s loop and
     // even a short-capped preview reads as "a second of music that cuts
     // out." Card click just navigates.
@@ -43,6 +46,7 @@ const CREATE_TILES = [
     bg: 'assets/backgrounds/charlie-in-studio.jpg',
     color: '#FFCC00',
     accent: '#F39C12',
+    decoration: 'notes',
     sfx: 'assets/audio/sfx-piano-flourish.mp3',
   },
 ];

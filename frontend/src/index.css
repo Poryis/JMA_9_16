@@ -33,11 +33,13 @@
 }
 
 /* ---- SubMenu tile "pop" animations ---- */
-/* Slow Ken Burns drift on card background scenes. */
+/* Slow Ken Burns drift on card background scenes. Livelier version: a
+   visible ~10% scale swell + noticeable pan so the world feels alive
+   without being distracting. */
 @keyframes submenuKenBurns {
-  0%   { transform: scale(1.02) translate(0, 0); }
-  50%  { transform: scale(1.09) translate(-1.6%, -1.1%); }
-  100% { transform: scale(1.02) translate(0, 0); }
+  0%   { transform: scale(1.04) translate(0, 0); }
+  50%  { transform: scale(1.14) translate(-2.2%, -1.4%); }
+  100% { transform: scale(1.04) translate(0, 0); }
 }
 /* Diagonal light sheen sweeping across each tile, with a pause between passes. */
 @keyframes submenuSheen {
@@ -52,6 +54,39 @@
   15%  { opacity: 0.95; }
   85%  { transform: translate(-50%, -220%) scale(0.5); opacity: 0.55; }
   100% { transform: translate(-50%, -260%) scale(0.4); opacity: 0; }
+}
+
+/* ---- Per-tile decoration layers ---- */
+/* Musical staff drifting horizontally (Name That Note, Sight-Reading). */
+@keyframes tile-staff-drift {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-40px); }
+}
+@keyframes tile-note-bob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50%      { transform: translateY(-6px) rotate(4deg); }
+}
+/* Clouds drifting across (Fun Facts window). */
+@keyframes tile-cloud-drift {
+  0%   { transform: translateX(-30%); }
+  100% { transform: translateX(180%); }
+}
+/* Music notes rising (Jam Session, Jukebox). */
+@keyframes tile-note-rise {
+  0%   { transform: translateY(0)     rotate(-8deg); opacity: 0; }
+  10%  { opacity: 0.9; }
+  90%  { opacity: 0.7; }
+  100% { transform: translateY(-140px) rotate(8deg); opacity: 0; }
+}
+/* Twinkling sparkles (Detective, Robot Boogie, Beat Lab). */
+@keyframes tile-twinkle {
+  0%, 100% { transform: scale(0.4); opacity: 0.25; }
+  50%      { transform: scale(1);   opacity: 1;    }
+}
+/* Sweeping spotlight cone (Music 101 curtain). */
+@keyframes tile-spotlight-sweep {
+  0%,  100% { transform: rotate(-14deg); }
+  50%       { transform: rotate(14deg);  }
 }
 /* JMAtv logo cycle — 6 synced beats where the FRAME hue and the LETTER
    color always sit on opposite sides of the color wheel (complementary
