@@ -74,13 +74,15 @@
   0%, 100% { transform: translateY(0) rotate(-4deg); }
   50%      { transform: translateY(-6px) rotate(4deg); }
 }
-/* Clouds drifting across (Fun Facts window). Fades in on the left and
-   out on the right so the loop reset happens while the cloud is
-   invisible — no more visible snap-back. */
+/* Clouds drifting across (Fun Facts window). Starts further off-screen
+   left and fades to 0 well before it approaches the right edge, so the
+   window's overflow-clip never crops a still-visible cloud. Reset then
+   happens while the cloud is fully invisible. */
 @keyframes tile-cloud-drift {
-  0%   { transform: translateX(-50%);  opacity: 0; }
-  15%  {                               opacity: 1; }
-  85%  {                               opacity: 1; }
+  0%   { transform: translateX(-140%); opacity: 0; }
+  20%  {                               opacity: 1; }
+  65%  {                               opacity: 1; }
+  85%  { opacity: 0; }
   100% { transform: translateX(220%);  opacity: 0; }
 }
 /* Music notes rising (Jam Session, Jukebox). */
