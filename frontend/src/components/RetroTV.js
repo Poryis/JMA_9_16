@@ -43,7 +43,7 @@ function BubbleWordmark() {
             fontWeight: 800,
             color: L.color,
             fontSize: L.small
-              ? 'clamp(40px, 6.6vw, 72px)'
+              ? 'clamp(30px, 5vw, 56px)'
               : 'clamp(56px, 9vw, 100px)',
             WebkitTextStroke: '0.11em var(--jma-dark)',
             paintOrder: 'stroke fill',
@@ -58,8 +58,8 @@ function BubbleWordmark() {
             ].join(', '),
             transform: `rotate(${L.rot}deg)`,
             display: 'inline-block',
-            marginLeft: i === 0 ? 0 : L.small ? '-0.14em' : '-0.16em',
-            letterSpacing: '-0.04em',
+            marginLeft: i === 0 ? 0 : L.small ? '-0.10em' : '-0.12em',
+            letterSpacing: '-0.03em',
           }}
         >
           {L.char}
@@ -326,12 +326,70 @@ export default function RetroTV() {
       </div>
       </div>
 
-      {/* RIGHT — reserved slot. The "A NEW ADVENTURE EVERY WEEK!"
-          starburst used to sit here; removed per user request. Left
-          intentionally empty for now so the row still centers cleanly on
-          desktop. Drop a new element inside this div later if we want
-          something back on the right. */}
-      <div className="hidden md:block order-3 flex-shrink-0" style={{ width: 0 }} />
+      {/* RIGHT — hand-stuck starburst CTA. Playful call-to-action that
+          echoes the "Streaming Now" energy without being wordy. Clickable
+          so kids on the right side of the row can hit it too — routes to
+          the same /jmatv page as the TV. */}
+      <div className="hidden md:flex order-3 flex-shrink-0 items-center justify-center">
+        <motion.button
+          type="button"
+          data-testid="home-retro-tv-cta"
+          onClick={() => navigate('/jmatv')}
+          className="relative flex items-center justify-center border-0 bg-transparent p-0 cursor-pointer"
+          style={{ width: 150, height: 150 }}
+          animate={{ rotate: [-6, 6, -6] }}
+          transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.94 }}
+          aria-label="Press play — open JMAtv"
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background: '#FFCC00',
+              clipPath:
+                'polygon(50% 0%, 60% 15%, 75% 5%, 78% 22%, 95% 20%, 88% 35%, 100% 50%, 88% 65%, 95% 80%, 78% 78%, 75% 95%, 60% 85%, 50% 100%, 40% 85%, 25% 95%, 22% 78%, 5% 80%, 12% 65%, 0% 50%, 12% 35%, 5% 20%, 22% 22%, 25% 5%, 40% 15%)',
+              boxShadow: '0 6px 0 rgba(10,37,64,0.35)',
+            }}
+          />
+          <div className="relative flex flex-col items-center gap-1 px-2">
+            <div
+              className="rounded-full flex items-center justify-center"
+              style={{
+                width: 44,
+                height: 44,
+                backgroundColor: 'var(--jma-dark)',
+                boxShadow: 'inset 0 -3px 0 rgba(0,0,0,0.35), 0 3px 0 rgba(10,37,64,0.35)',
+              }}
+            >
+              {/* Play triangle */}
+              <div
+                style={{
+                  width: 0,
+                  height: 0,
+                  marginLeft: 4,
+                  borderLeft: '14px solid #FFCC00',
+                  borderTop: '10px solid transparent',
+                  borderBottom: '10px solid transparent',
+                }}
+              />
+            </div>
+            <div
+              className="text-sm font-black font-display uppercase leading-none tracking-wider"
+              style={{ color: 'var(--jma-dark)' }}
+            >
+              Press
+            </div>
+            <div
+              className="text-lg font-black font-display uppercase leading-none tracking-wider"
+              style={{ color: 'var(--jma-dark)' }}
+            >
+              Play!
+            </div>
+          </div>
+        </motion.button>
+      </div>
 
       <style>{`
         @keyframes jma-pulse {
