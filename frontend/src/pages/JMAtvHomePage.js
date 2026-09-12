@@ -152,6 +152,10 @@ export default function JMAtvHomePage() {
           <div
             aria-hidden="true"
             className="absolute inset-0 jmatv-letters-mask"
+            style={{
+              WebkitMaskImage: `url(${process.env.PUBLIC_URL || ''}/assets/ui/jmatv-logo-v2-letters.png)`,
+              maskImage: `url(${process.env.PUBLIC_URL || ''}/assets/ui/jmatv-logo-v2-letters.png)`,
+            }}
           />
         </div>
         <p className="text-sm md:text-base font-bold mt-2" style={{ color: '#FFE7C2' }}>

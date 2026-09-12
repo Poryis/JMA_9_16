@@ -82,8 +82,9 @@
   100% { background-color: #FFFFFF; }
 }
 .jmatv-letters-mask {
-  -webkit-mask-image: url('/assets/ui/jmatv-logo-v2-letters.png');
-          mask-image: url('/assets/ui/jmatv-logo-v2-letters.png');
+  /* mask-image is applied via inline style in JS with
+     process.env.PUBLIC_URL so the CRA css-loader doesn't try to
+     resolve /assets/... as a JS module at build time. */
   -webkit-mask-size: contain;
           mask-size: contain;
   -webkit-mask-repeat: no-repeat;
