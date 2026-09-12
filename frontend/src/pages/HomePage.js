@@ -313,10 +313,68 @@ function HomePage() {
       data-testid="home-page"
       className="min-h-screen w-full flex flex-col items-center px-3 sm:px-6 pt-4 pb-6 relative overflow-x-hidden"
       style={{
-        background:
-          'linear-gradient(180deg, #BCE5F2 0%, #E5F2F8 55%, #FFEEC5 100%)',
+        // Fallback color underneath the underwater layer so the top of
+        // the page never flashes white during initial paint / while the
+        // PNG is loading. Deep-sea navy.
+        backgroundColor: '#02243F',
       }}
     >
+      {/* Underwater backdrop — cover + bottom-anchored so the seafloor
+          detail stays visible on tall phones; slow Ken Burns drift so
+          the water breathes instead of feeling like a static poster. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 home-underwater-bg-layer"
+        style={{
+          backgroundImage: `url(${process.env.PUBLIC_URL || ''}/assets/backgrounds/underwater.png)`,
+        }}
+      />
+      {/* Top vignette — softens the crop line on ultrawide desktops
+          where the top of the underwater PNG would otherwise look cut. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 z-0 pointer-events-none"
+        style={{
+          height: '32%',
+          background:
+            'linear-gradient(180deg, rgba(2,36,63,0.55) 0%, rgba(2,36,63,0.15) 60%, transparent 100%)',
+        }}
+      />
+      {/* Diagonal god-ray shafts — barely-there striped screen overlay. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 pointer-events-none home-underwater-shafts"
+      />
+      {/* Rising bubbles — CSS-only. 9 bubbles at varied sizes, positions,
+          durations, and delays so the loop reads as random. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+      >
+        {[
+          { left: '6%',  size: 14, dur: 14, delay: 0 },
+          { left: '14%', size: 8,  dur: 11, delay: 4.5 },
+          { left: '22%', size: 20, dur: 17, delay: 2 },
+          { left: '35%', size: 10, dur: 13, delay: 7 },
+          { left: '48%', size: 16, dur: 15, delay: 1 },
+          { left: '58%', size: 6,  dur: 10, delay: 5 },
+          { left: '70%', size: 22, dur: 18, delay: 3 },
+          { left: '82%', size: 12, dur: 12, delay: 6.5 },
+          { left: '92%', size: 9,  dur: 14, delay: 2.5 },
+        ].map((b, i) => (
+          <span
+            key={i}
+            className="home-underwater-bubble"
+            style={{
+              left: b.left,
+              width: b.size,
+              height: b.size,
+              animationDuration: `${b.dur}s`,
+              animationDelay: `${b.delay}s`,
+            }}
+          />
+        ))}
+      </div>
       {/* Drifting Jelly Rocks blimp — behind everything */}
       <BlimpFlyby />
 
