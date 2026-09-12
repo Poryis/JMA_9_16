@@ -147,8 +147,8 @@ export default function TileDecoration({ type, accent }) {
             className="absolute pointer-events-none z-[5] overflow-hidden"
             style={{
               top: '27%',
-              left: '62.5%',
-              width: '32.5%',
+              left: '63%',
+              width: '32%',
               height: '20%',
             }}
           >
