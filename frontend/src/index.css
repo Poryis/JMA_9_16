@@ -53,7 +53,23 @@
   85%  { transform: translate(-50%, -220%) scale(0.5); opacity: 0.55; }
   100% { transform: translate(-50%, -260%) scale(0.4); opacity: 0; }
 }
+/* JMAtv logo cycle — continuous hue-rotate that swings the transparent
+   logo (yellow crown + blue TV + black outlines) through the whole
+   primary/secondary spectrum. Applied to the big brand mark on
+   JMAtvHomePage; smaller corner bugs stay static so they don't
+   distract from video playback. */
+@keyframes jmatv-color-cycle {
+  0%   { filter: hue-rotate(0deg)   drop-shadow(0 0 22px rgba(255,200,0,0.35)); }
+  25%  { filter: hue-rotate(90deg)  drop-shadow(0 0 22px rgba(255,140,80,0.35)); }
+  50%  { filter: hue-rotate(180deg) drop-shadow(0 0 22px rgba(120,200,255,0.35)); }
+  75%  { filter: hue-rotate(270deg) drop-shadow(0 0 22px rgba(220,120,255,0.35)); }
+  100% { filter: hue-rotate(360deg) drop-shadow(0 0 22px rgba(255,200,0,0.35)); }
+}
+.jmatv-color-cycle {
+  animation: jmatv-color-cycle 10s linear infinite;
+}
 /* ---- /SubMenu tile animations ---- */
+
 
 body {
   margin: 0;

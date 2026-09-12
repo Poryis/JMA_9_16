@@ -220,7 +220,7 @@ export default function RetroTV() {
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <img
-                  src="assets/ui/jmatv-logo.png"
+                  src="assets/ui/jmatv-logo-v2.png"
                   alt="JMAtv"
                   className="object-contain"
                   style={{ width: '60%', filter: 'drop-shadow(0 0 12px rgba(255,200,0,0.5))' }}
@@ -252,7 +252,7 @@ export default function RetroTV() {
             {/* JMAtv logo bug — tiny brand mark in bottom-right of screen so
                 kids learn the channel name even before tapping in. */}
             <img
-              src="assets/ui/jmatv-logo.png"
+              src="assets/ui/jmatv-logo-v2.png"
               alt=""
               aria-hidden="true"
               draggable={false}

@@ -133,13 +133,12 @@ export default function JMAtvHomePage() {
         animate={{ y: 0, opacity: 1 }}
       >
         <img
-          src="assets/ui/jmatv-logo.png"
+          src="assets/ui/jmatv-logo-v2.png"
           alt="JMAtv"
           draggable={false}
-          className="mx-auto object-contain"
+          className="mx-auto object-contain jmatv-color-cycle"
           style={{
-            width: 'clamp(140px, 22vw, 240px)',
-            filter: 'drop-shadow(0 0 22px rgba(255,200,0,0.35))',
+            width: 'clamp(160px, 24vw, 280px)',
           }}
         />
         <p className="text-sm md:text-base font-bold mt-2" style={{ color: '#FFE7C2' }}>

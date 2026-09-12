@@ -180,7 +180,7 @@ export default function JMAtvPlayerPage() {
 
             {/* JMAtv channel bug top-right of screen */}
             <img
-              src="assets/ui/jmatv-logo.png"
+              src="assets/ui/jmatv-logo-v2.png"
               alt=""
               aria-hidden="true"
               draggable={false}
