@@ -1,10 +1,7 @@
-// HomeProgressCard — single wide card that combines the kid's Academy
-// rank + their newest sticker into one row. Replaces the earlier trio of
-// separate chips (RankBadge + PracticeStreakChip + StickerSpotlight) so
-// the Home page reads calmer for early elementary kids. Both halves tap
-// through to the Sticker Book. PracticeStreakChip still renders above
-// this card when active — it's a badge earned via return visits, not a
-// permanent piece of chrome.
+// HomeProgressCard — slim horizontal strip that combines the kid's
+// Academy rank + newest sticker into one row. Deliberately compact
+// (~60px tall) so the Home page reads calm for early-elementary kids.
+// Both halves tap through to the Sticker Book.
 
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
@@ -31,173 +28,160 @@ export default function HomeProgressCard() {
   }, [earned]);
 
   const totalEarned = Object.keys(earned).length;
-  const go = () => navigate('/sticker-book');
 
   return (
     <motion.button
       type="button"
       data-testid="home-progress-card"
-      onClick={go}
-      initial={{ y: -10, opacity: 0 }}
+      onClick={() => navigate('/sticker-book')}
+      initial={{ y: -8, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.4, type: 'spring' }}
-      whileHover={{ y: -3, scale: 1.005 }}
-      whileTap={{ y: 2, scale: 0.99 }}
-      className="relative w-full flex items-stretch rounded-3xl bg-white border-4 overflow-hidden cursor-pointer touch-manipulation"
+      whileHover={{ y: -2, scale: 1.005 }}
+      whileTap={{ y: 1, scale: 0.995 }}
+      className="relative w-full flex items-stretch rounded-full bg-white border-3 overflow-hidden cursor-pointer touch-manipulation"
       style={{
         borderColor: 'var(--jma-dark)',
-        boxShadow: '0 6px 0 0 var(--jma-dark)',
+        borderWidth: 3,
+        boxShadow: '0 4px 0 0 var(--jma-dark)',
+        height: 56,
       }}
       aria-label={`${currentRank.title} · ${newest ? `Newest sticker ${newest.name}` : 'Play to earn stickers'} · open Sticker Book`}
     >
-      {/* Left half — Academy Rank */}
+      {/* Left — Academy Rank */}
       <div
-        className="flex-1 flex items-center gap-3 md:gap-4 px-3 md:px-5 py-3 min-w-0"
+        className="flex-1 flex items-center gap-2.5 px-3 md:px-4 min-w-0"
         style={{ backgroundColor: currentRank.badgeBg }}
-        data-testid="home-progress-rank"
       >
         <div
-          className="w-12 h-12 md:w-14 md:h-14 rounded-full border-3 flex items-center justify-center flex-shrink-0 overflow-hidden"
-          style={{ backgroundColor: '#fff', borderColor: currentRank.color, borderWidth: 3 }}
+          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-white border-2"
+          style={{ borderColor: currentRank.color }}
         >
           <img
             src={currentRank.icon}
-            alt={currentRank.title}
+            alt=""
             className="w-full h-full object-contain"
             draggable={false}
           />
         </div>
         <div className="flex flex-col leading-tight flex-1 min-w-0 text-left">
           <span
-            className="text-[10px] md:text-xs uppercase tracking-wide font-black"
+            className="text-[9px] md:text-[10px] uppercase tracking-wide font-black"
             style={{ color: currentRank.color }}
           >
-            Academy Rank
+            Rank
           </span>
           <span
-            className="text-base md:text-xl font-black font-display truncate"
+            className="text-sm md:text-base font-black font-display truncate"
             style={{ color: 'var(--jma-dark)' }}
             data-testid="rank-title"
           >
             {currentRank.title}
           </span>
-          {nextRank ? (
-            <div className="mt-1 flex items-center gap-2">
-              <div className="w-full h-2 rounded-full bg-white/70 overflow-hidden max-w-[140px] md:max-w-[180px]">
-                <div
-                  className="h-full transition-all"
-                  style={{
-                    width: `${progress.pct}%`,
-                    backgroundColor: currentRank.color,
-                  }}
-                />
-              </div>
-              <span
-                className="text-[10px] md:text-xs font-black font-display flex-shrink-0"
-                style={{ color: currentRank.color }}
-              >
-                {progress.current}/{progress.target}
-              </span>
-            </div>
-          ) : (
+        </div>
+        {nextRank ? (
+          <div className="hidden sm:flex flex-col items-end gap-1 flex-shrink-0">
             <span
-              className="text-[10px] md:text-xs font-black uppercase tracking-wide"
+              className="text-[10px] font-black font-display"
               style={{ color: currentRank.color }}
             >
-              🏆 Maestro · {achievementCount} badges
+              {progress.current}/{progress.target}
             </span>
-          )}
-        </div>
+            <div className="w-20 h-1.5 rounded-full bg-white/70 overflow-hidden">
+              <div
+                className="h-full transition-all"
+                style={{
+                  width: `${progress.pct}%`,
+                  backgroundColor: currentRank.color,
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <span
+            className="hidden sm:inline text-[10px] font-black uppercase tracking-wide flex-shrink-0"
+            style={{ color: currentRank.color }}
+          >
+            {achievementCount} 🏆
+          </span>
+        )}
       </div>
 
       {/* Divider */}
       <div
         aria-hidden="true"
-        className="w-1 flex-shrink-0"
+        className="w-[3px] flex-shrink-0"
         style={{ backgroundColor: 'var(--jma-dark)' }}
       />
 
-      {/* Right half — Newest Sticker (or empty-state nudge) */}
+      {/* Right — Newest Sticker (or empty-state nudge) */}
       <div
-        className="flex-1 flex items-center gap-3 md:gap-4 px-3 md:px-5 py-3 min-w-0"
+        className="flex-1 flex items-center gap-2.5 px-3 md:px-4 min-w-0"
         style={{
           background: 'linear-gradient(135deg, #FFF9E6 0%, #FFE4F0 100%)',
         }}
-        data-testid="home-progress-sticker"
       >
         {newest ? (
           <>
             <motion.div
-              animate={{ y: [0, -4, 0] }}
+              animate={{ y: [0, -3, 0] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-              className="relative rounded-full p-1 border-3 flex-shrink-0"
+              className="rounded-full p-0.5 flex-shrink-0 border-2"
               style={{
                 backgroundColor: newest.color || '#fff',
                 borderColor: 'var(--jma-dark)',
-                borderWidth: 3,
-                width: 56,
-                height: 56,
-                boxShadow: '0 3px 0 0 var(--jma-dark)',
+                width: 38,
+                height: 38,
               }}
             >
               <img
                 src={newest.icon}
-                alt={newest.name}
+                alt=""
                 className="w-full h-full object-contain"
                 draggable={false}
               />
             </motion.div>
             <div className="flex flex-col leading-tight flex-1 min-w-0 text-left">
-              <div className="flex items-center gap-1">
-                <Sparkles
-                  className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0"
-                  style={{ color: '#F39C12' }}
-                />
-                <span
-                  className="text-[10px] md:text-xs uppercase tracking-wide font-black"
-                  style={{ color: 'var(--jma-dark)' }}
-                >
-                  Newest Sticker
-                </span>
-              </div>
               <span
-                className="text-base md:text-xl font-black font-display truncate"
+                className="text-[9px] md:text-[10px] uppercase tracking-wide font-black flex items-center gap-1"
+                style={{ color: 'var(--jma-dark)' }}
+              >
+                <Sparkles className="w-3 h-3" style={{ color: '#F39C12' }} />
+                Newest
+              </span>
+              <span
+                className="text-sm md:text-base font-black font-display truncate"
                 style={{ color: 'var(--jma-dark)' }}
               >
                 {newest.name}
               </span>
-              <span className="text-[10px] md:text-xs font-bold text-gray-600">
-                {totalEarned} collected →
-              </span>
             </div>
+            <span
+              className="hidden sm:inline text-[10px] font-black uppercase tracking-wide flex-shrink-0"
+              style={{ color: 'var(--jma-dark)', opacity: 0.6 }}
+            >
+              {totalEarned} →
+            </span>
           </>
         ) : (
           <>
             <div
-              className="rounded-full flex items-center justify-center flex-shrink-0"
+              className="rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed"
               style={{
-                width: 56,
-                height: 56,
+                width: 38,
+                height: 38,
                 backgroundColor: '#FFF3B0',
-                border: '3px dashed var(--jma-dark)',
+                borderColor: 'var(--jma-dark)',
               }}
             >
-              <Sparkles className="w-7 h-7" style={{ color: '#F39C12' }} />
+              <Sparkles className="w-4 h-4" style={{ color: '#F39C12' }} />
             </div>
-            <div className="flex flex-col leading-tight flex-1 min-w-0 text-left">
-              <span
-                className="text-[10px] md:text-xs uppercase tracking-wide font-black"
-                style={{ color: 'var(--jma-dark)' }}
-              >
-                Stickers
-              </span>
-              <span
-                className="text-sm md:text-base font-black font-display leading-tight"
-                style={{ color: 'var(--jma-dark)' }}
-              >
-                Play a game to earn your first sticker!
-              </span>
-            </div>
+            <span
+              className="text-xs md:text-sm font-black font-display leading-tight text-left flex-1"
+              style={{ color: 'var(--jma-dark)' }}
+            >
+              Play to earn your first sticker!
+            </span>
           </>
         )}
       </div>

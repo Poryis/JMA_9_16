@@ -1,12 +1,8 @@
-// NextMissionPanel — big "do this next" banner on the homepage.
+// NextMissionPanel — slim "do this next" pill on the homepage.
 //
-// Reads the current best mission from useNextMission and renders a banner
-// styled in the mission's DOMAIN color. Clicking it routes to the relevant
-// game page. Hidden when the kid has earned every achievement.
-//
-// Visual: thick chunky banner with the domain character on the left, the
-// instruction in the middle, and a big GO button on the right. On mobile
-// the whole thing becomes tappable so kids can hit anywhere.
+// Compact horizontal strip (~60px tall) that echoes HomeProgressCard's
+// shape so the two Home banners feel like siblings. Domain-colored,
+// clickable, hidden when the kid has completed every achievement.
 
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -21,24 +17,32 @@ export default function NextMissionPanel() {
     return (
       <motion.div
         data-testid="next-mission-complete"
-        className="w-full max-w-3xl mx-auto rounded-2xl border-4 px-4 py-3 flex items-center gap-3"
+        className="w-full flex items-center gap-2.5 rounded-full border-3 px-3 md:px-4"
         style={{
           borderColor: 'var(--jma-dark)',
+          borderWidth: 3,
           background: 'linear-gradient(135deg, #FFE07A 0%, #FFCC00 100%)',
-          boxShadow: '0 6px 0 0 var(--jma-dark)',
+          boxShadow: '0 4px 0 0 var(--jma-dark)',
+          height: 56,
         }}
-        initial={{ scale: 0.95, opacity: 0, y: 10 }}
+        initial={{ scale: 0.95, opacity: 0, y: 6 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, type: 'spring' }}
+        transition={{ delay: 0.55, type: 'spring' }}
       >
-        <PartyPopper className="w-7 h-7" style={{ color: 'var(--jma-dark)' }} />
-        <div className="flex-1">
-          <div className="text-xs uppercase tracking-wide font-black opacity-70" style={{ color: 'var(--jma-dark)' }}>
-            ✨ All Missions Complete
-          </div>
-          <div className="text-base md:text-lg font-black font-display" style={{ color: 'var(--jma-dark)' }}>
+        <PartyPopper className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--jma-dark)' }} />
+        <div className="flex flex-col leading-tight flex-1 min-w-0 text-left">
+          <span
+            className="text-[9px] md:text-[10px] uppercase tracking-wide font-black opacity-70"
+            style={{ color: 'var(--jma-dark)' }}
+          >
+            All Missions Complete
+          </span>
+          <span
+            className="text-sm md:text-base font-black font-display truncate"
+            style={{ color: 'var(--jma-dark)' }}
+          >
             You&apos;re a true Maestro! Keep jamming.
-          </div>
+          </span>
         </div>
       </motion.div>
     );
@@ -46,87 +50,86 @@ export default function NextMissionPanel() {
 
   if (!mission) return null;
 
-  const { domain, tier, instruction, cta, achievementName, route } = mission;
+  const { domain, tier, instruction, cta, route } = mission;
 
   return (
     <motion.button
       data-testid="next-mission-panel"
       onClick={() => navigate(route)}
-      className="w-full max-w-3xl mx-auto rounded-2xl border-4 px-3 py-2 md:px-4 md:py-3 flex items-center gap-3 text-left group cursor-pointer touch-manipulation"
+      className="w-full flex items-center gap-2.5 rounded-full border-3 px-3 md:px-4 text-left cursor-pointer touch-manipulation"
       style={{
         borderColor: 'var(--jma-dark)',
-        background: `linear-gradient(135deg, ${domain.color}25 0%, ${domain.color}55 100%)`,
-        boxShadow: '0 6px 0 0 var(--jma-dark)',
+        borderWidth: 3,
+        background: `linear-gradient(135deg, ${domain.color}22 0%, ${domain.color}55 100%)`,
+        boxShadow: '0 4px 0 0 var(--jma-dark)',
+        height: 56,
       }}
-      initial={{ scale: 0.95, opacity: 0, y: 10 }}
+      initial={{ scale: 0.95, opacity: 0, y: 6 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
-      transition={{ delay: 0.6, type: 'spring' }}
-      whileHover={{ y: -3, scale: 1.01 }}
-      whileTap={{ y: 2, scale: 0.99 }}
+      transition={{ delay: 0.55, type: 'spring' }}
+      whileHover={{ y: -2, scale: 1.005 }}
+      whileTap={{ y: 1, scale: 0.995 }}
     >
-      {/* Domain character avatar — colorful badge framing */}
+      {/* Domain avatar */}
       <div
-        className="flex-shrink-0 rounded-2xl border-3 flex items-center justify-center overflow-hidden"
+        className="flex-shrink-0 rounded-full flex items-center justify-center overflow-hidden bg-white border-2"
         style={{
-          width: 'clamp(48px, 10vw, 72px)',
-          height: 'clamp(48px, 10vw, 72px)',
-          backgroundColor: 'white',
+          width: 40,
+          height: 40,
           borderColor: domain.color,
-          boxShadow: '0 3px 0 0 var(--jma-dark)',
         }}
       >
-        <img src={domain.icon} alt={domain.label} className="w-full h-full object-contain" draggable={false} />
+        <img
+          src={domain.icon}
+          alt=""
+          className="w-full h-full object-contain"
+          draggable={false}
+        />
       </div>
 
-      {/* Middle column — mission text */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <Target className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" style={{ color: domain.color }} />
+      {/* Text — single-line focus */}
+      <div className="flex flex-col leading-tight flex-1 min-w-0">
+        <span
+          className="text-[9px] md:text-[10px] uppercase tracking-wide font-black flex items-center gap-1"
+          style={{ color: domain.color }}
+        >
+          <Target className="w-3 h-3" />
+          Next Mission
           <span
-            className="text-[10px] md:text-xs uppercase tracking-wide font-black"
-            style={{ color: domain.color }}
-          >
-            Next Mission
-          </span>
-          <span
-            className="text-[9px] md:text-[10px] font-black px-1.5 py-0.5 rounded-full ml-auto md:ml-0 flex-shrink-0"
+            className="text-[8px] md:text-[9px] font-black px-1.5 py-0.5 rounded-full ml-1"
             style={{
               backgroundColor: tier.frame,
               color: tier.ribbonBg,
-              border: `2px solid ${tier.ribbonBg}`,
+              border: `1.5px solid ${tier.ribbonBg}`,
+              lineHeight: 1,
             }}
             data-testid="next-mission-tier"
           >
             {tier.ribbon}
           </span>
-        </div>
-        <div
-          className="text-sm md:text-lg font-black font-display leading-tight"
+        </span>
+        <span
+          className="text-sm md:text-base font-black font-display truncate"
           style={{ color: 'var(--jma-dark)' }}
           data-testid="next-mission-instruction"
         >
           {instruction}
-        </div>
-        <div
-          className="text-[10px] md:text-xs font-bold mt-0.5 truncate"
-          style={{ color: 'var(--jma-dark)', opacity: 0.7 }}
-        >
-          Earns: <span style={{ color: domain.color }}>{achievementName}</span>
-        </div>
+        </span>
       </div>
 
-      {/* Right column — GO button */}
+      {/* GO chip */}
       <div
-        className="flex-shrink-0 chunky-btn flex items-center gap-1 text-xs md:text-sm font-black px-3 py-1.5 md:px-4 md:py-2"
+        className="flex-shrink-0 flex items-center gap-1 text-xs md:text-sm font-black rounded-full px-2.5 md:px-3 py-1"
         style={{
           backgroundColor: domain.color,
           color: 'white',
+          boxShadow: '0 2px 0 0 var(--jma-dark)',
         }}
         data-testid="next-mission-go"
       >
         <span className="hidden sm:inline">{cta}</span>
         <span className="sm:hidden">GO</span>
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-3.5 h-3.5" />
       </div>
     </motion.button>
   );
