@@ -98,7 +98,7 @@ export default function JMAtvPlayerPage() {
   return (
     <div
       data-testid={`jmatv-player-page-${channel.id}-${episode.index}`}
-      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-10 relative"
+      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-24 md:pt-28 pb-10 relative"
       style={{
         background:
           `radial-gradient(ellipse at top, ${channel.accent}55 0%, #0F172A 55%, #050816 100%)`,
