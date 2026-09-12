@@ -53,33 +53,35 @@
   85%  { transform: translate(-50%, -220%) scale(0.5); opacity: 0.55; }
   100% { transform: translate(-50%, -260%) scale(0.4); opacity: 0; }
 }
-/* JMAtv logo cycle — continuous hue-rotate that swings the transparent
-   logo (yellow crown + blue TV + black outlines) through the whole
-   primary/secondary spectrum. Applied to the big brand mark on
-   JMAtvHomePage; smaller corner bugs stay static so they don't
-   distract from video playback. */
+/* JMAtv logo cycle — Crayola/Play-Doh palette instead of iOS system
+   colors so the animation reads as a playschool cartoon vibe. Frame
+   uses discrete keyframes (holds each hue for ~1.4s then transitions
+   quickly) so we PAUSE on saturated primaries and skip past muddy
+   intermediate blends. */
 @keyframes jmatv-color-cycle {
-  0%   { filter: hue-rotate(0deg)   drop-shadow(0 0 22px rgba(255,200,0,0.35)); }
-  25%  { filter: hue-rotate(90deg)  drop-shadow(0 0 22px rgba(255,140,80,0.35)); }
-  50%  { filter: hue-rotate(180deg) drop-shadow(0 0 22px rgba(120,200,255,0.35)); }
-  75%  { filter: hue-rotate(270deg) drop-shadow(0 0 22px rgba(220,120,255,0.35)); }
-  100% { filter: hue-rotate(360deg) drop-shadow(0 0 22px rgba(255,200,0,0.35)); }
+  0%,   14% { filter: hue-rotate(0deg)   drop-shadow(0 0 22px rgba(255,215,0,0.4)); }
+  16%,  30% { filter: hue-rotate(80deg)  drop-shadow(0 0 22px rgba(255,120,60,0.4)); }
+  32%,  46% { filter: hue-rotate(150deg) drop-shadow(0 0 22px rgba(60,200,120,0.4)); }
+  48%,  62% { filter: hue-rotate(210deg) drop-shadow(0 0 22px rgba(60,160,255,0.4)); }
+  64%,  78% { filter: hue-rotate(270deg) drop-shadow(0 0 22px rgba(200,80,220,0.4)); }
+  80%,  94% { filter: hue-rotate(330deg) drop-shadow(0 0 22px rgba(255,100,140,0.4)); }
+  100%      { filter: hue-rotate(360deg) drop-shadow(0 0 22px rgba(255,215,0,0.4)); }
 }
 .jmatv-color-cycle {
-  animation: jmatv-color-cycle 10s linear infinite;
+  animation: jmatv-color-cycle 12s ease-in-out infinite;
 }
-/* Letter mask cycle — hops through primary/secondary colors on top of
-   the frame layer. Used as a background inside a div whose mask-image
-   is the letters-only PNG, so the JMA letters flash colors while the
-   yellow harp + blue TV in the frame layer hue-rotate underneath. */
+/* Letter mask cycle — bold crayon primaries + white "rest" beats. Holds
+   each color for roughly 1s then bounces to the next. */
 @keyframes jmatv-letter-cycle {
-  0%   { background-color: #FFFFFF; }
-  16%  { background-color: #FF3B30; }
-  33%  { background-color: #FF9500; }
-  50%  { background-color: #4CD964; }
-  66%  { background-color: #4285F4; }
-  83%  { background-color: #AF52DE; }
-  100% { background-color: #FFFFFF; }
+  0%,   10% { background-color: #FFFFFF; }                 /* paper white */
+  15%,  22% { background-color: #E62222; }                 /* fire-truck red */
+  27%,  34% { background-color: #FF8C00; }                 /* crayon orange */
+  39%,  46% { background-color: #FFD700; }                 /* sun yellow */
+  51%,  58% { background-color: #22B14C; }                 /* grass green */
+  63%,  70% { background-color: #00A8E8; }                 /* sky blue */
+  75%,  82% { background-color: #8E44AD; }                 /* Crayola purple */
+  87%,  94% { background-color: #FF5FA2; }                 /* bubblegum pink */
+  100%      { background-color: #FFFFFF; }
 }
 .jmatv-letters-mask {
   /* mask-image is applied via inline style in JS with
@@ -91,7 +93,7 @@
           mask-repeat: no-repeat;
   -webkit-mask-position: center;
           mask-position: center;
-  animation: jmatv-letter-cycle 12s ease-in-out infinite;
+  animation: jmatv-letter-cycle 14s ease-in-out infinite;
 }
 /* ---- /SubMenu tile animations ---- */
 
