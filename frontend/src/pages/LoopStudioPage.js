@@ -458,18 +458,6 @@ function LoopStudioPage() {
                 />
               </svg>
             </div>
-            {/* Cassette tape sticker top-right */}
-            <div
-              className="absolute"
-              style={{ top: -8, right: 24, transform: 'rotate(9deg)', filter: 'drop-shadow(0 2px 0 rgba(0,0,0,0.35))' }}
-            >
-              <svg width="58" height="38" viewBox="0 0 58 38">
-                <rect x="2" y="2" width="54" height="34" rx="4" fill="#FF6B6B" stroke="#0A1626" strokeWidth="2.5" />
-                <rect x="8" y="12" width="42" height="14" rx="2" fill="#F1E6C8" stroke="#0A1626" strokeWidth="2" />
-                <circle cx="19" cy="19" r="3.2" fill="#0A1626" />
-                <circle cx="39" cy="19" r="3.2" fill="#0A1626" />
-              </svg>
-            </div>
             {/* JMA shield sticker bottom-right */}
             <div
               className="absolute"
@@ -509,18 +497,19 @@ function LoopStudioPage() {
             <motion.button
               data-testid="loop-play-button"
               onClick={togglePlay}
-              whileTap={{ scale: 0.92 }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-base md:text-lg"
+              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.03 }}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-lg md:text-xl"
               style={{
                 backgroundColor: isPlaying ? '#FF3B30' : '#4CD964',
                 color: '#0A1626',
-                border: '2.5px solid #000',
+                border: '3px solid #000',
                 boxShadow:
-                  '0 4px 0 rgba(0,0,0,0.55), inset 0 -3px 0 rgba(0,0,0,0.25), inset 0 2px 0 rgba(255,255,255,0.4)',
-                minWidth: 108,
+                  '0 5px 0 rgba(0,0,0,0.6), inset 0 -3px 0 rgba(0,0,0,0.25), inset 0 2px 0 rgba(255,255,255,0.45)',
+                minWidth: 130,
               }}
             >
-              {isPlaying ? <Square className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              {isPlaying ? <Square className="w-6 h-6" /> : <Play className="w-6 h-6" />}
               {isPlaying ? 'STOP' : 'PLAY'}
             </motion.button>
 
@@ -727,23 +716,23 @@ function LoopStudioPage() {
                   return (
                     <div
                       key={`label-${trackId}`}
-                      className="h-7 md:h-9 flex items-center gap-1"
+                      className="h-7 md:h-9 flex items-center gap-1.5"
                       data-testid={`track-label-${trackId}`}
                     >
                       <button
-                        className="w-4 h-4 rounded-full flex-shrink-0"
+                        className="w-5 h-5 rounded-full flex-shrink-0"
                         style={{
                           background: preset?.color,
-                          boxShadow: isMuted ? 'inset 0 0 6px rgba(0,0,0,0.7)' : `0 0 8px ${preset?.color}`,
+                          boxShadow: isMuted ? 'inset 0 0 6px rgba(0,0,0,0.7)' : `0 0 10px ${preset?.color}`,
                           opacity: isMuted ? 0.4 : 1,
-                          border: '1px solid rgba(0,0,0,0.6)',
+                          border: '1.5px solid rgba(0,0,0,0.7)',
                         }}
                         onClick={() => previewSound(trackId)}
                         data-testid={`preview-${trackId}`}
                         title={`Preview ${preset?.label}`}
                       />
                       <button
-                        className="px-1.5 py-1 rounded-md text-[10px] md:text-xs font-black truncate flex-1"
+                        className="px-2 py-1 rounded-lg text-xs md:text-sm font-black truncate flex-1"
                         style={{
                           background: isMuted ? '#131F30' : '#243854',
                           color: isMuted ? '#5E7899' : '#E8F4FF',
@@ -755,7 +744,7 @@ function LoopStudioPage() {
                         {preset?.label}
                       </button>
                       <button
-                        className="text-xs opacity-40 hover:opacity-90 flex-shrink-0 text-white"
+                        className="text-sm opacity-40 hover:opacity-90 flex-shrink-0 text-white"
                         onClick={() => removeTrack(trackId)}
                         aria-label={`Remove ${preset?.label}`}
                       >
@@ -859,7 +848,7 @@ function LoopStudioPage() {
                the header to warm the whole thing up. --- */}
           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div
-              className="rounded-3xl border-2 p-3 relative overflow-hidden"
+              className="rounded-3xl border-2 p-3 relative"
               style={{
                 background: 'radial-gradient(circle at 50% 25%, #2C4664 0%, #16243A 100%)',
                 borderColor: '#000',
@@ -873,7 +862,8 @@ function LoopStudioPage() {
               >
                 DRUM KIT
               </div>
-              {/* Peeking Charlie RUNDMC — bobs to the beat when playing */}
+              {/* Peeking Charlie RUNDMC — full height visible (no overflow clip)
+                  and a speech bubble that shows only when nothing is playing. */}
               <motion.img
                 src="assets/characters/charlie-rundmc.png"
                 alt=""
@@ -881,8 +871,8 @@ function LoopStudioPage() {
                 className="absolute pointer-events-none"
                 style={{
                   right: -20,
-                  top: -30,
-                  width: 130,
+                  top: -60,
+                  width: 140,
                   height: 'auto',
                   transform: 'rotate(8deg)',
                   filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.35))',
@@ -891,13 +881,62 @@ function LoopStudioPage() {
                 animate={isPlaying ? { y: [0, -8, 0] } : { y: 0 }}
                 transition={isPlaying ? { duration: 60 / bpm, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
               />
+              {!isPlaying && (
+                <motion.div
+                  aria-hidden="true"
+                  className="absolute pointer-events-none"
+                  style={{ right: 122, top: -6, zIndex: 5 }}
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <div
+                    className="text-[11px] font-black uppercase tracking-wide px-3 py-1.5 relative"
+                    style={{
+                      background: '#FFF',
+                      color: '#0A1626',
+                      border: '2.5px solid #0A1626',
+                      borderRadius: 14,
+                      boxShadow: '0 3px 0 rgba(0,0,0,0.35)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Tap a pad!
+                    {/* Bubble tail pointing at Charlie */}
+                    <span
+                      className="absolute"
+                      style={{
+                        right: -8,
+                        bottom: 6,
+                        width: 0,
+                        height: 0,
+                        borderTop: '8px solid transparent',
+                        borderBottom: '8px solid transparent',
+                        borderLeft: '10px solid #0A1626',
+                      }}
+                    />
+                    <span
+                      className="absolute"
+                      style={{
+                        right: -5,
+                        bottom: 8,
+                        width: 0,
+                        height: 0,
+                        borderTop: '6px solid transparent',
+                        borderBottom: '6px solid transparent',
+                        borderLeft: '8px solid #FFF',
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              )}
               <div className="flex justify-center items-end pt-8 pb-1 relative z-[2]">
                 <DrumKitVisual ref={drumKitRef} onHit={handleDrumTap} />
               </div>
             </div>
 
             <div
-              className="rounded-3xl border-2 p-3 relative overflow-hidden"
+              className="rounded-3xl border-2 p-3 relative"
               style={{
                 background: 'radial-gradient(circle at 50% 25%, #2C4664 0%, #16243A 100%)',
                 borderColor: '#000',
@@ -911,7 +950,6 @@ function LoopStudioPage() {
               >
                 TURNTABLE
               </div>
-              {/* Peeking Sharky Hip-Hop — bobs to the beat when playing */}
               <motion.img
                 src="assets/characters/sharky-hiphop.png"
                 alt=""
@@ -919,8 +957,8 @@ function LoopStudioPage() {
                 className="absolute pointer-events-none"
                 style={{
                   right: -24,
-                  top: -36,
-                  width: 140,
+                  top: -70,
+                  width: 150,
                   height: 'auto',
                   transform: 'rotate(-6deg)',
                   filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.35))',
