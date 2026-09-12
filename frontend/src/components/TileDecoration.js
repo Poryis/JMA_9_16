@@ -26,6 +26,10 @@ export default function TileDecoration({ type, accent }) {
       // Note tile. Gentle ping-pong sway means no teleport is ever
       // visible, and dashed "flow" along each line gives a subtle music-
       // moving-along-the-staff feel. A few notes bob above.
+      //
+      // The left and right ends of the staff are covered by a treble
+      // clef and an end-repeat sign so the raw line endings never look
+      // abruptly cut off.
       const lineYs = [8, 18, 28, 38, 48];
       return (
         <div {...wrapProps}>
@@ -64,10 +68,63 @@ export default function TileDecoration({ type, accent }) {
               ))}
             </svg>
           </div>
+
+          {/* Treble clef — masks the left end of the staff. Uses the
+              Unicode musical symbol so it renders as a proper stylized
+              clef using system music fonts on iOS / Android / desktop. */}
+          <span
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              left: '5%',
+              top: '24%',
+              fontSize: 96,
+              lineHeight: 0.85,
+              color: 'rgba(255,255,255,0.95)',
+              textShadow: '0 2px 0 rgba(10,37,64,0.4), 0 0 6px rgba(255,255,255,0.25)',
+              fontFamily: '"Apple Symbols", "Noto Music", "Segoe UI Symbol", "Bravura", serif',
+              userSelect: 'none',
+              pointerEvents: 'none',
+            }}
+          >
+            𝄞
+          </span>
+
+          {/* End-repeat sign — masks the right end of the staff.
+              Dots · thin bar · thick bar, chalk-white with a soft shadow. */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              right: '9%',
+              top: '36%',
+              height: 62,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3,
+              filter: 'drop-shadow(0 2px 0 rgba(10,37,64,0.4))',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                height: '38%',
+                marginRight: 2,
+              }}
+            >
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(255,255,255,0.95)' }} />
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(255,255,255,0.95)' }} />
+            </div>
+            <div style={{ width: 1.5, height: '85%', background: 'rgba(255,255,255,0.95)', borderRadius: 1 }} />
+            <div style={{ width: 4.5, height: '85%', background: 'rgba(255,255,255,0.95)', borderRadius: 1 }} />
+          </div>
+
           {[
-            { left: '28%', top: '32%', delay: 0 },
+            { left: '32%', top: '32%', delay: 0 },
             { left: '50%', top: '36%', delay: 0.6 },
-            { left: '68%', top: '32%', delay: 1.1 },
+            { left: '66%', top: '32%', delay: 1.1 },
           ].map((n, i) => (
             <span
               key={i}
