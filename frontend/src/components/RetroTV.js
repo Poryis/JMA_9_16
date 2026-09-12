@@ -83,62 +83,26 @@ export default function RetroTV() {
   return (
     <motion.div
       data-testid="home-retro-tv"
-      // Full-width "channel marquee" row that grounds the TV in a warm
-      // dark cinema-cabinet card. Film-reel perforation strips at top
-      // and bottom give it a moving-picture feel without an extra asset.
+      // Full-width "JMAtv" banner card. Matches the homepage vocabulary:
+      // white/warm bg + chunky JMA-dark border + offset drop-shadow
+      // (same shape language as HomeProgressCard and the destination
+      // tiles). Deliberately calm — the animated logo + CRT + starburst
+      // already carry the visual energy, the card just needs to hold
+      // them without competing.
       className="relative z-10 mt-16 md:mt-24 mb-2 w-full max-w-5xl mx-auto"
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
     >
-      {/* Film-reel perforation strip — top */}
       <div
-        aria-hidden="true"
-        className="mx-auto"
-        style={{
-          width: '100%',
-          height: 12,
-          background:
-            'repeating-linear-gradient(90deg, transparent 0 10px, var(--jma-dark) 10px 22px)',
-          maskImage:
-            'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
-          WebkitMaskImage:
-            'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
-          opacity: 0.55,
-        }}
-      />
-
-      {/* Marquee cabinet — dark cinema panel */}
-      <div
-        className="relative rounded-3xl px-4 md:px-8 pt-10 md:pt-14 pb-6 md:pb-8 overflow-hidden"
+        className="relative rounded-3xl px-4 md:px-8 pt-10 md:pt-14 pb-6 md:pb-8"
         style={{
           background:
-            'radial-gradient(ellipse at 30% 20%, rgba(255,215,0,0.10) 0%, transparent 55%), linear-gradient(180deg, #0F1E33 0%, #0A1526 100%)',
+            'linear-gradient(180deg, #FFF9E9 0%, #FFF1CE 100%)',
           border: '4px solid var(--jma-dark)',
-          boxShadow:
-            '0 10px 0 0 var(--jma-dark), inset 0 0 0 3px rgba(255,255,255,0.05), inset 0 0 60px rgba(255,215,0,0.05)',
+          boxShadow: '0 8px 0 0 var(--jma-dark)',
         }}
       >
-        {/* Corner rivets — decorative brass studs on the marquee frame */}
-        {[
-          { top: 10, left: 10 },
-          { top: 10, right: 10 },
-          { bottom: 10, left: 10 },
-          { bottom: 10, right: 10 },
-        ].map((pos, i) => (
-          <div
-            key={i}
-            aria-hidden="true"
-            className="absolute rounded-full"
-            style={{
-              width: 10, height: 10,
-              background: 'radial-gradient(circle at 30% 30%, #FFCC66, #8B5A2B 70%, #3F2A14)',
-              border: '1.5px solid var(--jma-dark)',
-              ...pos,
-            }}
-          />
-        ))}
-
         {/* Content row */}
         <div className="relative w-full flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
           {/* LEFT — animated JMAtv logo + tagline. Two-layer stacked mark
@@ -171,16 +135,15 @@ export default function RetroTV() {
             <p
               className="mt-2 md:mt-3 font-black font-display leading-tight"
               style={{
-                color: '#FFE7C2',
+                color: 'var(--jma-dark)',
                 fontSize: 'clamp(15px, 1.6vw, 20px)',
-                textShadow: '0 2px 0 rgba(0,0,0,0.35)',
               }}
             >
               Watch today&apos;s episode!
             </p>
             <p
               className="mt-1 text-[11px] md:text-xs font-bold leading-snug"
-              style={{ color: '#B8C4D6', opacity: 0.92 }}
+              style={{ color: 'var(--jma-dark)', opacity: 0.7 }}
             >
               Songs, stories and music adventures with the JMA crew.
             </p>
@@ -460,30 +423,7 @@ export default function RetroTV() {
         </motion.button>
       </div>
       </div>
-
-      {/* Film-reel perforation strip — bottom */}
-      <div
-        aria-hidden="true"
-        className="mx-auto"
-        style={{
-          width: '100%',
-          height: 12,
-          background:
-            'repeating-linear-gradient(90deg, transparent 0 10px, var(--jma-dark) 10px 22px)',
-          maskImage:
-            'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
-          WebkitMaskImage:
-            'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
-          opacity: 0.55,
-        }}
-      />
-
-      <style>{`
-        @keyframes jma-pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50%      { transform: scale(1.3); opacity: 0.7; }
-        }
-      `}</style>
+      </div>
     </motion.div>
   );
 }
