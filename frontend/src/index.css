@@ -107,12 +107,12 @@
   background-size: cover;
   background-position: center bottom;
   background-repeat: no-repeat;
-  animation: home-underwater-drift 48s ease-in-out infinite;
+  animation: home-underwater-drift 32s ease-in-out infinite;
   will-change: transform;
 }
 @keyframes home-underwater-drift {
-  0%, 100% { transform: scale(1.00) translate(0%, 0%); }
-  50%      { transform: scale(1.03) translate(-0.6%, -0.3%); }
+  0%, 100% { transform: scale(1.04) translate(0%, 0%); }
+  50%      { transform: scale(1.12) translate(-1.8%, -1%); }
 }
 .home-underwater-shafts {
   background: repeating-linear-gradient(
