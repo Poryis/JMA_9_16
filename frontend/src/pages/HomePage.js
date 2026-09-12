@@ -409,11 +409,11 @@ function HomePage() {
         />
       </div>
 
-      {/* Rank + Newest Sticker — merged into a single wide card so the
-          Home page reads calmer for early-elementary kids. Practice
-          streak stays as an optional chip above (hidden until streak≥2). */}
-      <div className="relative z-10 mb-3 md:mb-4 w-full max-w-4xl flex flex-col items-center gap-2">
-        <PracticeStreakChip />
+      {/* Progress strip — rank + streak + stickers in one clean pill.
+          PracticeStreakChip is folded INSIDE HomeProgressCard now, so
+          the Home page only carries the single-row banner + Next Mission
+          + the three big destination cards. */}
+      <div className="relative z-10 mb-3 md:mb-4 w-full max-w-4xl">
         <HomeProgressCard />
       </div>
 

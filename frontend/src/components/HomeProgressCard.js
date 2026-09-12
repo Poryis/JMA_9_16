@@ -1,33 +1,61 @@
-// HomeProgressCard — slim horizontal strip that combines the kid's
-// Academy rank + newest sticker into one row. Deliberately compact
-// (~60px tall) so the Home page reads calm for early-elementary kids.
-// Both halves tap through to the Sticker Book.
+// HomeProgressCard — single compact pill with three inline chips:
+// [ Rank ] | [ Streak ] | [ Stickers ]
+// Matches the mockup where progress is one clean scannable strip instead
+// of a chunky card. All three regions tap through to the Sticker Book.
+// Streak chip renders even at 0/1 days so the layout is stable (with a
+// friendly "New!" state instead of a scary number).
 
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Flame, Star } from 'lucide-react';
 import useRank from '../hooks/useRank';
 import useStickers from '../hooks/useStickers';
-import { STICKER_MAP } from '../data/stickers';
+import usePracticeStreak from '../hooks/usePracticeStreak';
+
+function Divider() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex-shrink-0 self-center"
+      style={{
+        width: 2,
+        height: 32,
+        backgroundColor: 'rgba(10,37,64,0.14)',
+        borderRadius: 2,
+      }}
+    />
+  );
+}
 
 export default function HomeProgressCard() {
   const navigate = useNavigate();
-  const { currentRank, nextRank, progress, achievementCount } = useRank();
+  const { currentRank, nextRank, progress } = useRank();
+  const { count: streakCount } = usePracticeStreak();
   const { earned } = useStickers();
 
-  const newest = useMemo(() => {
-    const ids = Object.keys(earned);
-    if (ids.length === 0) return null;
-    ids.sort((a, b) => {
-      const at = new Date(earned[a].earnedAt || 0).getTime();
-      const bt = new Date(earned[b].earnedAt || 0).getTime();
-      return bt - at;
-    });
-    return STICKER_MAP[ids[0]];
-  }, [earned]);
-
   const totalEarned = Object.keys(earned).length;
+
+  // Streak visuals — always render, but the "New!" tier avoids shaming a
+  // kid on their first day.
+  const streakTier =
+    streakCount >= 14 ? 'gold'
+    : streakCount >= 7 ? 'red'
+    : streakCount >= 3 ? 'orange'
+    : streakCount >= 2 ? 'bronze'
+    : 'new';
+  const flamePalette = {
+    new:    { flame: '#94A3B8', label: 'New!' },
+    bronze: { flame: '#CD7F32', label: `${streakCount}-day streak` },
+    orange: { flame: '#FF6B35', label: `${streakCount}-day streak` },
+    red:    { flame: '#DC2626', label: `${streakCount}-day streak` },
+    gold:   { flame: '#F59E0B', label: `${streakCount}-day streak` },
+  }[streakTier];
+
+  // "N / target" sticker readout — uses rank progress so the goal feels
+  // meaningful (kids can see the next-rank milestone tick up).
+  const stickerReadout = nextRank
+    ? `${progress.current}/${progress.target}`
+    : `${totalEarned}`;
 
   return (
     <motion.button
@@ -39,23 +67,19 @@ export default function HomeProgressCard() {
       transition={{ delay: 0.4, type: 'spring' }}
       whileHover={{ y: -2, scale: 1.005 }}
       whileTap={{ y: 1, scale: 0.995 }}
-      className="relative w-full flex items-stretch rounded-full bg-white border-3 overflow-hidden cursor-pointer touch-manipulation"
+      className="relative w-full flex items-center gap-2 md:gap-3 px-2 md:px-3 rounded-full bg-white cursor-pointer touch-manipulation"
       style={{
-        borderColor: 'var(--jma-dark)',
-        borderWidth: 3,
+        border: '3px solid var(--jma-dark)',
         boxShadow: '0 4px 0 0 var(--jma-dark)',
-        height: 56,
+        height: 60,
       }}
-      aria-label={`${currentRank.title} · ${newest ? `Newest sticker ${newest.name}` : 'Play to earn stickers'} · open Sticker Book`}
+      aria-label={`${currentRank.title} · ${flamePalette.label} · ${stickerReadout} stickers · open Sticker Book`}
     >
-      {/* Left — Academy Rank */}
-      <div
-        className="flex-1 flex items-center gap-2.5 px-3 md:px-4 min-w-0"
-        style={{ backgroundColor: currentRank.badgeBg }}
-      >
+      {/* Chip 1 — Rank */}
+      <div className="flex items-center gap-2 md:gap-2.5 flex-1 min-w-0 pl-1">
         <div
-          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-white border-2"
-          style={{ borderColor: currentRank.color }}
+          className="rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 border-2 bg-white"
+          style={{ width: 40, height: 40, borderColor: currentRank.color }}
         >
           <img
             src={currentRank.icon}
@@ -64,12 +88,12 @@ export default function HomeProgressCard() {
             draggable={false}
           />
         </div>
-        <div className="flex flex-col leading-tight flex-1 min-w-0 text-left">
+        <div className="flex flex-col leading-tight min-w-0 text-left">
           <span
             className="text-[9px] md:text-[10px] uppercase tracking-wide font-black"
             style={{ color: currentRank.color }}
           >
-            Rank
+            Academy Rank
           </span>
           <span
             className="text-sm md:text-base font-black font-display truncate"
@@ -79,111 +103,69 @@ export default function HomeProgressCard() {
             {currentRank.title}
           </span>
         </div>
-        {nextRank ? (
-          <div className="hidden sm:flex flex-col items-end gap-1 flex-shrink-0">
-            <span
-              className="text-[10px] font-black font-display"
-              style={{ color: currentRank.color }}
-            >
-              {progress.current}/{progress.target}
-            </span>
-            <div className="w-20 h-1.5 rounded-full bg-white/70 overflow-hidden">
-              <div
-                className="h-full transition-all"
-                style={{
-                  width: `${progress.pct}%`,
-                  backgroundColor: currentRank.color,
-                }}
-              />
-            </div>
-          </div>
-        ) : (
-          <span
-            className="hidden sm:inline text-[10px] font-black uppercase tracking-wide flex-shrink-0"
-            style={{ color: currentRank.color }}
-          >
-            {achievementCount} 🏆
-          </span>
-        )}
       </div>
 
-      {/* Divider */}
-      <div
-        aria-hidden="true"
-        className="w-[3px] flex-shrink-0"
-        style={{ backgroundColor: 'var(--jma-dark)' }}
-      />
+      <Divider />
 
-      {/* Right — Newest Sticker (or empty-state nudge) */}
+      {/* Chip 2 — Streak */}
       <div
-        className="flex-1 flex items-center gap-2.5 px-3 md:px-4 min-w-0"
-        style={{
-          background: 'linear-gradient(135deg, #FFF9E6 0%, #FFE4F0 100%)',
-        }}
+        className="flex items-center gap-2 flex-shrink-0 min-w-0"
+        data-testid="home-progress-streak"
       >
-        {newest ? (
-          <>
-            <motion.div
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-              className="rounded-full p-0.5 flex-shrink-0 border-2"
-              style={{
-                backgroundColor: newest.color || '#fff',
-                borderColor: 'var(--jma-dark)',
-                width: 38,
-                height: 38,
-              }}
-            >
-              <img
-                src={newest.icon}
-                alt=""
-                className="w-full h-full object-contain"
-                draggable={false}
-              />
-            </motion.div>
-            <div className="flex flex-col leading-tight flex-1 min-w-0 text-left">
-              <span
-                className="text-[9px] md:text-[10px] uppercase tracking-wide font-black flex items-center gap-1"
-                style={{ color: 'var(--jma-dark)' }}
-              >
-                <Sparkles className="w-3 h-3" style={{ color: '#F39C12' }} />
-                Newest
-              </span>
-              <span
-                className="text-sm md:text-base font-black font-display truncate"
-                style={{ color: 'var(--jma-dark)' }}
-              >
-                {newest.name}
-              </span>
-            </div>
-            <span
-              className="hidden sm:inline text-[10px] font-black uppercase tracking-wide flex-shrink-0"
-              style={{ color: 'var(--jma-dark)', opacity: 0.6 }}
-            >
-              {totalEarned} →
-            </span>
-          </>
-        ) : (
-          <>
-            <div
-              className="rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed"
-              style={{
-                width: 38,
-                height: 38,
-                backgroundColor: '#FFF3B0',
-                borderColor: 'var(--jma-dark)',
-              }}
-            >
-              <Sparkles className="w-4 h-4" style={{ color: '#F39C12' }} />
-            </div>
-            <span
-              className="text-xs md:text-sm font-black font-display leading-tight text-left flex-1"
-              style={{ color: 'var(--jma-dark)' }}
-            >
-              Play to earn your first sticker!
-            </span>
-          </>
-        )}
+        <motion.span
+          animate={{ scale: [1, 1.15, 1], rotate: [-4, 4, -4] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ display: 'inline-flex' }}
+        >
+          <Flame
+            className="w-6 h-6"
+            style={{ color: flamePalette.flame }}
+            fill={flamePalette.flame}
+          />
+        </motion.span>
+        <div className="flex flex-col leading-tight text-left">
+          <span
+            className="text-sm md:text-base font-black font-display leading-none"
+            style={{ color: 'var(--jma-dark)' }}
+          >
+            {flamePalette.label.split(' ')[0]}
+          </span>
+          <span
+            className="text-[9px] md:text-[10px] font-black uppercase tracking-wide"
+            style={{ color: 'var(--jma-dark)', opacity: 0.65 }}
+          >
+            {streakTier === 'new' ? 'streak' : 'day streak'}
+          </span>
+        </div>
+      </div>
+
+      <Divider />
+
+      {/* Chip 3 — Stickers */}
+      <div
+        className="flex items-center gap-2 flex-shrink-0 min-w-0 pr-1"
+        data-testid="home-progress-stickers"
+      >
+        <Star
+          className="w-6 h-6 flex-shrink-0"
+          style={{ color: '#F59E0B' }}
+          fill="#FFCC00"
+          strokeWidth={2}
+        />
+        <div className="flex flex-col leading-tight text-left">
+          <span
+            className="text-sm md:text-base font-black font-display leading-none"
+            style={{ color: 'var(--jma-dark)' }}
+          >
+            {stickerReadout}
+          </span>
+          <span
+            className="text-[9px] md:text-[10px] font-black uppercase tracking-wide"
+            style={{ color: 'var(--jma-dark)', opacity: 0.65 }}
+          >
+            Stickers
+          </span>
+        </div>
       </div>
     </motion.button>
   );
