@@ -13,6 +13,7 @@ import PracticeStreakChip from '../components/PracticeStreakChip';
 import NextMissionPanel from '../components/NextMissionPanel';
 import RetroTV from '../components/RetroTV';
 import BlimpFlyby from '../components/BlimpFlyby';
+import HomeProgressCard from '../components/HomeProgressCard';
 
 // Easter-egg animation variants for the shield. Click cycles through them.
 const SHIELD_ANIMS = [
@@ -408,11 +409,12 @@ function HomePage() {
         />
       </div>
 
-      {/* Rank + Sticker spotlight */}
-      <div className="relative z-10 mb-3 md:mb-4 w-full max-w-4xl flex flex-col sm:flex-row items-center justify-center gap-3">
-        <RankBadge />
+      {/* Rank + Newest Sticker — merged into a single wide card so the
+          Home page reads calmer for early-elementary kids. Practice
+          streak stays as an optional chip above (hidden until streak≥2). */}
+      <div className="relative z-10 mb-3 md:mb-4 w-full max-w-4xl flex flex-col items-center gap-2">
         <PracticeStreakChip />
-        <StickerSpotlight />
+        <HomeProgressCard />
       </div>
 
       {/* Next Mission — single recommended action driven off the rank engine.
