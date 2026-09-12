@@ -6,7 +6,6 @@ import { GameHeader } from '../components/GameUI';
 import RoomCharacters from '../components/RoomCharacters';
 import { FullscreenButton } from '../components/FullscreenButton';
 import { DrumKitVisual, TurntableVisual } from '../components/Instruments';
-import ConsolePadOverlay from '../components/ConsolePadOverlay';
 import useAudio from '../hooks/useAudio';
 import useMp3Recorder from '../hooks/useMp3Recorder';
 import { earnSticker, earnAchievement, earnAchievementUpTo } from '../hooks/useStickers';
@@ -388,58 +387,184 @@ function LoopStudioPage() {
   const measureBars = totalSteps / 16;
 
   return (
-    <div className="min-h-screen flex flex-col relative" data-testid="loop-studio-page"
-      style={{ backgroundImage: 'url(assets/backgrounds/beat-lab-studio.png)', backgroundSize: 'cover', backgroundPosition: 'center bottom', backgroundRepeat: 'no-repeat', backgroundColor: '#22A6A0' }}>
+    <div
+      className="min-h-screen relative overflow-hidden"
+      data-testid="loop-studio-page"
+      style={{
+        background:
+          'radial-gradient(circle at 50% 10%, #1F3352 0%, #0A1626 75%)',
+      }}
+    >
       <GameHeader title="Beat Lab" showHomeButton={true} backLink={{ to: '/create', label: 'Create' }} />
       <FullscreenButton />
       <RoomCharacters room="beat-lab" />
 
-      {/* Animated step-pad strip that overlays the empty grey console in
-          the backdrop — 16 chunky pads flash in sync with the beat, so
-          the physical gear appears to be driving the on-screen grid. */}
-      <ConsolePadOverlay currentStep={currentStep} isPlaying={isPlaying} />
+      {/* Subtle dot-grid texture on the room bg for studio ambience. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            'radial-gradient(rgba(97, 232, 218, 0.22) 1.2px, transparent 1.2px)',
+          backgroundSize: '24px 24px',
+          opacity: 0.35,
+        }}
+      />
 
-      <main className="flex-1 pt-20 md:pt-24 lg:pt-32 pb-4 px-2 md:px-4 overflow-auto">
-        {/* Controls Bar */}
-        <div className="max-w-6xl mx-auto mb-3">
-          <div className="game-card p-3 flex flex-wrap items-center gap-2 justify-between">
-            {/* Play/Stop */}
-            <motion.button data-testid="loop-play-button"
-              className={`chunky-btn px-5 py-2 flex items-center gap-2 text-white font-bold ${isPlaying ? 'bg-[var(--jma-red)]' : 'bg-[var(--jma-green)]'}`}
-              onClick={togglePlay} whileTap={{ scale: 0.95 }}>
+      <main className="relative flex-1 pt-20 md:pt-24 lg:pt-28 pb-6 px-2 md:px-4">
+        {/* THE DECK — one cohesive piece of cartoon studio hardware that
+            holds the transport, the sequencer, and the instruments. All
+            existing state and handlers untouched; this is a re-skin only. */}
+        <div
+          className="max-w-6xl mx-auto rounded-[28px] border-[3px] p-3 md:p-5"
+          style={{
+            background:
+              'linear-gradient(180deg, #3A557A 0%, #1E2F44 100%)',
+            borderColor: '#050C18',
+            boxShadow:
+              '0 10px 0 rgba(0,0,0,0.35), inset 0 3px 0 rgba(255,255,255,0.08), inset 0 -6px 0 rgba(0,0,0,0.35)',
+          }}
+        >
+          {/* --- TOP STRIP: TRANSPORT + LCD + REC --- */}
+          <div
+            className="rounded-2xl border-2 p-2.5 md:p-3 flex flex-wrap items-center gap-2 md:gap-3"
+            style={{
+              background: 'linear-gradient(180deg, #1B2A3F 0%, #0F1A2E 100%)',
+              borderColor: '#000',
+              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.05)',
+            }}
+          >
+            {/* Play / Stop hero button */}
+            <motion.button
+              data-testid="loop-play-button"
+              onClick={togglePlay}
+              whileTap={{ scale: 0.92 }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-base md:text-lg"
+              style={{
+                backgroundColor: isPlaying ? '#FF3B30' : '#4CD964',
+                color: '#0A1626',
+                border: '2.5px solid #000',
+                boxShadow:
+                  '0 4px 0 rgba(0,0,0,0.55), inset 0 -3px 0 rgba(0,0,0,0.25), inset 0 2px 0 rgba(255,255,255,0.4)',
+                minWidth: 108,
+              }}
+            >
               {isPlaying ? <Square className="w-5 h-5" /> : <Play className="w-5 h-5" />}
               {isPlaying ? 'STOP' : 'PLAY'}
             </motion.button>
 
-            {/* BPM */}
-            <div className="flex items-center gap-1">
-              <button className="chunky-btn bg-white p-1.5" onClick={() => setBpm(b => Math.max(60, b - 10))} data-testid="bpm-minus"><Minus className="w-4 h-4" /></button>
-              <span className="font-bold text-base font-display w-16 text-center" style={{ color: 'var(--jma-dark)' }}>{bpm} BPM</span>
-              <button className="chunky-btn bg-white p-1.5" onClick={() => setBpm(b => Math.min(200, b + 10))} data-testid="bpm-plus"><Plus className="w-4 h-4" /></button>
+            {/* LCD readout — BPM / STEP / BARS */}
+            <div
+              className="rounded-lg px-3 py-1.5 flex items-center gap-3"
+              style={{
+                background: '#061019',
+                border: '2px solid #000',
+                color: '#61E8DA',
+                fontFamily: 'ui-monospace, Menlo, monospace',
+                textShadow: '0 0 8px rgba(97,232,218,0.55)',
+                boxShadow: 'inset 0 0 12px rgba(97,232,218,0.15)',
+                minWidth: 176,
+              }}
+            >
+              <div className="flex flex-col items-center leading-tight">
+                <span className="text-[9px] uppercase opacity-70">BPM</span>
+                <span className="text-base md:text-lg font-bold tabular-nums">{String(bpm).padStart(3, '0')}</span>
+              </div>
+              <div className="w-px h-8" style={{ background: '#61E8DA', opacity: 0.3 }} />
+              <div className="flex flex-col items-center leading-tight">
+                <span className="text-[9px] uppercase opacity-70">STEP</span>
+                <span className="text-base md:text-lg font-bold tabular-nums">
+                  {isPlaying && currentStep >= 0 ? String(currentStep + 1).padStart(2, '0') : '--'}/{totalSteps}
+                </span>
+              </div>
+              <div className="hidden sm:block w-px h-8" style={{ background: '#61E8DA', opacity: 0.3 }} />
+              <div className="hidden sm:flex flex-col items-center leading-tight">
+                <span className="text-[9px] uppercase opacity-70">BARS</span>
+                <span className="text-base md:text-lg font-bold tabular-nums">{totalSteps / 16}</span>
+              </div>
             </div>
 
-            {/* Measure selector */}
+            {/* BPM +/- */}
             <div className="flex items-center gap-1">
+              <button
+                className="w-9 h-9 rounded-lg flex items-center justify-center"
+                style={{
+                  background: '#3E5471',
+                  color: '#E8F4FF',
+                  border: '2px solid #000',
+                  boxShadow: '0 3px 0 rgba(0,0,0,0.55)',
+                }}
+                onClick={() => setBpm(b => Math.max(60, b - 10))}
+                data-testid="bpm-minus"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <button
+                className="w-9 h-9 rounded-lg flex items-center justify-center"
+                style={{
+                  background: '#3E5471',
+                  color: '#E8F4FF',
+                  border: '2px solid #000',
+                  boxShadow: '0 3px 0 rgba(0,0,0,0.55)',
+                }}
+                onClick={() => setBpm(b => Math.min(200, b + 10))}
+                data-testid="bpm-plus"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Bars selector — pill segmented control */}
+            <div
+              className="flex items-center gap-0.5 rounded-lg p-0.5"
+              style={{ background: '#3E5471', border: '2px solid #000' }}
+            >
               {MEASURE_OPTIONS.map(opt => (
-                <button key={opt.steps} data-testid={`measure-${opt.steps}`}
-                  className={`px-2 py-1 rounded-lg text-xs font-bold border-2 border-[var(--jma-dark)] transition-all ${totalSteps === opt.steps ? 'bg-[var(--jma-dark)] text-white' : 'bg-white'}`}
-                  onClick={() => changeMeasures(opt.steps)}>
+                <button
+                  key={opt.steps}
+                  data-testid={`measure-${opt.steps}`}
+                  onClick={() => changeMeasures(opt.steps)}
+                  className="px-2.5 py-1 rounded text-xs font-black"
+                  style={{
+                    background: totalSteps === opt.steps ? '#61E8DA' : 'transparent',
+                    color: totalSteps === opt.steps ? '#0A1626' : '#E8F4FF',
+                  }}
+                >
                   {opt.label}
                 </button>
               ))}
             </div>
 
             {/* Clear */}
-            <button className="chunky-btn bg-white p-1.5" onClick={clearAll} data-testid="clear-all">
-              <Trash2 className="w-4 h-4" style={{ color: 'var(--jma-red)' }} />
+            <button
+              className="w-9 h-9 rounded-lg flex items-center justify-center"
+              style={{
+                background: '#3E5471',
+                color: '#FF6B6B',
+                border: '2px solid #000',
+                boxShadow: '0 3px 0 rgba(0,0,0,0.55)',
+              }}
+              onClick={clearAll}
+              data-testid="clear-all"
+              title="Clear all"
+            >
+              <Trash2 className="w-4 h-4" />
             </button>
 
-            {/* Record / Download MP3 */}
+            <div className="flex-1 min-w-0" />
+
+            {/* REC / STOP / DL */}
             <div className="flex items-center gap-1">
               {!recorder.isRecording ? (
                 <button
                   data-testid="loop-record-btn"
-                  className="chunky-btn bg-[var(--jma-red)] text-white px-3 py-1.5 flex items-center gap-1 text-xs md:text-sm font-bold"
+                  className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs md:text-sm font-black"
+                  style={{
+                    background: '#FF3B30',
+                    color: '#fff',
+                    border: '2px solid #000',
+                    boxShadow: '0 3px 0 rgba(0,0,0,0.55)',
+                  }}
                   onClick={() => { initAudioContext(); recorder.start(); }}
                   disabled={recorder.isProcessing}
                 >
@@ -448,54 +573,73 @@ function LoopStudioPage() {
               ) : (
                 <button
                   data-testid="loop-stop-rec-btn"
-                  className="chunky-btn bg-[var(--jma-dark)] text-white px-3 py-1.5 flex items-center gap-1 text-xs md:text-sm font-bold animate-pulse"
+                  className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs md:text-sm font-black animate-pulse"
+                  style={{
+                    background: '#0A1626',
+                    color: '#fff',
+                    border: '2px solid #FF3B30',
+                    boxShadow: '0 3px 0 rgba(0,0,0,0.55)',
+                  }}
                   onClick={async () => { await recorder.stop(); }}
                 >
-                  <Square className="w-3 h-3 fill-current" /> Stop {recorder.secondsLeft}s
+                  <Square className="w-3 h-3 fill-current" /> STOP {recorder.secondsLeft}s
                 </button>
               )}
               {recorder.isProcessing && (
-                <span className="text-xs font-bold opacity-70">Saving...</span>
+                <span className="text-[10px] font-bold opacity-70 text-white">Saving...</span>
               )}
               {recorder.lastMp3Url && !recorder.isRecording && !recorder.isProcessing && (
                 <button
                   data-testid="loop-download-mp3"
-                  className="chunky-btn bg-[var(--jma-green)] text-white px-3 py-1.5 flex items-center gap-1 text-xs md:text-sm font-bold"
+                  className="px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs md:text-sm font-black"
+                  style={{
+                    background: '#4CD964',
+                    color: '#0A1626',
+                    border: '2px solid #000',
+                    boxShadow: '0 3px 0 rgba(0,0,0,0.55)',
+                  }}
                   onClick={() => recorder.download(`my-loop-${Date.now()}.mp3`)}
                 >
-                  <Download className="w-3 h-3" /> Save MP3
+                  <Download className="w-3 h-3" /> MP3
                 </button>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Presets */}
-        <div className="max-w-6xl mx-auto mb-2">
-          <div className="flex gap-1 flex-wrap justify-center">
-            {Object.keys(LOOP_PRESETS).map(name => (
-              <button key={name} data-testid={`preset-${name.replace(/\s/g, '-')}`}
-                className="px-2 py-1 rounded-lg text-xs font-bold border-2 border-[var(--jma-dark)] bg-white hover:bg-[var(--jma-yellow)] transition-colors"
-                onClick={() => loadPreset(name)}>
-                {name}
-              </button>
-            ))}
+          {/* --- PRESET STRIP --- */}
+          <div className="mt-3">
+            <div className="flex gap-1.5 flex-wrap justify-center">
+              {Object.keys(LOOP_PRESETS).map(name => (
+                <button
+                  key={name}
+                  data-testid={`preset-${name.replace(/\s/g, '-')}`}
+                  className="px-3 py-1.5 rounded-lg text-xs font-black"
+                  style={{
+                    background: '#3E5471',
+                    color: '#E8F4FF',
+                    border: '2px solid #000',
+                    boxShadow: '0 2px 0 rgba(0,0,0,0.55)',
+                  }}
+                  onClick={() => loadPreset(name)}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Grid — one frozen label column on the left + ONE master scroll
-            area on the right that contains the step indicator AND every
-            track row, so all tracks slide together when the kid scrolls.
-            (Previously each row + the step indicator had their own
-            overflow-x-auto which produced N independent scrollbars and
-            de-aligned the columns.) */}
-        <div className="max-w-6xl mx-auto">
-          <div className="game-card p-3">
+          {/* --- SEQUENCER PAD MATRIX --- */}
+          <div
+            className="mt-3 rounded-2xl border-2 p-2.5 md:p-3"
+            style={{
+              background: 'linear-gradient(180deg, #0F1A2E 0%, #0A1424 100%)',
+              borderColor: '#000',
+              boxShadow: 'inset 0 3px 0 rgba(0,0,0,0.35), inset 0 -2px 0 rgba(255,255,255,0.03)',
+            }}
+          >
             <div className="flex gap-1">
               {/* Frozen label column */}
               <div className="w-24 md:w-32 flex-shrink-0 flex flex-col gap-1">
-                {/* Spacer matches the step-indicator row's height so labels
-                    line up with their cell rows. */}
                 <div className="h-3.5" aria-hidden="true" />
                 {activeTracks.map(trackId => {
                   const preset = TRACK_PRESETS.find(p => p.id === trackId);
@@ -503,43 +647,49 @@ function LoopStudioPage() {
                   return (
                     <div
                       key={`label-${trackId}`}
-                      className="h-7 md:h-9 flex items-center gap-0.5"
+                      className="h-7 md:h-9 flex items-center gap-1"
                       data-testid={`track-label-${trackId}`}
                     >
                       <button
-                        className="w-5 h-5 rounded flex items-center justify-center hover:bg-white/50 flex-shrink-0"
+                        className="w-4 h-4 rounded-full flex-shrink-0"
+                        style={{
+                          background: preset?.color,
+                          boxShadow: isMuted ? 'inset 0 0 6px rgba(0,0,0,0.7)' : `0 0 8px ${preset?.color}`,
+                          opacity: isMuted ? 0.4 : 1,
+                          border: '1px solid rgba(0,0,0,0.6)',
+                        }}
                         onClick={() => previewSound(trackId)}
                         data-testid={`preview-${trackId}`}
                         title={`Preview ${preset?.label}`}
-                      >
-                        <Volume2 className="w-3 h-3" style={{ color: preset?.color }} />
-                      </button>
+                      />
                       <button
-                        className={`px-1.5 py-1 rounded-lg text-xs font-bold border-2 truncate flex-1 ${isMuted ? 'opacity-40' : ''}`}
-                        style={{ backgroundColor: preset?.color + '30', borderColor: preset?.color, color: 'var(--jma-dark)' }}
+                        className="px-1.5 py-1 rounded-md text-[10px] md:text-xs font-black truncate flex-1"
+                        style={{
+                          background: isMuted ? '#131F30' : '#243854',
+                          color: isMuted ? '#5E7899' : '#E8F4FF',
+                          border: `2px solid ${preset?.color}`,
+                        }}
                         onClick={() => toggleMute(trackId)}
                         data-testid={`mute-${trackId}`}
                       >
                         {preset?.label}
                       </button>
                       <button
-                        className="text-xs opacity-50 hover:opacity-100 flex-shrink-0"
+                        className="text-xs opacity-40 hover:opacity-90 flex-shrink-0 text-white"
                         onClick={() => removeTrack(trackId)}
                         aria-label={`Remove ${preset?.label}`}
                       >
-                        x
+                        ×
                       </button>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Single scrollable cell area — step indicator + all track
-                  rows live in here so they share ONE scrollbar and stay
-                  perfectly column-aligned. */}
+              {/* Grid scroll area */}
               <div className="flex-1 overflow-x-auto">
                 <div className="flex flex-col gap-1" style={{ minWidth: totalSteps > 16 ? `${totalSteps * 20}px` : '100%' }}>
-                  {/* Step indicator row */}
+                  {/* Step indicator */}
                   <div className="flex">
                     {Array.from({ length: totalSteps }, (_, i) => (
                       <div
@@ -548,16 +698,19 @@ function LoopStudioPage() {
                         style={{ minWidth: totalSteps > 16 ? '20px' : 'auto', flex: totalSteps <= 16 ? 1 : 'none' }}
                       >
                         <div
-                          className={`w-2.5 h-2.5 mx-auto rounded-full ${currentStep === i ? 'bg-[var(--jma-yellow)]' : 'bg-transparent'}`}
-                          style={{ boxShadow: currentStep === i ? '0 0 8px var(--jma-yellow)' : 'none' }}
+                          className="w-2 h-2 mx-auto rounded-full"
+                          style={{
+                            background: currentStep === i && isPlaying ? '#FFCC00' : 'rgba(255,255,255,0.14)',
+                            boxShadow: currentStep === i && isPlaying ? '0 0 10px #FFCC00' : 'none',
+                          }}
                         />
                         {i % 16 === 0 && totalSteps > 16 && (
-                          <span className="text-[8px] font-bold opacity-40">{Math.floor(i/16)+1}</span>
+                          <span className="text-[8px] font-bold opacity-40" style={{ color: '#61E8DA' }}>{Math.floor(i / 16) + 1}</span>
                         )}
                       </div>
                     ))}
                   </div>
-                  {/* Track step rows */}
+                  {/* Track pad rows */}
                   {activeTracks.map(trackId => {
                     const preset = TRACK_PRESETS.find(p => p.id === trackId);
                     const steps = grid[trackId] || new Array(totalSteps).fill(0);
@@ -576,9 +729,10 @@ function LoopStudioPage() {
                             style={{
                               minWidth: totalSteps > 16 ? '18px' : 'auto',
                               flex: totalSteps <= 16 ? 1 : 'none',
-                              backgroundColor: active ? (preset?.color || '#ccc') : (stepIdx % 4 === 0 ? '#f0f0f0' : '#fafafa'),
-                              opacity: isMuted ? 0.3 : 1,
-                              borderLeft: stepIdx % 16 === 0 && stepIdx > 0 ? '2px solid var(--jma-dark)' : undefined
+                              backgroundColor: active ? (preset?.color || '#ccc') : (stepIdx % 4 === 0 ? '#243854' : '#1B2A3F'),
+                              opacity: isMuted ? 0.35 : 1,
+                              color: preset?.color,
+                              borderLeft: stepIdx % 16 === 0 && stepIdx > 0 ? '2px solid #61E8DA' : undefined,
                             }}
                             onClick={() => toggleCell(trackId, stepIdx)}
                           />
@@ -590,54 +744,74 @@ function LoopStudioPage() {
               </div>
             </div>
 
-            {/* Add track with preview */}
+            {/* Add-track chip strip */}
             {availableTracks.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1">
-                <span className="text-xs font-bold opacity-60 self-center mr-1">Add:</span>
+              <div className="mt-3 pt-3 flex flex-wrap gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <span className="text-[10px] font-black uppercase tracking-wider opacity-50 self-center mr-1" style={{ color: '#61E8DA' }}>+ Add</span>
                 {availableTracks.map(track => (
                   <div key={track.id} className="flex items-center gap-0.5">
                     <button
-                      className="w-5 h-5 rounded flex items-center justify-center hover:bg-white/50"
+                      className="w-4 h-4 rounded-full flex-shrink-0"
+                      style={{ background: track.color, boxShadow: `0 0 6px ${track.color}`, border: '1px solid rgba(0,0,0,0.6)' }}
                       onClick={() => previewSound(track.id)}
                       title={`Preview ${track.label}`}
-                    >
-                      <Volume2 className="w-3 h-3" style={{ color: track.color }} />
-                    </button>
+                    />
                     <button
-                      className="px-2 py-1 rounded text-xs font-bold border border-dashed border-[var(--jma-dark)] hover:bg-white/50"
+                      className="px-2 py-1 rounded-md text-[10px] md:text-xs font-black"
+                      style={{
+                        background: 'transparent',
+                        color: '#E8F4FF',
+                        border: `1.5px dashed ${track.color}`,
+                      }}
                       onClick={() => addTrack(track.id)}
-                      data-testid={`add-track-${track.id}`}>
-                      + {track.label}
+                      data-testid={`add-track-${track.id}`}
+                    >
+                      {track.label}
                     </button>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </div>
 
-        {/* Instruments in the scene - desktop: drums left + turntable right; mobile: stacked vertically.
-            Both visuals are TAP-PLAYABLE — kids can jam directly on a kick drum or
-            scratch a record without using the sequencer grid. Wrapped in a
-            soft cream card that visually rhymes with the studio's monitor
-            screen behind them, so they read as being "on stage" together
-            instead of floating loose against the backdrop. */}
-        <div
-          className="max-w-5xl mx-auto mt-3 rounded-2xl border-[3px] border-[var(--jma-dark)] px-4 md:px-10 py-3 md:py-4"
-          style={{
-            background: 'rgba(245, 232, 200, 0.72)',
-            backdropFilter: 'blur(2px)',
-            boxShadow: '0 6px 0 rgba(10,37,64,0.35)',
-          }}
-        >
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-0 items-center">
-            {/* Drum kit */}
-            <div className="flex-shrink-0">
-              <DrumKitVisual ref={drumKitRef} onHit={handleDrumTap} />
+          {/* --- GEAR SLOTS: drum kit + turntable, docked into the deck --- */}
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div
+              className="rounded-2xl border-2 p-3 relative overflow-hidden"
+              style={{
+                background: 'radial-gradient(circle at 50% 25%, #2C4664 0%, #16243A 100%)',
+                borderColor: '#000',
+                boxShadow: 'inset 0 3px 0 rgba(0,0,0,0.4), inset 0 -3px 0 rgba(255,255,255,0.04)',
+              }}
+            >
+              <div
+                className="absolute top-2 left-3 text-[9px] font-black uppercase tracking-widest"
+                style={{ color: '#61E8DA', opacity: 0.75 }}
+              >
+                DRUM KIT
+              </div>
+              <div className="flex justify-center items-end pt-5 pb-1">
+                <DrumKitVisual ref={drumKitRef} onHit={handleDrumTap} />
+              </div>
             </div>
-            {/* Turntable */}
-            <div className="flex-shrink-0">
-              <TurntableVisual activeHits={activeHits} onScratch={handleScratchTap} />
+
+            <div
+              className="rounded-2xl border-2 p-3 relative overflow-hidden"
+              style={{
+                background: 'radial-gradient(circle at 50% 25%, #2C4664 0%, #16243A 100%)',
+                borderColor: '#000',
+                boxShadow: 'inset 0 3px 0 rgba(0,0,0,0.4), inset 0 -3px 0 rgba(255,255,255,0.04)',
+              }}
+            >
+              <div
+                className="absolute top-2 left-3 text-[9px] font-black uppercase tracking-widest"
+                style={{ color: '#61E8DA', opacity: 0.75 }}
+              >
+                TURNTABLE
+              </div>
+              <div className="flex justify-center items-end pt-5 pb-1">
+                <TurntableVisual activeHits={activeHits} onScratch={handleScratchTap} />
+              </div>
             </div>
           </div>
         </div>
