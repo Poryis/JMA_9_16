@@ -83,52 +83,121 @@ export default function RetroTV() {
   return (
     <motion.div
       data-testid="home-retro-tv"
-      // Full-width row that grounds the TV in a friendly "channel banner"
-      // context. Left column is the wacky JMAtv brand + caption, center
-      // is the CRT itself, right is a starburst tease.
-      //
-      // Top-space rule: the rabbit ears extend ~26% of the TV's width
-      // ABOVE the TV body via negative positioning. On desktop that's
-      // ~80px. Row needs ~100px of clear space at the top so the ears
-      // don't crash into the PLAY/LEARN/CREATE cards above.
-      className="relative z-10 mt-16 md:mt-24 mb-2 pt-8 md:pt-12 w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 px-3"
+      // Full-width "channel marquee" row that grounds the TV in a warm
+      // dark cinema-cabinet card. Film-reel perforation strips at top
+      // and bottom give it a moving-picture feel without an extra asset.
+      className="relative z-10 mt-16 md:mt-24 mb-2 w-full max-w-5xl mx-auto"
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
     >
-      {/* LEFT — wacky brand column. Bubble-letter "JMAtv" wordmark rendered
-          in CSS as a placeholder for the custom logo art the user is
-          finalizing. Once the new PNG lands, swap the <BubbleWordmark />
-          for an <img src="assets/ui/jmatv-logo-v2.png" /> and delete the
-          BubbleWordmark component. Rest of the column stays. */}
-      <div className="flex flex-col items-center md:items-end text-center md:text-right flex-shrink-0 md:max-w-[240px] order-2 md:order-1">
-        <BubbleWordmark />
-        <p
-          className="mt-2 md:mt-3 font-black font-display text-base md:text-lg leading-tight"
-          style={{ color: 'var(--jma-dark)' }}
-        >
-          Watch today&apos;s episode!
-        </p>
-        <p
-          className="mt-1 text-[11px] md:text-xs font-bold leading-snug"
-          style={{ color: 'var(--jma-dark)', opacity: 0.72 }}
-        >
-          Songs, stories and music adventures with the JMA crew.
-        </p>
-      </div>
+      {/* Film-reel perforation strip — top */}
+      <div
+        aria-hidden="true"
+        className="mx-auto"
+        style={{
+          width: '100%',
+          height: 12,
+          background:
+            'repeating-linear-gradient(90deg, transparent 0 10px, var(--jma-dark) 10px 22px)',
+          maskImage:
+            'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+          WebkitMaskImage:
+            'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+          opacity: 0.55,
+        }}
+      />
 
-      {/* CENTER — the TV itself. */}
-      <div className="flex flex-col items-center order-1 md:order-2">
-        <motion.button
-          type="button"
-          data-testid="home-retro-tv-btn"
-          onClick={() => navigate('/jmatv')}
-          whileHover={{ y: -3, scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          className="relative rounded-3xl border-0 p-0 bg-transparent cursor-pointer"
-          aria-label="Open JMAtv"
-          style={{ width: 'clamp(220px, 32vw, 320px)' }}
-        >
+      {/* Marquee cabinet — dark cinema panel */}
+      <div
+        className="relative rounded-3xl px-4 md:px-8 pt-10 md:pt-14 pb-6 md:pb-8 overflow-hidden"
+        style={{
+          background:
+            'radial-gradient(ellipse at 30% 20%, rgba(255,215,0,0.10) 0%, transparent 55%), linear-gradient(180deg, #0F1E33 0%, #0A1526 100%)',
+          border: '4px solid var(--jma-dark)',
+          boxShadow:
+            '0 10px 0 0 var(--jma-dark), inset 0 0 0 3px rgba(255,255,255,0.05), inset 0 0 60px rgba(255,215,0,0.05)',
+        }}
+      >
+        {/* Corner rivets — decorative brass studs on the marquee frame */}
+        {[
+          { top: 10, left: 10 },
+          { top: 10, right: 10 },
+          { bottom: 10, left: 10 },
+          { bottom: 10, right: 10 },
+        ].map((pos, i) => (
+          <div
+            key={i}
+            aria-hidden="true"
+            className="absolute rounded-full"
+            style={{
+              width: 10, height: 10,
+              background: 'radial-gradient(circle at 30% 30%, #FFCC66, #8B5A2B 70%, #3F2A14)',
+              border: '1.5px solid var(--jma-dark)',
+              ...pos,
+            }}
+          />
+        ))}
+
+        {/* Content row */}
+        <div className="relative w-full flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+          {/* LEFT — animated JMAtv logo + tagline. Two-layer stacked mark
+              matches /jmatv page: frame image hue-rotates through the
+              spectrum while the JMA letters cycle complementary crayon
+              colors on a synced 12s beat. */}
+          <div className="flex flex-col items-center md:items-end text-center md:text-right flex-shrink-0 md:max-w-[260px] order-2 md:order-1">
+            <div
+              className="relative"
+              style={{
+                width: 'clamp(150px, 22vw, 240px)',
+                aspectRatio: '1361 / 1156',
+              }}
+            >
+              <img
+                src="assets/ui/jmatv-logo-v2-frame.png"
+                alt="JMAtv"
+                draggable={false}
+                className="absolute inset-0 w-full h-full object-contain jmatv-color-cycle"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 jmatv-letters-mask"
+                style={{
+                  WebkitMaskImage: `url(${process.env.PUBLIC_URL || ''}/assets/ui/jmatv-logo-v2-letters.png)`,
+                  maskImage: `url(${process.env.PUBLIC_URL || ''}/assets/ui/jmatv-logo-v2-letters.png)`,
+                }}
+              />
+            </div>
+            <p
+              className="mt-2 md:mt-3 font-black font-display leading-tight"
+              style={{
+                color: '#FFE7C2',
+                fontSize: 'clamp(15px, 1.6vw, 20px)',
+                textShadow: '0 2px 0 rgba(0,0,0,0.35)',
+              }}
+            >
+              Watch today&apos;s episode!
+            </p>
+            <p
+              className="mt-1 text-[11px] md:text-xs font-bold leading-snug"
+              style={{ color: '#B8C4D6', opacity: 0.92 }}
+            >
+              Songs, stories and music adventures with the JMA crew.
+            </p>
+          </div>
+
+          {/* CENTER — the TV itself. */}
+          <div className="flex flex-col items-center order-1 md:order-2">
+            <motion.button
+              type="button"
+              data-testid="home-retro-tv-btn"
+              onClick={() => navigate('/jmatv')}
+              whileHover={{ y: -3, scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              className="relative rounded-3xl border-0 p-0 bg-transparent cursor-pointer"
+              aria-label="Open JMAtv"
+              style={{ width: 'clamp(220px, 32vw, 320px)' }}
+            >
         {/* Rabbit ears — purely decorative. Sit BEHIND the TV body via z-index
             so the ear bases tuck under the wood frame. Flat grey sticks
             without the metallic gradient or ball tips so they match the
@@ -390,6 +459,24 @@ export default function RetroTV() {
           </div>
         </motion.button>
       </div>
+      </div>
+
+      {/* Film-reel perforation strip — bottom */}
+      <div
+        aria-hidden="true"
+        className="mx-auto"
+        style={{
+          width: '100%',
+          height: 12,
+          background:
+            'repeating-linear-gradient(90deg, transparent 0 10px, var(--jma-dark) 10px 22px)',
+          maskImage:
+            'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+          WebkitMaskImage:
+            'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+          opacity: 0.55,
+        }}
+      />
 
       <style>{`
         @keyframes jma-pulse {
