@@ -27,28 +27,53 @@ export default function RetroTV() {
   return (
     <motion.div
       data-testid="home-retro-tv"
-      // pt-8 reserves vertical space for the rabbit ears, which extend
-      // ~58px above the TV body via negative top positioning. The
-      // "Streaming Now" pill used to sit above the TV as well and was
-      // getting cluttered with the ears, so it's been moved BELOW the TV
-      // (Feb 2026 — user request). That freed up ~28px of top padding.
-      className="relative z-10 mt-12 md:mt-16 mb-2 pt-8 flex flex-col items-center"
+      // Full-width row that grounds the TV in a friendly "channel banner"
+      // context. Left column is the wacky JMAtv brand + caption, center
+      // is the CRT itself, right is a starburst tease. pt-8 still reserves
+      // vertical space for the rabbit ears which extend above the TV body.
+      className="relative z-10 mt-10 md:mt-14 mb-2 pt-4 w-full max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 px-3"
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
     >
-      {/* The TV itself — wood-grain frame, sloped sides, rabbit ears on top.
-          Whole thing is one big button. */}
-      <motion.button
-        type="button"
-        data-testid="home-retro-tv-btn"
-        onClick={() => navigate('/jmatv')}
-        whileHover={{ y: -3, scale: 1.02 }}
-        whileTap={{ scale: 0.97 }}
-        className="relative rounded-3xl border-0 p-0 bg-transparent cursor-pointer"
-        aria-label="Open JMAtv"
-        style={{ width: 'clamp(220px, 32vw, 320px)' }}
-      >
+      {/* LEFT — wacky brand column. Not just floating text; it grounds the
+          TV so it doesn't feel abandoned in the middle of the page. */}
+      <div className="flex flex-col items-center md:items-end text-center md:text-right flex-shrink-0 md:max-w-[240px] order-2 md:order-1">
+        <motion.img
+          src="assets/ui/jmatv-logo.png"
+          alt="JMAtv"
+          draggable={false}
+          className="drop-shadow-lg"
+          style={{ width: 'clamp(120px, 18vw, 200px)', height: 'auto' }}
+          animate={{ rotate: [-2, 2, -2], y: [0, -3, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <p
+          className="mt-1 md:mt-2 font-black font-display text-base md:text-lg leading-tight"
+          style={{ color: 'var(--jma-dark)' }}
+        >
+          Watch today&apos;s episode!
+        </p>
+        <p
+          className="mt-1 text-[11px] md:text-xs font-bold leading-snug"
+          style={{ color: 'var(--jma-dark)', opacity: 0.72 }}
+        >
+          Songs, stories and music adventures with the JMA crew.
+        </p>
+      </div>
+
+      {/* CENTER — the TV itself. */}
+      <div className="flex flex-col items-center order-1 md:order-2">
+        <motion.button
+          type="button"
+          data-testid="home-retro-tv-btn"
+          onClick={() => navigate('/jmatv')}
+          whileHover={{ y: -3, scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          className="relative rounded-3xl border-0 p-0 bg-transparent cursor-pointer"
+          aria-label="Open JMAtv"
+          style={{ width: 'clamp(220px, 32vw, 320px)' }}
+        >
         {/* Rabbit ears — purely decorative. Sit BEHIND the TV body via z-index
             so the ear bases tuck under the wood frame. Flat grey sticks
             without the metallic gradient or ball tips so they match the
@@ -243,6 +268,50 @@ export default function RetroTV() {
         >
           Streaming Now
         </span>
+      </div>
+      </div>
+
+      {/* RIGHT — starburst "A NEW ADVENTURE EVERY WEEK!" tease. Pure CSS
+          burst so we don't ship another PNG. Rotated slightly so it feels
+          hand-stuck like a sticker. */}
+      <div className="hidden md:flex order-3 flex-shrink-0 items-center justify-center">
+        <motion.div
+          className="relative flex items-center justify-center"
+          style={{ width: 150, height: 150 }}
+          animate={{ rotate: [-6, 6, -6] }}
+          transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background: '#FFCC00',
+              clipPath:
+                'polygon(50% 0%, 60% 15%, 75% 5%, 78% 22%, 95% 20%, 88% 35%, 100% 50%, 88% 65%, 95% 80%, 78% 78%, 75% 95%, 60% 85%, 50% 100%, 40% 85%, 25% 95%, 22% 78%, 5% 80%, 12% 65%, 0% 50%, 12% 35%, 5% 20%, 22% 22%, 25% 5%, 40% 15%)',
+              boxShadow: '0 6px 0 rgba(10,37,64,0.35)',
+            }}
+          />
+          <div className="relative text-center px-4">
+            <div
+              className="text-[10px] font-black uppercase tracking-widest"
+              style={{ color: 'var(--jma-dark)', opacity: 0.75 }}
+            >
+              A NEW
+            </div>
+            <div
+              className="text-lg font-black font-display leading-none uppercase"
+              style={{ color: 'var(--jma-dark)' }}
+            >
+              Adventure
+            </div>
+            <div
+              className="text-[11px] font-black uppercase tracking-wide"
+              style={{ color: 'var(--jma-dark)' }}
+            >
+              every week!
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       <style>{`
