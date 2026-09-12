@@ -95,7 +95,7 @@ export default function RetroTV() {
       transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
     >
       <div
-        className="relative rounded-3xl px-4 md:px-8 pt-10 md:pt-14 pb-6 md:pb-8"
+        className="relative rounded-3xl px-4 md:px-8 pt-12 md:pt-16 pb-6 md:pb-8"
         style={{
           background:
             'linear-gradient(180deg, #FFF9E9 0%, #FFF1CE 100%)',
@@ -169,11 +169,11 @@ export default function RetroTV() {
           aria-hidden="true"
           className="absolute"
           style={{
-            top: '-26%',
+            top: '-16%',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: '60%',
-            height: '32%',
+            width: '52%',
+            height: '22%',
             zIndex: 0,
           }}
         >
