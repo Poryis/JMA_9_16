@@ -619,13 +619,15 @@ function LoopStudioPage() {
         {/* Instruments in the scene - desktop: drums left + turntable right; mobile: stacked vertically.
             Both visuals are TAP-PLAYABLE — kids can jam directly on a kick drum or
             scratch a record without using the sequencer grid. Wrapped in a
-            "stage riser" card so they read as sitting on their own little
-            platform, not floating against the studio backdrop. */}
+            soft cream card that visually rhymes with the studio's monitor
+            screen behind them, so they read as being "on stage" together
+            instead of floating loose against the backdrop. */}
         <div
-          className="max-w-5xl mx-auto mt-3 rounded-2xl border-[3px] border-[var(--jma-dark)] px-4 md:px-10 pt-4 pb-3 md:pb-4"
+          className="max-w-5xl mx-auto mt-3 rounded-2xl border-[3px] border-[var(--jma-dark)] px-4 md:px-10 py-3 md:py-4"
           style={{
-            background: 'linear-gradient(180deg, #8B5A2B 0%, #6B3F1D 100%)',
-            boxShadow: '0 8px 0 #3E2410, inset 0 3px 0 rgba(255,255,255,0.15)',
+            background: 'rgba(245, 232, 200, 0.72)',
+            backdropFilter: 'blur(2px)',
+            boxShadow: '0 6px 0 rgba(10,37,64,0.35)',
           }}
         >
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-0 items-center">
@@ -638,12 +640,6 @@ function LoopStudioPage() {
               <TurntableVisual activeHits={activeHits} onScratch={handleScratchTap} />
             </div>
           </div>
-          {/* Stage lip — a slim darker strip along the bottom edge sells
-              the "wooden riser" read. */}
-          <div
-            className="mt-2 h-1.5 rounded-full"
-            style={{ background: 'rgba(0,0,0,0.35)' }}
-          />
         </div>
       </main>
     </div>
