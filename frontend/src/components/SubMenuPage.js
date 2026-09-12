@@ -14,117 +14,36 @@
 // the tile.
 
 import { motion } from 'framer-motion';
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameHeader } from './GameUI';
 import BlimpFlyby from './BlimpFlyby';
 
 /**
- * Page-level "pick the smallest font-size that fits the longest title in
- * this tile set at the current card width" hook. Returns the size + refs
- * the SubMenuPage attaches to the grid + a hidden measurement span.
+ * Single-line uppercase title with UNIFORM size across every tile on the
+ * page. Uses a viewport-clamped fontSize instead of DOM measurement so
+ * every card renders at the same visual weight — no font-loading race,
+ * no ResizeObserver loops, no per-tile fit divergence. The clamp is tuned
+ * to comfortably fit the longest titles in the app ("DETECTIVE DR.
+ * JELLYBONE", "CHARLIE'S SONG STUDIO", "WHO'S GOT THE RHYTHM") in the
+ * narrowest tile at every breakpoint we support.
  *
- * Rationale: every tile shares the same card width, so every tile can
- * (and should) share the same title font-size. Doing this at the page
- * level means DETECTIVE DR. JELLYBONE and JAM SESSION both render at
- * the same size — no jarring visual pop between neighbors.
+ *   Mobile (viewport ~360px, single-column card):
+ *     3.4vw = 12.24px, clamped up to floor 20 → 20px
+ *   Tablet portrait (768px, 2-col card ~370px):
+ *     3.4vw = 26.1px
+ *   Desktop (>=1200px, 2-col card ~500px):
+ *     3.4vw = 40.8, clamped down to ceiling 38 → 38px
  */
-function useUniformTitleFit(tiles) {
-  const gridRef = useRef(null);
-  const measureRef = useRef(null);
-  const [fontSize, setFontSize] = useState(30);
-
-  useLayoutEffect(() => {
-    let rafId = 0;
-    const measure = () => {
-      const grid = gridRef.current;
-      const el = measureRef.current;
-      if (!grid || !el) return;
-      const sample = grid.querySelector('[data-testid^="submenu-tile-"]');
-      if (!sample) return;
-      // Prefer measuring the NARROW column-1 tile width so the shared font
-      // size fits the tighter cards. A full-width (col-span-2) tile will
-      // simply have extra title breathing room, which is fine.
-      const allTiles = grid.querySelectorAll('[data-testid^="submenu-tile-"]');
-      let cardWidth = sample.clientWidth;
-      allTiles.forEach((t) => {
-        if (t.clientWidth > 0 && t.clientWidth < cardWidth) {
-          cardWidth = t.clientWidth;
-        }
-      });
-      // Title container is `absolute left-3/-4` with `maxWidth: calc(100%
-       // - 24px)`, so the real usable width is card_width - 24px. Give a
-       // tiny safety pad and use that directly (earlier 0.88 * cardWidth
-       // was over-tightening and shrinking the shared font more than
-       // needed).
-      const target = Math.max(0, cardWidth - 28);
-      if (target <= 0) return;
-
-      const MAX = 64;
-      const MIN = 12;
-      let minSize = MAX;
-      for (const tile of tiles) {
-        el.textContent = tile.title;
-        let s = MAX;
-        el.style.fontSize = s + 'px';
-        el.style.WebkitTextStrokeWidth = Math.max(2, s * 0.09) + 'px';
-        while (el.scrollWidth > target && s > MIN) {
-          s -= 1;
-          el.style.fontSize = s + 'px';
-          el.style.WebkitTextStrokeWidth = Math.max(2, s * 0.09) + 'px';
-        }
-        if (s < minSize) minSize = s;
-      }
-      // Only update state when the value actually changes to avoid a
-      // ResizeObserver re-loop.
-      setFontSize((prev) => (prev !== minSize ? minSize : prev));
-    };
-
-    const schedule = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        measure();
-      });
-    };
-
-    schedule();
-    // Re-measure once web fonts finish loading. Without this, the first
-    // measurement uses the (wider) fallback font, we shrink more than
-    // necessary, then Fredoka swaps in and the visible text looks
-    // dramatically undersized.
-    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(schedule).catch(() => {});
-    }
-    const ro = new ResizeObserver(schedule);
-    if (gridRef.current) ro.observe(gridRef.current);
-    window.addEventListener('resize', schedule);
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      ro.disconnect();
-      window.removeEventListener('resize', schedule);
-    };
-  }, [tiles]);
-
-  return { fontSize, gridRef, measureRef };
-}
-
-/**
- * Simple single-line uppercase title rendered at a caller-controlled
- * fontSize. Stroke width scales with font-size so heavy display type
- * stays readable when small (mobile) without eating the letterforms
- * when large (desktop).
- */
-function TileTitle({ text, testId, fontSize }) {
-  const strokePx = Math.max(2, fontSize * 0.09);
+function TileTitle({ text, testId }) {
   return (
     <h2
       data-testid={testId}
       className="font-black font-display uppercase whitespace-nowrap leading-none"
       style={{
         color: 'white',
-        fontSize: `${fontSize}px`,
-        WebkitTextStroke: `${strokePx}px var(--jma-dark)`,
+        fontSize: 'clamp(20px, 3.4vw, 38px)',
+        WebkitTextStroke: '0.09em var(--jma-dark)',
         paintOrder: 'stroke fill',
         textShadow:
           '0 3px 0 rgba(10,37,64,0.7), 0 6px 14px rgba(10,37,64,0.55)',
@@ -137,7 +56,7 @@ function TileTitle({ text, testId, fontSize }) {
   );
 }
 
-function Tile({ tile, index, navigate, titleFontSize }) {
+function Tile({ tile, index, navigate }) {
   const [hovered, setHovered] = useState(false);
   const disabled = tile.disabled;
 
@@ -317,7 +236,6 @@ function Tile({ tile, index, navigate, titleFontSize }) {
         <TileTitle
           text={tile.title}
           testId={`submenu-tile-title-${tile.id}`}
-          fontSize={titleFontSize}
         />
         {disabled && (
           <p
@@ -442,7 +360,6 @@ function HeaderHero({ subtitle }) {
  */
 export default function SubMenuPage({ sectionTitle, sectionSubtitle, bgGradient, tiles, testId }) {
   const navigate = useNavigate();
-  const { fontSize, gridRef, measureRef } = useUniformTitleFit(tiles);
   return (
     <div
       data-testid={testId}
@@ -459,39 +376,9 @@ export default function SubMenuPage({ sectionTitle, sectionSubtitle, bgGradient,
 
       <HeaderHero subtitle={sectionSubtitle} />
 
-      {/* Hidden measurement span used by useUniformTitleFit — MUST match
-          the visible TileTitle's font family, weight, transform, letter
-          spacing, and stroke so scrollWidth measurements are accurate. */}
-      <span
-        ref={measureRef}
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          top: '-9999px',
-          left: '-9999px',
-          visibility: 'hidden',
-          whiteSpace: 'nowrap',
-          fontFamily: "'Fredoka', cursive",
-          fontWeight: 900,
-          textTransform: 'uppercase',
-          letterSpacing: '0.01em',
-          lineHeight: 0.9,
-          paintOrder: 'stroke fill',
-        }}
-      />
-
-      <div
-        ref={gridRef}
-        className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5"
-      >
+      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
         {tiles.map((tile, idx) => (
-          <Tile
-            key={tile.id}
-            tile={tile}
-            index={idx}
-            navigate={navigate}
-            titleFontSize={fontSize}
-          />
+          <Tile key={tile.id} tile={tile} index={idx} navigate={navigate} />
         ))}
       </div>
     </div>
