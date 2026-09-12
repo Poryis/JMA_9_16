@@ -39,7 +39,7 @@ function BubbleWordmark() {
         <span
           key={i}
           style={{
-            fontFamily: "'Titan One', 'Fredoka', cursive",
+            fontFamily: "'Chewy', 'Fredoka', cursive",
             fontWeight: 400,
             color: L.color,
             fontSize: L.small
