@@ -4,15 +4,21 @@ import { Volume2 } from 'lucide-react';
 import HarpIcon from './HarpIcon';
 import RetroTVIcon from './RetroTVIcon';
 
-function GameHeader({ title, score, streak, showHomeButton = true }) {
+function GameHeader({ title, score, streak, showHomeButton = true, backTo = null }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // The harp button now acts as a "Back" button (browser history back)
-  // rather than a hard-coded jump to Home. On the actual home page ("/")
-  // we hide it entirely so kids don't accidentally back out of the app.
+  // The harp button acts as a "Back" button. By default we use browser
+  // history (navigate(-1)) which works for most flows, but pages can
+  // pass an explicit `backTo` route to force back to a specific parent
+  // — critical inside JMAtv where history can point at a sibling video
+  // rather than the channel menu.
   const isOnHome = location.pathname === '/';
   const renderBackButton = showHomeButton && !isOnHome;
+  const handleBack = () => {
+    if (backTo) navigate(backTo);
+    else navigate(-1);
+  };
 
   // When the user is inside JMAtv routes, swap the harp for a tiny
   // cartoon CRT so the back-button reads as "back to the TV world"
@@ -29,7 +35,7 @@ function GameHeader({ title, score, streak, showHomeButton = true }) {
             <motion.button
               data-testid="back-button"
               aria-label="Back"
-              onClick={() => navigate(-1)}
+              onClick={handleBack}
               className="group flex flex-col items-center bg-transparent border-0 p-0 cursor-pointer pointer-events-auto"
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95, y: 2 }}

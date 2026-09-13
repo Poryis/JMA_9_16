@@ -124,7 +124,7 @@ export default function JMAtvHomePage() {
           'radial-gradient(ellipse at top, #1E293B 0%, #0F172A 60%, #050816 100%)',
       }}
     >
-      <GameHeader showHomeButton={true} />
+      <GameHeader showHomeButton={true} backTo="/" />
 
       {/* Big JMAtv brand mark + tagline */}
       <motion.div

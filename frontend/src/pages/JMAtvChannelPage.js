@@ -119,7 +119,7 @@ export default function JMAtvChannelPage() {
           `radial-gradient(ellipse at top, ${channel.accent}55 0%, #0F172A 55%, #050816 100%)`,
       }}
     >
-      <GameHeader showHomeButton={true} />
+      <GameHeader showHomeButton={true} backTo="/jmatv" />
 
       <motion.div
         className="relative z-10 mt-2 mb-5 text-center"
