@@ -29,12 +29,17 @@ import TileDecoration from './TileDecoration';
  * JELLYBONE", "CHARLIE'S SONG STUDIO", "WHO'S GOT THE RHYTHM") in the
  * narrowest tile at every breakpoint we support.
  *
- *   Mobile (viewport ~360px, single-column card):
- *     3.4vw = 12.24px, clamped up to floor 20 → 20px
+ *   Mobile (viewport ~360px, single-column card ~336px):
+ *     2.6vw = 9.4px, clamped up to floor 17 → 17px
  *   Tablet portrait (768px, 2-col card ~370px):
- *     3.4vw = 26.1px
+ *     2.6vw = 20px  (fits "DETECTIVE DR. JELLYBONE" single-line)
  *   Desktop (>=1200px, 2-col card ~500px):
- *     3.4vw = 40.8, clamped down to ceiling 38 → 38px
+ *     2.6vw = 31.2, clamped down to ceiling 30 → 30px
+ *
+ * The clamp is intentionally sized so the LONGEST title in the app
+ * ("DETECTIVE DR. JELLYBONE" @ 23 chars) fits single-line at every
+ * supported breakpoint — dropping it any smaller would hurt shorter
+ * titles like "BEAT LAB", so we hold the line here.
  */
 function TileTitle({ text, testId }) {
   return (
@@ -43,7 +48,7 @@ function TileTitle({ text, testId }) {
       className="font-black font-display uppercase whitespace-nowrap leading-none"
       style={{
         color: 'white',
-        fontSize: 'clamp(20px, 3.4vw, 38px)',
+        fontSize: 'clamp(17px, 2.6vw, 30px)',
         WebkitTextStroke: '0.09em var(--jma-dark)',
         paintOrder: 'stroke fill',
         textShadow:
