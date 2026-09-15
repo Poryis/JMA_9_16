@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameHeader } from './GameUI';
 import BlimpFlyby from './BlimpFlyby';
+import UnderwaterBackdrop, { UNDERWATER_BG_COLOR } from './UnderwaterBackdrop';
 import TileDecoration from './TileDecoration';
 
 /**
@@ -376,9 +377,15 @@ export default function SubMenuPage({ sectionTitle, sectionSubtitle, bgGradient,
     <div
       data-testid={testId}
       className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-8 relative overflow-x-hidden"
-      style={{ background: bgGradient }}
+      style={{ backgroundColor: UNDERWATER_BG_COLOR }}
       aria-label={sectionTitle}
     >
+      {/* Shared underwater backdrop — matches the HomePage lobby so
+          Play / Learn / Create feel like the same underwater world.
+          The legacy `bgGradient` prop is ignored now that every sub-menu
+          inherits the sea theme. */}
+      <UnderwaterBackdrop />
+
       {/* Lou blimp — same drifting sky presence used on the home page so the
           three sub-worlds feel contiguous with the lobby. Sits behind
           everything else. */}

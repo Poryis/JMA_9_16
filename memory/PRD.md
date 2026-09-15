@@ -1,6 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **JMAtv per-set unique CRTs** — the colored card wrapper is gone; every channel tile IS a fully-rendered retro CRT with its own frame material (wood / metal / painted-red / purple-sparkle / chalkboard), antenna style (curly / ball-tips / coathanger / star-tips / apple), knob color, and corner sticker (`HelpCircle` / `Smile` / `Music` / `Sparkles` / `GraduationCap`). A brass nameplate hangs under each TV with title + episode chip. The distant ringed planet now has a 4px JMA-dark stroke with a slow ring rotation and an orbiting moon; satellite strokes beefed to 4px throughout for outline consistency with the rest of the JMA art.
+## Latest (Feb 2026): **Shared backdrops** — extracted `SpaceBackdrop` (nebula + starfield + ringed-planet-with-orbiting-moon + `SatelliteFlyby`) into a reusable component now shared by every JMAtv page (`JMAtvHomePage`, `JMAtvChannelPage`, `JMAtvPlayerPage`); extracted `UnderwaterBackdrop` (fixed sea PNG + top vignette + god-ray shafts + 18 rising bubbles) and mounted it inside `SubMenuPage` so PLAY / LEARN / CREATE inherit the same undersea world as the HomePage lobby (the legacy `bgGradient` prop on those menus is now ignored). MiniCRT sticker prop removed; every CRT gets a 6px JMA-dark body border + 3px accent-tinted bezel + beefier antenna strokes.
+
+## Prior (Feb 2026): JMAtv per-set unique CRTs — every channel tile is a fully-rendered retro CRT with its own frame material (wood / metal / painted-red / purple-sparkle / chalkboard), antenna style (curly / ball-tips / coathanger / star-tips / apple), and knob color.
 
 ## Prior (Feb 2026): JMAtv overhaul v1 — home-page RetroTV is a single fully-clickable card; JMAtv page moved to an outer-space CSS background with `SatelliteFlyby`, and each channel embedded a mini-CRT preview.
 

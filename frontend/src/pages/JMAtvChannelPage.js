@@ -11,6 +11,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
+import SpaceBackdrop, { SPACE_BG_STYLE } from '../components/SpaceBackdrop';
 import { getChannel } from '../data/jmatv';
 
 function EpisodeCard({ episode, index, channel, onClick }) {
@@ -113,12 +114,11 @@ export default function JMAtvChannelPage() {
   return (
     <div
       data-testid={`jmatv-channel-page-${channel.id}`}
-      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-10 relative"
-      style={{
-        background:
-          `radial-gradient(ellipse at top, ${channel.accent}55 0%, #0F172A 55%, #050816 100%)`,
-      }}
+      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-10 relative overflow-x-hidden"
+      style={SPACE_BG_STYLE}
     >
+      <SpaceBackdrop />
+
       <GameHeader showHomeButton={true} backTo="/jmatv" />
 
       <motion.div

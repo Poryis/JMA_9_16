@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import Player from '@vimeo/player';
 import { Maximize2, ChevronRight } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
+import SpaceBackdrop, { SPACE_BG_STYLE } from '../components/SpaceBackdrop';
 import { getChannel, getEpisode } from '../data/jmatv';
 import { earnSticker } from '../hooks/useStickers';
 
@@ -98,12 +99,11 @@ export default function JMAtvPlayerPage() {
   return (
     <div
       data-testid={`jmatv-player-page-${channel.id}-${episode.index}`}
-      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-24 md:pt-28 pb-10 relative"
-      style={{
-        background:
-          `radial-gradient(ellipse at top, ${channel.accent}55 0%, #0F172A 55%, #050816 100%)`,
-      }}
+      className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-24 md:pt-28 pb-10 relative overflow-x-hidden"
+      style={SPACE_BG_STYLE}
     >
+      <SpaceBackdrop />
+
       <GameHeader showHomeButton={true} backTo={`/jmatv/${channel.id}`} />
 
       {/* Episode title */}

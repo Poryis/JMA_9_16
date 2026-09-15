@@ -3,28 +3,25 @@
 // Each JMAtv channel has its own personality, so every TV can look
 // different: wooden Fun-Facts cabinet, chrome Puns-with-Finn tv,
 // black-and-red music-video amp, sparkly purple Variety-Show set,
-// green schoolroom Lessons TV. The screen still plays a muted-loop
-// Vimeo preview so the tile *is* the show.
+// green schoolroom Lessons TV. The screen plays a muted-loop Vimeo
+// preview so the tile *is* the show.
 //
 // Props
 //   vimeoId       — string. Muted looping Vimeo iframe when provided.
-//   fallbackLabel — small yellow LCD label rendered on the screen when
-//                   no vimeoId (e.g. "Off Air", "Class in Session").
-//   theme         — object describing the frame:
-//                     { frame: 'wood' | 'metal' | 'painted-red' |
-//                              'purple-sparkle' | 'chalkboard',
-//                       accent: '#hex' — colored trim inside the
-//                                        bezel + label chip,
-//                       knobColor: '#hex' (optional) }
+//   fallbackLabel — small LCD label on the screen when no vimeoId
+//                   (e.g. "Off Air", "Class in Session").
+//   theme         — { frame: 'wood' | 'metal' | 'painted-red' |
+//                            'purple-sparkle' | 'chalkboard',
+//                     accent: '#hex' — bezel trim + label chip,
+//                     knobColor: '#hex' (optional) }
 //   antenna       — 'rabbit-ears' | 'coathanger' | 'curly' |
 //                   'star-tips' | 'ball-tips' | 'apple' | 'none'
-//   sticker       — { icon: <ReactNode>, bg: '#hex' } | null.
-//                   Small round sticker slapped on the frame's
-//                   top-right corner — every TV gets its own.
-//   staticNoise   — bool. Renders CRT static "no signal" overlay on
-//                   top of the screen (used for coming-soon channels).
+//   staticNoise   — bool. CRT "no signal" overlay on top of the screen
+//                   (used for coming-soon channels).
 //
-// Presentation-only: click handling lives on the parent.
+// Every stroke uses JMA-dark at 6px (body) / 3px (bezel + antennas) so
+// the TVs match the thick outline aesthetic of the rest of the JMA
+// world. Presentation-only: click handling lives on the parent.
 
 import { motion } from 'framer-motion';
 
@@ -34,7 +31,6 @@ const JMA_DARK = '#0A2540';
 function Antenna({ style }) {
   if (style === 'none') return null;
 
-  // Wrapper — sits behind the TV body via z-index so the bases tuck under.
   const wrap = {
     position: 'absolute',
     top: '-18%',
@@ -46,12 +42,11 @@ function Antenna({ style }) {
     pointerEvents: 'none',
   };
 
-  // Chunky JMA-dark stroke matches the rest of the world's outline weight.
   const rod = (rotate, side) => ({
     position: 'absolute',
     top: 0,
     [side]: '18%',
-    width: 5,
+    width: 6,
     height: '100%',
     background: JMA_DARK,
     transform: `rotate(${rotate}deg)`,
@@ -66,8 +61,8 @@ function Antenna({ style }) {
         <div style={rod(22, 'right')} />
         {style === 'ball-tips' && (
           <>
-            <div style={{ position: 'absolute', top: '-6%', left: '4%', width: 14, height: 14, borderRadius: '50%', background: '#FFCC00', border: `2.5px solid ${JMA_DARK}` }} />
-            <div style={{ position: 'absolute', top: '-6%', right: '4%', width: 14, height: 14, borderRadius: '50%', background: '#FFCC00', border: `2.5px solid ${JMA_DARK}` }} />
+            <div style={{ position: 'absolute', top: '-6%', left: '4%',  width: 16, height: 16, borderRadius: '50%', background: '#FFCC00', border: `3px solid ${JMA_DARK}` }} />
+            <div style={{ position: 'absolute', top: '-6%', right: '4%', width: 16, height: 16, borderRadius: '50%', background: '#FFCC00', border: `3px solid ${JMA_DARK}` }} />
           </>
         )}
         {style === 'star-tips' && (
@@ -88,18 +83,17 @@ function Antenna({ style }) {
             points="14,58 50,4 86,58"
             fill="none"
             stroke={JMA_DARK}
-            strokeWidth="5"
+            strokeWidth="6"
             strokeLinejoin="round"
             strokeLinecap="round"
           />
-          <circle cx="50" cy="4" r="4" fill="#FF3B30" stroke={JMA_DARK} strokeWidth="2.5" />
+          <circle cx="50" cy="4" r="5" fill="#FF3B30" stroke={JMA_DARK} strokeWidth="3" />
         </svg>
       </div>
     );
   }
 
   if (style === 'curly') {
-    // Curly-wire antenna — one springy spiral rising from the center.
     return (
       <div aria-hidden="true" style={wrap}>
         <svg viewBox="0 0 100 60" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
@@ -107,10 +101,10 @@ function Antenna({ style }) {
             d="M 50 58 C 50 50, 42 46, 42 40 C 42 34, 58 34, 58 28 C 58 22, 42 22, 42 16 C 42 10, 58 10, 58 4"
             fill="none"
             stroke={JMA_DARK}
-            strokeWidth="4.5"
+            strokeWidth="5.5"
             strokeLinecap="round"
           />
-          <circle cx="58" cy="4" r="4" fill="#FFCC00" stroke={JMA_DARK} strokeWidth="2.5" />
+          <circle cx="58" cy="4" r="5" fill="#FFCC00" stroke={JMA_DARK} strokeWidth="3" />
         </svg>
       </div>
     );
@@ -120,18 +114,15 @@ function Antenna({ style }) {
     return (
       <div aria-hidden="true" style={{ ...wrap, height: '26%', top: '-22%' }}>
         <svg viewBox="0 0 100 70" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-          {/* stem */}
-          <path d="M 50 34 Q 50 20 44 12" fill="none" stroke={JMA_DARK} strokeWidth="4" strokeLinecap="round" />
-          {/* leaf */}
+          <path d="M 50 34 Q 50 20 44 12" fill="none" stroke={JMA_DARK} strokeWidth="5" strokeLinecap="round" />
           <path
             d="M 44 12 Q 60 8 62 22 Q 50 22 44 12 Z"
             fill="#34A853"
             stroke={JMA_DARK}
-            strokeWidth="3"
+            strokeWidth="3.5"
             strokeLinejoin="round"
           />
-          {/* apple */}
-          <circle cx="50" cy="52" r="16" fill="#FF3B30" stroke={JMA_DARK} strokeWidth="4" />
+          <circle cx="50" cy="52" r="16" fill="#FF3B30" stroke={JMA_DARK} strokeWidth="4.5" />
           <path d="M 40 46 Q 44 42 48 46" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" opacity="0.7" />
         </svg>
       </div>
@@ -149,15 +140,15 @@ function StarTip({ x, flip, right }) {
         top: '-10%',
         [right ? 'right' : 'left']: x,
         transform: `translateX(${flip * -8}px) rotate(${flip * 18}deg)`,
-        width: 22, height: 22,
+        width: 24, height: 24,
       }}
     >
-      <svg viewBox="0 0 24 24" width="22" height="22">
+      <svg viewBox="0 0 24 24" width="24" height="24">
         <polygon
           points="12,1 15,9 23,9 16.5,14 19,22 12,17 5,22 7.5,14 1,9 9,9"
           fill="#FFCC00"
           stroke={JMA_DARK}
-          strokeWidth="2"
+          strokeWidth="2.5"
           strokeLinejoin="round"
         />
       </svg>
@@ -195,7 +186,6 @@ const FRAMES = {
   },
 };
 
-// ---------- Static-noise overlay --------------------------------------
 function StaticNoise() {
   return (
     <div
@@ -219,7 +209,6 @@ export default function MiniCRT({
   fallbackLabel = null,
   theme = { frame: 'wood', accent: '#FFCC00' },
   antenna = 'rabbit-ears',
-  sticker = null,
   staticNoise = false,
 }) {
   const frame = FRAMES[theme.frame] || FRAMES.wood;
@@ -240,14 +229,14 @@ export default function MiniCRT({
     >
       <Antenna style={antenna} />
 
-      {/* TV body */}
+      {/* TV body — chunky 6px JMA-dark stroke matches the world's outline weight */}
       <div
         className="relative rounded-2xl"
         style={{
           background: frame.background,
           backgroundBlendMode: frame.backgroundBlendMode,
-          border: `4px solid ${JMA_DARK}`,
-          boxShadow: `0 6px 0 0 ${JMA_DARK}, ${frame.innerShadow}`,
+          border: `6px solid ${JMA_DARK}`,
+          boxShadow: `0 8px 0 0 ${JMA_DARK}, ${frame.innerShadow}`,
           padding: '10px 10px 8px 10px',
           zIndex: 1,
         }}
@@ -257,8 +246,8 @@ export default function MiniCRT({
           className="relative rounded-lg overflow-hidden"
           style={{
             background: '#0A0A0A',
-            border: `2px solid ${accent}`,
-            boxShadow: 'inset 0 0 10px rgba(0,0,0,0.8)',
+            border: `3px solid ${JMA_DARK}`,
+            boxShadow: `inset 0 0 10px rgba(0,0,0,0.8), inset 0 0 0 2px ${accent}`,
             aspectRatio: '4 / 3',
           }}
         >
@@ -344,7 +333,7 @@ export default function MiniCRT({
               borderRadius: 3,
               background:
                 'repeating-linear-gradient(90deg, rgba(0,0,0,0.55) 0 2px, rgba(255,255,255,0.08) 2px 5px)',
-              border: `1.5px solid ${JMA_DARK}`,
+              border: `2px solid ${JMA_DARK}`,
             }}
           />
           <div className="flex items-center gap-1.5">
@@ -353,47 +342,18 @@ export default function MiniCRT({
                 key={i}
                 aria-hidden="true"
                 style={{
-                  width: 11, height: 11,
+                  width: 12, height: 12,
                   borderRadius: '50%',
                   background: knobColor
                     ? `radial-gradient(circle at 35% 35%, ${knobColor}FF, ${knobColor}66)`
                     : 'radial-gradient(circle at 35% 35%, #E5C597, #5A3A1A)',
-                  border: `1.5px solid ${JMA_DARK}`,
+                  border: `2px solid ${JMA_DARK}`,
                 }}
               />
             ))}
           </div>
         </div>
       </div>
-
-      {/* Corner sticker — slapped on the top-right of the frame,
-          rotated slightly for a hand-stuck feel. */}
-      {sticker && (
-        <motion.div
-          aria-hidden="true"
-          className="absolute pointer-events-none"
-          style={{
-            top: -10,
-            right: -12,
-            width: 44, height: 44,
-            zIndex: 3,
-          }}
-          animate={{ rotate: [-10, -6, -10] }}
-          transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <div
-            className="w-full h-full rounded-full flex items-center justify-center"
-            style={{
-              background: sticker.bg || '#FFCC00',
-              border: `3px solid ${JMA_DARK}`,
-              boxShadow: '2px 3px 0 rgba(0,0,0,0.35)',
-              color: JMA_DARK,
-            }}
-          >
-            {sticker.icon}
-          </div>
-        </motion.div>
-      )}
     </motion.div>
   );
 }
