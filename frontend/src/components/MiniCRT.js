@@ -210,14 +210,21 @@ export default function MiniCRT({
   theme = { frame: 'wood', accent: '#FFCC00' },
   antenna = 'rabbit-ears',
   staticNoise = false,
+  active = false,
 }) {
   const frame = FRAMES[theme.frame] || FRAMES.wood;
   const accent = theme.accent || '#FFCC00';
   const knobColor = theme.knobColor || null;
 
-  const src = vimeoId
+  // Perf: by default we render Vimeo's static poster JPG (~15–30 KB via
+  // vumbnail.com) instead of the full player iframe (~200 KB + a live
+  // video decoder). The parent flips `active` on hover/focus so only
+  // ONE tile boots the real player at a time — this cut the JMAtv home
+  // page from 5 concurrent Vimeo iframes to 0 at first paint.
+  const iframeSrc = vimeoId && active
     ? `https://player.vimeo.com/video/${vimeoId}?autoplay=1&loop=1&muted=1&background=1&controls=0&app_id=122963&title=0&byline=0&portrait=0&dnt=1`
     : null;
+  const posterSrc = vimeoId ? `https://vumbnail.com/${vimeoId}.jpg` : null;
 
   return (
     <motion.div
@@ -251,10 +258,10 @@ export default function MiniCRT({
             aspectRatio: '4 / 3',
           }}
         >
-          {src ? (
+          {iframeSrc ? (
             <iframe
               title="channel preview"
-              src={src}
+              src={iframeSrc}
               allow="autoplay; fullscreen; picture-in-picture"
               referrerPolicy="strict-origin-when-cross-origin"
               style={{
@@ -266,6 +273,16 @@ export default function MiniCRT({
                 border: 0,
                 pointerEvents: 'none',
               }}
+            />
+          ) : posterSrc ? (
+            <img
+              src={posterSrc}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => { e.target.style.display = 'none'; }}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#1a2540] to-[#0A2540]">

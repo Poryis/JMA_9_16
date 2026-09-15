@@ -1,6 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **Shared backdrops** — extracted `SpaceBackdrop` (nebula + starfield + ringed-planet-with-orbiting-moon + `SatelliteFlyby`) into a reusable component now shared by every JMAtv page (`JMAtvHomePage`, `JMAtvChannelPage`, `JMAtvPlayerPage`); extracted `UnderwaterBackdrop` (fixed sea PNG + top vignette + god-ray shafts + 18 rising bubbles) and mounted it inside `SubMenuPage` so PLAY / LEARN / CREATE inherit the same undersea world as the HomePage lobby (the legacy `bgGradient` prop on those menus is now ignored). MiniCRT sticker prop removed; every CRT gets a 6px JMA-dark body border + 3px accent-tinted bezel + beefier antenna strokes.
+## Latest (Feb 2026): **Perf pass** — deleted `_backup_originals/` MP3s + `backgrounds/concepts/` PNGs + unused `beat-lab-wall.png` / `beat-lab-studio.png` (67 MB → 57 MB public assets). MiniCRT now defaults to a static Vumbnail poster JPG and only boots the live Vimeo iframe when its parent tile is hovered/focused (`active` prop). JMAtv home cold-load dropped from 5 concurrent Vimeo player iframes to 0.
+
+## Prior (Feb 2026): Shared backdrops — `SpaceBackdrop` reused across every JMAtv page; `UnderwaterBackdrop` mounted inside `SubMenuPage` so PLAY / LEARN / CREATE inherit the same undersea world as the HomePage lobby.
 
 ## Prior (Feb 2026): JMAtv per-set unique CRTs — every channel tile is a fully-rendered retro CRT with its own frame material (wood / metal / painted-red / purple-sparkle / chalkboard), antenna style (curly / ball-tips / coathanger / star-tips / apple), and knob color.
 
