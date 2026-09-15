@@ -1,23 +1,28 @@
 // JMAtv home — the channel guide.
 //
-// Feb 2026 overhaul: outer-space themed backdrop, drifting cartoon
-// satellite (blimp-style behavior), and every channel tile now embeds
-// its OWN mini CRT playing that channel's first episode on mute+loop.
-// The character-host hero art and the tagline text are gone — the TV
-// preview carries the tile now. An additional non-channel tile links
-// to LESSONS so kids can jump into Music 101 from the same guide.
+// Feb 2026 v2: every channel tile IS a fully-rendered retro CRT TV
+// (no colored card wrapper). Each set is unique — different frame
+// material, antenna, corner sticker, and knob color — so kids can
+// tell shows apart at a glance the same way you spot a rack of
+// arcade cabinets. A brass nameplate hangs under each TV with the
+// channel title + episode chip.
+//
+// Space backdrop: nebula wash, twinkling starfield, a slowly rotating
+// ringed planet with an orbiting moon, and a drifting cartoon
+// satellite (blimp-style behavior). All pure CSS/SVG with the JMA
+// world's thick-black-stroke aesthetic.
 
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Tv, Lock, GraduationCap } from 'lucide-react';
+import { HelpCircle, Smile, Music, Sparkles, GraduationCap } from 'lucide-react';
 import { GameHeader } from '../components/GameUI';
 import MiniCRT from '../components/MiniCRT';
 import SatelliteFlyby from '../components/SatelliteFlyby';
 import { JMATV_CHANNELS } from '../data/jmatv';
 
-// Pure-CSS starfield — 3 layers of tiny "stars" at different offsets so
-// the sky feels textured without shipping a bitmap. Sits inside the
-// page's absolute background layer.
+const JMA_DARK = '#0A2540';
+
+// -------- Space backdrop --------------------------------------------
 function Starfield() {
   return (
     <div
@@ -45,8 +50,6 @@ function Starfield() {
   );
 }
 
-// Distant nebula glow — two soft radial washes in on-brand accent tones
-// so the dark sky doesn't feel flat.
 function Nebula() {
   return (
     <div
@@ -63,54 +66,199 @@ function Nebula() {
   );
 }
 
-// Distant tumbling planet — one small ringed body on the far edge for
-// extra depth. Pure CSS, no asset.
+// Ringed planet drawn as inline SVG so it can carry the same thick
+// JMA-dark outline as the rest of the world. Ring rotates slowly, a
+// small moon orbits around it.
 function DistantPlanet() {
   return (
-    <div
+    <motion.div
       aria-hidden="true"
       className="absolute pointer-events-none"
       style={{
-        right: '4%',
-        top: '10%',
-        width: 'clamp(56px, 8vw, 120px)',
+        right: '3%',
+        top: '9%',
+        width: 'clamp(84px, 11vw, 160px)',
         aspectRatio: '1 / 1',
         zIndex: 0,
-        opacity: 0.85,
+        filter: 'drop-shadow(0 0 24px rgba(255,149,0,0.35))',
       }}
+      animate={{ y: [0, -6, 0] }}
+      transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
     >
-      <div
-        style={{
-          position: 'absolute', inset: 0,
-          borderRadius: '50%',
-          background:
-            'radial-gradient(circle at 32% 30%, #FFE0A8 0%, #FF9500 45%, #B94E00 90%)',
-          boxShadow: '0 0 24px rgba(255,149,0,0.4), inset -8px -8px 0 rgba(0,0,0,0.25)',
-          border: '2px solid #0A2540',
-        }}
-      />
-      {/* ring */}
-      <div
+      <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+        <defs>
+          <radialGradient id="planetShade" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#FFE0A8" />
+            <stop offset="45%" stopColor="#FF9500" />
+            <stop offset="100%" stopColor="#8A2B00" />
+          </radialGradient>
+        </defs>
+
+        {/* Rotating ring — behind the body */}
+        <g>
+          <motion.ellipse
+            cx="100" cy="100" rx="94" ry="26"
+            fill="none"
+            stroke="#FFE7C2"
+            strokeWidth="10"
+            transform="rotate(-14 100 100)"
+            animate={{ rotate: [-14, -8, -14] }}
+            transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
+          />
+          <ellipse cx="100" cy="100" rx="94" ry="26" fill="none" stroke={JMA_DARK} strokeWidth="4" transform="rotate(-14 100 100)" />
+        </g>
+
+        {/* Planet body */}
+        <circle cx="100" cy="100" r="58" fill="url(#planetShade)" stroke={JMA_DARK} strokeWidth="5" />
+        {/* Terminator shading */}
+        <path
+          d="M 100 42 A 58 58 0 0 1 100 158 A 44 58 0 0 0 100 42 Z"
+          fill="rgba(0,0,0,0.28)"
+        />
+        {/* Cratery bands */}
+        <path d="M 62 92 Q 100 82 138 92" fill="none" stroke="rgba(0,0,0,0.28)" strokeWidth="3" />
+        <path d="M 66 110 Q 100 118 134 110" fill="none" stroke="rgba(0,0,0,0.22)" strokeWidth="3" />
+
+        {/* Ring in FRONT of the body — completes the wrap illusion */}
+        <path
+          d="M 6 100 A 94 26 0 0 0 194 100"
+          fill="none"
+          stroke="#FFE7C2"
+          strokeWidth="10"
+          transform="rotate(-14 100 100)"
+        />
+        <path
+          d="M 6 100 A 94 26 0 0 0 194 100"
+          fill="none"
+          stroke={JMA_DARK}
+          strokeWidth="4"
+          transform="rotate(-14 100 100)"
+        />
+      </svg>
+
+      {/* Orbiting moon — separate element so it can rotate cleanly
+          around the planet's center at its own cadence. */}
+      <motion.div
         style={{
           position: 'absolute',
-          left: '-18%', right: '-18%',
-          top: '46%',
-          height: '18%',
-          borderRadius: '50%',
-          border: '3px solid #FFE7C2',
-          transform: 'rotate(-14deg)',
-          opacity: 0.75,
+          inset: 0,
+          transformOrigin: '50% 50%',
         }}
-      />
+        animate={{ rotate: 360 }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: '92%',
+            top: '46%',
+            width: 20,
+            height: 20,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle at 35% 30%, #FFFFFF 0%, #C0C0C0 60%, #808080 100%)',
+            border: `3px solid ${JMA_DARK}`,
+            boxShadow: '2px 2px 0 rgba(0,0,0,0.3)',
+          }}
+        />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// -------- Per-channel CRT theming ----------------------------------
+// Each channel tile gets its own frame, antenna, sticker, knob color.
+// Keyed off the channel id in data/jmatv.js. Missing entries fall back
+// to a default wooden set.
+const CRT_STYLES = {
+  'fun-facts': {
+    frame: 'wood',
+    accent: '#FFCC00',
+    knobColor: '#FF9500',
+    antenna: 'curly',
+    sticker: { icon: <HelpCircle className="w-6 h-6" strokeWidth={3} />, bg: '#FFCC00' },
+  },
+  'puns-finn-danger': {
+    frame: 'metal',
+    accent: '#00A8E8',
+    knobColor: '#4285F4',
+    antenna: 'ball-tips',
+    sticker: { icon: <Smile className="w-6 h-6" strokeWidth={3} />, bg: '#4285F4' },
+  },
+  'jma-music-videos': {
+    frame: 'painted-red',
+    accent: '#FF3B30',
+    knobColor: '#FFCC00',
+    antenna: 'coathanger',
+    sticker: { icon: <Music className="w-6 h-6" strokeWidth={3} />, bg: '#FF3B30' },
+  },
+  'variety-show': {
+    frame: 'purple-sparkle',
+    accent: '#AF52DE',
+    knobColor: '#FFCC00',
+    antenna: 'star-tips',
+    sticker: { icon: <Sparkles className="w-6 h-6" strokeWidth={3} />, bg: '#AF52DE' },
+    staticNoise: true,
+  },
+};
+
+const LESSONS_STYLE = {
+  frame: 'chalkboard',
+  accent: '#FFE7C2',
+  knobColor: '#8B5A2B',
+  antenna: 'apple',
+  sticker: { icon: <GraduationCap className="w-6 h-6" strokeWidth={3} />, bg: '#34A853' },
+};
+
+// -------- Nameplate --------------------------------------------------
+// Small "brass" plaque that hangs under each TV. Channel accent tint
+// on the label chip so different shows still feel color-coded.
+function Nameplate({ title, chip, chipColor }) {
+  return (
+    <div
+      className="relative w-full mt-3 flex flex-col items-center text-center"
+      style={{ zIndex: 2 }}
+    >
+      <div
+        className="relative rounded-xl px-3 py-2 w-full max-w-[260px]"
+        style={{
+          background: 'linear-gradient(180deg, #FFE7A8 0%, #E9B84F 100%)',
+          border: `3px solid ${JMA_DARK}`,
+          boxShadow: `0 4px 0 0 ${JMA_DARK}`,
+        }}
+      >
+        <h2
+          className="font-black font-display uppercase leading-[0.95]"
+          style={{
+            fontSize: 'clamp(15px, 2vw, 20px)',
+            color: JMA_DARK,
+            letterSpacing: '0.02em',
+          }}
+        >
+          {title}
+        </h2>
+        {chip && (
+          <span
+            className="inline-block mt-1.5 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider"
+            style={{
+              backgroundColor: chipColor,
+              color: '#FFFFFF',
+              border: `2px solid ${JMA_DARK}`,
+            }}
+          >
+            {chip}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
 
+// -------- Channel tile -----------------------------------------------
 function ChannelTile({ channel, index, onClick }) {
   const epCount = channel.episodes.length;
   const isLocked = channel.comingSoon || epCount === 0;
-  // Stable per-mount preview pick so the CRT doesn't reshuffle on re-render.
   const previewId = !isLocked ? channel.episodes[0].vimeoId : null;
+  const style = CRT_STYLES[channel.id] || { frame: 'wood', accent: '#FFCC00', antenna: 'rabbit-ears' };
 
   return (
     <motion.button
@@ -121,85 +269,31 @@ function ChannelTile({ channel, index, onClick }) {
       initial={{ y: 30, opacity: 0, scale: 0.95 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ delay: 0.1 * index, type: 'spring', stiffness: 220 }}
-      whileHover={isLocked ? undefined : { y: -4, scale: 1.02 }}
+      whileHover={isLocked ? undefined : { y: -6, scale: 1.03 }}
       whileTap={isLocked ? undefined : { scale: 0.97 }}
-      className={`relative rounded-3xl text-left w-full bg-transparent border-0 p-0 ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+      className={`relative bg-transparent border-0 p-0 w-full flex flex-col items-center ${isLocked ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'}`}
     >
-      <div
-        className="relative rounded-3xl overflow-hidden flex flex-col"
-        style={{
-          background: channel.color,
-          border: '5px solid #0A2540',
-          boxShadow: `0 10px 0 0 ${channel.accent}, 0 13px 0 0 #0A2540`,
-          minHeight: 220,
-          padding: 'clamp(14px, 2.6vw, 22px)',
-          color: 'white',
-          opacity: isLocked ? 0.7 : 1,
-        }}
-      >
-        {/* Brand bug top-left */}
-        <div className="flex items-center gap-2">
-          <Tv className="w-5 h-5" style={{ opacity: 0.9 }} />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ opacity: 0.85 }}>
-            JMAtv
-          </span>
-        </div>
-
-        <div className="flex-1 flex items-stretch relative mt-3 gap-3">
-          {/* Text column */}
-          <div className="relative flex-1 min-w-0 flex flex-col justify-end">
-            <h2
-              className="font-black font-display leading-[0.95]"
-              style={{
-                fontSize: 'clamp(18px, 2.4vw, 26px)',
-                color: 'white',
-                textShadow: `2px 2px 0 ${channel.accent}, 4px 4px 0 #0A2540`,
-              }}
-            >
-              {channel.title}
-            </h2>
-            <div className="flex items-center gap-2 mt-3">
-              {isLocked ? (
-                <span
-                  data-testid={`jmatv-channel-coming-soon-${channel.id}`}
-                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider"
-                  style={{ backgroundColor: 'rgba(10,37,64,0.65)', color: 'white' }}
-                >
-                  <Lock className="w-3 h-3" /> Coming Soon
-                </span>
-              ) : (
-                <span
-                  className="inline-block rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.92)', color: channel.accent }}
-                >
-                  {epCount} episode{epCount === 1 ? '' : 's'}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Mini CRT preview — replaces the character-host art. Plays
-              the channel's first episode muted + looped. Locked channels
-              get a JMAtv logo screen so they still feel like a TV. */}
-          <div className="relative flex-shrink-0" style={{ width: '40%' }}>
-            <div className="absolute inset-0 flex items-end justify-end">
-              <div style={{ width: '100%' }}>
-                <MiniCRT
-                  vimeoId={previewId}
-                  fallbackLabel={isLocked ? 'Off Air' : null}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full max-w-[280px] mx-auto pt-6">
+        <MiniCRT
+          vimeoId={previewId}
+          fallbackLabel={isLocked ? 'Off Air' : null}
+          theme={{ frame: style.frame, accent: style.accent, knobColor: style.knobColor }}
+          antenna={style.antenna}
+          sticker={style.sticker}
+          staticNoise={style.staticNoise && !previewId}
+        />
       </div>
+      <Nameplate
+        title={channel.title}
+        chip={isLocked ? 'Coming Soon' : `${epCount} episode${epCount === 1 ? '' : 's'}`}
+        chipColor={isLocked ? '#6B7280' : style.accent}
+      />
     </motion.button>
   );
 }
 
-// A non-channel tile that jumps to /lessons. Same shape language as
-// the channel tiles so it feels like part of the guide, but visually
-// tagged with a graduation cap + "LESSONS" chip instead of "JMAtv".
+// The Lessons shortcut — same visual language, chalkboard TV theme,
+// jumps out of JMAtv into Music 101 lessons.
 function LessonsTile({ index, onClick }) {
   return (
     <motion.button
@@ -209,60 +303,20 @@ function LessonsTile({ index, onClick }) {
       initial={{ y: 30, opacity: 0, scale: 0.95 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ delay: 0.1 * index, type: 'spring', stiffness: 220 }}
-      whileHover={{ y: -4, scale: 1.02 }}
+      whileHover={{ y: -6, scale: 1.03 }}
       whileTap={{ scale: 0.97 }}
-      className="relative rounded-3xl text-left w-full bg-transparent border-0 p-0 cursor-pointer"
+      className="relative bg-transparent border-0 p-0 w-full flex flex-col items-center cursor-pointer"
     >
-      <div
-        className="relative rounded-3xl overflow-hidden flex flex-col"
-        style={{
-          background: '#34A853',
-          border: '5px solid #0A2540',
-          boxShadow: '0 10px 0 0 #1F7A36, 0 13px 0 0 #0A2540',
-          minHeight: 220,
-          padding: 'clamp(14px, 2.6vw, 22px)',
-          color: 'white',
-        }}
-      >
-        {/* Brand bug — swapped for a "Class" mark so it reads as different */}
-        <div className="flex items-center gap-2">
-          <GraduationCap className="w-5 h-5" style={{ opacity: 0.95 }} />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ opacity: 0.9 }}>
-            Music 101
-          </span>
-        </div>
-
-        <div className="flex-1 flex items-stretch relative mt-3 gap-3">
-          <div className="relative flex-1 min-w-0 flex flex-col justify-end">
-            <h2
-              className="font-black font-display leading-[0.95]"
-              style={{
-                fontSize: 'clamp(18px, 2.4vw, 26px)',
-                color: 'white',
-                textShadow: '2px 2px 0 #1F7A36, 4px 4px 0 #0A2540',
-              }}
-            >
-              LESSONS
-            </h2>
-            <div className="flex items-center gap-2 mt-3">
-              <span
-                className="inline-block rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider"
-                style={{ backgroundColor: 'rgba(255,255,255,0.92)', color: '#1F7A36' }}
-              >
-                Start learning
-              </span>
-            </div>
-          </div>
-
-          <div className="relative flex-shrink-0" style={{ width: '40%' }}>
-            <div className="absolute inset-0 flex items-end justify-end">
-              <div style={{ width: '100%' }}>
-                <MiniCRT vimeoId={null} fallbackLabel="Class in Session" />
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full max-w-[280px] mx-auto pt-6">
+        <MiniCRT
+          vimeoId={null}
+          fallbackLabel="Class in Session"
+          theme={{ frame: LESSONS_STYLE.frame, accent: LESSONS_STYLE.accent, knobColor: LESSONS_STYLE.knobColor }}
+          antenna={LESSONS_STYLE.antenna}
+          sticker={LESSONS_STYLE.sticker}
+        />
       </div>
+      <Nameplate title="LESSONS" chip="Music 101" chipColor="#34A853" />
     </motion.button>
   );
 }
@@ -274,14 +328,10 @@ export default function JMAtvHomePage() {
       data-testid="jmatv-home"
       className="min-h-screen flex flex-col items-center px-3 sm:px-6 pt-16 md:pt-20 pb-10 relative overflow-x-hidden"
       style={{
-        // Deep-space gradient — dark navy at the top fading to almost
-        // black at the horizon, sitting flush against the rest of the
-        // JMA world's palette (uses the same jma-dark navy family).
         background:
           'radial-gradient(ellipse at 50% 0%, #1B2554 0%, #0A1030 55%, #050816 100%)',
       }}
     >
-      {/* Space backdrop layers */}
       <Nebula />
       <Starfield />
       <DistantPlanet />
@@ -289,8 +339,6 @@ export default function JMAtvHomePage() {
 
       <GameHeader showHomeButton={true} backTo="/" />
 
-      {/* Big JMAtv brand mark — same two-layer color-cycle mark used on
-          the homepage RetroTV panel. */}
       <motion.div
         className="relative z-10 mt-2 mb-6 md:mb-8 text-center"
         initial={{ y: -20, opacity: 0 }}
@@ -320,7 +368,7 @@ export default function JMAtvHomePage() {
         </p>
       </motion.div>
 
-      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {JMATV_CHANNELS.map((ch, i) => (
           <ChannelTile
             key={ch.id}
@@ -329,12 +377,7 @@ export default function JMAtvHomePage() {
             onClick={() => navigate(`/jmatv/${ch.id}`)}
           />
         ))}
-        {/* Lessons shortcut — lives with the channels but jumps out of
-            JMAtv into the Music 101 lesson series. */}
-        <LessonsTile
-          index={JMATV_CHANNELS.length}
-          onClick={() => navigate('/lessons')}
-        />
+        <LessonsTile index={JMATV_CHANNELS.length} onClick={() => navigate('/lessons')} />
       </div>
     </div>
   );

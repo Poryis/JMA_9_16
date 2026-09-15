@@ -1,6 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **JMAtv overhaul** — home-page RetroTV panel is now a single fully-clickable card; JMAtv channel-guide page has an outer-space CSS background (nebula, starfield, ringed planet) with a cartoon-satellite `SatelliteFlyby` (blimp-style drift). Each channel tile embeds a `MiniCRT` playing that channel's first episode muted+looped (character hero art + tagline removed). A new LESSONS tile jumps to `/lessons`. JMAtv logo color cycle updated to the on-brand palette (`#FF3B30 #FFCC00 #00A8E8 #34A853 #AF52DE #FF9500`). Satellite art defaults to an inline SVG placeholder and auto-swaps to `assets/animations/satellite.png` if present.
+## Latest (Feb 2026): **JMAtv per-set unique CRTs** — the colored card wrapper is gone; every channel tile IS a fully-rendered retro CRT with its own frame material (wood / metal / painted-red / purple-sparkle / chalkboard), antenna style (curly / ball-tips / coathanger / star-tips / apple), knob color, and corner sticker (`HelpCircle` / `Smile` / `Music` / `Sparkles` / `GraduationCap`). A brass nameplate hangs under each TV with title + episode chip. The distant ringed planet now has a 4px JMA-dark stroke with a slow ring rotation and an orbiting moon; satellite strokes beefed to 4px throughout for outline consistency with the rest of the JMA art.
+
+## Prior (Feb 2026): JMAtv overhaul v1 — home-page RetroTV is a single fully-clickable card; JMAtv page moved to an outer-space CSS background with `SatelliteFlyby`, and each channel embedded a mini-CRT preview.
 
 ## Prior (Feb 2026): Sub-menu tile-title clamp shrunk from `clamp(20px, 3.4vw, 38px)` → `clamp(17px, 2.6vw, 30px)` in `SubMenuPage.js` so "DETECTIVE DR. JELLYBONE" fits single-line on iPad portrait.
 

@@ -43,55 +43,55 @@ function SatellitePlaceholder({ className }) {
       focusable="false"
     >
       {/* Left solar panel */}
-      <g stroke="#0A2540" strokeWidth="3.5">
+      <g stroke="#0A2540" strokeWidth="4">
         <rect x="6" y="52" width="56" height="32" rx="3" fill="#00A8E8" />
         <line x1="20" y1="52" x2="20" y2="84" />
         <line x1="34" y1="52" x2="34" y2="84" />
         <line x1="48" y1="52" x2="48" y2="84" />
       </g>
       {/* Support strut left */}
-      <line x1="62" y1="68" x2="80" y2="68" stroke="#0A2540" strokeWidth="3.5" />
+      <line x1="62" y1="68" x2="80" y2="68" stroke="#0A2540" strokeWidth="4" strokeLinecap="round" />
 
       {/* Right solar panel */}
-      <g stroke="#0A2540" strokeWidth="3.5">
+      <g stroke="#0A2540" strokeWidth="4">
         <rect x="158" y="52" width="56" height="32" rx="3" fill="#00A8E8" />
         <line x1="172" y1="52" x2="172" y2="84" />
         <line x1="186" y1="52" x2="186" y2="84" />
         <line x1="200" y1="52" x2="200" y2="84" />
       </g>
       {/* Support strut right */}
-      <line x1="158" y1="68" x2="140" y2="68" stroke="#0A2540" strokeWidth="3.5" />
+      <line x1="158" y1="68" x2="140" y2="68" stroke="#0A2540" strokeWidth="4" strokeLinecap="round" />
 
       {/* Main body */}
       <rect
         x="80" y="46" width="60" height="46" rx="8"
         fill="#FFCC00"
         stroke="#0A2540"
-        strokeWidth="4"
+        strokeWidth="4.5"
       />
       {/* Body shine */}
       <path d="M 84 52 L 96 52 L 88 76 L 84 76 Z" fill="#FFFFFF" opacity="0.28" />
       {/* Porthole window */}
-      <circle cx="110" cy="70" r="10" fill="#0A2540" stroke="#0A2540" strokeWidth="3" />
+      <circle cx="110" cy="70" r="10" fill="#0A2540" stroke="#0A2540" strokeWidth="4" />
       <circle cx="110" cy="70" r="7" fill="#00A8E8" />
       <circle cx="107" cy="67" r="2.4" fill="#FFFFFF" opacity="0.85" />
 
       {/* Antenna dish */}
-      <line x1="110" y1="46" x2="110" y2="26" stroke="#0A2540" strokeWidth="4" strokeLinecap="round" />
+      <line x1="110" y1="46" x2="110" y2="26" stroke="#0A2540" strokeWidth="4.5" strokeLinecap="round" />
       <path
         d="M 92 22 Q 110 6 128 22 Z"
         fill="#FFFFFF"
         stroke="#0A2540"
-        strokeWidth="3.5"
+        strokeWidth="4"
         strokeLinejoin="round"
       />
       {/* Signal blip */}
-      <circle cx="110" cy="18" r="3" fill="#FF3B30" stroke="#0A2540" strokeWidth="1.5" />
+      <circle cx="110" cy="18" r="3.5" fill="#FF3B30" stroke="#0A2540" strokeWidth="2" />
 
       {/* Signal waves */}
-      <g stroke="#FFCC00" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.9">
-        <path d="M 138 14 Q 144 20 138 26" />
-        <path d="M 146 8  Q 156 20 146 32" />
+      <g stroke="#FFCC00" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.95">
+        <path d="M 138 14 Q 146 20 138 26" />
+        <path d="M 148 8  Q 160 20 148 32" />
       </g>
 
       {/* Little booster flame */}
@@ -99,7 +99,7 @@ function SatellitePlaceholder({ className }) {
         d="M 82 92 Q 86 100 90 92 Q 94 100 98 92"
         fill="#FF9500"
         stroke="#0A2540"
-        strokeWidth="2"
+        strokeWidth="3"
         strokeLinejoin="round"
       />
     </svg>
