@@ -1,6 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): Sub-menu tile-title clamp shrunk from `clamp(20px, 3.4vw, 38px)` → `clamp(17px, 2.6vw, 30px)` in `SubMenuPage.js` so the longest title ("DETECTIVE DR. JELLYBONE") fits single-line on iPad portrait (was overflowing the card). All 14 titles across PLAY/LEARN/CREATE verified single-line at 768×1024 with positive slack.
+## Latest (Feb 2026): **JMAtv overhaul** — home-page RetroTV panel is now a single fully-clickable card; JMAtv channel-guide page has an outer-space CSS background (nebula, starfield, ringed planet) with a cartoon-satellite `SatelliteFlyby` (blimp-style drift). Each channel tile embeds a `MiniCRT` playing that channel's first episode muted+looped (character hero art + tagline removed). A new LESSONS tile jumps to `/lessons`. JMAtv logo color cycle updated to the on-brand palette (`#FF3B30 #FFCC00 #00A8E8 #34A853 #AF52DE #FF9500`). Satellite art defaults to an inline SVG placeholder and auto-swaps to `assets/animations/satellite.png` if present.
+
+## Prior (Feb 2026): Sub-menu tile-title clamp shrunk from `clamp(20px, 3.4vw, 38px)` → `clamp(17px, 2.6vw, 30px)` in `SubMenuPage.js` so "DETECTIVE DR. JELLYBONE" fits single-line on iPad portrait.
 
 ## Prior (Feb 2026): PLAY/LEARN/CREATE sub-menu pages now use the Finn·Shield·Charlie hero row for branding consistency; tile titles auto-fit on a single line at the top; heroes scaled 1.45× and centered at the bottom (see CHANGELOG for details).
 

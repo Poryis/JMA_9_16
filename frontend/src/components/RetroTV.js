@@ -80,19 +80,25 @@ export default function RetroTV() {
     ? `https://player.vimeo.com/video/${featured.vimeoId}?autoplay=1&loop=1&muted=1&background=1&controls=0&app_id=122963&title=0&byline=0&portrait=0&dnt=1`
     : null;
 
+  // The entire card is a single clickable target now (Feb 2026 request):
+  // kids shouldn't have to hunt for the specific pixel that opens JMAtv.
+  // The inner TV and starburst are non-interactive visuals; the outer
+  // <motion.button> handles routing. Hover/tap animations run on the
+  // whole card to reinforce the "tap anywhere" affordance.
+  const openJMAtv = () => navigate('/jmatv');
+
   return (
-    <motion.div
+    <motion.button
+      type="button"
       data-testid="home-retro-tv"
-      // Full-width "JMAtv" banner card. Matches the homepage vocabulary:
-      // white/warm bg + chunky JMA-dark border + offset drop-shadow
-      // (same shape language as HomeProgressCard and the destination
-      // tiles). Deliberately calm — the animated logo + CRT + starburst
-      // already carry the visual energy, the card just needs to hold
-      // them without competing.
-      className="relative z-10 mt-16 md:mt-24 mb-2 w-full max-w-5xl mx-auto"
+      onClick={openJMAtv}
+      aria-label="Open JMAtv — today's episode"
+      className="relative z-10 mt-16 md:mt-24 mb-2 w-full max-w-5xl mx-auto block text-left border-0 bg-transparent p-0 cursor-pointer"
       initial={{ y: 30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
+      whileHover={{ y: -4, scale: 1.005 }}
+      whileTap={{ scale: 0.995, y: 2 }}
     >
       <div
         className="relative rounded-3xl px-4 md:px-8 pt-12 md:pt-16 pb-6 md:pb-8"
@@ -149,16 +155,12 @@ export default function RetroTV() {
             </p>
           </div>
 
-          {/* CENTER — the TV itself. */}
+          {/* CENTER — the TV itself. Non-interactive now; the outer card
+              is the single click target. */}
           <div className="flex flex-col items-center order-1 md:order-2">
-            <motion.button
-              type="button"
-              data-testid="home-retro-tv-btn"
-              onClick={() => navigate('/jmatv')}
-              whileHover={{ y: -3, scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              className="relative rounded-3xl border-0 p-0 bg-transparent cursor-pointer"
-              aria-label="Open JMAtv"
+            <motion.div
+              data-testid="home-retro-tv-visual"
+              className="relative rounded-3xl"
               style={{ width: 'clamp(220px, 32vw, 320px)' }}
             >
         {/* Rabbit ears — purely decorative. Sit BEHIND the TV body via z-index
@@ -333,7 +335,7 @@ export default function RetroTV() {
             </div>
           </div>
         </div>
-      </motion.button>
+      </motion.div>
 
       {/* "Streaming now" pill — moved BELOW the TV (Feb 2026, user request)
           because it was getting visually tangled with the rabbit-ear
@@ -358,22 +360,15 @@ export default function RetroTV() {
       </div>
       </div>
 
-      {/* RIGHT — hand-stuck starburst CTA. Playful call-to-action that
-          echoes the "Streaming Now" energy without being wordy. Clickable
-          so kids on the right side of the row can hit it too — routes to
-          the same /jmatv page as the TV. */}
+      {/* RIGHT — hand-stuck starburst. Non-interactive visual now; whole
+          card is one click target. */}
       <div className="hidden md:flex order-3 flex-shrink-0 items-center justify-center">
-        <motion.button
-          type="button"
+        <motion.div
           data-testid="home-retro-tv-cta"
-          onClick={() => navigate('/jmatv')}
-          className="relative flex items-center justify-center border-0 bg-transparent p-0 cursor-pointer"
+          className="relative flex items-center justify-center"
           style={{ width: 150, height: 150 }}
           animate={{ rotate: [-6, 6, -6] }}
           transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.94 }}
-          aria-label="Press play — open JMAtv"
         >
           <div
             aria-hidden="true"
@@ -420,10 +415,10 @@ export default function RetroTV() {
               Play!
             </div>
           </div>
-        </motion.button>
+        </motion.div>
       </div>
       </div>
       </div>
-    </motion.div>
+    </motion.button>
   );
 }
