@@ -653,7 +653,7 @@ export default function NameThatNotePage() {
       className="min-h-screen flex flex-col relative"
       style={{ backgroundImage: 'url(assets/backgrounds/chalkboard.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      <GameHeader title={`${modeMeta.label} · ${level.name}`} showHomeButton={true} />
+      <GameHeader title={modeMeta.label} subtitle={level.name} showHomeButton={true} />
       <RoomCharacters room="name-that-note" />
 
       <main className="flex-1 flex flex-col items-center pt-20 md:pt-24 pb-6 px-3">

@@ -272,7 +272,7 @@ export default function NoteMatchPage() {
       data-testid="note-match-playing"
       style={{ backgroundImage: 'url(assets/backgrounds/boat.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      <GameHeader title={`Note Match · ${level.name}`} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
+      <GameHeader title="Note Match" subtitle={level.name} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <RoomCharacters room="note-match" />
 
       <main className="flex-1 flex flex-col items-center pt-20 md:pt-20 pb-6 px-3">

@@ -1150,7 +1150,7 @@ export default function BoomGardenPage() {
         }}
       />
       <div className="relative z-10 flex flex-col flex-1">
-      <GameHeader title={`Who's Got the Rhythm · ${modeConfig.label}`} showHomeButton={true} score={score} streak={streak} />
+      <GameHeader title="Who's Got the Rhythm" subtitle={modeConfig.label} showHomeButton={true} score={score} streak={streak} />
       <FullscreenButton />
       <main className="flex-1 pt-20 md:pt-24 pb-4 px-3 md:px-6 max-w-4xl mx-auto w-full flex flex-col">
         {/* Back + level row */}

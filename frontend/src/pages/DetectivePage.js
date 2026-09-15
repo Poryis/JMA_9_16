@@ -19,9 +19,9 @@ import useNoteNames from '../hooks/useNoteNames';
 const BELL_BY_NOTE = Object.fromEntries(BELLS.map(b => [b.note, b]));
 
 const LEVELS = {
-  easy:   { name: 'Rookie',    description: 'Big mistakes, short tunes', noteMs: 600, swapMin: 3, swapMax: 4, melodyLevel: 'easy',   sticker: 'detective_rookie', mode: 'wrong' },
-  medium: { name: 'Detective', description: 'Trickier, medium tunes',    noteMs: 500, swapMin: 2, swapMax: 3, melodyLevel: 'medium', sticker: 'detective_sleuth', mode: 'wrong' },
-  hard:   { name: 'Master',    description: 'Sneaky, long tunes',         noteMs: 420, swapMin: 1, swapMax: 2, melodyLevel: 'hard',   sticker: 'detective_master', mode: 'wrong' },
+  easy:   { name: 'Rookie',   description: 'Big mistakes, short tunes', noteMs: 600, swapMin: 3, swapMax: 4, melodyLevel: 'easy',   sticker: 'detective_rookie', mode: 'wrong' },
+  medium: { name: 'Sarge',    description: 'Trickier, medium tunes',    noteMs: 500, swapMin: 2, swapMax: 3, melodyLevel: 'medium', sticker: 'detective_sleuth', mode: 'wrong' },
+  hard:   { name: 'Gumshoe',  description: 'Sneaky, long tunes',         noteMs: 420, swapMin: 1, swapMax: 2, melodyLevel: 'hard',   sticker: 'detective_master', mode: 'wrong' },
   restquiz: { name: 'Sneaky Note', description: 'The suspect filled a SILENCE with a note!', noteMs: 480, swapMin: 1, swapMax: 3, melodyLevel: 'easy', sticker: 'detective_rookie', mode: 'extra', timeLimit: 30 },
 };
 
@@ -530,7 +530,7 @@ export default function DetectivePage() {
         backgroundPosition: 'center',
       }}
     >
-      <GameHeader title={`Detective · ${LEVELS[difficulty].name}`} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
+      <GameHeader title="Detective" subtitle={LEVELS[difficulty].name} showHomeButton={true} backLink={{ to: '/play', label: 'Play' }} />
       <RoomCharacters room="detective" />
 
       <main className="flex-1 flex flex-col items-center pt-20 md:pt-24 pb-6 px-3">

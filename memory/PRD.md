@@ -1,6 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **Beat Lab mobile trim + JMAtv preview revert** — Charlie (drum kit slot) and Sharky (turntable slot) mascots + Charlie's speech bubble in `LoopStudioPage.js` now carry `hidden md:block` so they disappear below 768px viewports (phones); tablet + desktop unchanged. MiniCRT lazy-load reverted — muted Vimeo previews auto-play on the JMAtv home page again; monitoring to see if the perf hit is real on production hardware.
+## Latest (Feb 2026): **Arcade-marquee game titles + Detective rank rename** — `GameHeader` in `GameUI.js` now renders string titles as chunky yellow-plate arcade marquees (white letters with 4-way JMA-dark text-shadow outline, red bulb studs at every corner, offset drop-shadow lift). New `subtitle` prop renders a small pill under the marquee, hidden below 380px viewport via `min-[380px]:` arbitrary variant. All 6 title callers updated to split concatenated `"Name · Level"` strings into `title` + `subtitle`. Detective difficulty names renamed: `Rookie / Detective / Master` → `Rookie / Sarge / Gumshoe`.
+
+## Prior (Feb 2026): Beat Lab mobile trim + JMAtv preview revert — Charlie + Sharky mascots hidden below 768px in `LoopStudioPage.js`; MiniCRT lazy-load reverted, muted previews auto-play again.
 
 ## Prior (Feb 2026): Perf pass — deleted 10 MB of unused assets (backup MP3s, AI-experiment PNGs, concept sketches). 67 MB → 57 MB public assets.
 

@@ -4,7 +4,78 @@ import { Volume2 } from 'lucide-react';
 import HarpIcon from './HarpIcon';
 import RetroTVIcon from './RetroTVIcon';
 
-function GameHeader({ title, score, streak, showHomeButton = true, backTo = null }) {
+// Arcade-cabinet marquee title. Chunky uppercase white letters with a
+// thick JMA-dark stroke, sat on a mustard-yellow plate with four red
+// "bulb" corner studs — a coach's whistle for the visual language of
+// the JMA world. Deliberately not a plain <h1> anymore because kids
+// were reading the old white-with-drop-shadow title as a placeholder.
+function MarqueeTitle({ text }) {
+  return (
+    <div
+      className="relative inline-flex items-center justify-center px-3 md:px-5 py-1.5 md:py-2 rounded-lg md:rounded-xl"
+      style={{
+        background: 'linear-gradient(180deg, #FFDA3D 0%, #FFCC00 100%)',
+        border: '3px solid var(--jma-dark)',
+        boxShadow: '0 4px 0 0 var(--jma-dark)',
+      }}
+    >
+      {[
+        { top: -4, left: -4 },
+        { top: -4, right: -4 },
+        { bottom: -4, left: -4 },
+        { bottom: -4, right: -4 },
+      ].map((pos, i) => (
+        <span
+          key={i}
+          aria-hidden="true"
+          className="absolute rounded-full"
+          style={{
+            ...pos,
+            width: 8,
+            height: 8,
+            background: '#FF3B30',
+            border: '2px solid var(--jma-dark)',
+          }}
+        />
+      ))}
+      <span
+        className="font-black font-display uppercase text-sm md:text-lg lg:text-xl leading-none whitespace-nowrap"
+        style={{
+          color: '#FFFFFF',
+          letterSpacing: '0.03em',
+          // 4-way JMA-dark outline + offset shadow → chunky arcade feel
+          // without relying on -webkit-text-stroke (which pinches
+          // letterforms on some fonts). Every text-shadow layer stacks.
+          textShadow:
+            '-2px -2px 0 var(--jma-dark), 2px -2px 0 var(--jma-dark), -2px 2px 0 var(--jma-dark), 2px 2px 0 var(--jma-dark), 3px 4px 0 rgba(0,0,0,0.28)',
+        }}
+      >
+        {text}
+      </span>
+    </div>
+  );
+}
+
+// Small companion chip under the marquee. Hidden below 380px viewport
+// (very narrow phones) — the marquee alone communicates enough there.
+function SubtitleChip({ text }) {
+  return (
+    <span
+      className="hidden min-[380px]:inline-block mt-1.5 rounded-full px-2.5 py-0.5 text-[9px] md:text-[11px] font-black font-display uppercase tracking-widest"
+      style={{
+        background: 'white',
+        color: 'var(--jma-dark)',
+        border: '2px solid var(--jma-dark)',
+        boxShadow: '0 2px 0 0 var(--jma-dark)',
+        letterSpacing: '0.12em',
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
+function GameHeader({ title, subtitle, score, streak, showHomeButton = true, backTo = null }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -68,20 +139,21 @@ function GameHeader({ title, score, streak, showHomeButton = true, backTo = null
           </div>
         )}
 
-        {/* Title. Accepts a plain string (default cross-game styling) OR
-            a ReactNode (per-game custom treatment). Robot Boogie uses
-            this to render its own chrome/futurist title without
-            affecting any other game's header. */}
+        {/* Title. Accepts a plain string (default Arcade Marquee) OR a
+            ReactNode (per-game custom treatment — Robot Boogie uses
+            this for its chrome/futurist title). Optional `subtitle`
+            prop renders a small chip under the marquee. */}
         {title && (
           typeof title === 'string' ? (
-            <motion.h1
-              className="text-sm md:text-xl lg:text-2xl font-bold text-center font-display pt-1 md:pt-0 pointer-events-auto"
-              style={{ color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(0,0,0,0.3)' }}
+            <motion.div
+              className="flex flex-col items-center pointer-events-auto pt-1 md:pt-0 min-w-0 flex-shrink"
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 240 }}
             >
-              {title}
-            </motion.h1>
+              <MarqueeTitle text={title} />
+              {subtitle && <SubtitleChip text={subtitle} />}
+            </motion.div>
           ) : (
             <div className="pointer-events-auto pt-1 md:pt-0">{title}</div>
           )
