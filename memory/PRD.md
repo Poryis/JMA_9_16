@@ -1,6 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **Perf pass** — deleted `_backup_originals/` MP3s + `backgrounds/concepts/` PNGs + unused `beat-lab-wall.png` / `beat-lab-studio.png` (67 MB → 57 MB public assets). MiniCRT now defaults to a static Vumbnail poster JPG and only boots the live Vimeo iframe when its parent tile is hovered/focused (`active` prop). JMAtv home cold-load dropped from 5 concurrent Vimeo player iframes to 0.
+## Latest (Feb 2026): **Beat Lab mobile trim + JMAtv preview revert** — Charlie (drum kit slot) and Sharky (turntable slot) mascots + Charlie's speech bubble in `LoopStudioPage.js` now carry `hidden md:block` so they disappear below 768px viewports (phones); tablet + desktop unchanged. MiniCRT lazy-load reverted — muted Vimeo previews auto-play on the JMAtv home page again; monitoring to see if the perf hit is real on production hardware.
+
+## Prior (Feb 2026): Perf pass — deleted 10 MB of unused assets (backup MP3s, AI-experiment PNGs, concept sketches). 67 MB → 57 MB public assets.
 
 ## Prior (Feb 2026): Shared backdrops — `SpaceBackdrop` reused across every JMAtv page; `UnderwaterBackdrop` mounted inside `SubMenuPage` so PLAY / LEARN / CREATE inherit the same undersea world as the HomePage lobby.
 

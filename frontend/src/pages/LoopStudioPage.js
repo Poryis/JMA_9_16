@@ -902,11 +902,13 @@ function LoopStudioPage() {
                   zIndex: 1,
                 }}
               />
-              {/* Speech bubble anchored above Charlie's head. */}
+              {/* Speech bubble anchored above Charlie's head. Hidden on
+                  phones where Charlie is also hidden — the bubble would
+                  otherwise float orphaned in the top-left corner. */}
               {!isPlaying && (
                 <motion.div
                   aria-hidden="true"
-                  className="absolute pointer-events-none z-[6]"
+                  className="absolute pointer-events-none z-[6] hidden md:block"
                   style={{ top: 30, left: '4%' }}
                   initial={{ opacity: 0, scale: 0.7 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -941,6 +943,7 @@ function LoopStudioPage() {
                   src="assets/characters/charlie-rundmc.png"
                   alt=""
                   aria-hidden="true"
+                  className="hidden md:block"
                   style={{
                     height: 176,
                     width: 'auto',
@@ -989,6 +992,7 @@ function LoopStudioPage() {
                   src="assets/characters/sharky-hiphop.png"
                   alt=""
                   aria-hidden="true"
+                  className="hidden md:block"
                   style={{
                     height: 190,
                     width: 'auto',

@@ -9,7 +9,6 @@
 // via <SpaceBackdrop />.
 
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { GameHeader } from '../components/GameUI';
 import MiniCRT from '../components/MiniCRT';
@@ -103,22 +102,12 @@ function ChannelTile({ channel, index, onClick }) {
   const previewId = !isLocked ? channel.episodes[0].vimeoId : null;
   const style = CRT_STYLES[channel.id] || { frame: 'wood', accent: '#FFCC00', antenna: 'rabbit-ears' };
 
-  // Only boot the live Vimeo player on hover / keyboard focus. Every
-  // other tile shows a static poster JPG, which is ~10x cheaper. Kids
-  // on touch devices tap through to the channel page anyway — they
-  // don't need the previews to auto-play.
-  const [active, setActive] = useState(false);
-
   return (
     <motion.button
       type="button"
       data-testid={`jmatv-channel-${channel.id}`}
       onClick={onClick}
       disabled={isLocked}
-      onMouseEnter={() => !isLocked && setActive(true)}
-      onMouseLeave={() => setActive(false)}
-      onFocus={() => !isLocked && setActive(true)}
-      onBlur={() => setActive(false)}
       initial={{ y: 30, opacity: 0, scale: 0.95 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
       transition={{ delay: 0.1 * index, type: 'spring', stiffness: 220 }}
@@ -129,7 +118,6 @@ function ChannelTile({ channel, index, onClick }) {
       <div className="w-full max-w-[280px] mx-auto pt-6">
         <MiniCRT
           vimeoId={previewId}
-          active={active}
           fallbackLabel={isLocked ? 'Off Air' : null}
           theme={{ frame: style.frame, accent: style.accent, knobColor: style.knobColor }}
           antenna={style.antenna}
