@@ -76,18 +76,22 @@ function Antenna({ style }) {
   }
 
   if (style === 'coathanger') {
+    // Real coathanger silhouette (no hook — the hook is the bit stuck
+    // in the "hole" of the TV): flat top bar with two shoulders
+    // sloping down to a point at the bottom-center. Deliberately wider
+    // than tall so the flat top reads immediately.
     return (
-      <div aria-hidden="true" style={wrap}>
-        <svg viewBox="0 0 100 60" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-          <polyline
-            points="14,58 50,4 86,58"
+      <div aria-hidden="true" style={{ ...wrap, width: '78%', height: '15%', top: '-12%' }}>
+        <svg viewBox="0 0 100 40" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+          <polygon
+            points="6,8 94,8 50,38"
             fill="none"
             stroke={JMA_DARK}
-            strokeWidth="6"
+            strokeWidth="5"
             strokeLinejoin="round"
             strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
           />
-          <circle cx="50" cy="4" r="5" fill="#FF3B30" stroke={JMA_DARK} strokeWidth="3" />
         </svg>
       </div>
     );
