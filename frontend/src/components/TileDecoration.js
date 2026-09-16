@@ -64,55 +64,37 @@ export default function TileDecoration({ type, accent }) {
     // ------------------------------------------------------------------
     case 'clouds': {
       // Fluffy cartoon clouds drifting through the WINDOW area of the
-      // clubhouse.png background, plus a stationary rotating sun. The
-      // sun is anchored to the overall tile (not to the cloud crop) so
-      // widening the cloud crop for a cleaner fade doesn't shift the
-      // sun's placement.
+      // clubhouse.png background, plus a stationary user-provided sun.
+      // Each cloud is a multi-lobe SVG shape (four overlapping puffs)
+      // so they read as pillowy and cartoon-y instead of flat blobs.
       const clouds = [
-        { top: 18, size: 22, dur: 11, delay: 0 },
-        { top: 46, size: 30, dur: 15, delay: 3.5 },
-        { top: 72, size: 18, dur: 9,  delay: 7 },
+        { top: 18, size: 30, dur: 11, delay: 0 },
+        { top: 46, size: 40, dur: 15, delay: 3.5 },
+        { top: 72, size: 24, dur: 9,  delay: 7 },
       ];
       return (
         <>
-          {/* Cartoon sun — pinned to its original position inside the
-              window (independent of the cloud crop container). */}
-          <svg
+          {/* Cartoon sun — user-provided PNG pinned inside the window,
+              gently rotating in place so it doesn't feel static. */}
+          <img
+            src="assets/ui/sun.png"
+            alt=""
             aria-hidden="true"
-            viewBox="0 0 40 40"
+            draggable={false}
             style={{
               position: 'absolute',
-              top: '28%',
-              right: '16%',
-              width: 30,
-              height: 30,
+              top: '22%',
+              right: '11%',
+              width: 44,
+              height: 44,
+              objectFit: 'contain',
               zIndex: 5,
               pointerEvents: 'none',
-              filter: 'drop-shadow(0 1px 0 rgba(10,37,64,0.4))',
+              transformOrigin: 'center',
+              animation: 'tile-sun-spin 24s linear infinite',
+              filter: 'drop-shadow(0 1px 0 rgba(10,37,64,0.35))',
             }}
-          >
-            <g style={{ transformOrigin: '20px 20px', animation: 'tile-sun-spin 24s linear infinite' }}>
-              {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
-                <polygon
-                  key={a}
-                  points="20,2 22.5,10 17.5,10"
-                  fill="#FFCC00"
-                  stroke="#0A2540"
-                  strokeWidth="1.2"
-                  strokeLinejoin="round"
-                  transform={`rotate(${a} 20 20)`}
-                />
-              ))}
-            </g>
-            <circle
-              cx="20"
-              cy="20"
-              r="8"
-              fill="#FFD84D"
-              stroke="#0A2540"
-              strokeWidth="1.5"
-            />
-          </svg>
+          />
           {/* Cloud drift crop — widened on both sides so clouds appear
               from further off-window-left and vanish further right. */}
           <div
@@ -132,15 +114,42 @@ export default function TileDecoration({ type, accent }) {
                 style={{
                   top: c.top + '%',
                   left: 0,
-                  width: c.size,
-                  height: c.size * 0.55,
-                  background: 'radial-gradient(circle at 30% 60%, #FFFFFF 0%, #FFFFFF 60%, transparent 70%), radial-gradient(circle at 60% 40%, #FFFFFF 0%, #FFFFFF 55%, transparent 65%), radial-gradient(circle at 80% 65%, #FFFFFF 0%, #FFFFFF 55%, transparent 65%)',
-                  border: '1.5px solid var(--jma-dark)',
-                  borderRadius: '50%',
-                  opacity: 0.95,
+                  width: c.size * 1.8,
+                  height: c.size,
                   animation: `tile-cloud-drift ${c.dur}s linear ${c.delay}s infinite`,
                 }}
-              />
+              >
+                <svg
+                  viewBox="0 0 100 60"
+                  style={{ width: '100%', height: '100%', overflow: 'visible' }}
+                  preserveAspectRatio="none"
+                >
+                  {/* Chunky multi-lobe cloud silhouette — four overlapping
+                      puffs on top of a flat base give it a pillowy read. */}
+                  <path
+                    d="M 12 46
+                       Q 4 46 6 36
+                       Q 2 26 14 24
+                       Q 16 10 30 14
+                       Q 38 4 52 12
+                       Q 62 4 74 14
+                       Q 90 12 90 28
+                       Q 100 34 92 44
+                       Q 88 52 76 48
+                       Q 60 54 46 48
+                       Q 30 54 20 48
+                       Q 12 50 12 46 Z"
+                    fill="#FFFFFF"
+                    stroke="var(--jma-dark)"
+                    strokeWidth="2.2"
+                    strokeLinejoin="round"
+                  />
+                  {/* Inner highlight puffs — subtle warm-white gradient
+                      dot on the top-left of each lobe to sell volume. */}
+                  <ellipse cx="28" cy="22" rx="6" ry="3" fill="rgba(255,255,255,0.9)" />
+                  <ellipse cx="58" cy="18" rx="6" ry="3" fill="rgba(255,255,255,0.9)" />
+                </svg>
+              </div>
             ))}
           </div>
         </>
