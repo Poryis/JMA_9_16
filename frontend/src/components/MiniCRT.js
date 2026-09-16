@@ -52,10 +52,9 @@ function Antenna({ style }) {
     transform: `rotate(${rotate}deg)`,
     transformOrigin: 'bottom center',
     borderRadius: 3,
-    // Cream halo so the dark rods stay legible against the JMAtv deep-
-    // space background without changing the JMA outline color. Follows
-    // borderRadius so the halo stays rod-shaped.
-    boxShadow: '0 0 0 2.5px #FFE7C2',
+    // Subtle cream halo so the dark rods stay legible against the
+    // JMAtv deep-space background without the halo screaming.
+    boxShadow: '0 0 0 1.25px #FFE7C2',
   });
 
   if (style === 'rabbit-ears' || style === 'ball-tips' || style === 'star-tips') {
@@ -80,23 +79,23 @@ function Antenna({ style }) {
   }
 
   if (style === 'coathanger') {
-    // Real coathanger silhouette: soft rounded shoulders (SVG arcs at
-    // the top corners), a wide flat top bar, a tiny stem stub poking
-    // out of the top-center (the "coming out of the TV" bit), and a
-    // cream halo behind the dark stroke so the whole shape reads
-    // against the deep-space background.
+    // Real coathanger silhouette: soft rounded shoulders at the top,
+    // sharp apex at the bottom, and a tiny stem hanging DOWN from the
+    // apex into the TV's "hole" (the visible stub between the
+    // coathanger and the TV top edge). Wrap is intentionally tall +
+    // shifted up so the stem shows before it plugs in. Cream halo
+    // behind the dark stroke keeps the wire legible on deep space.
     const HANGER_PATH =
-      'M 50 44 L 14 12 A 6 6 0 0 1 20 8 L 80 8 A 6 6 0 0 1 86 12 L 50 44 Z';
-    const STEM_PATH = 'M 50 0 L 50 8';
+      'M 50 32 L 14 8 A 6 6 0 0 1 20 4 L 80 4 A 6 6 0 0 1 86 8 L 50 32 Z';
+    const STEM_PATH = 'M 50 32 L 50 46';
     return (
-      <div aria-hidden="true" style={{ ...wrap, width: '80%', height: '18%', top: '-14%' }}>
-        <svg viewBox="0 0 100 50" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-          {/* Cream halo — drawn first so the dark stroke sits on top */}
+      <div aria-hidden="true" style={{ ...wrap, width: '80%', height: '26%', top: '-22%' }}>
+        <svg viewBox="0 0 100 48" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
           <path
             d={HANGER_PATH}
             fill="none"
             stroke="#FFE7C2"
-            strokeWidth="10"
+            strokeWidth="7.5"
             strokeLinejoin="round"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
@@ -105,11 +104,10 @@ function Antenna({ style }) {
             d={STEM_PATH}
             fill="none"
             stroke="#FFE7C2"
-            strokeWidth="10"
+            strokeWidth="7.5"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
           />
-          {/* JMA-dark wire on top */}
           <path
             d={HANGER_PATH}
             fill="none"
@@ -133,11 +131,23 @@ function Antenna({ style }) {
   }
 
   if (style === 'curly') {
+    // Springy spiral antenna with a yellow bulb on top. Cream halo
+    // matches the other antennas so Fun Facts reads with the same
+    // weight on the deep-space background.
+    const CURLY_PATH =
+      'M 50 58 C 50 50, 42 46, 42 40 C 42 34, 58 34, 58 28 C 58 22, 42 22, 42 16 C 42 10, 58 10, 58 4';
     return (
       <div aria-hidden="true" style={wrap}>
         <svg viewBox="0 0 100 60" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
           <path
-            d="M 50 58 C 50 50, 42 46, 42 40 C 42 34, 58 34, 58 28 C 58 22, 42 22, 42 16 C 42 10, 58 10, 58 4"
+            d={CURLY_PATH}
+            fill="none"
+            stroke="#FFE7C2"
+            strokeWidth="8"
+            strokeLinecap="round"
+          />
+          <path
+            d={CURLY_PATH}
             fill="none"
             stroke={JMA_DARK}
             strokeWidth="5.5"
@@ -165,7 +175,7 @@ function Antenna({ style }) {
               d={d}
               fill="none"
               stroke="#FFE7C2"
-              strokeWidth="10"
+              strokeWidth="8"
               strokeLinecap="round"
               strokeLinejoin="round"
             />

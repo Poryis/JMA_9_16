@@ -1,6 +1,6 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **Coathanger v3 + antenna visibility halo** — coathanger redrawn with rounded shoulders via SVG arcs + a tiny stem stub above the top bar; the antennas that were fading into the deep-space background now render with a cream `#FFE7C2` halo behind the JMA-dark stroke (applied to the shared `rod()` used by rabbit-ears / ball-tips / star-tips, plus explicit double-stroke on `coathanger` and `wobble-ears`). Fun Facts curly antenna intentionally untouched — user hasn't flagged its visibility.
+## Latest (Feb 2026): **Coathanger v4 + halo dialed back** — coathanger stem now correctly hangs DOWN from the apex into the TV (visible stub between the wire body and the CRT top edge, matching a real hanger's "hook-to-body" transition). Cream halo trimmed from 2.5px → ~1.25px across all antennas (rod-based via `boxShadow`, SVG-based via a 7.5px cream stroke behind a 5px dark stroke). Fun Facts `curly` antenna now also has the halo for consistency.
 
 ## Prior (Feb 2026): JMAtv antenna simplification — Music Videos back to coathanger, Variety Show → standard rabbit-ears, Lessons → wobble-ears. Arcade-marquee game titles + Detective ranks `Rookie / Sarge / Gumshoe`. Satellite signal waves cycle every 1.5s.
 
