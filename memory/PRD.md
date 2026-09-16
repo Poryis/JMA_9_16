@@ -1,0 +1,192 @@
+# Jelly of the Month Club Music Academy (JMA) — PRD
+
+## Latest (Feb 2026): **Astronaut Jellybone v2 — full enclosure helmet + forward-facing drift** — `DrJellyboneAstronaut` helmet upgraded from a single floating bubble to a two-layer SVG rig: back-shell (dome silhouette + navy neck collar + oxygen tube + backpack tank with yellow valve) sits BEHIND the sprite; front-visor (transparent tinted glass + dark rim + inner white highlight + glints + side comm box with green LED + antenna with blinking red bulb) sits IN FRONT. Helmet enlarged (width 86% → 91%, top -2% → -4%) so fedora sits fully inside the dome. Fixed backwards-facing bug: `scaleX(${-direction})` → `scaleX(${direction})` so Jellybone always faces his direction of travel.
+
+## Prior (Feb 2026): Astronaut Dr. Jellybone in the JMAtv sky — new `DrJellyboneAstronaut` component drifts across the space backdrop (blimp-style random-lap animation) on all JMAtv pages. Three user-provided "Jelly Man Jellybone no sax" frames resized 994×2000 → 300×604 and dropped in `public/assets/characters/dr-jellybone-astro-{1,2,3}.png` (~155 KB each); component cycles them every 480ms for an idle tentacle swap.
+
+## Prior (Feb 2026): JMAtv antenna simplification — Music Videos back to coathanger, Variety Show → standard rabbit-ears, Lessons → wobble-ears. Arcade-marquee game titles + Detective ranks `Rookie / Sarge / Gumshoe`. Satellite signal waves cycle every 1.5s.
+
+## Prior (Feb 2026): Arcade-marquee game titles + Detective rank rename — GameHeader renders string titles as chunky yellow-plate arcade marquees; Detective ranks renamed `Rookie / Sarge / Gumshoe`. Satellite signal waves cycle small-only → both → none on a 1.5s loop.
+
+## Prior (Feb 2026): Arcade-marquee game titles + Detective rank rename — GameHeader now renders string titles as chunky yellow-plate arcade marquees with subtitle chips; Detective difficulties renamed `Rookie / Sarge / Gumshoe`.
+
+## Prior (Feb 2026): Beat Lab mobile trim + JMAtv preview revert — Charlie + Sharky mascots hidden below 768px in `LoopStudioPage.js`; MiniCRT lazy-load reverted, muted previews auto-play again.
+
+## Prior (Feb 2026): Perf pass — deleted 10 MB of unused assets (backup MP3s, AI-experiment PNGs, concept sketches). 67 MB → 57 MB public assets.
+
+## Prior (Feb 2026): Shared backdrops — `SpaceBackdrop` reused across every JMAtv page; `UnderwaterBackdrop` mounted inside `SubMenuPage` so PLAY / LEARN / CREATE inherit the same undersea world as the HomePage lobby.
+
+## Prior (Feb 2026): JMAtv per-set unique CRTs — every channel tile is a fully-rendered retro CRT with its own frame material (wood / metal / painted-red / purple-sparkle / chalkboard), antenna style (curly / ball-tips / coathanger / star-tips / apple), and knob color.
+
+## Prior (Feb 2026): JMAtv overhaul v1 — home-page RetroTV is a single fully-clickable card; JMAtv page moved to an outer-space CSS background with `SatelliteFlyby`, and each channel embedded a mini-CRT preview.
+
+## Prior (Feb 2026): Sub-menu tile-title clamp shrunk from `clamp(20px, 3.4vw, 38px)` → `clamp(17px, 2.6vw, 30px)` in `SubMenuPage.js` so "DETECTIVE DR. JELLYBONE" fits single-line on iPad portrait.
+
+## Prior (Feb 2026): PLAY/LEARN/CREATE sub-menu pages now use the Finn·Shield·Charlie hero row for branding consistency; tile titles auto-fit on a single line at the top; heroes scaled 1.45× and centered at the bottom (see CHANGELOG for details).
+
+## Prior (Jun 2026): Tablet overlap pass complete — see CHANGELOG.md. Header footprint rule: content under harp needs `pt-20 md:pt-24 lg:pt-32`.
+
+## Original Problem Statement
+Build a frontend-only rhythm/music education app for young children that feels like a **living musical academy**, not a menu of disconnected mini-games. Use the user's custom artwork (Jellybells, drum kit, xylophone, piano, turntable, kazoos, character cast, original songs).
+
+The experience should evoke PBS Kids / Nintendo / Rhythm Heaven warmth — playful, exploratory, toy-like, personality-driven, with strong mobile responsiveness and progression that feels welcoming, not competitive.
+
+## App Identity
+- **Full name**: Jelly of the Month Club Music Academy
+- **Short name**: JMA
+- **Tagline**: "Where music friends play together"
+- **HTML title**: `Jelly of the Month Club Music Academy (JMA)`
+
+## 📎 Companion Documents (READ FIRST)
+- **`/app/memory/INFRASTRUCTURE_ROADMAP.md`** — Long-term hosting/backend/payment strategy. User plans to self-host (GitHub Pages + Railway + MongoDB Atlas + Stripe). **DO NOT begin backend/auth/payment work until user explicitly says so.** Currently in polish + teacher-playtest phase.
+- **`/app/memory/CHANGELOG.md`** — Running log of recent changes.
+
+## Six Academy Destinations (rooms)
+Replacing the legacy "6 mode tiles" grid with rich room-card destinations on the home page:
+
+| Room | Path (kept for sticker compat) | Background | Character vibe |
+|------|-------------------------------|------------|----------------|
+| Jam Hall | `/free-play` | river.png | Drum Major Charlie + Finn |
+| **Jelly Jukebox** (formerly "Who's Got the Rhythm?" / "Rhythm Arcade") | `/rhythm-game` | jelly-jukebox-scene.png (disco) | Disco Lou + Punk Charlie |
+| Stew Kazoo Says (Kazoo Room) | `/simon-says` | underwater.png | Stew + Lou & Stew |
+| Ear Quest | `/ear-trainer` | beach.png | Dr. Jellybone + Snorkel Sharky |
+| Beat Lab | `/loop-studio` | graffiti-wall.jpg | Jelly Rap Trio |
+| **Robot Boogie** (Incredibox-style stem mixer) | `/robot-boogie` | robot-boogie-scene.png (disco) | Full 8-character disco band |
+| **Who's Got the Rhythm** (formerly "Stew's Rhythm Academy") | `/boom-garden` | jukebox-floor-1.png (disco tile) | Disco Chunk + Jazzy + Charlie |
+| Fun Facts Clubhouse | `/fun-facts` | clubhouse.png | Jazzy + Charlie |
+
+**Feb 2026 name-swap note**: The two rhythm games swapped names. What was "Who's Got the Rhythm?" (falling notes) became **Jelly Jukebox** (disco theme). What was "Stew's Rhythm Academy" (rhythm-reading rooms) became **Who's Got the Rhythm** (disco tile-floor theme). Inside that room, "Echo Stew" mode is now **Parrot Percussion** with tagline "Stew plays. You play it back." The internal route names `/rhythm-game` and `/boom-garden` were preserved for sticker/achievement compatibility.
+
+**Feb 27, 2026 addition**: **Robot Boogie** — Incredibox-style stem mixer under CREATE. 8 characters, 12 audio stems (bass, 4 drums, guitar, 3 horns, 3 synths), preloaded and group-started on the first tap so they stay in perfect sync. Multi-stem characters (Chunk/Jellybone) cycle their variants on each click.
+
+Each destination card features a full-bleed background scene, prominent character art, and an ALL-CAPS NES-cartridge title. Sign nameplates and taglines were removed Feb 2026 per the world-building direction.
+
+## Academy Rank System (Polliwog → Maestro)
+Driven by total stickers earned. Warm, non-competitive.
+
+| Rank | Min Stickers | Icon |
+|------|-------------|------|
+| Polliwog | 0 | charlie-polliwog |
+| Tadpole | 5 | finn-danger |
+| Apprentice | 12 | dr-jellybone |
+| Soloist | 20 | jazzy |
+| Conductor | 30 | charlie-drum-major |
+| Maestro | 45 | charlie-grad |
+
+- `useRank({ withCelebration })` derives current rank from sticker count.
+- `RankBadge` shows on Home + Sticker Book.
+- `RankUpCelebration` overlay (with confetti + fanfare-style animation) fires once when crossing a tier; persisted via `localStorage.jma_rank_seen_v1`.
+
+## Character Personality Layer
+- `RoomCharacters` component drops 3-4 friendly characters into each game page corners. Tapping any character:
+  - Cycles through the character's available outfit assets (10 looks for Charlie, 4 for Sharky, 3 for Chunk, 2 for Jazzy/Lou/Stew).
+  - Pops a contextual speech bubble that auto-dismisses.
+- Fun Facts mobile: scene wider than viewport (`minWidth: 720px`) so kids horizontally pan/swipe to discover characters. Desktop stays 16:9 capped at 1200px.
+- Stew added as a 7th Fun Facts character (kazoo/birds-themed facts).
+
+## Implemented (Feb 14, 2026 — Phase 1-4 cohesion pass)
+### Renames
+- HTML title now `Jelly of the Month Club Music Academy (JMA)`.
+- `Stu Kazoo` → `Stew Kazoo` everywhere (page title, instructions, sticker hints).
+- `Loop Studio` → `Beat Lab` (page header, sticker hints).
+- `Free Play` → `Jam Hall` (page header, sticker hints).
+- `Rhythm Game / Who's Got Rhythm` → `Rhythm Arcade` (menu title).
+- `Ear Trainer` → `Ear Quest` (menu title).
+- `Fun Facts` → `Fun Facts Clubhouse` (page header).
+
+### New components & data
+- `components/HarpIcon.js` — SVG harp (placeholder until user uploads custom artwork).
+- `components/RoomCharacters.js` — per-page ambient cast with outfit cycling + speech bubbles.
+- `components/RankBadge.js` — current rank pill + progress to next.
+- `components/RankUpCelebration.js` — rank-up overlay (mounted in `App.js`).
+- `hooks/useRank.js` — rank derivation + opt-in celebration tracking.
+- `data/ranks.js` — Polliwog→Maestro ladder.
+- `data/musicFacts.js` — added `Stew` entry with 10 kazoo/birds facts.
+
+### Modified
+- `pages/HomePage.js` — complete redesign as Academy Campus. 6 destination room-cards, banner, rank badge, sticker spotlight, sticker book button.
+- `pages/StickerBookPage.js` — Home button now uses harp icon; RankBadge displayed.
+- `pages/FunFactsPage.js` — title renamed; scene now horizontally pannable on mobile; 7 characters.
+- `pages/SimonSaysPage.js` — name + RoomCharacters.
+- `pages/LoopStudioPage.js`, `FreePlayPage.js`, `RhythmGamePage.js`, `EarTrainerPage.js` — names + RoomCharacters.
+- `components/GameUI.js` — Home button replaced with harp + "Home" label.
+- `App.js` — RankUpCelebration overlay mounted globally.
+
+## Backlog
+- **P1**: Replace `HarpIcon.js` SVG with user's custom harp artwork once uploaded → `assets/ui/harp.png`.
+- **P2**: Score multiplier (×2) for streaks of 5+ in Rhythm Arcade.
+- **P2**: 0.5x / 1x tempo dial on Boom Garden mode-pick screen for struggling students.
+- **P2**: Split `FreePlayPage.js` (>900 lines) and `BoomGardenPage.js` (>800 lines) into sub-components.
+- **P2**: README.md with GitHub Pages deploy instructions.
+- **P2**: Verify MP3 recording on real mobile devices.
+- **P3**: Confetti celebration on Who's Got Rhythm / Ear Quest milestones.
+- **P3**: "Maestro's Map" board-game journey using existing minigames as tiles (idea stage).
+
+## Implemented (Feb 20, 2026 — later) — Boom Garden round-cycle + Stew Kazoo animations
+- **Tap Trail no longer breaks after one round** — added `roundKey` on `RhythmStrip` / `ScrollingRhythmStrip` so the framer-motion node fully remounts between rounds and re-applies `initial={{ x: startX }}`. Verified via DOM probe across 3 consecutive Tap Trail rounds.
+- **Stew Kazoo Says animations fire reliably on every note** — replaced 4-stacked-img display-toggle (which got clobbered by React re-applying JSX style on every re-render) with a single `<img>` whose `src` is swapped imperatively. Same pattern proven by `StewDrummer` in Boom Garden. Verified 9 src cycles in 3 s of demo with correct frame order.
+- **CI build unblocked** — added eslint-disable for the stable `useImperativeHandle` in `StewDrummer.js`.
+
+
+
+## Implemented (Feb 30, 2026 — Robot Boogie v8 special sauce)
+- **P0 layout fix**: n=4 dancers now render in a single row (widthPct 28% / maxW 340px / negMx 22px). Active band capped at `calc(100vh - 340px)` so 2-row layouts at n≥5 never push the Time Machine into the compact lineup. Metrics-verified `bandOverlapsMachine: false`.
+- **SVG lightning bolts** (`components/LightningStage.js`): persistent, jittering, team-colored plasma paths shoot from the Time Machine's top vent to every active character. Bolts re-roll every 130ms for a crackling live-plasma feel and gain a bright branch on zap. Replaces the old PNG lightning frames the user hated.
+- **Beat-locked visual clock**: `useRobotBoogieAudio.getAudioClock()` + new `hooks/useBeatPulse.js` derive beat/phase/pulse from the same Web Audio timeline the stems loop on. Consumers subscribe imperatively (zero rerenders at 60fps).
+- **Beat-synced world**: active characters' glow pulses; Time Machine under-glow throbs; bottom lineup bobs left/right + hops on the downbeat with per-character offsets; subtle world + disco-floor pulses in the background.
+- **Steam puffs** on every character toggle — CSS keyframe `robotBoogiePuff` rising blobs from the machine vent.
+- **Llama Lou PNG cropped**: source frames had ~50% empty transparent space; all 6 dance frames now cropped to 250×288 identically (originals backed up under `/lou-dancing/originals/`). Lou now sits centered in his slot.
+
+
+## Implemented (Feb 17, 2026 — Phase 3 Educational Wins)
+Four new mini-features designed to boost real music learning while keeping it fun:
+
+### 1. Practice Buddy (daily-return streak)
+- `hooks/usePracticeStreak.js` tracks `{count, lastDate}` in `localStorage.jma_practice_streak_v1`. Same-day visits don't bump; previous-day visits +1; gaps reset to 1.
+- Crossing 3 / 7 / 14 days unlocks **3 new collection stickers**: Practice Buddy / Weekly Wonder / Two-Week Trooper (under Fun Milestones — pure flair, doesn't gate rank).
+- `components/PracticeStreakChip.js` shows on the Home page once streak ≥ 2 (hidden day 1 to avoid pressure).
+
+### 2. Sight-Reading Sprint (new game in PLAY)
+- New page `pages/SightReadingPage.js` + reusable `components/SolfegeStaff.js`.
+- 3 difficulty tiers: Cadet (3 notes / 20 s / low bells), Pro (4 / 18 s / low bells), Master (5 / 16 s / full 8-bell range).
+- Flow: demo plays the sequence once → kid taps bells in order → time bonus on completion → win modal.
+- Earns **Music Scholar** achievement ladder (same domain as video lessons — proves reading-the-notation skill).
+- Tile added to Play menu (`/play`) and route `/sight-reading` wired in `App.js`.
+
+### 3. Rest Quiz (new Detective Dr. Jellybone mode)
+- 4th difficulty in `pages/DetectivePage.js`: instead of swapping one note to a wrong pitch, the suspect tune has an **EXTRA** note inserted.
+- 30-second countdown timer (`detective-timer`) starts when guess phase opens; timeout costs a life and reveals.
+- The chip row renders the corrupted sequence (one extra chip vs original).
+- Reveal text: *"Slot N (SOLFEGE) was the EXTRA note!"*
+
+### 4. Tempo Quiz (new Ear Quest sub-mode)
+- New component `components/TempoListeningGame.js`, accessible via the `ear-tempo-quiz-btn` on Ear Quest menu.
+- Plays two short clips of the same tune at different BPMs. Kid picks **Faster** or **Slower**.
+- 10 rounds per run with progressively narrower BPM deltas: ±40 → ±20 → ±10 BPM.
+- Earns **Rhythm Reader** achievement ladder: Cadet at 5+ correct, Pro at 8+, Master at 10/10.
+
+### Verified
+- Frontend testing agent: **100% pass (6/6 acceptance criteria)**, zero pageerror exceptions, all 13 routes navigate cleanly.
+- `CI=true yarn build` → Compiled successfully (263.25 KB gz, +8 KB for Phase 3).
+
+## Implemented (Feb 2026 — Spacebar hold + Clubhouse Chatter)
+
+### Spacebar hold in Who's Got The Rhythm (`BoomGardenPage.js`)
+- Added `if (e.repeat) return;` guard in the keydown handler — holding Space now produces exactly ONE snare tap, not a repeat-storm. Verified Playwright: 1 press + 30 auto-repeat keydowns → 2 UI chips total (initial tap + one forward-walk auto-miss).
+- Added a `spaceHeld` visual state: a soft purple pulse ring around Stew while Space is held, framer-motion exit-animated. Purely cosmetic — scoring is unchanged, so kids who don't hold "long enough" through half/whole notes are not punished.
+
+### Clubhouse Chatter (`FunFactsPage.js`)
+- Added a `chatter` field to each `SCENE_CHARS` entry mapping the character to an existing personality-appropriate SFX (Chunk → piano flourish, Finn → drum fill, Dr. Jellybone → detective sting, Stew → kazoo honk, Jazzy → bell pair, Charlie → DJ scratch, Lou → twinkle).
+- On FIRST find only, `showFact` spawns a soft `new Audio(chatter)` at volume 0.55 with autoplay-rejection silently caught.
+- Verified via Playwright Audio-constructor interception — correct SFX fires for each first find.
+
+## Testing Credentials
+N/A — frontend-only, no auth.
+
+## Implemented (Feb 2026 — Fun Facts Clubhouse: standalone Lou + Stew)
+- `FunFactsPage.js` `SCENE_CHARS` array split the legacy `Lou & Stew` entry into two standalone entries: **Lou** (`lou.png`, no Stew on shoulder) at his old spot, and a new **Stew** (`stew.png`) placed at the top-right tree area (left 88% / top 18%, swing anim).
+- Intro copy: "Find all 6 friends!" → "Find all 7 friends!".
+- `stickers.js`: replaced `char_loustew` with `char_lou` + `char_stew` character stickers.
+- `musicFacts.js`: renamed `'Lou & Stew'` key → `'Lou'`; existing `Stew` facts (kazoo/bird facts) now wired to the standalone Stew.
+- Verified via manual screenshot: all 7 characters found, Stew visible top-right on the palm, Lou standalone in bottom-right.
+
