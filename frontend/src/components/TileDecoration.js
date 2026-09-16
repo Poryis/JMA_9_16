@@ -68,9 +68,9 @@ export default function TileDecoration({ type, accent }) {
       // Each cloud is a multi-lobe SVG shape (four overlapping puffs)
       // so they read as pillowy and cartoon-y instead of flat blobs.
       const clouds = [
-        { top: 18, size: 30, dur: 11, delay: 0 },
-        { top: 46, size: 40, dur: 15, delay: 3.5 },
-        { top: 72, size: 24, dur: 9,  delay: 7 },
+        { top: 20, size: 24, dur: 32, delay: 0 },
+        { top: 48, size: 30, dur: 44, delay: 12 },
+        { top: 30, size: 20, dur: 28, delay: 22 },
       ];
       return (
         <>
@@ -91,7 +91,7 @@ export default function TileDecoration({ type, accent }) {
               zIndex: 5,
               pointerEvents: 'none',
               transformOrigin: 'center',
-              animation: 'tile-sun-spin 24s linear infinite',
+              animation: 'tile-sun-spin 6s ease-in-out infinite',
               filter: 'drop-shadow(0 1px 0 rgba(10,37,64,0.35))',
             }}
           />
@@ -101,10 +101,10 @@ export default function TileDecoration({ type, accent }) {
             aria-hidden="true"
             className="absolute pointer-events-none z-[5] overflow-hidden"
             style={{
-              top: '27%',
+              top: '28%',
               left: '63%',
-              width: '32%',
-              height: '20%',
+              width: '30%',
+              height: '15%',
             }}
           >
             {clouds.map((c, i) => (

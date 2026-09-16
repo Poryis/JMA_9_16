@@ -74,17 +74,16 @@
   0%, 100% { transform: translateY(0) rotate(-4deg); }
   50%      { transform: translateY(-6px) rotate(4deg); }
 }
-/* Clouds drifting across (Fun Facts window). Starts further off-screen
-   left and fades to 0 well before it approaches the right edge, so the
-   window's overflow-clip never crops a still-visible cloud. Reset then
-   happens while the cloud is fully invisible. */
+/* Clouds drifting across (Fun Facts window). Slow, gentle drift that
+   fades out early so the crop's overflow-clip never shows a hard edge
+   near the wooden window frame. */
 @keyframes tile-cloud-drift {
-  0%   { transform: translateX(-240%); opacity: 0; }
-  15%  {                               opacity: 0; }
-  28%  {                               opacity: 1; }
-  65%  {                               opacity: 1; }
-  85%  { opacity: 0; }
-  100% { transform: translateX(260%);  opacity: 0; }
+  0%   { transform: translateX(-160%); opacity: 0; }
+  12%  {                               opacity: 0; }
+  25%  {                               opacity: 1; }
+  55%  {                               opacity: 1; }
+  75%  { opacity: 0; }
+  100% { transform: translateX(160%);  opacity: 0; }
 }
 /* Tumbling music note — rises + rotates + fades (used by the crazy
    note storm on the Name That Note tile). */
@@ -106,10 +105,11 @@
   0%, 100% { transform: scale(0.4); opacity: 0.25; }
   50%      { transform: scale(1);   opacity: 1;    }
 }
-/* Cartoon sun rotation (Fun Facts / Sight-Reading clubhouse window). */
+/* Cartoon sun subtle wobble — the user's sun has a face, so it can't
+   fully spin; instead it rocks gently side to side. */
 @keyframes tile-sun-spin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0%,  100% { transform: rotate(-8deg); }
+  50%       { transform: rotate(8deg);  }
 }
 /* Sweeping spotlight cone (Music 101 curtain). */
 @keyframes tile-spotlight-sweep {
