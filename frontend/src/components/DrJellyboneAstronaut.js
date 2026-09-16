@@ -33,12 +33,17 @@ function makeLap(direction) {
   const sign = Math.random() < 0.5 ? -1 : 1;
   const delta = sign * (4 + Math.random() * 10);
   const endYvh = Math.max(2, Math.min(38, startYvh + delta));
+  // Parallax: smaller sprites drift slower (feel farther away),
+  // bigger ones drift faster (feel closer). Duration is inversely
+  // proportional to scale so a 0.32 scale takes ~2x longer than 0.55.
+  const scale = 0.32 + Math.random() * 0.23;
+  const durationSec = (18 + Math.random() * 6) / scale;
   return {
     direction,
     startYvh,
     endYvh,
-    durationSec: 32 + Math.random() * 14,
-    scale: 0.45 + Math.random() * 0.3,
+    durationSec,
+    scale,
   };
 }
 

@@ -21,12 +21,16 @@ function makeLap(direction) {
   const sign = Math.random() < 0.5 ? -1 : 1;
   const delta = sign * (minDelta + Math.random() * (maxDelta - minDelta));
   const endYvh = Math.max(2, Math.min(30, startYvh + delta));
+  const scale = 0.4 + Math.random() * 0.4;
+  // Parallax: smaller satellites drift slower (feel farther away),
+  // bigger ones drift faster (feel closer).
+  const durationSec = (16 + Math.random() * 6) / scale;
   return {
     direction,
     startYvh,
     endYvh,
-    durationSec: 28 + Math.random() * 14,
-    scale: 0.4 + Math.random() * 0.4,
+    durationSec,
+    scale,
   };
 }
 
