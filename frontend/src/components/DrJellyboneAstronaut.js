@@ -38,7 +38,7 @@ function makeLap(direction) {
     startYvh,
     endYvh,
     durationSec: 32 + Math.random() * 14,
-    scale: 0.6 + Math.random() * 0.4,
+    scale: 0.45 + Math.random() * 0.3,
   };
 }
 
