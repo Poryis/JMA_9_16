@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/JMA_9_16/static/css/main.cdd50700.css",
+    "main.js": "/JMA_9_16/static/js/main.8b8fc469.js",
+    "static/media/ComicKings.otf": "/JMA_9_16/static/media/ComicKings.ff3351fbec8978a9884e.otf",
+    "index.html": "/JMA_9_16/index.html",
+    "main.cdd50700.css.map": "/JMA_9_16/static/css/main.cdd50700.css.map",
+    "main.8b8fc469.js.map": "/JMA_9_16/static/js/main.8b8fc469.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.cdd50700.css",
+    "static/js/main.8b8fc469.js"
+  ]
+}
