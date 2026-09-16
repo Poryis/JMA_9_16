@@ -164,8 +164,8 @@ function Antenna({ style }) {
     // a chalkboard doodle, matches the schoolroom Lessons CRT. Cream
     // halo behind the dark stroke so the wire reads on the deep-space
     // background.
-    const LEFT_PATH = 'M 40 58 Q 33 46 36 34 Q 30 22 26 8';
-    const RIGHT_PATH = 'M 60 58 Q 67 46 64 34 Q 70 22 74 8';
+    const LEFT_PATH = 'M 32 58 Q 25 46 28 34 Q 20 22 16 8';
+    const RIGHT_PATH = 'M 68 58 Q 75 46 72 34 Q 80 22 84 8';
     return (
       <div aria-hidden="true" style={wrap}>
         <svg viewBox="0 0 100 60" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
