@@ -1,6 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **JMAtv antenna simplification** — reverted to the simpler antenna family. Music Videos back to `coathanger`, Variety Show → standard `rabbit-ears`, Lessons → new `wobble-ears` (hand-sketched wavy rabbit ears for the chalkboard-doodle vibe). `lightning`, `confetti`, and `pencil` antenna cases removed from `MiniCRT.js`.
+## Latest (Feb 2026): **Coathanger v3 + antenna visibility halo** — coathanger redrawn with rounded shoulders via SVG arcs + a tiny stem stub above the top bar; the antennas that were fading into the deep-space background now render with a cream `#FFE7C2` halo behind the JMA-dark stroke (applied to the shared `rod()` used by rabbit-ears / ball-tips / star-tips, plus explicit double-stroke on `coathanger` and `wobble-ears`). Fun Facts curly antenna intentionally untouched — user hasn't flagged its visibility.
+
+## Prior (Feb 2026): JMAtv antenna simplification — Music Videos back to coathanger, Variety Show → standard rabbit-ears, Lessons → wobble-ears. Arcade-marquee game titles + Detective ranks `Rookie / Sarge / Gumshoe`. Satellite signal waves cycle every 1.5s.
 
 ## Prior (Feb 2026): Arcade-marquee game titles + Detective rank rename — GameHeader renders string titles as chunky yellow-plate arcade marquees; Detective ranks renamed `Rookie / Sarge / Gumshoe`. Satellite signal waves cycle small-only → both → none on a 1.5s loop.
 

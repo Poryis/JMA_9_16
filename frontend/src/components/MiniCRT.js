@@ -52,6 +52,10 @@ function Antenna({ style }) {
     transform: `rotate(${rotate}deg)`,
     transformOrigin: 'bottom center',
     borderRadius: 3,
+    // Cream halo so the dark rods stay legible against the JMAtv deep-
+    // space background without changing the JMA outline color. Follows
+    // borderRadius so the halo stays rod-shaped.
+    boxShadow: '0 0 0 2.5px #FFE7C2',
   });
 
   if (style === 'rabbit-ears' || style === 'ball-tips' || style === 'star-tips') {
@@ -76,19 +80,50 @@ function Antenna({ style }) {
   }
 
   if (style === 'coathanger') {
-    // Real coathanger silhouette (no hook — the hook is the bit stuck
-    // in the "hole" of the TV): flat top bar with two shoulders
-    // sloping down to a point at the bottom-center. Deliberately wider
-    // than tall so the flat top reads immediately.
+    // Real coathanger silhouette: soft rounded shoulders (SVG arcs at
+    // the top corners), a wide flat top bar, a tiny stem stub poking
+    // out of the top-center (the "coming out of the TV" bit), and a
+    // cream halo behind the dark stroke so the whole shape reads
+    // against the deep-space background.
+    const HANGER_PATH =
+      'M 50 44 L 14 12 A 6 6 0 0 1 20 8 L 80 8 A 6 6 0 0 1 86 12 L 50 44 Z';
+    const STEM_PATH = 'M 50 0 L 50 8';
     return (
-      <div aria-hidden="true" style={{ ...wrap, width: '78%', height: '15%', top: '-12%' }}>
-        <svg viewBox="0 0 100 40" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-          <polygon
-            points="6,8 94,8 50,38"
+      <div aria-hidden="true" style={{ ...wrap, width: '80%', height: '18%', top: '-14%' }}>
+        <svg viewBox="0 0 100 50" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+          {/* Cream halo — drawn first so the dark stroke sits on top */}
+          <path
+            d={HANGER_PATH}
+            fill="none"
+            stroke="#FFE7C2"
+            strokeWidth="10"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d={STEM_PATH}
+            fill="none"
+            stroke="#FFE7C2"
+            strokeWidth="10"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* JMA-dark wire on top */}
+          <path
+            d={HANGER_PATH}
             fill="none"
             stroke={JMA_DARK}
             strokeWidth="5"
             strokeLinejoin="round"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d={STEM_PATH}
+            fill="none"
+            stroke={JMA_DARK}
+            strokeWidth="5"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
           />
@@ -116,26 +151,36 @@ function Antenna({ style }) {
 
   if (style === 'wobble-ears') {
     // Rabbit ears drawn with a slight hand-sketched wobble — reads like
-    // a chalkboard doodle, matches the schoolroom Lessons CRT.
+    // a chalkboard doodle, matches the schoolroom Lessons CRT. Cream
+    // halo behind the dark stroke so the wire reads on the deep-space
+    // background.
+    const LEFT_PATH = 'M 40 58 Q 33 46 36 34 Q 30 22 26 8';
+    const RIGHT_PATH = 'M 60 58 Q 67 46 64 34 Q 70 22 74 8';
     return (
       <div aria-hidden="true" style={wrap}>
         <svg viewBox="0 0 100 60" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-          <path
-            d="M 40 58 Q 33 46 36 34 Q 30 22 26 8"
-            fill="none"
-            stroke={JMA_DARK}
-            strokeWidth="5.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M 60 58 Q 67 46 64 34 Q 70 22 74 8"
-            fill="none"
-            stroke={JMA_DARK}
-            strokeWidth="5.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {[LEFT_PATH, RIGHT_PATH].map((d, i) => (
+            <path
+              key={`halo-${i}`}
+              d={d}
+              fill="none"
+              stroke="#FFE7C2"
+              strokeWidth="10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+          {[LEFT_PATH, RIGHT_PATH].map((d, i) => (
+            <path
+              key={`ink-${i}`}
+              d={d}
+              fill="none"
+              stroke={JMA_DARK}
+              strokeWidth="5.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
         </svg>
       </div>
     );
