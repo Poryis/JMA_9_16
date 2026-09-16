@@ -200,29 +200,34 @@ export default function JMAtvHomePage() {
         </p>
       </motion.div>
 
-      <div className="relative z-10 w-full max-w-5xl flex flex-col gap-6 md:gap-8">
-        {/* Top row: three CRTs across on desktop, stacks on mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {JMATV_CHANNELS.slice(0, 3).map((ch, i) => (
+      {/* Olympic-rings layout on desktop: 6-col grid where each tile
+          spans 2 cols. Top row fills cols 1-2 / 3-4 / 5-6. Bottom row
+          is offset to cols 2-3 / 4-5 so it centers under the top row
+          while every TV stays the same size. Falls back to a normal
+          1/2-col stack on smaller screens. */}
+      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 md:gap-8">
+        {JMATV_CHANNELS.slice(0, 3).map((ch, i) => (
+          <div
+            key={ch.id}
+            className={`lg:col-span-2 ${i === 0 ? 'lg:col-start-1' : i === 1 ? 'lg:col-start-3' : 'lg:col-start-5'}`}
+          >
             <ChannelTile
-              key={ch.id}
               channel={ch}
               index={i}
               onClick={() => navigate(`/jmatv/${ch.id}`)}
             />
-          ))}
-        </div>
-        {/* Bottom row: remaining channels + Lessons, centered under the
-            top row on desktop, still stacks on mobile. */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 lg:max-w-[66%] lg:mx-auto">
-          {JMATV_CHANNELS.slice(3).map((ch, i) => (
+          </div>
+        ))}
+        {JMATV_CHANNELS.slice(3).map((ch, i) => (
+          <div key={ch.id} className={`lg:col-span-2 ${i === 0 ? 'lg:col-start-2' : 'lg:col-start-4'}`}>
             <ChannelTile
-              key={ch.id}
               channel={ch}
               index={3 + i}
               onClick={() => navigate(`/jmatv/${ch.id}`)}
             />
-          ))}
+          </div>
+        ))}
+        <div className={`lg:col-span-2 ${JMATV_CHANNELS.length - 3 === 1 ? 'lg:col-start-4' : 'lg:col-start-2'}`}>
           <LessonsTile index={JMATV_CHANNELS.length} onClick={() => navigate('/lessons')} />
         </div>
       </div>
