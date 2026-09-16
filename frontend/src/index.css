@@ -145,6 +145,20 @@
 .jmatv-color-cycle {
   animation: jmatv-color-cycle 12s ease-in-out infinite;
 }
+
+/* Satellite signal waves — cycle small-only → both → none → repeat so
+   the little cartoon satellite feels like it's actually broadcasting.
+   Two separate keyframes offset in time; both share the same 1.5s
+   period. See <SatelliteFlyby /> paths. */
+@keyframes sat-wave-small {
+  0%, 66%   { opacity: 1; }
+  67%, 100% { opacity: 0; }
+}
+@keyframes sat-wave-big {
+  0%, 32%   { opacity: 0; }
+  33%, 66%  { opacity: 1; }
+  67%, 100% { opacity: 0; }
+}
 @keyframes jmatv-letter-cycle {
   0%,   10% { background-color: #AF52DE; }  /* purple  ↔ yellow frame */
   17%,  27% { background-color: #FF3B30; }  /* red     ↔ green frame  */

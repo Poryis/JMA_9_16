@@ -1,6 +1,8 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **Arcade-marquee game titles + Detective rank rename** — `GameHeader` in `GameUI.js` now renders string titles as chunky yellow-plate arcade marquees (white letters with 4-way JMA-dark text-shadow outline, red bulb studs at every corner, offset drop-shadow lift). New `subtitle` prop renders a small pill under the marquee, hidden below 380px viewport via `min-[380px]:` arbitrary variant. All 6 title callers updated to split concatenated `"Name · Level"` strings into `title` + `subtitle`. Detective difficulty names renamed: `Rookie / Detective / Master` → `Rookie / Sarge / Gumshoe`.
+## Latest (Feb 2026): **JMAtv antenna redesign + satellite signal cycle** — Music Videos antenna swapped from coathanger → chunky yellow lightning bolt; Variety Show swapped from star-tips → three-way confetti burst with red/yellow/blue bulbs + spark dots; Lessons swapped from apple → fat yellow pencil with pink eraser and graphite tip. Fun Facts (curly) and Puns (ball-tips) unchanged. Satellite radar waves now animate on a 1.5s cycle (small-only → both → none → repeat) via `sat-wave-small` and `sat-wave-big` keyframes in `index.css`.
+
+## Prior (Feb 2026): Arcade-marquee game titles + Detective rank rename — GameHeader now renders string titles as chunky yellow-plate arcade marquees with subtitle chips; Detective difficulties renamed `Rookie / Sarge / Gumshoe`.
 
 ## Prior (Feb 2026): Beat Lab mobile trim + JMAtv preview revert — Charlie + Sharky mascots hidden below 768px in `LoopStudioPage.js`; MiniCRT lazy-load reverted, muted previews auto-play again.
 

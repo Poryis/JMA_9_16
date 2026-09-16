@@ -110,20 +110,64 @@ function Antenna({ style }) {
     );
   }
 
-  if (style === 'apple') {
+  if (style === 'lightning') {
+    // Single tall rod topped with a chunky lightning bolt — rock-channel
+    // energy without shouting.
+    return (
+      <div aria-hidden="true" style={{ ...wrap, height: '30%', top: '-26%' }}>
+        <svg viewBox="0 0 100 80" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+          <line x1="50" y1="80" x2="50" y2="36" stroke={JMA_DARK} strokeWidth="6" strokeLinecap="round" />
+          <polygon
+            points="52,4 42,36 50,36 44,60 62,26 54,26 60,4"
+            fill="#FFCC00"
+            stroke={JMA_DARK}
+            strokeWidth="4"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+    );
+  }
+
+  if (style === 'confetti') {
+    // Three rods fanning out with jelly-bean bulbs at each tip in the
+    // brand's on-air colors — reads like a variety-show sign-off.
     return (
       <div aria-hidden="true" style={{ ...wrap, height: '26%', top: '-22%' }}>
         <svg viewBox="0 0 100 70" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-          <path d="M 50 34 Q 50 20 44 12" fill="none" stroke={JMA_DARK} strokeWidth="5" strokeLinecap="round" />
-          <path
-            d="M 44 12 Q 60 8 62 22 Q 50 22 44 12 Z"
-            fill="#34A853"
-            stroke={JMA_DARK}
-            strokeWidth="3.5"
-            strokeLinejoin="round"
-          />
-          <circle cx="50" cy="52" r="16" fill="#FF3B30" stroke={JMA_DARK} strokeWidth="4.5" />
-          <path d="M 40 46 Q 44 42 48 46" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" opacity="0.7" />
+          <line x1="50" y1="68" x2="26" y2="16" stroke={JMA_DARK} strokeWidth="5" strokeLinecap="round" />
+          <line x1="50" y1="68" x2="50" y2="8"  stroke={JMA_DARK} strokeWidth="5" strokeLinecap="round" />
+          <line x1="50" y1="68" x2="74" y2="16" stroke={JMA_DARK} strokeWidth="5" strokeLinecap="round" />
+          <circle cx="26" cy="16" r="6" fill="#FF3B30" stroke={JMA_DARK} strokeWidth="3" />
+          <circle cx="50" cy="8"  r="6" fill="#FFCC00" stroke={JMA_DARK} strokeWidth="3" />
+          <circle cx="74" cy="16" r="6" fill="#00A8E8" stroke={JMA_DARK} strokeWidth="3" />
+          {/* Tiny spark dots around the bulbs */}
+          <circle cx="18" cy="6"  r="2" fill="#FFCC00" />
+          <circle cx="82" cy="6"  r="2" fill="#AF52DE" />
+          <circle cx="50" cy="30" r="2" fill="#00A8E8" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (style === 'pencil') {
+    // Fat yellow pencil sticking straight up out of the TV — graphite
+    // tip up top, pink eraser at the base, matches the schoolroom vibe.
+    return (
+      <div aria-hidden="true" style={{ ...wrap, height: '32%', top: '-28%' }}>
+        <svg viewBox="0 0 100 90" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+          {/* eraser (bottom) */}
+          <rect x="42" y="76" width="16" height="10" rx="2" fill="#FF7BB4" stroke={JMA_DARK} strokeWidth="3" />
+          {/* metal ferrule band */}
+          <rect x="42" y="70" width="16" height="8"  fill="#C0C0C0" stroke={JMA_DARK} strokeWidth="3" />
+          {/* pencil body */}
+          <rect x="42" y="20" width="16" height="52" fill="#FFCC00" stroke={JMA_DARK} strokeWidth="3.5" />
+          {/* wood cone */}
+          <polygon points="42,20 58,20 50,6" fill="#E9B84F" stroke={JMA_DARK} strokeWidth="3.5" strokeLinejoin="round" />
+          {/* graphite tip */}
+          <polygon points="46,10 54,10 50,2" fill="#0A2540" stroke={JMA_DARK} strokeWidth="2" strokeLinejoin="round" />
+          {/* body highlight */}
+          <line x1="46" y1="24" x2="46" y2="68" stroke="#FFFFFF" strokeWidth="2" opacity="0.6" />
         </svg>
       </div>
     );

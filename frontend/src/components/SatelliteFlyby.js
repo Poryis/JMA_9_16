@@ -88,10 +88,12 @@ function SatellitePlaceholder({ className }) {
       {/* Signal blip */}
       <circle cx="110" cy="18" r="3.5" fill="#FF3B30" stroke="#0A2540" strokeWidth="2" />
 
-      {/* Signal waves */}
-      <g stroke="#FFCC00" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.95">
-        <path d="M 138 14 Q 146 20 138 26" />
-        <path d="M 148 8  Q 160 20 148 32" />
+      {/* Signal waves — animated to look like the dish is actually
+          transmitting. Small wave pulses first, then both together,
+          then nothing, on a 1.5s loop. Keyframes live in index.css. */}
+      <g stroke="#FFCC00" strokeWidth="4" fill="none" strokeLinecap="round">
+        <path d="M 138 14 Q 146 20 138 26" style={{ animation: 'sat-wave-small 1.5s steps(1) infinite' }} />
+        <path d="M 148 8  Q 160 20 148 32" style={{ animation: 'sat-wave-big 1.5s steps(1) infinite' }} />
       </g>
 
       {/* Little booster flame */}

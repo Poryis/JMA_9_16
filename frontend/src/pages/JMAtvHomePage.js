@@ -35,13 +35,13 @@ const CRT_STYLES = {
     frame: 'painted-red',
     accent: '#FF3B30',
     knobColor: '#FFCC00',
-    antenna: 'coathanger',
+    antenna: 'lightning',
   },
   'variety-show': {
     frame: 'purple-sparkle',
     accent: '#AF52DE',
     knobColor: '#FFCC00',
-    antenna: 'star-tips',
+    antenna: 'confetti',
     staticNoise: true,
   },
 };
@@ -50,7 +50,7 @@ const LESSONS_STYLE = {
   frame: 'chalkboard',
   accent: '#FFE7C2',
   knobColor: '#8B5A2B',
-  antenna: 'apple',
+  antenna: 'pencil',
 };
 
 // -------- Nameplate --------------------------------------------------
