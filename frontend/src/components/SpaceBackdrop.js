@@ -8,6 +8,7 @@
 
 import { motion } from 'framer-motion';
 import SatelliteFlyby from './SatelliteFlyby';
+import DrJellyboneAstronaut from './DrJellyboneAstronaut';
 
 const JMA_DARK = '#0A2540';
 
@@ -133,6 +134,7 @@ export default function SpaceBackdrop() {
       <Starfield />
       <DistantPlanet />
       <SatelliteFlyby />
+      <DrJellyboneAstronaut />
     </>
   );
 }

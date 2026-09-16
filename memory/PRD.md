@@ -1,6 +1,6 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **JMAtv logo simplified — 3-color letters, static yellow harp** — after several iterations the logo now cycles the JMA letters through `#FF0000` red · `#0012FF` blue · `#FFFFFF` white on a 9s loop (~2.9s holds, ~120ms snaps). The frame PNG's `jmatv-color-cycle` class was removed on both HomePage and JMAtv pages so the yellow harp stays put — no more hue-rotate warping. `jmatv-color-cycle` keyframes retained in `index.css` in case we bring frame animation back later.
+## Latest (Feb 2026): **Astronaut Dr. Jellybone in the JMAtv sky** — new `DrJellyboneAstronaut` component drifts across the space backdrop (blimp-style random-lap animation) on all JMAtv pages. Three user-provided "Jelly Man Jellybone no sax" frames resized 994×2000 → 300×604 and dropped in `public/assets/characters/dr-jellybone-astro-{1,2,3}.png` (~155 KB each); component cycles them every 480ms for an idle tentacle swap. Bubble helmet overlaid as inline SVG (transparent glass circle + thick JMA-dark stroke + rim highlight + glint) locked to head area, no source-art redraw needed. Added to `SpaceBackdrop.js` so it inherits to every JMAtv page.
 
 ## Prior (Feb 2026): JMAtv antenna simplification — Music Videos back to coathanger, Variety Show → standard rabbit-ears, Lessons → wobble-ears. Arcade-marquee game titles + Detective ranks `Rookie / Sarge / Gumshoe`. Satellite signal waves cycle every 1.5s.
 
