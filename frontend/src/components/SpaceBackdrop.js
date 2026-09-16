@@ -9,6 +9,8 @@
 import { motion } from 'framer-motion';
 import SatelliteFlyby from './SatelliteFlyby';
 import DrJellyboneAstronaut from './DrJellyboneAstronaut';
+import HarpConstellation from './HarpConstellation';
+import ShootingStar from './ShootingStar';
 
 const JMA_DARK = '#0A2540';
 
@@ -155,7 +157,9 @@ export default function SpaceBackdrop() {
     <>
       <Nebula />
       <Starfield />
+      <HarpConstellation />
       <DistantPlanet />
+      <ShootingStar />
       <SatelliteFlyby />
       <DrJellyboneAstronaut />
     </>
