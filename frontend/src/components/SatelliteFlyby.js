@@ -113,7 +113,7 @@ function SatellitePlaceholder({ className }) {
 }
 
 export default function SatelliteFlyby() {
-  const [lap, setLap] = useState(() => makeLap(1));
+  const [lap, setLap] = useState(() => makeLap(Math.random() < 0.5 ? 1 : -1));
   const [customArtLoaded, setCustomArtLoaded] = useState(false);
 
   useEffect(() => {

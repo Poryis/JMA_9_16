@@ -236,8 +236,21 @@ function HelmetFrontVisor() {
 }
 
 export default function DrJellyboneAstronaut() {
-  const [lap, setLap] = useState(() => makeLap(1));
+  // Start with a random direction so the astronaut and satellite don't
+  // always enter from the same side of the sky at the same instant.
+  // Also hold off the first lap by 4–12s so their timing decouples too.
+  const [lap, setLap] = useState(null);
   const [frameIdx, setFrameIdx] = useState(0);
+
+  // Kick off the first lap after a random delay, then hand off to the
+  // usual re-lap effect below.
+  useEffect(() => {
+    const delayMs = 4000 + Math.random() * 8000;
+    const id = setTimeout(() => {
+      setLap(makeLap(Math.random() < 0.5 ? 1 : -1));
+    }, delayMs);
+    return () => clearTimeout(id);
+  }, []);
 
   // 3-frame idle cycle — swap every 480ms so his tentacles feel alive.
   useEffect(() => {
@@ -250,12 +263,14 @@ export default function DrJellyboneAstronaut() {
   // Reset lap when duration ends — direction flips so the next entrance
   // comes from the opposite side of the sky.
   useEffect(() => {
+    if (!lap) return;
     const id = setTimeout(() => {
       setLap((prev) => makeLap(-prev.direction));
     }, lap.durationSec * 1000);
     return () => clearTimeout(id);
   }, [lap]);
 
+  if (!lap) return null;
   const { direction, startYvh, endYvh, durationSec, scale } = lap;
   const fromX = direction === 1 ? '-25vw' : '110vw';
   const toX   = direction === 1 ? '110vw' : '-25vw';
