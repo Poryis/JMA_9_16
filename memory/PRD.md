@@ -1,6 +1,6 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **JMAtv logo color palette + timing refresh** — 8-stop cycle over 12s replacing the on-brand 6-stop cycle. New user-picked palette: `#FFF000` yellow → `#FFFFFF` white → `#4FC2E1` cyan → `#50C878` green → `#8A2BE2` purple → `#0012FF` blue → `#FF0000` red → `#EF319B` pink → loop. Transitions narrowed to ~1% of the cycle (~120ms snap) with ~11.5% holds (~1.38s per beat). Frame hue-rotate steps by 45° so it lands complementary to each beat's letter color. Glow drop-shadow tint follows the letter color per beat.
+## Latest (Feb 2026): **JMAtv logo simplified — 3-color letters, static yellow harp** — after several iterations the logo now cycles the JMA letters through `#FF0000` red · `#0012FF` blue · `#FFFFFF` white on a 9s loop (~2.9s holds, ~120ms snaps). The frame PNG's `jmatv-color-cycle` class was removed on both HomePage and JMAtv pages so the yellow harp stays put — no more hue-rotate warping. `jmatv-color-cycle` keyframes retained in `index.css` in case we bring frame animation back later.
 
 ## Prior (Feb 2026): JMAtv antenna simplification — Music Videos back to coathanger, Variety Show → standard rabbit-ears, Lessons → wobble-ears. Arcade-marquee game titles + Detective ranks `Rookie / Sarge / Gumshoe`. Satellite signal waves cycle every 1.5s.
 

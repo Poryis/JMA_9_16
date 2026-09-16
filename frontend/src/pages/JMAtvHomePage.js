@@ -184,7 +184,7 @@ export default function JMAtvHomePage() {
             src="assets/ui/jmatv-logo-v2-frame.png"
             alt="JMAtv"
             draggable={false}
-            className="absolute inset-0 w-full h-full object-contain jmatv-color-cycle"
+            className="absolute inset-0 w-full h-full object-contain"
           />
           <div
             aria-hidden="true"

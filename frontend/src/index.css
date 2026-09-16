@@ -160,16 +160,14 @@
   33%, 66%  { opacity: 1; }
   67%, 100% { opacity: 0; }
 }
+/* JMAtv letters cycle — three-color loop (red · blue · white). Harp
+   deliberately stays yellow (its native PNG color) so the frame keeps
+   its identity. Timing: 9s total, three ~2.9s holds, ~120ms snaps. */
 @keyframes jmatv-letter-cycle {
-  0%,   11.5% { background-color: #0012FF; }
-  12.5%, 24%  { background-color: #FF0000; }
-  25%,  36.5% { background-color: #EF319B; }
-  37.5%, 49%  { background-color: #FFF000; }
-  50%,  61.5% { background-color: #FFFFFF; }
-  62.5%, 74%  { background-color: #4FC2E1; }
-  75%,  86.5% { background-color: #50C878; }
-  87.5%, 99%  { background-color: #8A2BE2; }
-  100%        { background-color: #0012FF; }
+  0%,   32%    { background-color: #FF0000; }
+  33.5%, 65.5% { background-color: #0012FF; }
+  67%,  99%    { background-color: #FFFFFF; }
+  100%         { background-color: #FF0000; }
 }
 .jmatv-letters-mask {
   /* mask-image is applied via inline style in JS with
@@ -181,7 +179,7 @@
           mask-repeat: no-repeat;
   -webkit-mask-position: center;
           mask-position: center;
-  animation: jmatv-letter-cycle 12s ease-in-out infinite;
+  animation: jmatv-letter-cycle 9s ease-in-out infinite;
 }
 /* "Streaming Now" red dot pulse — used inside RetroTV under the CRT.
    Kept global so we don't ship a local <style> block per component. */
