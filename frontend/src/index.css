@@ -126,21 +126,22 @@
      Beat 4 — blue harp    (hue-rotate 180) ↔ yellow letters
      Beat 5 — magenta harp (hue-rotate 240) ↔ green letters
      Beat 6 — red harp     (hue-rotate 300) ↔ cyan letters */
-/* On-brand JMA palette used for the JMAtv logo cycle. The frame image
-   (yellow harp + blue TV) is hue-rotated through six even 60° steps;
-   the mask-driven letter fill flashes a COMPLEMENTARY on-brand color
-   on the same 6-beat cadence. Drop-shadow glow is tinted per beat
-   using the brand palette (yellow, green, cyan, blue, purple, red)
-   so the halo feels like it belongs to the same world as the rest
-   of JMA. */
+/* JMAtv logo color cycle — 8 stops on a 12s loop with narrow ~1%
+   transition windows so each color "snaps" between beats and holds
+   ~1.38s before flipping. Letter colors are the user-picked palette;
+   frame hue-rotate is offset 45° per step so it lands COMPLEMENTARY
+   to the letter color of the same beat. Glow tint follows the letter
+   color per beat. */
 @keyframes jmatv-color-cycle {
-  0%,   10% { filter: hue-rotate(0deg)   drop-shadow(0 0 22px rgba(255,204,0,0.55)); }   /* yellow frame */
-  17%,  27% { filter: hue-rotate(60deg)  drop-shadow(0 0 22px rgba(52,168,83,0.55)); }   /* green frame */
-  33%,  43% { filter: hue-rotate(120deg) drop-shadow(0 0 22px rgba(0,168,232,0.55)); }   /* cyan frame */
-  50%,  60% { filter: hue-rotate(180deg) drop-shadow(0 0 22px rgba(66,133,244,0.55)); }  /* blue frame */
-  67%,  77% { filter: hue-rotate(240deg) drop-shadow(0 0 22px rgba(175,82,222,0.55)); }  /* purple frame */
-  83%,  93% { filter: hue-rotate(300deg) drop-shadow(0 0 22px rgba(255,59,48,0.55)); }   /* red frame */
-  100%      { filter: hue-rotate(360deg) drop-shadow(0 0 22px rgba(255,204,0,0.55)); }
+  0%,   11.5% { filter: hue-rotate(0deg)   drop-shadow(0 0 22px rgba(0,18,255,0.55));    }
+  12.5%, 24%  { filter: hue-rotate(45deg)  drop-shadow(0 0 22px rgba(255,0,0,0.55));     }
+  25%,  36.5% { filter: hue-rotate(90deg)  drop-shadow(0 0 22px rgba(239,49,155,0.55));  }
+  37.5%, 49%  { filter: hue-rotate(135deg) drop-shadow(0 0 22px rgba(255,240,0,0.55));   }
+  50%,  61.5% { filter: hue-rotate(180deg) drop-shadow(0 0 22px rgba(255,255,255,0.65)); }
+  62.5%, 74%  { filter: hue-rotate(225deg) drop-shadow(0 0 22px rgba(79,194,225,0.55));  }
+  75%,  86.5% { filter: hue-rotate(270deg) drop-shadow(0 0 22px rgba(80,200,120,0.55));  }
+  87.5%, 99%  { filter: hue-rotate(315deg) drop-shadow(0 0 22px rgba(138,43,226,0.55));  }
+  100%        { filter: hue-rotate(360deg) drop-shadow(0 0 22px rgba(0,18,255,0.55));    }
 }
 .jmatv-color-cycle {
   animation: jmatv-color-cycle 12s ease-in-out infinite;
@@ -160,13 +161,15 @@
   67%, 100% { opacity: 0; }
 }
 @keyframes jmatv-letter-cycle {
-  0%,   10% { background-color: #AF52DE; }  /* purple  ↔ yellow frame */
-  17%,  27% { background-color: #FF3B30; }  /* red     ↔ green frame  */
-  33%,  43% { background-color: #FF9500; }  /* orange  ↔ cyan frame   */
-  50%,  60% { background-color: #FFCC00; }  /* yellow  ↔ blue frame   */
-  67%,  77% { background-color: #34A853; }  /* green   ↔ purple frame */
-  83%,  93% { background-color: #00A8E8; }  /* blue    ↔ red frame    */
-  100%      { background-color: #AF52DE; }
+  0%,   11.5% { background-color: #0012FF; }
+  12.5%, 24%  { background-color: #FF0000; }
+  25%,  36.5% { background-color: #EF319B; }
+  37.5%, 49%  { background-color: #FFF000; }
+  50%,  61.5% { background-color: #FFFFFF; }
+  62.5%, 74%  { background-color: #4FC2E1; }
+  75%,  86.5% { background-color: #50C878; }
+  87.5%, 99%  { background-color: #8A2BE2; }
+  100%        { background-color: #0012FF; }
 }
 .jmatv-letters-mask {
   /* mask-image is applied via inline style in JS with

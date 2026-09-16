@@ -1,6 +1,6 @@
 # Jelly of the Month Club Music Academy (JMA) — PRD
 
-## Latest (Feb 2026): **Coathanger v4 + halo dialed back** — coathanger stem now correctly hangs DOWN from the apex into the TV (visible stub between the wire body and the CRT top edge, matching a real hanger's "hook-to-body" transition). Cream halo trimmed from 2.5px → ~1.25px across all antennas (rod-based via `boxShadow`, SVG-based via a 7.5px cream stroke behind a 5px dark stroke). Fun Facts `curly` antenna now also has the halo for consistency.
+## Latest (Feb 2026): **JMAtv logo color palette + timing refresh** — 8-stop cycle over 12s replacing the on-brand 6-stop cycle. New user-picked palette: `#FFF000` yellow → `#FFFFFF` white → `#4FC2E1` cyan → `#50C878` green → `#8A2BE2` purple → `#0012FF` blue → `#FF0000` red → `#EF319B` pink → loop. Transitions narrowed to ~1% of the cycle (~120ms snap) with ~11.5% holds (~1.38s per beat). Frame hue-rotate steps by 45° so it lands complementary to each beat's letter color. Glow drop-shadow tint follows the letter color per beat.
 
 ## Prior (Feb 2026): JMAtv antenna simplification — Music Videos back to coathanger, Variety Show → standard rabbit-ears, Lessons → wobble-ears. Arcade-marquee game titles + Detective ranks `Rookie / Sarge / Gumshoe`. Satellite signal waves cycle every 1.5s.
 
