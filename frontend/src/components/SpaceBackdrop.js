@@ -30,28 +30,51 @@ function Nebula() {
 
 function Starfield() {
   return (
-    <div
-      aria-hidden="true"
-      className="absolute inset-0 pointer-events-none"
-      style={{
-        backgroundImage: [
-          'radial-gradient(1.5px 1.5px at 12% 18%, #FFFFFF 60%, transparent 61%)',
-          'radial-gradient(1px   1px   at 28% 42%, #FFE7C2 60%, transparent 61%)',
-          'radial-gradient(2px   2px   at 46% 12%, #FFFFFF 60%, transparent 61%)',
-          'radial-gradient(1px   1px   at 58% 68%, #FFFFFF 60%, transparent 61%)',
-          'radial-gradient(1.5px 1.5px at 72% 24%, #FFCC00 60%, transparent 61%)',
-          'radial-gradient(1px   1px   at 84% 54%, #FFFFFF 60%, transparent 61%)',
-          'radial-gradient(2px   2px   at 92% 82%, #FFFFFF 60%, transparent 61%)',
-          'radial-gradient(1px   1px   at 6%  74%, #FFE7C2 60%, transparent 61%)',
-          'radial-gradient(1.5px 1.5px at 22% 88%, #FFFFFF 60%, transparent 61%)',
-          'radial-gradient(1px   1px   at 38% 32%, #FFFFFF 60%, transparent 61%)',
-          'radial-gradient(1px   1px   at 66% 92%, #FFFFFF 60%, transparent 61%)',
-          'radial-gradient(1.5px 1.5px at 80% 8%,  #FFCC00 60%, transparent 61%)',
-        ].join(', '),
-        animation: 'jma-pulse 3.8s ease-in-out infinite',
-        opacity: 0.9,
-      }}
-    />
+    <>
+      {/* Layer A: main starfield — dense, mid-brightness stars pulsing
+          on a ~5s cycle (slow so it reads as ambient twinkle). */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: [
+            'radial-gradient(1.5px 1.5px at 12% 18%, #FFFFFF 60%, transparent 61%)',
+            'radial-gradient(1px   1px   at 28% 42%, #FFE7C2 60%, transparent 61%)',
+            'radial-gradient(2px   2px   at 46% 12%, #FFFFFF 60%, transparent 61%)',
+            'radial-gradient(1px   1px   at 58% 68%, #FFFFFF 60%, transparent 61%)',
+            'radial-gradient(1.5px 1.5px at 72% 24%, #FFCC00 60%, transparent 61%)',
+            'radial-gradient(1px   1px   at 84% 54%, #FFFFFF 60%, transparent 61%)',
+            'radial-gradient(2px   2px   at 92% 82%, #FFFFFF 60%, transparent 61%)',
+            'radial-gradient(1px   1px   at 6%  74%, #FFE7C2 60%, transparent 61%)',
+            'radial-gradient(1.5px 1.5px at 22% 88%, #FFFFFF 60%, transparent 61%)',
+            'radial-gradient(1px   1px   at 38% 32%, #FFFFFF 60%, transparent 61%)',
+            'radial-gradient(1px   1px   at 66% 92%, #FFFFFF 60%, transparent 61%)',
+            'radial-gradient(1.5px 1.5px at 80% 8%,  #FFCC00 60%, transparent 61%)',
+          ].join(', '),
+          animation: 'jma-star-twinkle-a 5s ease-in-out infinite',
+        }}
+      />
+      {/* Layer B: sparser, brighter feature stars twinkling on an
+          offset cycle so the field never pulses uniformly. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: [
+            'radial-gradient(2.5px 2.5px at 18% 8%,  #FFFFFF 55%, transparent 60%)',
+            'radial-gradient(2px   2px   at 34% 60%, #FFFFFF 55%, transparent 60%)',
+            'radial-gradient(2.5px 2.5px at 52% 38%, #FFE7C2 55%, transparent 60%)',
+            'radial-gradient(2px   2px   at 68% 82%, #FFFFFF 55%, transparent 60%)',
+            'radial-gradient(2.5px 2.5px at 88% 14%, #FFCC00 55%, transparent 60%)',
+            'radial-gradient(2px   2px   at 10% 52%, #FFFFFF 55%, transparent 60%)',
+            'radial-gradient(2.5px 2.5px at 44% 96%, #FFFFFF 55%, transparent 60%)',
+            'radial-gradient(2px   2px   at 76% 40%, #FFE7C2 55%, transparent 60%)',
+          ].join(', '),
+          animation: 'jma-star-twinkle-b 3.2s ease-in-out infinite',
+          animationDelay: '-1.1s',
+        }}
+      />
+    </>
   );
 }
 

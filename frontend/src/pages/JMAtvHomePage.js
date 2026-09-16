@@ -200,16 +200,31 @@ export default function JMAtvHomePage() {
         </p>
       </motion.div>
 
-      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {JMATV_CHANNELS.map((ch, i) => (
-          <ChannelTile
-            key={ch.id}
-            channel={ch}
-            index={i}
-            onClick={() => navigate(`/jmatv/${ch.id}`)}
-          />
-        ))}
-        <LessonsTile index={JMATV_CHANNELS.length} onClick={() => navigate('/lessons')} />
+      <div className="relative z-10 w-full max-w-5xl flex flex-col gap-6 md:gap-8">
+        {/* Top row: three CRTs across on desktop, stacks on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {JMATV_CHANNELS.slice(0, 3).map((ch, i) => (
+            <ChannelTile
+              key={ch.id}
+              channel={ch}
+              index={i}
+              onClick={() => navigate(`/jmatv/${ch.id}`)}
+            />
+          ))}
+        </div>
+        {/* Bottom row: remaining channels + Lessons, centered under the
+            top row on desktop, still stacks on mobile. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 lg:max-w-[66%] lg:mx-auto">
+          {JMATV_CHANNELS.slice(3).map((ch, i) => (
+            <ChannelTile
+              key={ch.id}
+              channel={ch}
+              index={3 + i}
+              onClick={() => navigate(`/jmatv/${ch.id}`)}
+            />
+          ))}
+          <LessonsTile index={JMATV_CHANNELS.length} onClick={() => navigate('/lessons')} />
+        </div>
       </div>
     </div>
   );

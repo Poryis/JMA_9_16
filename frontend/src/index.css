@@ -187,6 +187,16 @@
   0%, 100% { transform: scale(1);   opacity: 1; }
   50%      { transform: scale(1.3); opacity: 0.7; }
 }
+/* Deep-space starfield twinkle — softer, slower, off-phase from the
+   main jma-pulse so the sky feels alive when nothing's flying by. */
+@keyframes jma-star-twinkle-a {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1;    }
+}
+@keyframes jma-star-twinkle-b {
+  0%, 100% { opacity: 1;    }
+  50%      { opacity: 0.25; }
+}
 /* ---- Home page underwater backdrop ---- */
 .home-underwater-bg-layer {
   background-size: cover;
